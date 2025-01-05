@@ -122,6 +122,7 @@
 		BBE2A79924041E36004A7E93 /* CombineExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE2A79724041E36004A7E93 /* CombineExtension.swift */; };
 		BBE8FC751F6BEA6200122AFA /* Then.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE8FC741F6BEA6200122AFA /* Then.swift */; };
 		E91F76EB21211B8D00755698 /* PreferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F76EA21211B8D00755698 /* PreferenceViewController.swift */; };
+		E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */; };
 		E974B0462CB3A79400D1B97F /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E974B0452CB3A79400D1B97F /* LyricsKit */; };
 		E97593E42150F47900D80616 /* Polyfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E32150F47800D80616 /* Polyfill.swift */; };
 		E97593E62150F6FB00D80616 /* IBInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E52150F6FB00D80616 /* IBInspection.swift */; };
@@ -302,6 +303,7 @@
 				E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */,
 				E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */,
 				BBA82F0A256AB8620076831F /* Sparkle in Frameworks */,
+				E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */,
 				BBB03F3A2331D8A800A3879E /* OpenCC in Frameworks */,
 				BB003EFF248F89A700860FF7 /* CXShim in Frameworks */,
 				BBB03F30232FB40400A3879E /* Semver in Frameworks */,
@@ -491,6 +493,7 @@
 				BB4141A71E458BA800A51775 /* Frameworks */,
 				BB4141A81E458BA800A51775 /* Resources */,
 				BB60F3111E889FC000BA1FD2 /* Copy Helper */,
+				E967A20D2D2AD6F800982E06 /* Copy “Launch at Login Helper” */,
 				BB0BE9531F444BE20068FF67 /* Update Localization */,
 				BBC1D5811E4AFE64008869EC /* Bump Build */,
 			);
@@ -514,6 +517,7 @@
 				E983FA202C85EA6E00170CF7 /* MarqueeLabel */,
 				E983FA232C86302200170CF7 /* MarqueeLabel */,
 				E974B0452CB3A79400D1B97F /* LyricsKit */,
+				E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
@@ -657,6 +661,7 @@
 				E9C13F522C56A053009EC242 /* XCRemoteSwiftPackageReference "MusicPlayer" */,
 				E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				E974B0442CB3A79400D1B97F /* XCRemoteSwiftPackageReference "LyricsKit" */,
+				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -830,6 +835,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "buildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\")\nbuildNumber=$(($buildNumber + 1))\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n";
+		};
+		E967A20D2D2AD6F800982E06 /* Copy “Launch at Login Helper” */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy “Launch at Login Helper”";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILT_PRODUCTS_DIR}/LaunchAtLogin_LaunchAtLogin.bundle/Contents/Resources/copy-helper-swiftpm.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1416,6 +1440,14 @@
 				kind = branch;
 			};
 		};
+		E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/LaunchAtLogin-Legacy";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 		E974B0442CB3A79400D1B97F /* XCRemoteSwiftPackageReference "LyricsKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MxIris-LyricsX-Project/LyricsKit";
@@ -1531,6 +1563,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BBB03F382331D8A800A3879E /* XCRemoteSwiftPackageReference "SwiftyOpenCC" */;
 			productName = OpenCC;
+		};
+		E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */;
+			productName = LaunchAtLogin;
 		};
 		E974B0452CB3A79400D1B97F /* LyricsKit */ = {
 			isa = XCSwiftPackageProductDependency;

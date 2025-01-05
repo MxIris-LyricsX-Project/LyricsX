@@ -101,6 +101,8 @@ extension UserDefaults.DefaultsKeys {
     static let disableLyricsWhenPaused = Key<Bool>("DisableLyricsWhenPaused")
     static let disableLyricsWhenSreenShot = Key<Bool>("DisableLyricsWhenSreenShot")
     
+    static let hideMenuBarItems = Key<Bool>("HideMenuBarItems")
+    
     // Display
     static let desktopLyricsOneLineMode = Key<Bool>("DesktopLyricsOneLineMode")
     static let desktopLyricsVerticalMode = Key<Bool>("DesktopLyricsVerticalMode")

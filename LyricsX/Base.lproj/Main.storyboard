@@ -396,7 +396,7 @@
                     <rect key="frame" x="0.0" y="0.0" width="242" height="23"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                     <subviews>
-                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DG2-8b-vTy">
+                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DG2-8b-vTy">
                             <rect key="frame" x="19" y="4" width="85" height="16"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Lyrics Offset:" id="IFz-XQ-DHf">
                                 <font key="font" metaFont="system"/>
@@ -408,7 +408,7 @@
                             <rect key="frame" x="185" y="0.0" width="15" height="22"/>
                             <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" increment="100" minValue="-10000" maxValue="10000" id="Cnt-sc-zit"/>
                         </stepper>
-                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ii-PC-ZCl">
+                        <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ii-PC-ZCl">
                             <rect key="frame" x="201" y="4" width="22" height="16"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="ms" id="VQG-Pf-NsG">
                                 <font key="font" metaFont="system"/>
@@ -424,7 +424,7 @@
                                 </attributedString>
                             </textFieldCell>
                         </textField>
-                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BE8-Ux-QD2">
+                        <textField focusRingType="none" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BE8-Ux-QD2">
                             <rect key="frame" x="110" y="2" width="72" height="19"/>
                             <constraints>
                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="72" id="s38-xY-35C"/>
@@ -582,7 +582,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WCj-2B-3nx">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WCj-2B-3nx">
                                 <rect key="frame" x="52" y="112" width="217" height="57"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="aRw-yQ-GNX">
                                     <font key="font" metaFont="system" size="15"/>
@@ -646,7 +646,7 @@ IA
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="tXy-v4-kvS" userLabel="Search Bar">
                                 <rect key="frame" x="0.0" y="201" width="600" height="24"/>
                                 <subviews>
-                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AYj-Hi-KJT">
+                                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AYj-Hi-KJT">
                                         <rect key="frame" x="14" y="5" width="31" height="14"/>
                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Title:" id="FMI-7E-tCo">
                                             <font key="font" metaFont="message" size="11"/>
@@ -673,7 +673,7 @@ IA
                                             <outlet property="delegate" destination="hFt-BA-jFS" id="HLO-O5-6gK"/>
                                         </connections>
                                     </textField>
-                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GVe-a1-Feu">
+                                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GVe-a1-Feu">
                                         <rect key="frame" x="261" y="5" width="36" height="14"/>
                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Artist:" id="l8J-1r-dIZ">
                                             <font key="font" metaFont="message" size="11"/>
@@ -864,15 +864,15 @@ IA
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO">
                                 <rect key="frame" x="0.0" y="-201" width="600" height="200"/>
                                 <clipView key="contentView" drawsBackground="NO" id="YmL-P6-FDf">
-                                    <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="585" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="PEz-rD-ja1">
-                                            <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="585" height="200"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="600" height="200"/>
+                                            <size key="minSize" width="585" height="200"/>
                                             <size key="maxSize" width="640" height="10000000"/>
                                             <attributedString key="textStorage">
                                                 <fragment content="Lyrics Preview">
@@ -895,7 +895,7 @@ IA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="gNp-w1-80P">
-                                    <rect key="frame" x="584" y="0.0" width="16" height="200"/>
+                                    <rect key="frame" x="585" y="0.0" width="15" height="200"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
@@ -993,7 +993,7 @@ IA
                         <rect key="frame" x="0.0" y="0.0" width="280" height="248"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="odr-DA-p5E">
+                            <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="odr-DA-p5E">
                                 <rect key="frame" x="18" y="148" width="244" height="80"/>
                                 <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" alignment="left" id="o52-Z0-lue">
                                     <font key="font" metaFont="system"/>

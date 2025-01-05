@@ -29,9 +29,9 @@
         <!--Preference View Controller-->
         <scene sceneID="DwI-HE-QiS">
             <objects>
-                <tabViewController showSeguePresentationStyle="single" tabStyle="toolbar" id="sV3-nO-PkZ" userLabel="Preference View Controller" customClass="PreferenceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                <tabViewController showSeguePresentationStyle="single" selectedTabViewItemIndex="0" tabStyle="toolbar" id="sV3-nO-PkZ" userLabel="Preference View Controller" customClass="PreferenceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <tabViewItems>
-                        <tabViewItem identifier="" image="NSPreferencesGeneral" id="E3f-78-EMG" userLabel="General"/>
+                        <tabViewItem image="NSPreferencesGeneral" id="EbI-4v-6C3" userLabel="General"/>
                         <tabViewItem identifier="" image="NSFontPanel" id="8VI-6O-0Rn" userLabel="Display"/>
                         <tabViewItem image="toolbar_shortcut" id="bJe-2l-VWO" userLabel="Shortcut"/>
                         <tabViewItem image="toolbar_filter" id="xcA-tm-q8A" userLabel="Filter"/>
@@ -48,7 +48,7 @@
                     </tabView>
                     <connections>
                         <outlet property="tabView" destination="ufX-Bl-B8D" id="zxF-LK-KIY"/>
-                        <segue destination="d5d-dC-DK4" kind="relationship" relationship="tabItems" id="kfu-5b-Mm3"/>
+                        <segue destination="GaA-xG-8SL" kind="relationship" relationship="tabItems" id="rHI-ta-uXc"/>
                         <segue destination="8JF-Og-z6E" kind="relationship" relationship="tabItems" id="ybT-iY-287"/>
                         <segue destination="ppx-ob-WJc" kind="relationship" relationship="tabItems" id="UNQ-1s-Cez"/>
                         <segue destination="lN1-gG-AVq" kind="relationship" relationship="tabItems" id="wPI-VX-th7"/>
@@ -62,6 +62,8 @@
         <!--General-->
         <scene sceneID="mkJ-2y-SA4">
             <objects>
+                <customObject id="Mto-FK-DPA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <userDefaultsController id="hHn-Lo-CwP"/>
                 <viewController title="General" id="d5d-dC-DK4" userLabel="General" customClass="PreferenceGeneralViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Ium-Ya-ZzT">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="480"/>
@@ -315,7 +317,7 @@
                                     </binding>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="you-yu-77c">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="you-yu-77c">
                                 <rect key="frame" x="105" y="280" width="117" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="0M7-ao-0jb">
                                     <font key="font" metaFont="system"/>
@@ -370,7 +372,7 @@
                                     <binding destination="hHn-Lo-CwP" name="value" keyPath="values.PreferBilingualLyrics" id="z5d-4T-XY8"/>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wpE-cM-ds1">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wpE-cM-ds1">
                                 <rect key="frame" x="64" y="30" width="158" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="JPB-ag-MN7">
                                     <font key="font" metaFont="system"/>
@@ -426,7 +428,7 @@
                                     <action selector="showInFinderAction:" target="d5d-dC-DK4" id="sPX-8B-XxA"/>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xmp-V1-Dn6">
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xmp-V1-Dn6">
                                 <rect key="frame" x="236" y="169" width="100" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="100" id="hNM-LB-4P5"/>
@@ -445,7 +447,7 @@
                                     <binding destination="hHn-Lo-CwP" name="value" keyPath="values.GlobalLyricsOffset" id="TTC-yw-vpl"/>
                                 </connections>
                             </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g0L-A1-o0L">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g0L-A1-o0L">
                                 <rect key="frame" x="105" y="172" width="117" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="slB-q7-1dB">
                                     <font key="font" metaFont="system"/>
@@ -467,7 +469,7 @@
                                     </binding>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Yv-tb-pyE">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Yv-tb-pyE">
                                 <rect key="frame" x="252" y="96" width="261" height="16"/>
                                 <textFieldCell key="cell" title="Search result match the exact search term" id="rSD-qR-EXA">
                                     <font key="font" metaFont="system"/>
@@ -496,7 +498,7 @@
                                     <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="5kJ-ha-gD6"/>
                                 </connections>
                             </popUpButton>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UXR-cB-aCr">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UXR-cB-aCr">
                                 <rect key="frame" x="41" y="220" width="181" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="WfA-pe-S5D">
                                     <font key="font" metaFont="system"/>
@@ -579,10 +581,588 @@
                         <outlet property="userPathMenuItem" destination="hXE-OF-DFz" id="ioW-SC-5Kb"/>
                     </connections>
                 </viewController>
-                <customObject id="Mto-FK-DPA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <userDefaultsController id="hHn-Lo-CwP"/>
             </objects>
             <point key="canvasLocation" x="1969" y="-414"/>
+        </scene>
+        <!--General-->
+        <scene sceneID="ocD-T6-mSN">
+            <objects>
+                <viewController title="General" id="GaA-xG-8SL" userLabel="General" customClass="PreferenceGeneralViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="Bzr-sv-FuP">
+                        <rect key="frame" x="0.0" y="0.0" width="611" height="576"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <box title="Preferred music player" translatesAutoresizingMaskIntoConstraints="NO" id="FxG-RK-g7y">
+                                <rect key="frame" x="17" y="438" width="577" height="114"/>
+                                <view key="contentView" id="Mdd-yA-dBT">
+                                    <rect key="frame" x="4" y="5" width="569" height="94"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="M1P-0f-MC5">
+                                            <rect key="frame" x="43" y="0.0" width="484" height="94"/>
+                                            <subviews>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="Kde-HA-3xl" userLabel="Auto icon">
+                                                    <rect key="frame" x="16" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="now_playing_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="m79-C1-Pt8">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="height" multiplier="1:1" id="hdd-vV-nuJ"/>
+                                                        <constraint firstAttribute="width" constant="52" id="jQC-Nn-atp"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <action selector="performClick:" target="4C9-UE-FEZ" id="Cge-Rd-SKR"/>
+                                                    </connections>
+                                                </button>
+                                                <button tag="-1" translatesAutoresizingMaskIntoConstraints="NO" id="4C9-UE-FEZ">
+                                                    <rect key="frame" x="13" y="8" width="55" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="Auto" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Wc3-y0-9lE">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="16" id="IQR-uU-AFI"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="gmU-F0-yaU"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="2Ql-xt-QMj" userLabel="iTunes icon">
+                                                    <rect key="frame" x="96" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="iTunes_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="qV4-YC-eKc">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="performClick:" target="hhC-Qz-7rU" id="oAL-H1-Yqd"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="hhC-Qz-7rU" userLabel="Prefer iTunes">
+                                                    <rect key="frame" x="88" y="8" width="66" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="iTunes" bezelStyle="regularSquare" imagePosition="left" inset="2" id="TUG-XT-b0N">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="krW-C7-F9h"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="aNA-9c-MrQ" userLabel="Spotify icon">
+                                                    <rect key="frame" x="176" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="spotify_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="kzf-Zo-Ymi">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="performClick:" target="p7F-8j-yFn" id="LVd-po-vCL"/>
+                                                    </connections>
+                                                </button>
+                                                <button tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="p7F-8j-yFn">
+                                                    <rect key="frame" x="166" y="8" width="70" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="Spotify" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="c6V-ed-p3X">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="EhT-jd-RNT"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="VTr-dt-pe7" userLabel="Vox icon">
+                                                    <rect key="frame" x="256" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="vox_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="tx0-Vt-hV7">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="performClick:" target="e9V-bq-RP4" id="HCV-RT-7pC"/>
+                                                    </connections>
+                                                </button>
+                                                <button tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="e9V-bq-RP4">
+                                                    <rect key="frame" x="256" y="8" width="49" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="Vox" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Wyc-tY-apB">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="xaK-lu-siO"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="bBh-fX-qW0" userLabel="Audirvana icon">
+                                                    <rect key="frame" x="336" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="audirvana_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="6u7-sd-VKc">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="performClick:" target="Oaz-tx-V8o" id="1pc-bq-Muh"/>
+                                                    </connections>
+                                                </button>
+                                                <button tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="Oaz-tx-V8o" userLabel="Prefer Audirvana">
+                                                    <rect key="frame" x="317" y="8" width="87" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="Audirvana" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Z0c-8q-TYs">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="uFI-LJ-RCE"/>
+                                                    </connections>
+                                                </button>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="isp-i5-YDY" userLabel="Swinsian icon">
+                                                    <rect key="frame" x="416" y="34" width="52" height="52"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="swinsian_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="I8M-17-qyM">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="performClick:" target="yM8-rR-dOT" id="Hq7-kS-z9Z"/>
+                                                    </connections>
+                                                </button>
+                                                <button tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="yM8-rR-dOT" userLabel="Prefer Swinsian">
+                                                    <rect key="frame" x="401" y="8" width="80" height="18"/>
+                                                    <buttonCell key="cell" type="radio" title="Swinsian" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="PDE-f9-xHK">
+                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                        <attributedString key="userComments">
+                                                            <fragment content="#bc-ignore!">
+                                                                <attributes>
+                                                                    <font key="NSFont" metaFont="message" size="11"/>
+                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                </attributes>
+                                                            </fragment>
+                                                        </attributedString>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="jdV-7j-pUm"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="0k0-hU-8n4"/>
+                                                <constraint firstItem="e9V-bq-RP4" firstAttribute="centerX" secondItem="VTr-dt-pe7" secondAttribute="centerX" id="0nI-JB-C62"/>
+                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="3io-B7-Gbj"/>
+                                                <constraint firstItem="isp-i5-YDY" firstAttribute="leading" secondItem="bBh-fX-qW0" secondAttribute="trailing" constant="28" id="4qI-nT-xYO"/>
+                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="leading" secondItem="VTr-dt-pe7" secondAttribute="trailing" constant="28" id="6nk-kn-28u"/>
+                                                <constraint firstItem="p7F-8j-yFn" firstAttribute="centerX" secondItem="aNA-9c-MrQ" secondAttribute="centerX" id="7b5-zy-PrG"/>
+                                                <constraint firstItem="4C9-UE-FEZ" firstAttribute="centerX" secondItem="Kde-HA-3xl" secondAttribute="centerX" id="AAM-wD-zle"/>
+                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="B4B-D2-ipv"/>
+                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="BLS-qF-AgX"/>
+                                                <constraint firstAttribute="bottom" secondItem="4C9-UE-FEZ" secondAttribute="bottom" constant="9" id="CMx-LB-zZZ"/>
+                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="leading" secondItem="aNA-9c-MrQ" secondAttribute="trailing" constant="28" id="Do5-B4-opD"/>
+                                                <constraint firstItem="yM8-rR-dOT" firstAttribute="centerX" secondItem="isp-i5-YDY" secondAttribute="centerX" id="Fv3-u5-GBw"/>
+                                                <constraint firstItem="isp-i5-YDY" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="Ihw-MZ-Qcx"/>
+                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="Isd-q0-8dK"/>
+                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="leading" secondItem="Kde-HA-3xl" secondAttribute="trailing" constant="28" id="JCv-fO-PZP"/>
+                                                <constraint firstItem="hhC-Qz-7rU" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="M0n-NR-kD0"/>
+                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="ORc-Rb-5qG"/>
+                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="R1O-v5-y8f"/>
+                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="WAy-d7-dhA"/>
+                                                <constraint firstItem="Oaz-tx-V8o" firstAttribute="centerX" secondItem="bBh-fX-qW0" secondAttribute="centerX" id="YFx-Xx-GQb"/>
+                                                <constraint firstItem="p7F-8j-yFn" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="ZF4-pK-ftD"/>
+                                                <constraint firstItem="Kde-HA-3xl" firstAttribute="top" secondItem="M1P-0f-MC5" secondAttribute="top" constant="8" id="aWm-3p-gAm"/>
+                                                <constraint firstAttribute="trailing" secondItem="isp-i5-YDY" secondAttribute="trailing" constant="16" id="afw-Mw-1Jp"/>
+                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="alP-bg-29C"/>
+                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="bAG-TU-m5y"/>
+                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="btb-lB-Ufd"/>
+                                                <constraint firstItem="e9V-bq-RP4" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="dLh-wY-seL"/>
+                                                <constraint firstItem="Kde-HA-3xl" firstAttribute="leading" secondItem="M1P-0f-MC5" secondAttribute="leading" constant="16" id="frO-aP-aoh"/>
+                                                <constraint firstItem="4C9-UE-FEZ" firstAttribute="top" secondItem="Kde-HA-3xl" secondAttribute="bottom" constant="9" id="g2s-4P-G5Z"/>
+                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="iig-WT-TMB"/>
+                                                <constraint firstItem="Oaz-tx-V8o" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="jat-S8-qUJ"/>
+                                                <constraint firstItem="isp-i5-YDY" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="jmj-LX-czZ"/>
+                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="leading" secondItem="2Ql-xt-QMj" secondAttribute="trailing" constant="28" id="qs0-RT-VzY"/>
+                                                <constraint firstItem="isp-i5-YDY" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="t9b-Ki-XV5"/>
+                                                <constraint firstItem="yM8-rR-dOT" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="tiE-WG-yhZ"/>
+                                                <constraint firstItem="hhC-Qz-7rU" firstAttribute="centerX" secondItem="2Ql-xt-QMj" secondAttribute="centerX" id="zGo-Is-qsy"/>
+                                            </constraints>
+                                        </customView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="bottom" secondItem="M1P-0f-MC5" secondAttribute="bottom" id="0C0-Jt-hl7"/>
+                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="centerX" secondItem="Mdd-yA-dBT" secondAttribute="centerX" id="FLt-3e-xxW"/>
+                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Mdd-yA-dBT" secondAttribute="leading" constant="8" id="fZI-gd-Htb"/>
+                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="top" secondItem="Mdd-yA-dBT" secondAttribute="top" id="fwr-EM-PdK"/>
+                                    </constraints>
+                                </view>
+                            </box>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="hBJ-hq-S4u">
+                                <rect key="frame" x="20" y="20" width="571" height="412"/>
+                                <rows>
+                                    <gridRow yPlacement="center" height="30" id="5do-X5-xgX"/>
+                                    <gridRow yPlacement="center" height="30" id="Nkw-LC-Lbi"/>
+                                    <gridRow yPlacement="top" height="20" id="bYQ-nJ-Ce7"/>
+                                    <gridRow yPlacement="center" height="30" id="1nK-QJ-9q8"/>
+                                    <gridRow yPlacement="center" height="30" id="x5a-Q5-Acb"/>
+                                    <gridRow yPlacement="center" height="20" id="ApI-Zi-AYg"/>
+                                    <gridRow yPlacement="center" height="20" id="b3M-VO-u37"/>
+                                    <gridRow yPlacement="top" height="20" id="ubP-tx-cL1"/>
+                                    <gridRow yPlacement="center" height="30" id="7Wx-n7-f04"/>
+                                    <gridRow yPlacement="center" height="30" id="8If-Ei-6qA"/>
+                                    <gridRow yPlacement="center" height="20" id="6xB-DX-5FD"/>
+                                    <gridRow yPlacement="center" height="30" id="JRU-jX-DWY"/>
+                                    <gridRow yPlacement="center" height="30" id="zOY-h3-QvW"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn xPlacement="trailing" width="200" trailingPadding="11" id="3Hg-Ka-QrM"/>
+                                    <gridColumn width="354" id="IfN-lq-biT"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="5do-X5-xgX" column="3Hg-Ka-QrM" id="vUV-9r-hs4"/>
+                                    <gridCell row="5do-X5-xgX" column="IfN-lq-biT" id="Qf5-qY-K1u">
+                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="KCS-6F-vyn">
+                                            <rect key="frame" x="215" y="388" width="246" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Auto launch &amp; quit with music player" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Z0u-vP-mn0">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="toggleAutoLaunchAction:" target="d5d-dC-DK4" id="aqb-fj-LIO"/>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.LaunchAndQuitWithPlayer" id="VSJ-aG-sYU">
+                                                    <dictionary key="options">
+                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="Nkw-LC-Lbi" column="3Hg-Ka-QrM" id="GVk-Na-9Qx">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mMr-cH-jAi">
+                                            <rect key="frame" x="85" y="353" width="117" height="16"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="toz-Mz-SHW">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="Nkw-LC-Lbi" column="IfN-lq-biT" id="8wo-Aw-Cbv">
+                                        <stackView key="contentView" distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IBT-ZS-FAA">
+                                            <rect key="frame" x="217" y="351" width="189" height="20"/>
+                                            <subviews>
+                                                <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c8h-bP-qfB">
+                                                    <rect key="frame" x="-3" y="-4" width="167" height="25"/>
+                                                    <popUpButtonCell key="cell" type="push" title="LyricsX (Default)" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="ko8-R9-vhw" id="YQB-f9-Zoi">
+                                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="message"/>
+                                                        <menu key="menu" id="8TH-BX-fnV">
+                                                            <items>
+                                                                <menuItem title="LyricsX (Default)" state="on" id="ko8-R9-vhw"/>
+                                                                <menuItem title="User Path" id="edo-Ur-t3j">
+                                                                    <attributedString key="userComments">
+                                                                        <fragment content="#bc-ignore!">
+                                                                            <attributes>
+                                                                                <font key="NSFont" metaFont="message" size="11"/>
+                                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                                            </attributes>
+                                                                        </fragment>
+                                                                    </attributedString>
+                                                                </menuItem>
+                                                                <menuItem isSeparatorItem="YES" id="Z6k-eW-XS7"/>
+                                                                <menuItem title="Other..." id="kNM-hA-DAR">
+                                                                    <connections>
+                                                                        <action selector="chooseSavingPathAction:" target="d5d-dC-DK4" id="I1W-dM-3i3"/>
+                                                                    </connections>
+                                                                </menuItem>
+                                                            </items>
+                                                        </menu>
+                                                    </popUpButtonCell>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="kzp-6x-gAO"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <binding destination="968-l4-9l5" name="selectedIndex" keyPath="values.LyricsSavingPathPopUpIndex" id="6yl-Ym-tvY"/>
+                                                    </connections>
+                                                </popUpButton>
+                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="ihy-li-Lrm">
+                                                    <rect key="frame" x="168" y="2" width="21" height="18"/>
+                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="folder" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="yEo-X5-tsf">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="21" id="gx7-eq-Sab"/>
+                                                        <constraint firstAttribute="height" constant="18" id="w79-ch-AlI"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <action selector="showInFinderAction:" target="d5d-dC-DK4" id="K6g-5H-vIw"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <visibilityPriorities>
+                                                <integer value="1000"/>
+                                                <integer value="1000"/>
+                                            </visibilityPriorities>
+                                            <customSpacing>
+                                                <real value="3.4028234663852886e+38"/>
+                                                <real value="3.4028234663852886e+38"/>
+                                            </customSpacing>
+                                        </stackView>
+                                    </gridCell>
+                                    <gridCell row="bYQ-nJ-Ce7" column="3Hg-Ka-QrM" id="9RI-Dt-f9i"/>
+                                    <gridCell row="bYQ-nJ-Ce7" column="IfN-lq-biT" id="s58-Z9-B82">
+                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="kmo-rQ-MLa">
+                                            <rect key="frame" x="215" y="323" width="197" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Load lyrics beside music file" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="vUt-b5-jlE">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.LoadLyricsBesideTrack" id="UK2-Uw-ZcK">
+                                                    <dictionary key="options">
+                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="1nK-QJ-9q8" column="3Hg-Ka-QrM" id="LHl-h8-VCa">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ddw-d3-Onc">
+                                            <rect key="frame" x="21" y="291" width="181" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="0gT-Nz-7Jw">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="1nK-QJ-9q8" column="IfN-lq-biT" id="W1D-9B-Ubo">
+                                        <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GuZ-fJ-k5o">
+                                            <rect key="frame" x="214" y="285" width="127" height="25"/>
+                                            <popUpButtonCell key="cell" type="push" title="Auto" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qp6-bh-hGr" id="yvD-mA-Sdd">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="message"/>
+                                                <menu key="menu" id="CNj-sd-xbL">
+                                                    <items>
+                                                        <menuItem title="Auto" state="on" id="qp6-bh-hGr">
+                                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                                        </menuItem>
+                                                        <menuItem isSeparatorItem="YES" id="5y8-GV-Mny"/>
+                                                    </items>
+                                                </menu>
+                                            </popUpButtonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="eZw-4Z-gOt"/>
+                                            </constraints>
+                                            <connections>
+                                                <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="ne8-yJ-uOx"/>
+                                            </connections>
+                                        </popUpButton>
+                                    </gridCell>
+                                    <gridCell row="x5a-Q5-Acb" column="3Hg-Ka-QrM" id="RAA-sw-0vE">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fsT-Mz-djW">
+                                            <rect key="frame" x="85" y="255" width="117" height="16"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="zS6-oP-7aR">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="x5a-Q5-Acb" column="IfN-lq-biT" id="5Cd-Db-5aS">
+                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a5h-Km-d1s">
+                                            <rect key="frame" x="217" y="253" width="100" height="21"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="100" id="aSq-t4-UP4"/>
+                                            </constraints>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="center" drawsBackground="YES" id="xdK-Ac-VII">
+                                                <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="WW8-YG-odh"/>
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.allowsFloats" value="NO"/>
+                                                <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.hasThousandSeparators" value="NO"/>
+                                            </userDefinedRuntimeAttributes>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.GlobalLyricsOffset" id="sfX-Fg-pYT"/>
+                                            </connections>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="ApI-Zi-AYg" column="3Hg-Ka-QrM" headOfMergedCell="MXo-5n-3rJ" xPlacement="fill" id="MXo-5n-3rJ">
+                                        <box key="contentView" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="tDa-uO-sv5">
+                                            <rect key="frame" x="0.0" y="230" width="571" height="5"/>
+                                        </box>
+                                    </gridCell>
+                                    <gridCell row="ApI-Zi-AYg" column="IfN-lq-biT" headOfMergedCell="MXo-5n-3rJ" id="XTR-ou-VYt"/>
+                                    <gridCell row="b3M-VO-u37" column="3Hg-Ka-QrM" id="Ivi-dw-RPJ"/>
+                                    <gridCell row="b3M-VO-u37" column="IfN-lq-biT" id="QeW-hO-6bA">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5bK-Rl-HvO">
+                                            <rect key="frame" x="215" y="197" width="105" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Strict Search" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kN1-5j-3tW">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.StrictSearchEnabled" id="s1E-oF-JiU">
+                                                    <dictionary key="options">
+                                                        <integer key="NSNullPlaceholder" value="0"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="ubP-tx-cL1" column="3Hg-Ka-QrM" id="vTr-0g-EfT"/>
+                                    <gridCell row="ubP-tx-cL1" column="IfN-lq-biT" id="IMv-38-Xeu">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
+                                            <rect key="frame" x="215" y="174" width="261" height="16"/>
+                                            <textFieldCell key="cell" title="Search result match the exact search term" id="SGe-4J-kW6">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="7Wx-n7-f04" column="3Hg-Ka-QrM" id="LWY-wc-Zmt"/>
+                                    <gridCell row="7Wx-n7-f04" column="IfN-lq-biT" id="kFj-ie-KSt">
+                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="eXe-c6-bvj">
+                                            <rect key="frame" x="215" y="140" width="153" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Prefer bilingual lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KJ9-qG-viC">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.PreferBilingualLyrics" id="1FJ-eD-2O9"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="8If-Ei-6qA" column="3Hg-Ka-QrM" id="1my-Ka-JRX">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kWS-OK-xdi">
+                                            <rect key="frame" x="44" y="105" width="158" height="16"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="nL1-B1-c8U">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="8If-Ei-6qA" column="IfN-lq-biT" id="olI-46-sCC">
+                                        <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="J5D-YW-st4" userLabel="Convert">
+                                            <rect key="frame" x="214" y="99" width="167" height="25"/>
+                                            <popUpButtonCell key="cell" type="push" title="No Conversion" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="KR4-Qt-DFi" id="gCf-fG-Bxh" userLabel="Convert">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="message"/>
+                                                <menu key="menu" id="6pY-Wy-yFN">
+                                                    <items>
+                                                        <menuItem title="No Conversion" state="on" id="KR4-Qt-DFi"/>
+                                                        <menuItem title="Simplified Chinese" id="CX0-PE-NAF"/>
+                                                        <menuItem title="Traditional Chinese" id="xUw-4B-qN5"/>
+                                                    </items>
+                                                </menu>
+                                            </popUpButtonCell>
+                                            <constraints>
+                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="DKz-wr-sGW"/>
+                                            </constraints>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="selectedIndex" keyPath="values.ChineseConversionIndex" id="06M-cf-SkM"/>
+                                            </connections>
+                                        </popUpButton>
+                                    </gridCell>
+                                    <gridCell row="6xB-DX-5FD" column="3Hg-Ka-QrM" headOfMergedCell="VDZ-1A-vl6" xPlacement="fill" id="VDZ-1A-vl6">
+                                        <box key="contentView" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="tVK-do-XIu">
+                                            <rect key="frame" x="0.0" y="80" width="571" height="5"/>
+                                        </box>
+                                    </gridCell>
+                                    <gridCell row="6xB-DX-5FD" column="IfN-lq-biT" headOfMergedCell="VDZ-1A-vl6" id="YKf-Rm-qqm"/>
+                                    <gridCell row="JRU-jX-DWY" column="3Hg-Ka-QrM" id="r4g-E1-tcS"/>
+                                    <gridCell row="JRU-jX-DWY" column="IfN-lq-biT" id="t91-CX-VtA">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1AR-aE-9Er">
+                                            <rect key="frame" x="215" y="42" width="119" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Launch at login" bezelStyle="regularSquare" imagePosition="left" inset="2" id="HKg-Sp-6EN">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="GaA-xG-8SL" name="value" keyPath="launchAtLogin.isEnabled" id="ZXn-Fz-Nya"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="zOY-h3-QvW" column="3Hg-Ka-QrM" id="erE-Ey-cEb"/>
+                                    <gridCell row="zOY-h3-QvW" column="IfN-lq-biT" id="rnQ-fd-rxv">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D6s-oP-MIH">
+                                            <rect key="frame" x="215" y="6" width="153" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Hide Menu Bar Items" bezelStyle="regularSquare" imagePosition="left" inset="2" id="JXg-c9-vFH">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.HideMenuBarItems" id="Vvm-hg-hrg"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                </gridCells>
+                            </gridView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="FxG-RK-g7y" firstAttribute="top" secondItem="Bzr-sv-FuP" secondAttribute="top" constant="24" id="0ZQ-MJ-g6O"/>
+                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="centerX" secondItem="Bzr-sv-FuP" secondAttribute="centerX" id="5SQ-oc-7En"/>
+                            <constraint firstAttribute="bottom" secondItem="hBJ-hq-S4u" secondAttribute="bottom" constant="20" id="BIz-No-t5P"/>
+                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="top" secondItem="FxG-RK-g7y" secondAttribute="bottom" constant="10" id="EbE-Hv-Q1y"/>
+                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="leading" secondItem="Bzr-sv-FuP" secondAttribute="leading" constant="20" id="SdL-cL-yPB"/>
+                            <constraint firstAttribute="trailing" secondItem="hBJ-hq-S4u" secondAttribute="trailing" constant="20" id="cfb-a8-V9t"/>
+                            <constraint firstItem="FxG-RK-g7y" firstAttribute="leading" secondItem="Bzr-sv-FuP" secondAttribute="leading" constant="20" id="eqR-Dy-QaA"/>
+                            <constraint firstAttribute="trailing" secondItem="FxG-RK-g7y" secondAttribute="trailing" constant="20" id="uMT-SF-Axg"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="autoLaunchButton" destination="KCS-6F-vyn" id="021-dz-vmT"/>
+                        <outlet property="languagePopUp" destination="GuZ-fJ-k5o" id="oI6-FQ-yQ6"/>
+                        <outlet property="loadHomonymLrcButton" destination="kmo-rQ-MLa" id="Rbj-Cg-qUq"/>
+                        <outlet property="preferAudirvana" destination="Oaz-tx-V8o" id="5nw-qq-XwB"/>
+                        <outlet property="preferAuto" destination="4C9-UE-FEZ" id="P1z-lE-AJR"/>
+                        <outlet property="preferSpotify" destination="p7F-8j-yFn" id="syl-PF-gGS"/>
+                        <outlet property="preferSwinsian" destination="yM8-rR-dOT" id="s6m-tk-cZM"/>
+                        <outlet property="preferVox" destination="e9V-bq-RP4" id="kAR-lv-nfN"/>
+                        <outlet property="preferiTunes" destination="hhC-Qz-7rU" id="YRc-R0-voO"/>
+                        <outlet property="savingPathPopUp" destination="c8h-bP-qfB" id="4eT-od-llt"/>
+                        <outlet property="userPathMenuItem" destination="edo-Ur-t3j" id="UQz-LR-c2x"/>
+                    </connections>
+                </viewController>
+                <customObject id="QwD-01-xGk" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <userDefaultsController id="968-l4-9l5" userLabel="Shared User Defaults Controller"/>
+                <userDefaultsController id="rnn-dH-Odz"/>
+            </objects>
+            <point key="canvasLocation" x="2616" y="-397"/>
         </scene>
         <!--Display-->
         <scene sceneID="CdB-uN-rfE">
@@ -621,7 +1201,7 @@
                                                         <binding destination="Nm6-oq-wpY" name="value" keyPath="values.DesktopLyricsVerticalMode" id="hIw-IE-Hht"/>
                                                     </connections>
                                                 </button>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="YbH-Ph-PYg">
+                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="YbH-Ph-PYg">
                                                     <rect key="frame" x="124" y="100" width="35" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Font:" id="992-tg-edx">
                                                         <font key="font" metaFont="system"/>
@@ -629,7 +1209,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oHc-gj-4JF" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
+                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oHc-gj-4JF" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
                                                     <rect key="frame" x="173" y="97" width="260" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="22" id="DX7-6I-0lO"/>
@@ -641,7 +1221,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8e0-Af-YeJ">
+                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8e0-Af-YeJ">
                                                     <rect key="frame" x="171" y="75" width="242" height="14"/>
                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Font Fallback:" usesSingleLineMode="YES" id="EnT-HZ-SOz">
                                                         <font key="font" metaFont="message" size="11"/>
@@ -744,7 +1324,7 @@
                                                         <real value="3.4028234663852886e+38"/>
                                                     </customSpacing>
                                                 </stackView>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eGr-gm-cw0">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eGr-gm-cw0">
                                                     <rect key="frame" x="101" y="16" width="77" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Background" id="Uer-qJ-3T9">
                                                         <font key="font" metaFont="system"/>
@@ -752,7 +1332,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hn1-Pb-VCw">
+                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hn1-Pb-VCw">
                                                     <rect key="frame" x="211" y="16" width="40" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Lyrics" id="3Bt-md-QNc">
                                                         <font key="font" metaFont="system"/>
@@ -760,7 +1340,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="foe-PF-jhi">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="foe-PF-jhi">
                                                     <rect key="frame" x="294" y="16" width="58" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Progress" id="XuN-vs-cgI">
                                                         <font key="font" metaFont="system"/>
@@ -768,7 +1348,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eUo-ma-3JR">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eUo-ma-3JR">
                                                     <rect key="frame" x="389" y="16" width="53" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Shadow" id="hsu-H9-9Bd">
                                                         <font key="font" metaFont="system"/>
@@ -786,7 +1366,7 @@
                                                         <binding destination="Nm6-oq-wpY" name="value" keyPath="values.DesktopLyricsDraggable" id="NeT-dL-fxn"/>
                                                     </connections>
                                                 </button>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JSf-5H-P7U">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JSf-5H-P7U">
                                                     <rect key="frame" x="98" y="200" width="125" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Disable lyrics when:" id="bDS-Lb-m34">
                                                         <font key="font" metaFont="system"/>
@@ -881,7 +1461,7 @@
                                             <rect key="frame" x="10" y="33" width="554" height="344"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c1k-Vo-HU0" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
+                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c1k-Vo-HU0" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
                                                     <rect key="frame" x="173" y="298" width="260" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="22" id="QOp-Js-9L7"/>
@@ -893,7 +1473,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n8x-g6-LHK">
+                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n8x-g6-LHK">
                                                     <rect key="frame" x="124" y="301" width="35" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Font:" id="Cmt-it-PXW">
                                                         <font key="font" metaFont="system"/>
@@ -901,7 +1481,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-ST-k9G">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-ST-k9G">
                                                     <rect key="frame" x="125" y="263" width="34" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Text:" id="Txi-D9-jjB">
                                                         <font key="font" metaFont="system"/>
@@ -924,7 +1504,7 @@
                                                         </binding>
                                                     </connections>
                                                 </colorWell>
-                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5rv-W6-91j">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5rv-W6-91j">
                                                     <rect key="frame" x="91" y="224" width="68" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Hightlight:" id="UfE-QU-Yhm">
                                                         <font key="font" metaFont="system"/>
@@ -1108,7 +1688,7 @@
                                     <action selector="insert:" target="0dY-rB-aBJ" id="6n6-mw-7xL"/>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="12H-lM-uSV">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="12H-lM-uSV">
                                 <rect key="frame" x="18" y="348" width="471" height="14"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Lyrics lines matching following rules will be ignored. Use &quot;/&quot; to start a regular expression." id="19E-DG-Q23">
                                     <font key="font" metaFont="message" size="11"/>
@@ -1161,7 +1741,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="288"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fHF-oJ-2oH">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fHF-oJ-2oH">
                                 <rect key="frame" x="125" y="248" width="177" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide menu bar lyrics:" id="XHQ-gX-urF">
                                     <font key="font" metaFont="system"/>
@@ -1179,7 +1759,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleMenuBarLyrics"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="XuJ-N7-23c">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="XuJ-N7-23c">
                                 <rect key="frame" x="135" y="216" width="167" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide karaoke lyrics:" id="lOc-OP-AcU">
                                     <font key="font" metaFont="system"/>
@@ -1187,7 +1767,7 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BAG-Gf-bbI">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BAG-Gf-bbI">
                                 <rect key="frame" x="175" y="184" width="127" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show lyrics window:" id="TB9-Fk-WAX">
                                     <font key="font" metaFont="system"/>
@@ -1204,7 +1784,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutShowLyricsWindow"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rZM-vL-ukW">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rZM-vL-ukW">
                                 <rect key="frame" x="168" y="152" width="134" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Increase lyrics offset:" id="mo2-3C-gLY">
                                     <font key="font" metaFont="system"/>
@@ -1221,7 +1801,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetIncrease"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8LH-Ws-6CC">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8LH-Ws-6CC">
                                 <rect key="frame" x="162" y="120" width="140" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Decrease lyrics offset:" id="bmk-rW-Uot">
                                     <font key="font" metaFont="system"/>
@@ -1238,7 +1818,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetDecrease"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Paz-vU-k0Z">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Paz-vU-k0Z">
                                 <rect key="frame" x="167" y="88" width="135" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="6We-TB-Wfc">
                                     <font key="font" metaFont="system"/>
@@ -1255,7 +1835,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWriteToiTunes"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Kmn-Mi-l4p">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Kmn-Mi-l4p">
                                 <rect key="frame" x="169" y="24" width="133" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Mark as wrong lyrics:" id="uEb-Q5-cda">
                                     <font key="font" metaFont="system"/>
@@ -1272,7 +1852,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWrongLyrics"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Uyz-8q-0bL">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Uyz-8q-0bL">
                                 <rect key="frame" x="216" y="56" width="86" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Search lyrics:" id="kP4-4q-ed9">
                                     <font key="font" metaFont="system"/>
@@ -1388,7 +1968,7 @@
                                     <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesWithTranslation" id="YcT-LV-fEn"/>
                                 </connections>
                             </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
                                 <rect key="frame" x="87" y="80" width="135" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="8Sx-vb-5pB">
                                     <font key="font" metaFont="system"/>
@@ -1396,7 +1976,7 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqQ-7c-IhI">
+                            <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqQ-7c-IhI">
                                 <rect key="frame" x="76" y="240" width="449" height="32"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="g2u-8D-dln">
                                     <font key="font" metaFont="system"/>
@@ -1506,558 +2086,6 @@
                 <userDefaultsController id="MQW-nm-dXS"/>
             </objects>
             <point key="canvasLocation" x="1969" y="1390"/>
-        </scene>
-        <!--General-->
-        <scene sceneID="ocD-T6-mSN">
-            <objects>
-                <viewController title="General" id="GaA-xG-8SL" userLabel="General" customClass="PreferenceGeneralViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="Bzr-sv-FuP">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="586"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <box title="Preferred music player" translatesAutoresizingMaskIntoConstraints="NO" id="FxG-RK-g7y">
-                                <rect key="frame" x="17" y="448" width="566" height="114"/>
-                                <view key="contentView" id="Mdd-yA-dBT">
-                                    <rect key="frame" x="4" y="5" width="558" height="94"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="M1P-0f-MC5">
-                                            <rect key="frame" x="37" y="0.0" width="484" height="94"/>
-                                            <subviews>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="Kde-HA-3xl" userLabel="Auto icon">
-                                                    <rect key="frame" x="16" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="now_playing_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="m79-C1-Pt8">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="height" multiplier="1:1" id="hdd-vV-nuJ"/>
-                                                        <constraint firstAttribute="width" constant="52" id="jQC-Nn-atp"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="performClick:" target="4C9-UE-FEZ" id="Cge-Rd-SKR"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="-1" translatesAutoresizingMaskIntoConstraints="NO" id="4C9-UE-FEZ">
-                                                    <rect key="frame" x="14" y="8" width="55" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="Auto" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Wc3-y0-9lE">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="16" id="IQR-uU-AFI"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="gmU-F0-yaU"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="2Ql-xt-QMj" userLabel="iTunes icon">
-                                                    <rect key="frame" x="96" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="iTunes_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="qV4-YC-eKc">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="hhC-Qz-7rU" id="oAL-H1-Yqd"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="hhC-Qz-7rU" userLabel="Prefer iTunes">
-                                                    <rect key="frame" x="88" y="8" width="66" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="iTunes" bezelStyle="regularSquare" imagePosition="left" inset="2" id="TUG-XT-b0N">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="krW-C7-F9h"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="aNA-9c-MrQ" userLabel="Spotify icon">
-                                                    <rect key="frame" x="176" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="spotify_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="kzf-Zo-Ymi">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="p7F-8j-yFn" id="LVd-po-vCL"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="p7F-8j-yFn">
-                                                    <rect key="frame" x="166" y="8" width="70" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="Spotify" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="c6V-ed-p3X">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="EhT-jd-RNT"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="VTr-dt-pe7" userLabel="Vox icon">
-                                                    <rect key="frame" x="256" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="vox_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="tx0-Vt-hV7">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="e9V-bq-RP4" id="HCV-RT-7pC"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="e9V-bq-RP4">
-                                                    <rect key="frame" x="257" y="8" width="49" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="Vox" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Wyc-tY-apB">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="xaK-lu-siO"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="bBh-fX-qW0" userLabel="Audirvana icon">
-                                                    <rect key="frame" x="336" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="audirvana_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="6u7-sd-VKc">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="Oaz-tx-V8o" id="1pc-bq-Muh"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="Oaz-tx-V8o" userLabel="Prefer Audirvana">
-                                                    <rect key="frame" x="318" y="8" width="87" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="Audirvana" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Z0c-8q-TYs">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="uFI-LJ-RCE"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="isp-i5-YDY" userLabel="Swinsian icon">
-                                                    <rect key="frame" x="416" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="swinsian_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="I8M-17-qyM">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="yM8-rR-dOT" id="Hq7-kS-z9Z"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="yM8-rR-dOT" userLabel="Prefer Swinsian">
-                                                    <rect key="frame" x="401" y="8" width="80" height="18"/>
-                                                    <buttonCell key="cell" type="radio" title="Swinsian" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="PDE-f9-xHK">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="GaA-xG-8SL" id="jdV-7j-pUm"/>
-                                                    </connections>
-                                                </button>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="0k0-hU-8n4"/>
-                                                <constraint firstItem="e9V-bq-RP4" firstAttribute="centerX" secondItem="VTr-dt-pe7" secondAttribute="centerX" id="0nI-JB-C62"/>
-                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="3io-B7-Gbj"/>
-                                                <constraint firstItem="isp-i5-YDY" firstAttribute="leading" secondItem="bBh-fX-qW0" secondAttribute="trailing" constant="28" id="4qI-nT-xYO"/>
-                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="leading" secondItem="VTr-dt-pe7" secondAttribute="trailing" constant="28" id="6nk-kn-28u"/>
-                                                <constraint firstItem="p7F-8j-yFn" firstAttribute="centerX" secondItem="aNA-9c-MrQ" secondAttribute="centerX" id="7b5-zy-PrG"/>
-                                                <constraint firstItem="4C9-UE-FEZ" firstAttribute="centerX" secondItem="Kde-HA-3xl" secondAttribute="centerX" id="AAM-wD-zle"/>
-                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="B4B-D2-ipv"/>
-                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="BLS-qF-AgX"/>
-                                                <constraint firstAttribute="bottom" secondItem="4C9-UE-FEZ" secondAttribute="bottom" constant="9" id="CMx-LB-zZZ"/>
-                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="leading" secondItem="aNA-9c-MrQ" secondAttribute="trailing" constant="28" id="Do5-B4-opD"/>
-                                                <constraint firstItem="yM8-rR-dOT" firstAttribute="centerX" secondItem="isp-i5-YDY" secondAttribute="centerX" id="Fv3-u5-GBw"/>
-                                                <constraint firstItem="isp-i5-YDY" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="Ihw-MZ-Qcx"/>
-                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="Isd-q0-8dK"/>
-                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="leading" secondItem="Kde-HA-3xl" secondAttribute="trailing" constant="28" id="JCv-fO-PZP"/>
-                                                <constraint firstItem="hhC-Qz-7rU" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="M0n-NR-kD0"/>
-                                                <constraint firstItem="bBh-fX-qW0" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="ORc-Rb-5qG"/>
-                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="R1O-v5-y8f"/>
-                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="WAy-d7-dhA"/>
-                                                <constraint firstItem="Oaz-tx-V8o" firstAttribute="centerX" secondItem="bBh-fX-qW0" secondAttribute="centerX" id="YFx-Xx-GQb"/>
-                                                <constraint firstItem="p7F-8j-yFn" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="ZF4-pK-ftD"/>
-                                                <constraint firstItem="Kde-HA-3xl" firstAttribute="top" secondItem="M1P-0f-MC5" secondAttribute="top" constant="8" id="aWm-3p-gAm"/>
-                                                <constraint firstAttribute="trailing" secondItem="isp-i5-YDY" secondAttribute="trailing" constant="16" id="afw-Mw-1Jp"/>
-                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="alP-bg-29C"/>
-                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="bAG-TU-m5y"/>
-                                                <constraint firstItem="2Ql-xt-QMj" firstAttribute="centerY" secondItem="Kde-HA-3xl" secondAttribute="centerY" id="btb-lB-Ufd"/>
-                                                <constraint firstItem="e9V-bq-RP4" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="dLh-wY-seL"/>
-                                                <constraint firstItem="Kde-HA-3xl" firstAttribute="leading" secondItem="M1P-0f-MC5" secondAttribute="leading" constant="16" id="frO-aP-aoh"/>
-                                                <constraint firstItem="4C9-UE-FEZ" firstAttribute="top" secondItem="Kde-HA-3xl" secondAttribute="bottom" constant="9" id="g2s-4P-G5Z"/>
-                                                <constraint firstItem="VTr-dt-pe7" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="iig-WT-TMB"/>
-                                                <constraint firstItem="Oaz-tx-V8o" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="jat-S8-qUJ"/>
-                                                <constraint firstItem="isp-i5-YDY" firstAttribute="height" secondItem="Kde-HA-3xl" secondAttribute="height" id="jmj-LX-czZ"/>
-                                                <constraint firstItem="aNA-9c-MrQ" firstAttribute="leading" secondItem="2Ql-xt-QMj" secondAttribute="trailing" constant="28" id="qs0-RT-VzY"/>
-                                                <constraint firstItem="isp-i5-YDY" firstAttribute="width" secondItem="Kde-HA-3xl" secondAttribute="width" id="t9b-Ki-XV5"/>
-                                                <constraint firstItem="yM8-rR-dOT" firstAttribute="centerY" secondItem="4C9-UE-FEZ" secondAttribute="centerY" id="tiE-WG-yhZ"/>
-                                                <constraint firstItem="hhC-Qz-7rU" firstAttribute="centerX" secondItem="2Ql-xt-QMj" secondAttribute="centerX" id="zGo-Is-qsy"/>
-                                            </constraints>
-                                        </customView>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="M1P-0f-MC5" secondAttribute="bottom" id="0C0-Jt-hl7"/>
-                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="centerX" secondItem="Mdd-yA-dBT" secondAttribute="centerX" id="FLt-3e-xxW"/>
-                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Mdd-yA-dBT" secondAttribute="leading" constant="8" id="fZI-gd-Htb"/>
-                                        <constraint firstItem="M1P-0f-MC5" firstAttribute="top" secondItem="Mdd-yA-dBT" secondAttribute="top" id="fwr-EM-PdK"/>
-                                    </constraints>
-                                </view>
-                            </box>
-                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="hBJ-hq-S4u">
-                                <rect key="frame" x="20" y="20" width="560" height="422"/>
-                                <rows>
-                                    <gridRow yPlacement="center" height="30" id="5do-X5-xgX"/>
-                                    <gridRow yPlacement="center" height="30" id="Nkw-LC-Lbi"/>
-                                    <gridRow yPlacement="top" height="20" id="bYQ-nJ-Ce7"/>
-                                    <gridRow yPlacement="center" height="30" id="1nK-QJ-9q8"/>
-                                    <gridRow yPlacement="center" height="30" id="x5a-Q5-Acb"/>
-                                    <gridRow yPlacement="center" height="20" id="ApI-Zi-AYg"/>
-                                    <gridRow yPlacement="center" height="20" id="b3M-VO-u37"/>
-                                    <gridRow yPlacement="top" height="20" id="ubP-tx-cL1"/>
-                                    <gridRow yPlacement="center" height="30" id="7Wx-n7-f04"/>
-                                    <gridRow yPlacement="center" height="30" id="8If-Ei-6qA"/>
-                                    <gridRow yPlacement="center" height="30" id="6xB-DX-5FD"/>
-                                    <gridRow height="30" id="JRU-jX-DWY"/>
-                                    <gridRow height="30" id="zOY-h3-QvW"/>
-                                </rows>
-                                <columns>
-                                    <gridColumn xPlacement="trailing" width="200" id="3Hg-Ka-QrM"/>
-                                    <gridColumn width="354" id="IfN-lq-biT"/>
-                                </columns>
-                                <gridCells>
-                                    <gridCell row="5do-X5-xgX" column="3Hg-Ka-QrM" id="vUV-9r-hs4"/>
-                                    <gridCell row="5do-X5-xgX" column="IfN-lq-biT" id="Qf5-qY-K1u">
-                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="KCS-6F-vyn">
-                                            <rect key="frame" x="204" y="398" width="246" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Auto launch &amp; quit with music player" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Z0u-vP-mn0">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <action selector="toggleAutoLaunchAction:" target="d5d-dC-DK4" id="aqb-fj-LIO"/>
-                                                <binding destination="hHn-Lo-CwP" name="value" keyPath="values.LaunchAndQuitWithPlayer" id="HWj-yM-26I">
-                                                    <dictionary key="options">
-                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </button>
-                                    </gridCell>
-                                    <gridCell row="Nkw-LC-Lbi" column="3Hg-Ka-QrM" id="GVk-Na-9Qx">
-                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mMr-cH-jAi">
-                                            <rect key="frame" x="85" y="363" width="117" height="16"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="toz-Mz-SHW">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="Nkw-LC-Lbi" column="IfN-lq-biT" id="8wo-Aw-Cbv">
-                                        <stackView key="contentView" distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IBT-ZS-FAA">
-                                            <rect key="frame" x="206" y="361" width="189" height="20"/>
-                                            <subviews>
-                                                <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c8h-bP-qfB">
-                                                    <rect key="frame" x="-3" y="-4" width="167" height="25"/>
-                                                    <popUpButtonCell key="cell" type="push" title="LyricsX (Default)" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="ko8-R9-vhw" id="YQB-f9-Zoi">
-                                                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="message"/>
-                                                        <menu key="menu" id="8TH-BX-fnV">
-                                                            <items>
-                                                                <menuItem title="LyricsX (Default)" state="on" id="ko8-R9-vhw"/>
-                                                                <menuItem title="User Path" id="edo-Ur-t3j">
-                                                                    <attributedString key="userComments">
-                                                                        <fragment content="#bc-ignore!">
-                                                                            <attributes>
-                                                                                <font key="NSFont" metaFont="message" size="11"/>
-                                                                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                            </attributes>
-                                                                        </fragment>
-                                                                    </attributedString>
-                                                                </menuItem>
-                                                                <menuItem isSeparatorItem="YES" id="Z6k-eW-XS7"/>
-                                                                <menuItem title="Other..." id="kNM-hA-DAR">
-                                                                    <connections>
-                                                                        <action selector="chooseSavingPathAction:" target="d5d-dC-DK4" id="I1W-dM-3i3"/>
-                                                                    </connections>
-                                                                </menuItem>
-                                                            </items>
-                                                        </menu>
-                                                    </popUpButtonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="kzp-6x-gAO"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <binding destination="hHn-Lo-CwP" name="selectedIndex" keyPath="values.LyricsSavingPathPopUpIndex" id="Hd7-pO-DWA"/>
-                                                    </connections>
-                                                </popUpButton>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="ihy-li-Lrm">
-                                                    <rect key="frame" x="168" y="2" width="21" height="18"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="folder" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="yEo-X5-tsf">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="21" id="gx7-eq-Sab"/>
-                                                        <constraint firstAttribute="height" constant="18" id="w79-ch-AlI"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="showInFinderAction:" target="d5d-dC-DK4" id="K6g-5H-vIw"/>
-                                                    </connections>
-                                                </button>
-                                            </subviews>
-                                            <visibilityPriorities>
-                                                <integer value="1000"/>
-                                                <integer value="1000"/>
-                                            </visibilityPriorities>
-                                            <customSpacing>
-                                                <real value="3.4028234663852886e+38"/>
-                                                <real value="3.4028234663852886e+38"/>
-                                            </customSpacing>
-                                        </stackView>
-                                    </gridCell>
-                                    <gridCell row="bYQ-nJ-Ce7" column="3Hg-Ka-QrM" id="9RI-Dt-f9i"/>
-                                    <gridCell row="bYQ-nJ-Ce7" column="IfN-lq-biT" id="s58-Z9-B82">
-                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="kmo-rQ-MLa">
-                                            <rect key="frame" x="204" y="333" width="197" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Load lyrics beside music file" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="vUt-b5-jlE">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <binding destination="hHn-Lo-CwP" name="value" keyPath="values.LoadLyricsBesideTrack" id="eI7-V9-r6K">
-                                                    <dictionary key="options">
-                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </button>
-                                    </gridCell>
-                                    <gridCell row="1nK-QJ-9q8" column="3Hg-Ka-QrM" id="LHl-h8-VCa">
-                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ddw-d3-Onc">
-                                            <rect key="frame" x="21" y="301" width="181" height="16"/>
-                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="0gT-Nz-7Jw">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="1nK-QJ-9q8" column="IfN-lq-biT" id="W1D-9B-Ubo">
-                                        <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GuZ-fJ-k5o">
-                                            <rect key="frame" x="203" y="295" width="127" height="25"/>
-                                            <popUpButtonCell key="cell" type="push" title="Auto" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qp6-bh-hGr" id="yvD-mA-Sdd">
-                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="message"/>
-                                                <menu key="menu" id="CNj-sd-xbL">
-                                                    <items>
-                                                        <menuItem title="Auto" state="on" id="qp6-bh-hGr">
-                                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                                        </menuItem>
-                                                        <menuItem isSeparatorItem="YES" id="5y8-GV-Mny"/>
-                                                    </items>
-                                                </menu>
-                                            </popUpButtonCell>
-                                            <constraints>
-                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="eZw-4Z-gOt"/>
-                                            </constraints>
-                                            <connections>
-                                                <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="ne8-yJ-uOx"/>
-                                            </connections>
-                                        </popUpButton>
-                                    </gridCell>
-                                    <gridCell row="x5a-Q5-Acb" column="3Hg-Ka-QrM" id="RAA-sw-0vE">
-                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fsT-Mz-djW">
-                                            <rect key="frame" x="85" y="265" width="117" height="16"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="zS6-oP-7aR">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="x5a-Q5-Acb" column="IfN-lq-biT" id="5Cd-Db-5aS">
-                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a5h-Km-d1s">
-                                            <rect key="frame" x="206" y="263" width="100" height="21"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="100" id="aSq-t4-UP4"/>
-                                            </constraints>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="center" drawsBackground="YES" id="xdK-Ac-VII">
-                                                <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="WW8-YG-odh"/>
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                            <userDefinedRuntimeAttributes>
-                                                <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.allowsFloats" value="NO"/>
-                                                <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.hasThousandSeparators" value="NO"/>
-                                            </userDefinedRuntimeAttributes>
-                                            <connections>
-                                                <binding destination="hHn-Lo-CwP" name="value" keyPath="values.GlobalLyricsOffset" id="hDl-rK-6hQ"/>
-                                            </connections>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="ApI-Zi-AYg" column="3Hg-Ka-QrM" headOfMergedCell="MXo-5n-3rJ" xPlacement="fill" id="MXo-5n-3rJ">
-                                        <box key="contentView" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="tDa-uO-sv5">
-                                            <rect key="frame" x="0.0" y="240" width="560" height="5"/>
-                                        </box>
-                                    </gridCell>
-                                    <gridCell row="ApI-Zi-AYg" column="IfN-lq-biT" headOfMergedCell="MXo-5n-3rJ" id="XTR-ou-VYt"/>
-                                    <gridCell row="b3M-VO-u37" column="3Hg-Ka-QrM" id="Ivi-dw-RPJ"/>
-                                    <gridCell row="b3M-VO-u37" column="IfN-lq-biT" id="QeW-hO-6bA">
-                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5bK-Rl-HvO">
-                                            <rect key="frame" x="204" y="207" width="105" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Strict Search" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kN1-5j-3tW">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <binding destination="hHn-Lo-CwP" name="value" keyPath="values.StrictSearchEnabled" id="mDk-Vb-TtJ">
-                                                    <dictionary key="options">
-                                                        <integer key="NSNullPlaceholder" value="0"/>
-                                                    </dictionary>
-                                                </binding>
-                                            </connections>
-                                        </button>
-                                    </gridCell>
-                                    <gridCell row="ubP-tx-cL1" column="3Hg-Ka-QrM" id="vTr-0g-EfT"/>
-                                    <gridCell row="ubP-tx-cL1" column="IfN-lq-biT" id="IMv-38-Xeu">
-                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
-                                            <rect key="frame" x="204" y="184" width="261" height="16"/>
-                                            <textFieldCell key="cell" title="Search result match the exact search term" id="SGe-4J-kW6">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="7Wx-n7-f04" column="3Hg-Ka-QrM" id="LWY-wc-Zmt"/>
-                                    <gridCell row="7Wx-n7-f04" column="IfN-lq-biT" id="kFj-ie-KSt">
-                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="eXe-c6-bvj">
-                                            <rect key="frame" x="204" y="150" width="153" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Prefer bilingual lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KJ9-qG-viC">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <binding destination="hHn-Lo-CwP" name="value" keyPath="values.PreferBilingualLyrics" id="AOZ-1a-QTD"/>
-                                            </connections>
-                                        </button>
-                                    </gridCell>
-                                    <gridCell row="8If-Ei-6qA" column="3Hg-Ka-QrM" id="1my-Ka-JRX">
-                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kWS-OK-xdi">
-                                            <rect key="frame" x="44" y="115" width="158" height="16"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="nL1-B1-c8U">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </gridCell>
-                                    <gridCell row="8If-Ei-6qA" column="IfN-lq-biT" id="olI-46-sCC">
-                                        <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="J5D-YW-st4" userLabel="Convert">
-                                            <rect key="frame" x="203" y="109" width="167" height="25"/>
-                                            <popUpButtonCell key="cell" type="push" title="No Conversion" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="KR4-Qt-DFi" id="gCf-fG-Bxh" userLabel="Convert">
-                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="message"/>
-                                                <menu key="menu" id="6pY-Wy-yFN">
-                                                    <items>
-                                                        <menuItem title="No Conversion" state="on" id="KR4-Qt-DFi"/>
-                                                        <menuItem title="Simplified Chinese" id="CX0-PE-NAF"/>
-                                                        <menuItem title="Traditional Chinese" id="xUw-4B-qN5"/>
-                                                    </items>
-                                                </menu>
-                                            </popUpButtonCell>
-                                            <constraints>
-                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="DKz-wr-sGW"/>
-                                            </constraints>
-                                            <connections>
-                                                <binding destination="hHn-Lo-CwP" name="selectedIndex" keyPath="values.ChineseConversionIndex" id="ax3-qm-Kwh"/>
-                                            </connections>
-                                        </popUpButton>
-                                    </gridCell>
-                                    <gridCell row="6xB-DX-5FD" column="3Hg-Ka-QrM" headOfMergedCell="VDZ-1A-vl6" xPlacement="fill" id="VDZ-1A-vl6">
-                                        <box key="contentView" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="tVK-do-XIu">
-                                            <rect key="frame" x="0.0" y="85" width="560" height="5"/>
-                                        </box>
-                                    </gridCell>
-                                    <gridCell row="6xB-DX-5FD" column="IfN-lq-biT" headOfMergedCell="VDZ-1A-vl6" id="YKf-Rm-qqm"/>
-                                    <gridCell row="JRU-jX-DWY" column="3Hg-Ka-QrM" id="r4g-E1-tcS"/>
-                                    <gridCell row="JRU-jX-DWY" column="IfN-lq-biT" id="t91-CX-VtA"/>
-                                    <gridCell row="zOY-h3-QvW" column="3Hg-Ka-QrM" id="erE-Ey-cEb"/>
-                                    <gridCell row="zOY-h3-QvW" column="IfN-lq-biT" id="rnQ-fd-rxv"/>
-                                </gridCells>
-                            </gridView>
-                        </subviews>
-                        <constraints>
-                            <constraint firstItem="FxG-RK-g7y" firstAttribute="top" secondItem="Bzr-sv-FuP" secondAttribute="top" constant="24" id="0ZQ-MJ-g6O"/>
-                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="centerX" secondItem="Bzr-sv-FuP" secondAttribute="centerX" id="5SQ-oc-7En"/>
-                            <constraint firstAttribute="bottom" secondItem="hBJ-hq-S4u" secondAttribute="bottom" constant="20" id="BIz-No-t5P"/>
-                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="top" secondItem="FxG-RK-g7y" secondAttribute="bottom" constant="10" id="EbE-Hv-Q1y"/>
-                            <constraint firstItem="hBJ-hq-S4u" firstAttribute="leading" secondItem="Bzr-sv-FuP" secondAttribute="leading" constant="20" id="SdL-cL-yPB"/>
-                            <constraint firstAttribute="trailing" secondItem="hBJ-hq-S4u" secondAttribute="trailing" constant="20" id="cfb-a8-V9t"/>
-                            <constraint firstItem="FxG-RK-g7y" firstAttribute="leading" secondItem="Bzr-sv-FuP" secondAttribute="leading" constant="20" id="eqR-Dy-QaA"/>
-                            <constraint firstAttribute="trailing" secondItem="FxG-RK-g7y" secondAttribute="trailing" constant="20" id="uMT-SF-Axg"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="preferAudirvana" destination="Oaz-tx-V8o" id="5nw-qq-XwB"/>
-                        <outlet property="preferAuto" destination="4C9-UE-FEZ" id="P1z-lE-AJR"/>
-                        <outlet property="preferSpotify" destination="p7F-8j-yFn" id="syl-PF-gGS"/>
-                        <outlet property="preferSwinsian" destination="yM8-rR-dOT" id="s6m-tk-cZM"/>
-                        <outlet property="preferVox" destination="e9V-bq-RP4" id="kAR-lv-nfN"/>
-                        <outlet property="preferiTunes" destination="hhC-Qz-7rU" id="YRc-R0-voO"/>
-                    </connections>
-                </viewController>
-                <customObject id="QwD-01-xGk" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <userDefaultsController id="968-l4-9l5"/>
-            </objects>
-            <point key="canvasLocation" x="2616" y="-397"/>
         </scene>
     </scenes>
     <resources>

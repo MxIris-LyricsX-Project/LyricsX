@@ -18,18 +18,17 @@ import Sparkle
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
-    
     static var shared: AppDelegate? {
         return NSApplication.shared.delegate as? AppDelegate
     }
-    
-    @IBOutlet weak var lyricsOffsetView: NSView!
-    @IBOutlet weak var lyricsOffsetTextField: NSTextField!
-    @IBOutlet weak var lyricsOffsetStepper: NSStepper!
-    @IBOutlet weak var statusBarMenu: NSMenu!
-    
+
+    @IBOutlet var lyricsOffsetView: NSView!
+    @IBOutlet var lyricsOffsetTextField: NSTextField!
+    @IBOutlet var lyricsOffsetStepper: NSStepper!
+    @IBOutlet var statusBarMenu: NSMenu!
+
     var karaokeLyricsWC: KaraokeLyricsWindowController?
-    
+
     lazy var searchLyricsWC: NSWindowController = {
         // swiftlint:disable:next force_cast
         let searchVC = NSStoryboard.main!.instantiateController(withIdentifier: .init("SearchLyricsViewController")) as! SearchLyricsViewController
@@ -37,39 +36,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         window.title = NSLocalizedString("Search Lyrics", comment: "window title")
         return NSWindowController(window: window)
     }()
-    
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         registerUserDefaults()
-        
+
         let controller = AppController.shared
-        
+
         karaokeLyricsWC = KaraokeLyricsWindowController()
         karaokeLyricsWC?.showWindow(nil)
-        
-        MenuBarLyricsController.shared.statusItem.menu = statusBarMenu
+
+        MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
-        
-        lyricsOffsetStepper.bind(.value,
-                                 to: controller,
-                                 withKeyPath: #keyPath(AppController.lyricsOffset),
-                                 options: [.continuouslyUpdatesValue: true])
-        lyricsOffsetTextField.bind(.value,
-                                   to: controller,
-                                   withKeyPath: #keyPath(AppController.lyricsOffset),
-                                   options: [.continuouslyUpdatesValue: true])
-        
+
+        lyricsOffsetStepper.bind(
+            .value,
+            to: controller,
+            withKeyPath: #keyPath(AppController.lyricsOffset),
+            options: [.continuouslyUpdatesValue: true]
+        )
+        lyricsOffsetTextField.bind(
+            .value,
+            to: controller,
+            withKeyPath: #keyPath(AppController.lyricsOffset),
+            options: [.continuouslyUpdatesValue: true]
+        )
+
         setupShortcuts()
-        
+
         NSRunningApplication.runningApplications(withBundleIdentifier: lyricsXHelperIdentifier).forEach { $0.terminate() }
-        
+
         let sharedKeys: [UserDefaults.DefaultsKeys] = [
             .launchAndQuitWithPlayer,
             .preferredPlayerIndex,
         ]
-        sharedKeys.forEach {
-            groupDefaults.bind(NSBindingName($0.key), withDefaultName: $0)
+        for sharedKey in sharedKeys {
+            groupDefaults.bind(NSBindingName(sharedKey.key), withDefaultName: sharedKey)
         }
-        
+
         #if IS_FOR_MAS
         checkForMASReview(force: true)
         #else
@@ -85,7 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         #endif
     }
-    
+
     func applicationWillTerminate(_ aNotification: Notification) {
         if AppController.shared.currentLyrics?.metadata.needsPersist == true {
             AppController.shared.currentLyrics?.persist()
@@ -102,7 +105,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
         }
     }
-    
+
     private func setupShortcuts() {
         let binder = MASShortcutBinder.shared()!
         binder.bindBoolShortcut(.shortcutToggleMenuBarLyrics, target: .menuBarLyricsEnabled)
@@ -114,9 +117,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         binder.bindShortcut(.shortcutWrongLyrics, to: #selector(wrongLyrics))
         binder.bindShortcut(.shortcutSearchLyrics, to: #selector(searchLyrics))
     }
-    
+
     // MARK: - NSMenuDelegate
-    
+
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.action {
         case #selector(writeToiTunes(_:))?:
@@ -127,15 +130,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             return true
         }
     }
-    
+
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.item(withTag: 202)?.isEnabled = AppController.shared.currentLyrics != nil
     }
-    
+
     // MARK: - Menubar Action
-    
+
     var lyricsHUD: NSWindowController?
-    
+
     @IBAction func showLyricsHUD(_ sender: Any?) {
         // swiftlint:disable:next force_cast
         let controller = lyricsHUD ?? NSStoryboard.main?.instantiateController(withIdentifier: .init("LyricsHUD")) as! NSWindowController
@@ -143,13 +146,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         NSApp.activate(ignoringOtherApps: true)
         lyricsHUD = controller
     }
-    
+
     @IBAction func aboutLyricsXAction(_ sender: Any) {
         if #available(OSX 10.13, *) {
             #if IS_FOR_MAS
-                let channel = "App Store"
+            let channel = "App Store"
             #else
-                let channel = "GitHub"
+            let channel = "GitHub"
             #endif
             let versionString = "\(channel) Version \(Bundle.main.semanticVersion!)"
             NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: versionString])
@@ -158,23 +161,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     @IBAction func checkUpdateAction(_ sender: Any) {
         #if IS_FOR_MAS
-        assert(false, "should not be there")
+        assertionFailure("should not be there")
         #else
         SUUpdater.shared()?.checkForUpdates(sender)
         #endif
     }
-    
+
     @IBAction func increaseOffset(_ sender: Any?) {
         AppController.shared.lyricsOffset += 100
     }
-    
+
     @IBAction func decreaseOffset(_ sender: Any?) {
         AppController.shared.lyricsOffset -= 100
     }
-    
+
     @IBAction func showCurrentLyricsInFinder(_ sender: Any?) {
         guard let lyrics = AppController.shared.currentLyrics else {
             return
@@ -186,17 +189,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             NSWorkspace.shared.activateFileViewerSelecting([url])
         }
     }
-    
+
     @IBAction func writeToiTunes(_ sender: Any?) {
         AppController.shared.writeToiTunes(overwrite: true)
     }
-    
+
     @IBAction func searchLyrics(_ sender: Any?) {
         searchLyricsWC.window?.makeKeyAndOrderFront(nil)
         (searchLyricsWC.contentViewController as! SearchLyricsViewController?)?.reloadKeyword()
         NSApp.activate(ignoringOtherApps: true)
     }
-    
+
     @IBAction func wrongLyrics(_ sender: Any?) {
         guard let track = selectedPlayer.currentTrack else {
             return
@@ -211,10 +214,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         AppController.shared.currentLyrics = nil
         AppController.shared.searchCanceller?.cancel()
     }
-    
+
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
         guard let track = selectedPlayer.currentTrack,
-            let album = track.album else {
+              let album = track.album else {
             return
         }
         defaults[.noSearchingAlbumNames].append(album)
@@ -226,12 +229,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         AppController.shared.currentLyrics = nil
     }
-    
+
     func registerUserDefaults() {
         let currentLang = NSLocale.preferredLanguages.first!
         let isZh = currentLang.hasPrefix("zh") || currentLang.hasPrefix("yue")
         let isHant = isZh && (currentLang.contains("-Hant") || currentLang.contains("-HK"))
-        
+
         let defaultsUrl = Bundle.main.url(forResource: "UserDefaults", withExtension: "plist")!
         if let dict = NSDictionary(contentsOf: defaultsUrl) as? [String: Any] {
             defaults.register(defaults: dict)
@@ -249,15 +252,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             .desktopLyricsYPositionFactor: 0.9,
         ])
     }
-    
+
     func menuWillOpen(_ menu: NSMenu) {
         if #available(macOS 11, *) {
             let menuHasOnState = statusBarMenu.items.filter { menuItem in
                 return menuItem.state == .on
             }.count > 0
-            
-            let lyricsOffsetConstraint = lyricsOffsetView.constraints.first(where: {$0.identifier == "lyricsOffsetConstraint"})
-            
+
+            let lyricsOffsetConstraint = lyricsOffsetView.constraints.first(where: { $0.identifier == "lyricsOffsetConstraint" })
+
             lyricsOffsetConstraint?.constant = 14
             if menuHasOnState {
                 lyricsOffsetConstraint?.constant += 10
@@ -267,17 +270,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 }
 
 extension MASShortcutBinder {
-    
     func bindShortcut<T>(_ defaultsKay: UserDefaults.DefaultsKey<T>, to action: @escaping () -> Void) {
         bindShortcut(withDefaultsKey: defaultsKay.key, toAction: action)
     }
-    
+
     func bindBoolShortcut<T>(_ defaultsKay: UserDefaults.DefaultsKey<T>, target: UserDefaults.DefaultsKey<Bool>) {
         bindShortcut(withDefaultsKey: defaultsKay.key) {
             defaults[target] = !defaults[target]
         }
     }
-    
+
     func bindShortcut<T>(_ defaultsKay: UserDefaults.DefaultsKey<T>, to action: Selector) {
         bindShortcut(defaultsKay) {
             let target = NSApplication.shared.target(forAction: action) as AnyObject?
