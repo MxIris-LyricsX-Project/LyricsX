@@ -8,7 +8,7 @@
         <!--Preference Window Controller-->
         <scene sceneID="TDf-75-7l1">
             <objects>
-                <windowController showSeguePresentationStyle="single" id="dJj-XH-edl" userLabel="Preference Window Controller" customClass="AutoActivateWindowController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="PreferenceWindowController" showSeguePresentationStyle="single" id="dJj-XH-edl" userLabel="Preference Window Controller" customClass="PreferenceWindowController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="Preferences" animationBehavior="default" id="aMb-zX-bzP">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
                         <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
@@ -29,7 +29,7 @@
         <!--Preference View Controller-->
         <scene sceneID="DwI-HE-QiS">
             <objects>
-                <tabViewController showSeguePresentationStyle="single" selectedTabViewItemIndex="0" tabStyle="toolbar" id="sV3-nO-PkZ" userLabel="Preference View Controller" customClass="PreferenceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                <tabViewController showSeguePresentationStyle="single" selectedTabViewItemIndex="0" tabStyle="toolbar" id="sV3-nO-PkZ" userLabel="Preference View Controller" customClass="PreferenceTabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <tabViewItems>
                         <tabViewItem image="NSPreferencesGeneral" id="EbI-4v-6C3" userLabel="General"/>
                         <tabViewItem identifier="" image="NSFontPanel" id="8VI-6O-0Rn" userLabel="Display"/>
@@ -317,7 +317,7 @@
                                     </binding>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="you-yu-77c">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="you-yu-77c">
                                 <rect key="frame" x="105" y="280" width="117" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="0M7-ao-0jb">
                                     <font key="font" metaFont="system"/>
@@ -372,7 +372,7 @@
                                     <binding destination="hHn-Lo-CwP" name="value" keyPath="values.PreferBilingualLyrics" id="z5d-4T-XY8"/>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wpE-cM-ds1">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wpE-cM-ds1">
                                 <rect key="frame" x="64" y="30" width="158" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="JPB-ag-MN7">
                                     <font key="font" metaFont="system"/>
@@ -428,7 +428,7 @@
                                     <action selector="showInFinderAction:" target="d5d-dC-DK4" id="sPX-8B-XxA"/>
                                 </connections>
                             </button>
-                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xmp-V1-Dn6">
+                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xmp-V1-Dn6">
                                 <rect key="frame" x="236" y="169" width="100" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="100" id="hNM-LB-4P5"/>
@@ -447,7 +447,7 @@
                                     <binding destination="hHn-Lo-CwP" name="value" keyPath="values.GlobalLyricsOffset" id="TTC-yw-vpl"/>
                                 </connections>
                             </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g0L-A1-o0L">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g0L-A1-o0L">
                                 <rect key="frame" x="105" y="172" width="117" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="slB-q7-1dB">
                                     <font key="font" metaFont="system"/>
@@ -469,7 +469,7 @@
                                     </binding>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Yv-tb-pyE">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Yv-tb-pyE">
                                 <rect key="frame" x="252" y="96" width="261" height="16"/>
                                 <textFieldCell key="cell" title="Search result match the exact search term" id="rSD-qR-EXA">
                                     <font key="font" metaFont="system"/>
@@ -498,7 +498,7 @@
                                     <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="5kJ-ha-gD6"/>
                                 </connections>
                             </popUpButton>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UXR-cB-aCr">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UXR-cB-aCr">
                                 <rect key="frame" x="41" y="220" width="181" height="16"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="WfA-pe-S5D">
                                     <font key="font" metaFont="system"/>
@@ -866,7 +866,7 @@
                                         </button>
                                     </gridCell>
                                     <gridCell row="Nkw-LC-Lbi" column="3Hg-Ka-QrM" id="GVk-Na-9Qx">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mMr-cH-jAi">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mMr-cH-jAi">
                                             <rect key="frame" x="85" y="353" width="117" height="16"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="toz-Mz-SHW">
                                                 <font key="font" metaFont="system"/>
@@ -956,7 +956,7 @@
                                         </button>
                                     </gridCell>
                                     <gridCell row="1nK-QJ-9q8" column="3Hg-Ka-QrM" id="LHl-h8-VCa">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ddw-d3-Onc">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ddw-d3-Onc">
                                             <rect key="frame" x="21" y="291" width="181" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="0gT-Nz-7Jw">
                                                 <font key="font" metaFont="system"/>
@@ -989,7 +989,7 @@
                                         </popUpButton>
                                     </gridCell>
                                     <gridCell row="x5a-Q5-Acb" column="3Hg-Ka-QrM" id="RAA-sw-0vE">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fsT-Mz-djW">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fsT-Mz-djW">
                                             <rect key="frame" x="85" y="255" width="117" height="16"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="zS6-oP-7aR">
                                                 <font key="font" metaFont="system"/>
@@ -999,7 +999,7 @@
                                         </textField>
                                     </gridCell>
                                     <gridCell row="x5a-Q5-Acb" column="IfN-lq-biT" id="5Cd-Db-5aS">
-                                        <textField key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a5h-Km-d1s">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a5h-Km-d1s">
                                             <rect key="frame" x="217" y="253" width="100" height="21"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="100" id="aSq-t4-UP4"/>
@@ -1044,7 +1044,7 @@
                                     </gridCell>
                                     <gridCell row="ubP-tx-cL1" column="3Hg-Ka-QrM" id="vTr-0g-EfT"/>
                                     <gridCell row="ubP-tx-cL1" column="IfN-lq-biT" id="IMv-38-Xeu">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
                                             <rect key="frame" x="215" y="174" width="261" height="16"/>
                                             <textFieldCell key="cell" title="Search result match the exact search term" id="SGe-4J-kW6">
                                                 <font key="font" metaFont="system"/>
@@ -1067,7 +1067,7 @@
                                         </button>
                                     </gridCell>
                                     <gridCell row="8If-Ei-6qA" column="3Hg-Ka-QrM" id="1my-Ka-JRX">
-                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kWS-OK-xdi">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kWS-OK-xdi">
                                             <rect key="frame" x="44" y="105" width="158" height="16"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="nL1-B1-c8U">
                                                 <font key="font" metaFont="system"/>
@@ -1201,7 +1201,7 @@
                                                         <binding destination="Nm6-oq-wpY" name="value" keyPath="values.DesktopLyricsVerticalMode" id="hIw-IE-Hht"/>
                                                     </connections>
                                                 </button>
-                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="YbH-Ph-PYg">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="YbH-Ph-PYg">
                                                     <rect key="frame" x="124" y="100" width="35" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Font:" id="992-tg-edx">
                                                         <font key="font" metaFont="system"/>
@@ -1209,7 +1209,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oHc-gj-4JF" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oHc-gj-4JF" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
                                                     <rect key="frame" x="173" y="97" width="260" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="22" id="DX7-6I-0lO"/>
@@ -1221,7 +1221,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8e0-Af-YeJ">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8e0-Af-YeJ">
                                                     <rect key="frame" x="171" y="75" width="242" height="14"/>
                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Font Fallback:" usesSingleLineMode="YES" id="EnT-HZ-SOz">
                                                         <font key="font" metaFont="message" size="11"/>
@@ -1324,7 +1324,7 @@
                                                         <real value="3.4028234663852886e+38"/>
                                                     </customSpacing>
                                                 </stackView>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eGr-gm-cw0">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eGr-gm-cw0">
                                                     <rect key="frame" x="101" y="16" width="77" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Background" id="Uer-qJ-3T9">
                                                         <font key="font" metaFont="system"/>
@@ -1332,7 +1332,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hn1-Pb-VCw">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hn1-Pb-VCw">
                                                     <rect key="frame" x="211" y="16" width="40" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Lyrics" id="3Bt-md-QNc">
                                                         <font key="font" metaFont="system"/>
@@ -1340,7 +1340,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="foe-PF-jhi">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="foe-PF-jhi">
                                                     <rect key="frame" x="294" y="16" width="58" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Progress" id="XuN-vs-cgI">
                                                         <font key="font" metaFont="system"/>
@@ -1348,7 +1348,7 @@
                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eUo-ma-3JR">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eUo-ma-3JR">
                                                     <rect key="frame" x="389" y="16" width="53" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Shadow" id="hsu-H9-9Bd">
                                                         <font key="font" metaFont="system"/>
@@ -1366,7 +1366,7 @@
                                                         <binding destination="Nm6-oq-wpY" name="value" keyPath="values.DesktopLyricsDraggable" id="NeT-dL-fxn"/>
                                                     </connections>
                                                 </button>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JSf-5H-P7U">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JSf-5H-P7U">
                                                     <rect key="frame" x="98" y="200" width="125" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Disable lyrics when:" id="bDS-Lb-m34">
                                                         <font key="font" metaFont="system"/>
@@ -1461,7 +1461,7 @@
                                             <rect key="frame" x="10" y="33" width="554" height="344"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c1k-Vo-HU0" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c1k-Vo-HU0" customClass="FontSelectTextField" customModule="LyricsX" customModuleProvider="target">
                                                     <rect key="frame" x="173" y="298" width="260" height="22"/>
                                                     <constraints>
                                                         <constraint firstAttribute="height" constant="22" id="QOp-Js-9L7"/>
@@ -1473,7 +1473,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n8x-g6-LHK">
+                                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n8x-g6-LHK">
                                                     <rect key="frame" x="124" y="301" width="35" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Font:" id="Cmt-it-PXW">
                                                         <font key="font" metaFont="system"/>
@@ -1481,7 +1481,7 @@
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                 </textField>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-ST-k9G">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-ST-k9G">
                                                     <rect key="frame" x="125" y="263" width="34" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Text:" id="Txi-D9-jjB">
                                                         <font key="font" metaFont="system"/>
@@ -1504,7 +1504,7 @@
                                                         </binding>
                                                     </connections>
                                                 </colorWell>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5rv-W6-91j">
+                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5rv-W6-91j">
                                                     <rect key="frame" x="91" y="224" width="68" height="16"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Hightlight:" id="UfE-QU-Yhm">
                                                         <font key="font" metaFont="system"/>
@@ -1688,7 +1688,7 @@
                                     <action selector="insert:" target="0dY-rB-aBJ" id="6n6-mw-7xL"/>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="12H-lM-uSV">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="12H-lM-uSV">
                                 <rect key="frame" x="18" y="348" width="471" height="14"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Lyrics lines matching following rules will be ignored. Use &quot;/&quot; to start a regular expression." id="19E-DG-Q23">
                                     <font key="font" metaFont="message" size="11"/>
@@ -1741,7 +1741,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="288"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fHF-oJ-2oH">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fHF-oJ-2oH">
                                 <rect key="frame" x="125" y="248" width="177" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide menu bar lyrics:" id="XHQ-gX-urF">
                                     <font key="font" metaFont="system"/>
@@ -1759,7 +1759,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleMenuBarLyrics"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="XuJ-N7-23c">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="XuJ-N7-23c">
                                 <rect key="frame" x="135" y="216" width="167" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide karaoke lyrics:" id="lOc-OP-AcU">
                                     <font key="font" metaFont="system"/>
@@ -1767,7 +1767,7 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BAG-Gf-bbI">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BAG-Gf-bbI">
                                 <rect key="frame" x="175" y="184" width="127" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show lyrics window:" id="TB9-Fk-WAX">
                                     <font key="font" metaFont="system"/>
@@ -1784,7 +1784,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutShowLyricsWindow"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rZM-vL-ukW">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rZM-vL-ukW">
                                 <rect key="frame" x="168" y="152" width="134" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Increase lyrics offset:" id="mo2-3C-gLY">
                                     <font key="font" metaFont="system"/>
@@ -1801,7 +1801,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetIncrease"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8LH-Ws-6CC">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8LH-Ws-6CC">
                                 <rect key="frame" x="162" y="120" width="140" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Decrease lyrics offset:" id="bmk-rW-Uot">
                                     <font key="font" metaFont="system"/>
@@ -1818,7 +1818,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetDecrease"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Paz-vU-k0Z">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Paz-vU-k0Z">
                                 <rect key="frame" x="167" y="88" width="135" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="6We-TB-Wfc">
                                     <font key="font" metaFont="system"/>
@@ -1835,7 +1835,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWriteToiTunes"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Kmn-Mi-l4p">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Kmn-Mi-l4p">
                                 <rect key="frame" x="169" y="24" width="133" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Mark as wrong lyrics:" id="uEb-Q5-cda">
                                     <font key="font" metaFont="system"/>
@@ -1852,7 +1852,7 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWrongLyrics"/>
                                 </userDefinedRuntimeAttributes>
                             </customView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Uyz-8q-0bL">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Uyz-8q-0bL">
                                 <rect key="frame" x="216" y="56" width="86" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Search lyrics:" id="kP4-4q-ed9">
                                     <font key="font" metaFont="system"/>
@@ -1968,7 +1968,7 @@
                                     <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesWithTranslation" id="YcT-LV-fEn"/>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
                                 <rect key="frame" x="87" y="80" width="135" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="8Sx-vb-5pB">
                                     <font key="font" metaFont="system"/>
@@ -1976,7 +1976,7 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqQ-7c-IhI">
+                            <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqQ-7c-IhI">
                                 <rect key="frame" x="76" y="240" width="449" height="32"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="g2u-8D-dln">
                                     <font key="font" metaFont="system"/>

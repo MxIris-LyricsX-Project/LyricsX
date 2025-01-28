@@ -9,7 +9,7 @@
 
 import Cocoa
 
-class PreferenceDisplayViewController: NSViewController, FontSelectTextFieldDelegate {
+class PreferenceDisplayViewController: PreferenceViewController, FontSelectTextFieldDelegate {
     
     @IBOutlet weak var karaokeFontSelectField: FontSelectTextField!
     @IBOutlet weak var hudFontSelectField: FontSelectTextField!

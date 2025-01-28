@@ -9,7 +9,7 @@
 
 import Cocoa
 
-class PreferenceLabViewController: NSViewController {
+class PreferenceLabViewController: PreferenceViewController {
     
     @IBOutlet weak var enableTouchBarLyricsButton: NSButton!
     

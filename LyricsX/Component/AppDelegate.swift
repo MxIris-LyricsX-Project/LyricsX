@@ -37,6 +37,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         return NSWindowController(window: window)
     }()
 
+    lazy var preferencesWindowController: PreferenceWindowController = {
+        return NSStoryboard(name: "Preferences", bundle: .main).instantiateController(identifier: .init(describing: PreferenceWindowController.self), creator: nil)
+    }()
+    
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         registerUserDefaults()
 
@@ -162,6 +167,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    @IBAction func showPreferences(_ sender: Any?) {
+        preferencesWindowController.showWindow(nil)
+    }
+    
     @IBAction func checkUpdateAction(_ sender: Any) {
         #if IS_FOR_MAS
         assertionFailure("should not be there")
@@ -195,7 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     @IBAction func searchLyrics(_ sender: Any?) {
-        searchLyricsWC.window?.makeKeyAndOrderFront(nil)
+        searchLyricsWC.showWindow(nil)
         (searchLyricsWC.contentViewController as! SearchLyricsViewController?)?.reloadKeyword()
         NSApp.activate(ignoringOtherApps: true)
     }

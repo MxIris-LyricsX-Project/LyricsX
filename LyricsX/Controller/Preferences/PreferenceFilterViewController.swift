@@ -9,7 +9,7 @@
 
 import Cocoa
 
-class PreferenceFilterViewController: NSViewController {
+class PreferenceFilterViewController: PreferenceViewController {
     
     @objc dynamic var directFilter = [FilterKey]()
     

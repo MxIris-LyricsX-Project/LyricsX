@@ -1,182 +1,245 @@
-/* Class = "NSTextFieldCell"; title = "Lyrics saving path:"; ObjectID = "0M7-ao-0jb"; */
+// Class = "NSTextFieldCell"; title = "Lyrics saving path:"; ObjectID = "0M7-ao-0jb";
 "0M7-ao-0jb.title" = "歌词文件保存地址:";
 
-/* Class = "NSButtonCell"; title = "Auto"; ObjectID = "0VO-JB-ubq"; */
+// Class = "NSButtonCell"; title = "Auto"; ObjectID = "0VO-JB-ubq";
 "0VO-JB-ubq.title" = "自动选择";
 
-/* Class = "NSTextFieldCell"; title = "Lyrics lines matching following rules will be ignored. Use \"/\" to start a regular expression."; ObjectID = "19E-DG-Q23"; */
+// Class = "NSTextFieldCell"; title = "Lyrics lines matching following rules will be ignored. Use \"/\" to start a regular expression."; ObjectID = "19E-DG-Q23";
 "19E-DG-Q23.title" = "符合下列规则的歌词行将被过滤。使用 \"/\" 以启用正则表达式。";
 
-/* Class = "NSTextFieldCell"; title = "Lyrics"; ObjectID = "3Bt-md-QNc"; */
+// Class = "NSTextFieldCell"; title = "Lyrics"; ObjectID = "3Bt-md-QNc";
 "3Bt-md-QNc.title" = "歌词";
 
-/* Class = "NSButtonCell"; title = "One line mode"; ObjectID = "5dp-p5-YmE"; */
+// Class = "NSButtonCell"; title = "One line mode"; ObjectID = "5dp-p5-YmE";
 "5dp-p5-YmE.title" = "单行模式";
 
-/* Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "6FU-j0-FTV"; */
+// Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "6FU-j0-FTV";
 "6FU-j0-FTV.title" = "转换为正体中文";
 
-/* Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "6We-TB-Wfc"; */
+// Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "6We-TB-Wfc";
 "6We-TB-Wfc.title" = "写入歌词到 iTunes:";
 
-/* Class = "NSButtonCell"; title = "Automatically"; ObjectID = "7Ax-7T-26K"; */
+// Class = "NSButtonCell"; title = "Automatically"; ObjectID = "7Ax-7T-26K";
 "7Ax-7T-26K.title" = "自动写入";
 
-/* Class = "NSViewController"; title = "Display"; ObjectID = "8JF-Og-z6E"; */
+// Class = "NSViewController"; title = "Display"; ObjectID = "8JF-Og-z6E";
 "8JF-Og-z6E.title" = "显示";
 
-/* Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "8Sx-vb-5pB"; */
+// Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "8Sx-vb-5pB";
 "8Sx-vb-5pB.title" = "写入歌词到 iTunes:";
 
-/* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "992-tg-edx"; */
+// Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "992-tg-edx";
 "992-tg-edx.title" = "字体:";
 
-/* Class = "NSMenuItem"; title = "Simplified Chinese"; ObjectID = "AiM-vg-FvQ"; */
+// Class = "NSMenuItem"; title = "Simplified Chinese"; ObjectID = "AiM-vg-FvQ";
 "AiM-vg-FvQ.title" = "转换为简体中文";
 
-/* Class = "NSWindow"; title = "Preferences"; ObjectID = "aMb-zX-bzP"; */
+// Class = "NSWindow"; title = "Preferences"; ObjectID = "aMb-zX-bzP";
 "aMb-zX-bzP.title" = "偏好设置";
 
-/* Class = "NSButtonCell"; title = "Strict Search"; ObjectID = "As7-rZ-u6c"; */
+// Class = "NSButtonCell"; title = "Strict Search"; ObjectID = "As7-rZ-u6c";
 "As7-rZ-u6c.title" = "精确搜索";
 
-/* Class = "NSTabViewItem"; label = "Karaoke"; ObjectID = "aUg-eg-K5C"; */
+// Class = "NSTabViewItem"; label = "Karaoke"; ObjectID = "aUg-eg-K5C";
 "aUg-eg-K5C.label" = "逐行";
 
-/* Class = "NSButtonCell"; title = "Combine menubar icon with menubar lyrics"; ObjectID = "bbd-ra-rSF"; */
+// Class = "NSButtonCell"; title = "Combine menubar icon with menubar lyrics"; ObjectID = "bbd-ra-rSF";
 "bbd-ra-rSF.title" = "合并菜单栏图标与歌词";
 
-/* Class = "NSTextFieldCell"; title = "Disable lyrics when:"; ObjectID = "bDS-Lb-m34"; */
+// Class = "NSTextFieldCell"; title = "Disable lyrics when:"; ObjectID = "bDS-Lb-m34";
 "bDS-Lb-m34.title" = "隐藏歌词:";
 
-/* Class = "NSViewController"; title = "Lab"; ObjectID = "bFk-1g-XeL"; */
+// Class = "NSViewController"; title = "Lab"; ObjectID = "bFk-1g-XeL";
 "bFk-1g-XeL.title" = "实验室";
 
-/* Class = "NSTextFieldCell"; title = "Decrease lyrics offset:"; ObjectID = "bmk-rW-Uot"; */
+// Class = "NSTextFieldCell"; title = "Decrease lyrics offset:"; ObjectID = "bmk-rW-Uot";
 "bmk-rW-Uot.title" = "减少歌词偏移（歌词延迟）:";
 
-/* Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "cBB-zn-Hdh"; */
+// Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "cBB-zn-Hdh";
 "cBB-zn-Hdh.title" = "优先使用双语歌词";
 
-/* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
+// Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW";
 "Cmt-it-PXW.title" = "字体:";
 
-/* Class = "NSViewController"; title = "General"; ObjectID = "d5d-dC-DK4"; */
+// Class = "NSViewController"; title = "General"; ObjectID = "d5d-dC-DK4";
 "d5d-dC-DK4.title" = "通用";
 
-/* Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "EDv-ax-0hI"; */
+// Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "EDv-ax-0hI";
 "EDv-ax-0hI.title" = "加载同名歌词";
 
-/* Class = "NSTextFieldCell"; title = "Here are some experimental features that may not be stable enough, and may be removed in the future."; ObjectID = "g2u-8D-dln"; */
+// Class = "NSTextFieldCell"; title = "Here are some experimental features that may not be stable enough, and may be removed in the future."; ObjectID = "g2u-8D-dln";
 "g2u-8D-dln.title" = "这里是一些实验性的功能。这些功能可能不够稳定，并可能在将来被移除。";
 
-/* Class = "NSButtonCell"; title = "Enable Touch Bar lyrics"; ObjectID = "gGL-LB-TXI"; */
+// Class = "NSButtonCell"; title = "Enable Touch Bar lyrics"; ObjectID = "gGL-LB-TXI";
 "gGL-LB-TXI.title" = "启用触控栏歌词";
 
-/* Class = "NSButtonCell"; title = "Use system wide now playing application"; ObjectID = "gin-P2-gb5"; */
+// Class = "NSButtonCell"; title = "Use system wide now playing application"; ObjectID = "gin-P2-gb5";
 "gin-P2-gb5.title" = "使用系统正在播放的应用";
 
-/* Class = "NSButtonCell"; title = "Vertical mode"; ObjectID = "h4G-Un-dtm"; */
+// Class = "NSButtonCell"; title = "Vertical mode"; ObjectID = "h4G-Un-dtm";
 "h4G-Un-dtm.title" = "竖排模式";
 
-/* Class = "NSTextFieldCell"; title = "Shadow"; ObjectID = "hsu-H9-9Bd"; */
+// Class = "NSTextFieldCell"; title = "Shadow"; ObjectID = "hsu-H9-9Bd";
 "hsu-H9-9Bd.title" = "阴影";
 
-/* Class = "NSMenuItem"; title = "Other..."; ObjectID = "HvN-Ou-h1t"; */
+// Class = "NSMenuItem"; title = "Other..."; ObjectID = "HvN-Ou-h1t";
 "HvN-Ou-h1t.title" = "其他...";
 
-/* Class = "NSMenuItem"; title = "LyricsX (Default)"; ObjectID = "IE7-IT-oPk"; */
+// Class = "NSMenuItem"; title = "LyricsX (Default)"; ObjectID = "IE7-IT-oPk";
 "IE7-IT-oPk.title" = "LyricsX (默认)";
 
-/* Class = "NSButtonCell"; title = "Taking a screenshot"; ObjectID = "iMD-Wy-Bm7"; */
+// Class = "NSButtonCell"; title = "Taking a screenshot"; ObjectID = "iMD-Wy-Bm7";
 "iMD-Wy-Bm7.title" = "屏幕截图时";
 
-/* Class = "NSButtonCell"; title = "With translation"; ObjectID = "jFb-kX-VbY"; */
+// Class = "NSButtonCell"; title = "With translation"; ObjectID = "jFb-kX-VbY";
 "jFb-kX-VbY.title" = "包含翻译";
 
-/* Class = "NSTextFieldCell"; title = "Auto Chinese conversion:"; ObjectID = "JPB-ag-MN7"; */
+// Class = "NSTextFieldCell"; title = "Auto Chinese conversion:"; ObjectID = "JPB-ag-MN7";
 "JPB-ag-MN7.title" = "自动中文转换:";
 
-/* Class = "NSBox"; title = "Preferred music player"; ObjectID = "JYR-Ed-Tax"; */
+// Class = "NSBox"; title = "Preferred music player"; ObjectID = "JYR-Ed-Tax";
 "JYR-Ed-Tax.title" = "首选音乐播放器";
 
-/* Class = "NSButtonCell"; title = "Enable lyrics filter"; ObjectID = "kEd-lC-aAH"; */
+// Class = "NSButtonCell"; title = "Enable lyrics filter"; ObjectID = "kEd-lC-aAH";
 "kEd-lC-aAH.title" = "启用歌词过滤";
 
-/* Class = "NSTextFieldCell"; title = "Search lyrics:"; ObjectID = "kP4-4q-ed9"; */
+// Class = "NSTextFieldCell"; title = "Search lyrics:"; ObjectID = "kP4-4q-ed9";
 "kP4-4q-ed9.title" = "搜索歌词:";
 
-/* Class = "NSTabViewItem"; label = "Window"; ObjectID = "LbQ-p9-Zti"; */
+// Class = "NSTabViewItem"; label = "Window"; ObjectID = "LbQ-p9-Zti";
 "LbQ-p9-Zti.label" = "窗口";
 
-/* Class = "NSButtonCell"; title = "Mouse passing by"; ObjectID = "LH4-YZ-Qvs"; */
+// Class = "NSButtonCell"; title = "Mouse passing by"; ObjectID = "LH4-YZ-Qvs";
 "LH4-YZ-Qvs.title" = "鼠标经过时";
 
-/* Class = "NSViewController"; title = "Filter"; ObjectID = "lN1-gG-AVq"; */
+// Class = "NSViewController"; title = "Filter"; ObjectID = "lN1-gG-AVq";
 "lN1-gG-AVq.title" = "歌词过滤";
 
-/* Class = "NSTextFieldCell"; title = "Show / Hide karaoke lyrics:"; ObjectID = "lOc-OP-AcU"; */
+// Class = "NSTextFieldCell"; title = "Show / Hide karaoke lyrics:"; ObjectID = "lOc-OP-AcU";
 "lOc-OP-AcU.title" = "显示/隐藏逐行歌词:";
 
-/* Class = "NSTextFieldCell"; title = "Increase lyrics offset:"; ObjectID = "mo2-3C-gLY"; */
+// Class = "NSTextFieldCell"; title = "Increase lyrics offset:"; ObjectID = "mo2-3C-gLY";
 "mo2-3C-gLY.title" = "增加歌词偏移（歌词提前）:";
 
-/* Class = "NSMenuItem"; title = "Auto"; ObjectID = "N08-TS-lqw"; */
+// Class = "NSMenuItem"; title = "Auto"; ObjectID = "N08-TS-lqw";
 "N08-TS-lqw.title" = "自动选择";
 
-/* Class = "NSButtonCell"; title = "Music is not playing"; ObjectID = "NLl-9L-0gZ"; */
+// Class = "NSButtonCell"; title = "Music is not playing"; ObjectID = "NLl-9L-0gZ";
 "NLl-9L-0gZ.title" = "暂停播放时";
 
-/* Class = "NSButtonCell"; title = "Help translate LyricsX"; ObjectID = "oiH-T7-agJ"; */
+// Class = "NSButtonCell"; title = "Help translate LyricsX"; ObjectID = "oiH-T7-agJ";
 "oiH-T7-agJ.title" = "协助翻译 LyricsX";
 
-/* Class = "NSViewController"; title = "Shortcut"; ObjectID = "ppx-ob-WJc"; */
+// Class = "NSViewController"; title = "Shortcut"; ObjectID = "ppx-ob-WJc";
 "ppx-ob-WJc.title" = "快捷键";
 
-/* Class = "NSTextFieldCell"; title = "Search result match the exact search term"; ObjectID = "rSD-qR-EXA"; */
+// Class = "NSTextFieldCell"; title = "Search result match the exact search term"; ObjectID = "rSD-qR-EXA";
 "rSD-qR-EXA.title" = "搜索结果完全匹配关键词";
 
-/* Class = "NSTextFieldCell"; title = "Global offset (ms):"; ObjectID = "slB-q7-1dB"; */
+// Class = "NSTextFieldCell"; title = "Global offset (ms):"; ObjectID = "slB-q7-1dB";
 "slB-q7-1dB.title" = "全局歌词偏移 (ms):";
 
-/* Class = "NSButtonCell"; title = "Draggable"; ObjectID = "T7p-MT-Mrh"; */
+// Class = "NSButtonCell"; title = "Draggable"; ObjectID = "T7p-MT-Mrh";
 "T7p-MT-Mrh.title" = "允许拖放";
 
-/* Class = "NSTextFieldCell"; title = "Show lyrics window:"; ObjectID = "TB9-Fk-WAX"; */
+// Class = "NSTextFieldCell"; title = "Show lyrics window:"; ObjectID = "TB9-Fk-WAX";
 "TB9-Fk-WAX.title" = "显示歌词窗口:";
 
-/* Class = "NSButtonCell"; title = "Automatically generate furigana for Japanese lyrics"; ObjectID = "ThQ-vA-Krb"; */
+// Class = "NSButtonCell"; title = "Automatically generate furigana for Japanese lyrics"; ObjectID = "ThQ-vA-Krb";
 "ThQ-vA-Krb.title" = "自动为日文生成注音";
 
-/* Class = "NSTextFieldCell"; title = "Text:"; ObjectID = "Txi-D9-jjB"; */
+// Class = "NSTextFieldCell"; title = "Text:"; ObjectID = "Txi-D9-jjB";
 "Txi-D9-jjB.title" = "文字:";
 
-/* Class = "NSTextFieldCell"; title = "Mark as wrong lyrics:"; ObjectID = "uEb-Q5-cda"; */
+// Class = "NSTextFieldCell"; title = "Mark as wrong lyrics:"; ObjectID = "uEb-Q5-cda";
 "uEb-Q5-cda.title" = "标记为错误的歌词:";
 
-/* Class = "NSTextFieldCell"; title = "Background"; ObjectID = "Uer-qJ-3T9"; */
+// Class = "NSTextFieldCell"; title = "Background"; ObjectID = "Uer-qJ-3T9";
 "Uer-qJ-3T9.title" = "背景";
 
-/* Class = "NSTextFieldCell"; title = "Hightlight:"; ObjectID = "UfE-QU-Yhm"; */
+// Class = "NSTextFieldCell"; title = "Hightlight:"; ObjectID = "UfE-QU-Yhm";
 "UfE-QU-Yhm.title" = "高亮:";
 
-/* Class = "NSButtonCell"; title = "Auto launch & quit with music player"; ObjectID = "v63-4a-fPw"; */
+// Class = "NSButtonCell"; title = "Auto launch & quit with music player"; ObjectID = "v63-4a-fPw";
 "v63-4a-fPw.title" = "跟随播放器启动和退出";
 
-/* Class = "NSTextFieldCell"; title = "Language (Requires Restart):"; ObjectID = "WfA-pe-S5D"; */
+// Class = "NSTextFieldCell"; title = "Language (Requires Restart):"; ObjectID = "WfA-pe-S5D";
 "WfA-pe-S5D.title" = "语言 (需要重启):";
 
-/* Class = "NSTextFieldCell"; title = "Show / Hide menu bar lyrics:"; ObjectID = "XHQ-gX-urF"; */
+// Class = "NSTextFieldCell"; title = "Show / Hide menu bar lyrics:"; ObjectID = "XHQ-gX-urF";
 "XHQ-gX-urF.title" = "显示/隐藏菜单栏歌词:";
 
-/* Class = "NSButtonCell"; title = "Reset"; ObjectID = "XUF-aM-ZmS"; */
+// Class = "NSButtonCell"; title = "Reset"; ObjectID = "XUF-aM-ZmS";
 "XUF-aM-ZmS.title" = "重置";
 
-/* Class = "NSTextFieldCell"; title = "Progress"; ObjectID = "XuN-vs-cgI"; */
+// Class = "NSTextFieldCell"; title = "Progress"; ObjectID = "XuN-vs-cgI";
 "XuN-vs-cgI.title" = "进度";
 
-/* Class = "NSMenuItem"; title = "No Conversion"; ObjectID = "zhB-kd-WWG"; */
+// Class = "NSMenuItem"; title = "No Conversion"; ObjectID = "zhB-kd-WWG";
 "zhB-kd-WWG.title" = "不转换";
 
-/* Class = "NSButtonCell"; title = "Customize TouchBar"; ObjectID = "zQK-i2-2Nc"; */
+// Class = "NSButtonCell"; title = "Customize TouchBar"; ObjectID = "zQK-i2-2Nc";
 "zQK-i2-2Nc.title" = "自定义 TouchBar";
+
+// Class = "NSMenuItem"; title = "Simplified Chinese"; ObjectID = "CX0-PE-NAF";
+"CX0-PE-NAF.title" = "转换为简体中文";
+
+// Class = "NSTextFieldCell"; title = "Global offset (ms):"; ObjectID = "zS6-oP-7aR";
+"zS6-oP-7aR.title" = "全局歌词偏移 (ms):";
+
+// Class = "NSTextFieldCell"; title = "Language (Requires Restart):"; ObjectID = "0gT-Nz-7Jw";
+"0gT-Nz-7Jw.title" = "语言 (需要重启):";
+
+// Class = "NSBox"; title = "Preferred music player"; ObjectID = "FxG-RK-g7y";
+"FxG-RK-g7y.title" = "首选音乐播放器";
+
+// Class = "NSViewController"; title = "General"; ObjectID = "GaA-xG-8SL";
+"GaA-xG-8SL.title" = "通用";
+
+// Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "KJ9-qG-viC";
+"KJ9-qG-viC.title" = "优先使用双语歌词";
+
+// Class = "NSMenuItem"; title = "No Conversion"; ObjectID = "KR4-Qt-DFi";
+"KR4-Qt-DFi.title" = "不转换";
+
+// Class = "NSTextFieldCell"; title = "Search result match the exact search term"; ObjectID = "SGe-4J-kW6";
+"SGe-4J-kW6.title" = "搜索结果完全匹配关键词";
+
+// Class = "NSButtonCell"; title = "Auto"; ObjectID = "Wc3-y0-9lE";
+"Wc3-y0-9lE.title" = "自动选择";
+
+// Class = "NSButtonCell"; title = "Auto launch & quit with music player"; ObjectID = "Z0u-vP-mn0";
+"Z0u-vP-mn0.title" = "跟随播放器启动和退出";
+
+// Class = "NSButtonCell"; title = "Strict Search"; ObjectID = "kN1-5j-3tW";
+"kN1-5j-3tW.title" = "精确搜索";
+
+// Class = "NSMenuItem"; title = "Other..."; ObjectID = "kNM-hA-DAR";
+"kNM-hA-DAR.title" = "其他...";
+
+// Class = "NSMenuItem"; title = "LyricsX (Default)"; ObjectID = "ko8-R9-vhw";
+"ko8-R9-vhw.title" = "LyricsX (默认)";
+
+// Class = "NSTextFieldCell"; title = "Auto Chinese conversion:"; ObjectID = "nL1-B1-c8U";
+"nL1-B1-c8U.title" = "自动中文转换:";
+
+// Class = "NSMenuItem"; title = "Auto"; ObjectID = "qp6-bh-hGr";
+"qp6-bh-hGr.title" = "自动选择";
+
+// Class = "NSTextFieldCell"; title = "Lyrics saving path:"; ObjectID = "toz-Mz-SHW";
+"toz-Mz-SHW.title" = "歌词文件保存地址:";
+
+// Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "vUt-b5-jlE";
+"vUt-b5-jlE.title" = "加载同名歌词";
+
+// Class = "NSTextFieldCell"; title = "Text"; ObjectID = "wzG-Up-fN8"; Note = "#bc-ignore!";
+"wzG-Up-fN8.title" = "文字:";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "xUw-4B-qN5";
+"xUw-4B-qN5.title" = "转换为正体中文";
+
+// Class = "NSButtonCell"; title = "Launch at login"; ObjectID = "HKg-Sp-6EN";
+"HKg-Sp-6EN.title" = "登录时启动";
+
+// Class = "NSButtonCell"; title = "Hide Menu Bar Items"; ObjectID = "JXg-c9-vFH";
+"JXg-c9-vFH.title" = "隐藏菜单栏项目";

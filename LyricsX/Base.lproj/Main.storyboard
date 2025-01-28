@@ -355,7 +355,7 @@
                         <menuItem isSeparatorItem="YES" id="Gb0-Hc-403"/>
                         <menuItem title="Preferences..." tag="300" keyEquivalent="," id="CWo-Qx-2Ut">
                             <connections>
-                                <segue destination="W7f-Zh-TfF" kind="show" id="37L-AG-K0N"/>
+                                <action selector="showPreferences:" target="Ady-hI-5gd" id="812-pU-k1J"/>
                             </connections>
                         </menuItem>
                         <menuItem isSeparatorItem="YES" id="Lhf-nJ-oOF"/>
@@ -373,15 +373,6 @@
                             </userDefinedRuntimeAttributes>
                             <connections>
                                 <action selector="checkUpdateAction:" target="Ady-hI-5gd" id="Ait-5g-99F"/>
-                            </connections>
-                        </menuItem>
-                        <menuItem title="Donate..." tag="402" id="EoO-ld-6Xv">
-                            <modifierMask key="keyEquivalentModifierMask"/>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="boolean" keyPath="isHiddenDuringMASReview" value="YES"/>
-                            </userDefinedRuntimeAttributes>
-                            <connections>
-                                <segue destination="e4U-yI-muf" kind="show" id="Ssw-2c-afe"/>
                             </connections>
                         </menuItem>
                         <menuItem isSeparatorItem="YES" id="eB1-fb-ptE"/>

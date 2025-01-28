@@ -12,7 +12,7 @@ import MusicPlayer
 import ServiceManagement
 import LaunchAtLogin
 
-class PreferenceGeneralViewController: NSViewController {
+class PreferenceGeneralViewController: PreferenceViewController {
     @objc dynamic var launchAtLogin = LaunchAtLogin.kvo
     @IBOutlet weak var preferAuto: NSButton!
     @IBOutlet weak var preferiTunes: NSButton!

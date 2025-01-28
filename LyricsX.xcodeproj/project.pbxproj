@@ -126,6 +126,8 @@
 		E974B0462CB3A79400D1B97F /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E974B0452CB3A79400D1B97F /* LyricsKit */; };
 		E97593E42150F47900D80616 /* Polyfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E32150F47800D80616 /* Polyfill.swift */; };
 		E97593E62150F6FB00D80616 /* IBInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E52150F6FB00D80616 /* IBInspection.swift */; };
+		E975C5BB2D380B920059BE92 /* PreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */; };
+		E975C5BC2D380B920059BE92 /* PreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */; };
 		E97AFB59215CBF0300AF74CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E97AFB5B215CBF0300AF74CD /* InfoPlist.strings */; };
 		E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA202C85EA6E00170CF7 /* MarqueeLabel */; };
 		E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA232C86302200170CF7 /* MarqueeLabel */; };
@@ -285,6 +287,7 @@
 		E91F76EA21211B8D00755698 /* PreferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewController.swift; sourceTree = "<group>"; };
 		E97593E32150F47800D80616 /* Polyfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polyfill.swift; sourceTree = "<group>"; };
 		E97593E52150F6FB00D80616 /* IBInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IBInspection.swift; sourceTree = "<group>"; };
+		E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceWindowController.swift; sourceTree = "<group>"; };
 		E97AFB5A215CBF0300AF74CD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E97AFB5C215CBF0500AF74CD /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		E9AAA388219564F50006EBC2 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -443,6 +446,7 @@
 		BBC7C5561E6AEA4500E3EC4F /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
+				E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */,
 				E91F76EA21211B8D00755698 /* PreferenceViewController.swift */,
 				BBC7C5541E6AE28600E3EC4F /* PreferenceGeneralViewController.swift */,
 				BBC1D5901E4C80FC008869EC /* PreferenceDisplayViewController.swift */,
@@ -882,6 +886,7 @@
 				BBE8FC751F6BEA6200122AFA /* Then.swift in Sources */,
 				BB34F7E61F21911700B7C484 /* Updater.swift in Sources */,
 				BB58640721F2B7500084D2C0 /* TouchBarArtworkViewController.swift in Sources */,
+				E975C5BC2D380B920059BE92 /* PreferenceWindowController.swift in Sources */,
 				BBC1D35F1E499A6D002538A2 /* Global.swift in Sources */,
 				BB1B300320E878AE002F1AF8 /* StdExtension.swift in Sources */,
 				BB947DFB23B4C60000C43BF2 /* SelectedPlayer.swift in Sources */,
@@ -926,6 +931,7 @@
 				BB50787722014C3900B695C3 /* Then.swift in Sources */,
 				BB50787822014C3900B695C3 /* Updater.swift in Sources */,
 				BB50787A22014C3900B695C3 /* TouchBarArtworkViewController.swift in Sources */,
+				E975C5BB2D380B920059BE92 /* PreferenceWindowController.swift in Sources */,
 				BB50787B22014C3900B695C3 /* Global.swift in Sources */,
 				BB50787C22014C3900B695C3 /* StdExtension.swift in Sources */,
 				BB947DFC23B4C60000C43BF2 /* SelectedPlayer.swift in Sources */,
@@ -1386,18 +1392,18 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cx-org/CombineX";
+			repositoryURL = "https://github.com/MxIris-LyricsX-Project/CombineX";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 0.4.0;
+				branch = master;
+				kind = branch;
 			};
 		};
 		BB350ABC23D0613D00500146 /* XCRemoteSwiftPackageReference "CXExtensions" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cx-org/CXExtensions";
+			repositoryURL = "https://github.com/MxIris-LyricsX-Project/CXExtensions";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 0.4.0;
+				branch = master;
+				kind = branch;
 			};
 		};
 		BB6C75E6248B908500804AEB /* XCRemoteSwiftPackageReference "TouchBarHelper" */ = {
@@ -1413,15 +1419,15 @@
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.26.0;
+				minimumVersion = 2.0.0;
 			};
 		};
 		BBB03F2B232FB3AF00A3879E /* XCRemoteSwiftPackageReference "GenericID" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ddddxxx/GenericID";
+			repositoryURL = "https://github.com/MxIris-LyricsX-Project/GenericID";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 0.7.0;
+				branch = master;
+				kind = branch;
 			};
 		};
 		BBB03F2E232FB40400A3879E /* XCRemoteSwiftPackageReference "Semver" */ = {
