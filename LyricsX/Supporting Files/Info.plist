@@ -34,7 +34,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.7.2</string>
 	<key>CFBundleVersion</key>
-	<string>2495</string>
+	<string>2498</string>
 	<key>Fabric</key>
 	<dict>
 		<key>APIKey</key>
@@ -58,7 +58,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>LX_BUILD_TIME</key>
-	<integer>1738086630</integer>
+	<integer>1738210679</integer>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -165,7 +165,7 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://mxiris-lyricsx-project.github.io/appcast.xml</string>
+	<string>https://github.com/MxIris-LyricsX-Project/LyricsX/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>jlL11Arlrn0YtrQn66hxwUZeBI6dFxP2Wluq6eEYzss=</string>
 	<key>UTExportedTypeDeclarations</key>
