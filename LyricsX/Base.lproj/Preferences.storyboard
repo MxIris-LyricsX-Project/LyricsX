@@ -856,7 +856,7 @@
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
                                             <connections>
-                                                <action selector="toggleAutoLaunchAction:" target="d5d-dC-DK4" id="aqb-fj-LIO"/>
+                                                <action selector="toggleAutoLaunchAction:" target="GaA-xG-8SL" id="NWd-He-Pwe"/>
                                                 <binding destination="968-l4-9l5" name="value" keyPath="values.LaunchAndQuitWithPlayer" id="VSJ-aG-sYU">
                                                     <dictionary key="options">
                                                         <bool key="NSConditionallySetsEnabled" value="NO"/>
@@ -924,7 +924,7 @@
                                                         <constraint firstAttribute="height" constant="18" id="w79-ch-AlI"/>
                                                     </constraints>
                                                     <connections>
-                                                        <action selector="showInFinderAction:" target="d5d-dC-DK4" id="K6g-5H-vIw"/>
+                                                        <action selector="showInFinderAction:" target="GaA-xG-8SL" id="0eh-GW-fp6"/>
                                                     </connections>
                                                 </button>
                                             </subviews>
@@ -984,7 +984,7 @@
                                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="eZw-4Z-gOt"/>
                                             </constraints>
                                             <connections>
-                                                <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="ne8-yJ-uOx"/>
+                                                <action selector="chooseLanguageAction:" target="GaA-xG-8SL" id="Yt0-TJ-qjE"/>
                                             </connections>
                                         </popUpButton>
                                     </gridCell>
@@ -1159,8 +1159,7 @@
                     </connections>
                 </viewController>
                 <customObject id="QwD-01-xGk" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <userDefaultsController id="968-l4-9l5" userLabel="Shared User Defaults Controller"/>
-                <userDefaultsController id="rnn-dH-Odz"/>
+                <userDefaultsController id="968-l4-9l5"/>
             </objects>
             <point key="canvasLocation" x="2616" y="-397"/>
         </scene>

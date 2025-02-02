@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+    <channel>
+        <title>LyricsX</title>
+        <description>Most recent changes with links to updates.</description>
+        <language>en</language>
+        <item>
+            <title>1.7.3</title>
+            <pubDate>Sun, 02 Feb 2025 13:36:47 +0800</pubDate>
+            <sparkle:version>2501</sparkle:version>
+            <sparkle:shortVersionString>1.7.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.3/LyricsX_1.7.3+2501.zip" length="5745458" type="application/octet-stream" sparkle:edSignature="HghcAIJQOkgz6nIH1ld2+uygKOG+pA4P0JBGA3tAf1uLrSaxrXCjv2AxGvnwHgRDztORrbOAs6VLg4gANrK6Aw=="/>
+        </item>
+        <item>
+            <title>1.7.2</title>
+            <pubDate>Sun, 02 Feb 2025 12:49:58 +0800</pubDate>
+            <sparkle:version>2501</sparkle:version>
+            <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.2/LyricsX-1.7.2.zip" length="5762001" type="application/octet-stream" sparkle:edSignature="HHNRsmWIMi8LAduU+1J8rH/oBvjc9YcDkYUBLHijXctloymRvO0jXJkl9zRy233C1U2kkZWndFYkGqf/yu2RAg=="/>
+        </item>
+        <item>
+            <title>1.7.1</title>
+            <pubDate>Mon, 07 Oct 2024 17:03:21 +0800</pubDate>
+            <sparkle:version>2468</sparkle:version>
+            <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.1/LyricsX_1.7.1+2468.zip" sparkle:version="2468" sparkle:shortVersionString="1.7.1" length="5897679" type="application/octet-stream"/>
+        </item>
+        <item>
+            <title>1.6.3</title>
+            <description><![CDATA[<ul>
+  <li>Fix NetEase lyrics source (#527). Thanks to @hguandl !</li>
+</ul>
+]]></description>
+            <pubDate>Fri, 29 Apr 2022 11:27:18 +0000</pubDate>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.3/LyricsX_1.6.3%2B2351.zip" sparkle:version="2351" sparkle:shortVersionString="1.6.3" length="15169874" type="application/octet-stream"/>
+        </item>
+        <item>
+            <title>1.6.1</title>
+            <description><![CDATA[<ul>
+  <li>Add Indonesian, Italian and Dutch support. Thanks to Muhammad Fauzi, cencio1952, Zara Drechsler and everyone participated in the translation!</li>
+  <li>Lyrics filter with regex now works as expected. (#468)</li>
+  <li>Fix a bug where LyricsX failed to read local lyrics with “:” or “/” in the file name.</li>
+  <li>Fix layout issue of karaoke lyrics. (#477)</li>
+</ul>
+]]></description>
+            <pubDate>Mon, 31 May 2021 10:52:44 +0000</pubDate>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.1/LyricsX_1.6.1%2B2341.zip" sparkle:version="2341" sparkle:shortVersionString="1.6.1" length="15279607" type="application/octet-stream"/>
+        </item>
+        <item>
+            <title>1.6.0</title>
+            <description><![CDATA[<ul>
+  <li>New icon.</li>
+  <li>LyricsX is now a universal app.</li>
+</ul>
+]]></description>
+            <pubDate>Thu, 14 Jan 2021 05:54:26 +0000</pubDate>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.0/LyricsX_1.6.0%2B2334.zip" sparkle:version="2334" sparkle:shortVersionString="1.6.0" length="19151991" type="application/octet-stream"/>
+        </item>
+    </channel>
+</rss>

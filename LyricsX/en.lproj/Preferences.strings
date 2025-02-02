@@ -239,7 +239,7 @@
 "xUw-4B-qN5.title" = "Traditional Chinese";
 
 // Class = "NSButtonCell"; title = "Launch at login"; ObjectID = "HKg-Sp-6EN";
-"HKg-Sp-6EN.title" = "Start the program when I log in";
+"HKg-Sp-6EN.title" = "Launch at login";
 
 // Class = "NSButtonCell"; title = "Hide Menu Bar Items"; ObjectID = "JXg-c9-vFH";
 "JXg-c9-vFH.title" = "Hide Menu Bar Items";
