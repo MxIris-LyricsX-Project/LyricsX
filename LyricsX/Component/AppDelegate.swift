@@ -27,6 +27,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
+    var firstLaunchForShouldHanlderReopen: Bool = true
+    
     var karaokeLyricsWC: KaraokeLyricsWindowController?
 
     lazy var searchLyricsWC: NSWindowController = {
@@ -59,6 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             withKeyPath: #keyPath(AppController.lyricsOffset),
             options: [.continuouslyUpdatesValue: true]
         )
+        
         lyricsOffsetTextField.bind(
             .value,
             to: controller,
@@ -92,6 +95,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
         }
         #endif
+    }
+    
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if firstLaunchForShouldHanlderReopen {
+            firstLaunchForShouldHanlderReopen = false
+            return false
+        }
+        preferencesWindowController.showWindow(nil)
+        return true
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
