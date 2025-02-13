@@ -23,15 +23,17 @@ class MenuBarLyricsController {
 //    let logger = Logger(subsystem: "com.JH.LyricsX", category: "MenuBarLyricsController")
 
     static let shared = MenuBarLyricsController()
+    
     var statusBarMenu: NSMenu? {
         didSet {
-            statusItem?.menu = statusBarMenu
+            setupStatusItemMenu()
         }
     }
-    var statusItem: NSStatusItem?
-    var lyricsItem: NSStatusItem?
-    var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
-    var buttonlength: CGFloat = 30
+
+    private var iconStatusItem: NSStatusItem?
+    private var lyricStatusItem: NSStatusItem?
+    private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
+    private var buttonlength: CGFloat = 30
 
     private let marqueeLabel = MarqueeLabel(frame: .init(x: 0, y: 0, width: 183, height: 22))
 
@@ -47,7 +49,7 @@ class MenuBarLyricsController {
     private var screenLyrics: (lyrics: String, duration: TimeInterval) = (MenuBarLyricsController.defaultLyric, 2) {
         didSet {
             DispatchQueue.main.async {
-                self.updateStatusItem()
+                self.updateStatusItems()
             }
         }
     }
@@ -56,7 +58,7 @@ class MenuBarLyricsController {
 
     private init() {
         if !defaults[.hideMenuBarItems] {
-            self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+            updateStatusItems()
         }
         AppController.shared.$currentLyrics
             .combineLatest(AppController.shared.$currentLineIndex)
@@ -66,11 +68,11 @@ class MenuBarLyricsController {
         workspaceNC.cx
             .publisher(for: NSWorkspace.didActivateApplicationNotification)
             .signal()
-            .invoke(MenuBarLyricsController.updateStatusItem, weaklyOn: self)
+            .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
         defaults.publisher(for: [.menuBarLyricsEnabled, .combinedMenubarLyrics, .hideMenuBarItems])
             .prepend()
-            .invoke(MenuBarLyricsController.updateStatusItem, weaklyOn: self)
+            .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
     }
 
@@ -100,20 +102,21 @@ class MenuBarLyricsController {
         screenLyrics = (newScreenLyrics, lineDisplayTime)
     }
 
-    @objc private func updateStatusItem() {
-        
+    @objc private func updateStatusItems() {
         guard !defaults[.hideMenuBarItems] else {
             marqueeLabel.removeFromSuperview()
-            statusItem = nil
-            lyricsItem = nil
+            iconStatusItem = nil
+            lyricStatusItem = nil
             lastDisplayMode = nil
             return
         }
-        
+
         guard defaults[.menuBarLyricsEnabled] else {
             marqueeLabel.removeFromSuperview()
-            setImageStatusItem()
-            lyricsItem = nil
+            if iconStatusItem == nil {
+                setupIconStatusItem()
+            }
+            lyricStatusItem = nil
             lastDisplayMode = nil
             return
         }
@@ -129,11 +132,8 @@ class MenuBarLyricsController {
 
     private func updateSeparateStatusLyrics() {
         if lastDisplayMode == nil || lastDisplayMode == .combine {
-            setImageStatusItem()
-            marqueeLabel.removeFromSuperview()
-            lyricsItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-            lyricsItem?.button?.frame = marqueeLabel.bounds
-            lyricsItem?.button?.addSubview(marqueeLabel)
+            setupIconStatusItem()
+            setupLyricStatusItem()
         }
 
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
@@ -141,25 +141,38 @@ class MenuBarLyricsController {
 
     private func updateCombinedStatusLyrics() {
         if lastDisplayMode == nil || lastDisplayMode == .separate {
-            marqueeLabel.removeFromSuperview()
-            lyricsItem = nil
-            setImageStatusItem()
-            statusItem?.button?.title = ""
-            statusItem?.button?.image = nil
-            statusItem?.length = NSStatusItem.variableLength
-            statusItem?.button?.frame = marqueeLabel.bounds
-            statusItem?.button?.addSubview(marqueeLabel)
+            iconStatusItem = nil
+            setupLyricStatusItem()
         }
 
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
     }
 
-    private func setImageStatusItem() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem?.button?.title = ""
-        statusItem?.button?.image = buttonImage
-        statusItem?.length = buttonlength
-        statusItem?.menu = statusBarMenu
+    private func setupLyricStatusItem() {
+        marqueeLabel.removeFromSuperview()
+        lyricStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        lyricStatusItem?.button?.title = ""
+        lyricStatusItem?.button?.image = nil
+        lyricStatusItem?.length = NSStatusItem.variableLength
+        lyricStatusItem?.button?.frame = marqueeLabel.bounds
+        lyricStatusItem?.button?.addSubview(marqueeLabel)
+        setupStatusItemMenu()
+    }
+    
+    private func setupIconStatusItem() {
+        iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        iconStatusItem?.button?.title = ""
+        iconStatusItem?.button?.image = buttonImage
+        iconStatusItem?.length = buttonlength
+        setupStatusItemMenu()
+    }
+    
+    private func setupStatusItemMenu() {
+        if defaults[.combinedMenubarLyrics] {
+            lyricStatusItem?.menu = statusBarMenu
+        } else {
+            iconStatusItem?.menu = statusBarMenu
+        }
     }
 }
 
