@@ -11,10 +11,7 @@ import Cocoa
 import GenericID
 import MASShortcut
 import MusicPlayer
-
-#if !IS_FOR_MAS
 import Sparkle
-#endif
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
@@ -27,6 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
+    private let updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: nil)
+    
     var firstLaunchForShouldHanlderReopen: Bool = true
     
     var karaokeLyricsWC: KaraokeLyricsWindowController?
@@ -81,10 +80,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             groupDefaults.bind(NSBindingName(sharedKey.key), withDefaultName: sharedKey)
         }
 
-        #if IS_FOR_MAS
-        checkForMASReview(force: true)
-        #else
-        SUUpdater.shared()?.checkForUpdatesInBackground()
+        updateController.updater.checkForUpdatesInBackground()
+        
         if #available(OSX 10.12.2, *) {
             observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
                 if change.newValue, TouchBarLyricsController.shared == nil {
@@ -94,7 +91,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 }
             }
         }
-        #endif
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -166,11 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     @IBAction func aboutLyricsXAction(_ sender: Any) {
         if #available(OSX 10.13, *) {
-            #if IS_FOR_MAS
-            let channel = "App Store"
-            #else
             let channel = "GitHub"
-            #endif
             let versionString = "\(channel) Version \(Bundle.main.semanticVersion!)"
             NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: versionString])
         } else {
@@ -184,11 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
     
     @IBAction func checkUpdateAction(_ sender: Any) {
-        #if IS_FOR_MAS
-        assertionFailure("should not be there")
-        #else
-        SUUpdater.shared()?.checkForUpdates(sender)
-        #endif
+        updateController.checkForUpdates(sender)
     }
 
     @IBAction func increaseOffset(_ sender: Any?) {
