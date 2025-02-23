@@ -243,3 +243,33 @@
 
 // Class = "NSButtonCell"; title = "Hide Menu Bar Items"; ObjectID = "JXg-c9-vFH";
 "JXg-c9-vFH.title" = "메뉴 막대 항목 숨기기";
+
+// Class = "NSButtonCell"; title = "Customize TouchBar"; ObjectID = "7pm-7c-xyY";
+"7pm-7c-xyY.title" = "터치바 사용자설정";
+
+// Class = "NSViewController"; title = "Lab"; ObjectID = "JPs-hn-m7d";
+"JPs-hn-m7d.title" = "실험실";
+
+// Class = "NSTextFieldCell"; title = "Here are some experimental features that may not be stable enough, and may be removed in the future."; ObjectID = "hyR-zL-eAx";
+"hyR-zL-eAx.title" = "불안정 할 수 있으며 추후에 사라질 수도 있는 실험적인 기능들 입니다.";
+
+// Class = "NSButtonCell"; title = "Spotify"; ObjectID = "jhm-dK-4Y3"; Note = "#bc-ignore!";
+"jhm-dK-4Y3.title" = "Spotify";
+
+// Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "kAi-t8-g5K";
+"kAi-t8-g5K.title" = "iTunes에 가사 내보내기:";
+
+// Class = "NSButtonCell"; title = "Use system wide now playing application"; ObjectID = "mnU-3V-ZCW";
+"mnU-3V-ZCW.title" = "시스템 전체에서 현재 재생중인 음악 플레이어 사용";
+
+// Class = "NSButtonCell"; title = "Automatically"; ObjectID = "oEV-Ku-uLM";
+"oEV-Ku-uLM.title" = "자동";
+
+// Class = "NSButtonCell"; title = "Combine menubar icon with menubar lyrics"; ObjectID = "rtU-Go-wwF";
+"rtU-Go-wwF.title" = "메뉴 막대 가사를 메뉴 막대 아이콘과 합치기";
+
+// Class = "NSButtonCell"; title = "With translation"; ObjectID = "uXK-tg-wwl";
+"uXK-tg-wwl.title" = "번역문 포함하기";
+
+// Class = "NSButtonCell"; title = "Enable Touch Bar lyrics"; ObjectID = "wnV-53-Dlj";
+"wnV-53-Dlj.title" = "터치 바 가사 사용";

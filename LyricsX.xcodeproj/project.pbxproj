@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -71,6 +71,8 @@
 		BBE2A79824041E36004A7E93 /* CombineExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE2A79724041E36004A7E93 /* CombineExtension.swift */; };
 		BBE8FC751F6BEA6200122AFA /* Then.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE8FC741F6BEA6200122AFA /* Then.swift */; };
 		E91F76EB21211B8D00755698 /* PreferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F76EA21211B8D00755698 /* PreferenceViewController.swift */; };
+		E960A9A02D68ED3100A32EEC /* MusicPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E960A99F2D68ED3100A32EEC /* MusicPlayer */; };
+		E960A9A22D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */; };
 		E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */; };
 		E974B0462CB3A79400D1B97F /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E974B0452CB3A79400D1B97F /* LyricsKit */; };
 		E97593E42150F47900D80616 /* Polyfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E32150F47800D80616 /* Polyfill.swift */; };
@@ -79,7 +81,6 @@
 		E97AFB59215CBF0300AF74CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E97AFB5B215CBF0300AF74CD /* InfoPlist.strings */; };
 		E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA202C85EA6E00170CF7 /* MarqueeLabel */; };
 		E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA232C86302200170CF7 /* MarqueeLabel */; };
-		E9C13F542C56A053009EC242 /* MusicPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E9C13F532C56A053009EC242 /* MusicPlayer */; };
 		E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2982AC9A10F004B9EB2 /* MASShortcut */; };
 		E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E29B2AC9A124004B9EB2 /* SnapKit */; };
 		E9C4E2A22AC9A3D6004B9EB2 /* SwiftCF in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2A12AC9A3D6004B9EB2 /* SwiftCF */; };
@@ -211,6 +212,7 @@
 		BBF3CB6A2423313B000C6AB9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		BBF3CB6B2423313B000C6AB9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Preferences.strings; sourceTree = "<group>"; };
 		E91F76EA21211B8D00755698 /* PreferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewController.swift; sourceTree = "<group>"; };
+		E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingApplicationListViewController.swift; sourceTree = "<group>"; };
 		E97593E32150F47800D80616 /* Polyfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polyfill.swift; sourceTree = "<group>"; };
 		E97593E52150F6FB00D80616 /* IBInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IBInspection.swift; sourceTree = "<group>"; };
 		E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceWindowController.swift; sourceTree = "<group>"; };
@@ -231,6 +233,7 @@
 			files = (
 				E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */,
 				E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */,
+				E960A9A02D68ED3100A32EEC /* MusicPlayer in Frameworks */,
 				BBA82F0A256AB8620076831F /* Sparkle in Frameworks */,
 				E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */,
 				BBB03F3A2331D8A800A3879E /* OpenCC in Frameworks */,
@@ -243,7 +246,6 @@
 				E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */,
-				E9C13F542C56A053009EC242 /* MusicPlayer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,6 +337,7 @@
 				BB7EC7B11E4E018C00A0AC3F /* LyricsHUDViewController.swift */,
 				BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */,
 				BB58D8BE248636900047E3C6 /* DonateViewController.swift */,
+				E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -429,11 +432,11 @@
 				E9C4E2982AC9A10F004B9EB2 /* MASShortcut */,
 				E9C4E29B2AC9A124004B9EB2 /* SnapKit */,
 				E9C4E2A12AC9A3D6004B9EB2 /* SwiftCF */,
-				E9C13F532C56A053009EC242 /* MusicPlayer */,
 				E983FA202C85EA6E00170CF7 /* MarqueeLabel */,
 				E983FA232C86302200170CF7 /* MarqueeLabel */,
 				E974B0452CB3A79400D1B97F /* LyricsKit */,
 				E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */,
+				E960A99F2D68ED3100A32EEC /* MusicPlayer */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
@@ -538,10 +541,10 @@
 				E9C4E2972AC9A10F004B9EB2 /* XCRemoteSwiftPackageReference "MASShortcut" */,
 				E9C4E29A2AC9A124004B9EB2 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				E9C4E2A02AC9A3D6004B9EB2 /* XCRemoteSwiftPackageReference "SwiftCF" */,
-				E9C13F522C56A053009EC242 /* XCRemoteSwiftPackageReference "MusicPlayer" */,
 				E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				E974B0442CB3A79400D1B97F /* XCRemoteSwiftPackageReference "LyricsKit" */,
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
+				E960A99E2D68ED3100A32EEC /* XCLocalSwiftPackageReference "../../Library/MusicPlayer" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -685,6 +688,7 @@
 				BBC7C5551E6AE28600E3EC4F /* PreferenceGeneralViewController.swift in Sources */,
 				BBE8FC751F6BEA6200122AFA /* Then.swift in Sources */,
 				BB34F7E61F21911700B7C484 /* Updater.swift in Sources */,
+				E960A9A22D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift in Sources */,
 				BB58640721F2B7500084D2C0 /* TouchBarArtworkViewController.swift in Sources */,
 				E975C5BC2D380B920059BE92 /* PreferenceWindowController.swift in Sources */,
 				BBC1D35F1E499A6D002538A2 /* Global.swift in Sources */,
@@ -1083,6 +1087,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		E960A99E2D68ED3100A32EEC /* XCLocalSwiftPackageReference "../../Library/MusicPlayer" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Library/MusicPlayer;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1164,14 +1175,6 @@
 				kind = branch;
 			};
 		};
-		E9C13F522C56A053009EC242 /* XCRemoteSwiftPackageReference "MusicPlayer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MxIris-LyricsX-Project/MusicPlayer";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 		E9C4E2972AC9A10F004B9EB2 /* XCRemoteSwiftPackageReference "MASShortcut" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/shpakovski/MASShortcut";
@@ -1234,6 +1237,10 @@
 			package = BBB03F382331D8A800A3879E /* XCRemoteSwiftPackageReference "SwiftyOpenCC" */;
 			productName = OpenCC;
 		};
+		E960A99F2D68ED3100A32EEC /* MusicPlayer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MusicPlayer;
+		};
 		E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */;
@@ -1252,11 +1259,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
-		};
-		E9C13F532C56A053009EC242 /* MusicPlayer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E9C13F522C56A053009EC242 /* XCRemoteSwiftPackageReference "MusicPlayer" */;
-			productName = MusicPlayer;
 		};
 		E9C4E2982AC9A10F004B9EB2 /* MASShortcut */ = {
 			isa = XCSwiftPackageProductDependency;

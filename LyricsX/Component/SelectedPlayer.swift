@@ -32,7 +32,7 @@ extension MusicPlayers {
             super.init()
             selectPlayer()
             scheduleManualUpdate()
-            defaultsObservation = defaults.observe(keys: [.preferredPlayerIndex, .useSystemWideNowPlaying]) { [weak self] in
+            defaultsObservation = defaults.observe(keys: [.preferredPlayerIndex, .useSystemWideNowPlaying, .systemWideNowPlayingAppList]) { [weak self] in
                 self?.selectPlayer()
             }
             manualUpdateObservation = playbackStateWillChange.sink { [weak self] state in
@@ -48,7 +48,9 @@ extension MusicPlayers {
             let idx = defaults[.preferredPlayerIndex]
             if idx == -1 {
                 if defaults[.useSystemWideNowPlaying] {
-                    designatedPlayer = MusicPlayers.SystemMedia()
+                    designatedPlayer = MusicPlayers.SystemMedia()?.then {
+                        $0.allowsApplicationBundleIdentifiers = defaults[.systemWideNowPlayingAppList]
+                    }
                 } else {
                     let players = MusicPlayerName.scriptableCases.compactMap(MusicPlayers.Scriptable.init)
                     designatedPlayer = MusicPlayers.NowPlaying(players: players)
@@ -70,3 +72,5 @@ extension MusicPlayers {
         }
     }
 }
+
+extension MusicPlayers.SystemMedia: Then {}

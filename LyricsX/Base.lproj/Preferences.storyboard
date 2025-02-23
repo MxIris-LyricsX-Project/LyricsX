@@ -36,7 +36,7 @@
                         <tabViewItem identifier="" image="NSFontPanel" id="8VI-6O-0Rn" userLabel="Display"/>
                         <tabViewItem image="toolbar_shortcut" id="bJe-2l-VWO" userLabel="Shortcut"/>
                         <tabViewItem image="toolbar_filter" id="xcA-tm-q8A" userLabel="Filter"/>
-                        <tabViewItem image="toolbar_lab" id="uj7-lo-QuS" userLabel="Lab"/>
+                        <tabViewItem image="toolbar_lab" id="Vr0-wO-OTg"/>
                     </tabViewItems>
                     <viewControllerTransitionOptions key="transitionOptions"/>
                     <tabView key="tabView" type="noTabsNoBorder" id="ufX-Bl-B8D">
@@ -53,7 +53,7 @@
                         <segue destination="8JF-Og-z6E" kind="relationship" relationship="tabItems" id="ybT-iY-287"/>
                         <segue destination="ppx-ob-WJc" kind="relationship" relationship="tabItems" id="UNQ-1s-Cez"/>
                         <segue destination="lN1-gG-AVq" kind="relationship" relationship="tabItems" id="wPI-VX-th7"/>
-                        <segue destination="bFk-1g-XeL" kind="relationship" relationship="tabItems" id="OQC-tQ-r62"/>
+                        <segue destination="JPs-hn-m7d" kind="relationship" relationship="tabItems" id="1hg-lI-T8Z"/>
                     </connections>
                 </tabViewController>
                 <customObject id="n2u-iM-pje" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -901,7 +901,7 @@
                                                                 <menuItem isSeparatorItem="YES" id="Z6k-eW-XS7"/>
                                                                 <menuItem title="Other..." id="kNM-hA-DAR">
                                                                     <connections>
-                                                                        <action selector="chooseSavingPathAction:" target="d5d-dC-DK4" id="I1W-dM-3i3"/>
+                                                                        <action selector="chooseSavingPathAction:" target="GaA-xG-8SL" id="jBs-YM-Hef"/>
                                                                     </connections>
                                                                 </menuItem>
                                                             </items>
@@ -2085,7 +2085,183 @@
                 <customObject id="hIA-Hp-BDR" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="MQW-nm-dXS"/>
             </objects>
-            <point key="canvasLocation" x="1969" y="1390"/>
+            <point key="canvasLocation" x="1281" y="1377"/>
+        </scene>
+        <!--Lab-->
+        <scene sceneID="4jS-dh-n8I">
+            <objects>
+                <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="m1c-jC-l4b">
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="328"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
+                                <rect key="frame" x="75" y="20" width="520" height="288"/>
+                                <rows>
+                                    <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
+                                    <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
+                                    <gridRow yPlacement="center" height="20" id="aXA-4O-lyR"/>
+                                    <gridRow yPlacement="center" height="30" id="qxK-7k-u6w"/>
+                                    <gridRow yPlacement="center" height="20" id="es4-R9-etL"/>
+                                    <gridRow yPlacement="center" height="20" id="6GV-2W-Qb0"/>
+                                    <gridRow yPlacement="center" height="20" topPadding="10" id="5Sc-jD-UJ4"/>
+                                    <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
+                                    <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn xPlacement="trailing" width="150" id="8ba-lF-U7s"/>
+                                    <gridColumn width="350" id="4uA-B7-Dvh"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
+                                            <rect key="frame" x="-2" y="247" width="524" height="32"/>
+                                            <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="6bF-ha-C1x" column="4uA-B7-Dvh" headOfMergedCell="e0l-BC-wdX" id="7Pu-h5-yjf"/>
+                                    <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
+                                    <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
+                                            <rect key="frame" x="168" y="213" width="274" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.UseSystemWideNowPlaying" id="Xw2-i3-4Mq"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
+                                    <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
+                                            <rect key="frame" x="163" y="179" width="216" height="32"/>
+                                            <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="customizeAllowsNowPlayingApplicationsAction:" target="JPs-hn-m7d" id="IZC-yF-ixf"/>
+                                                <binding destination="DdU-cn-wN1" name="enabled" keyPath="values.UseSystemWideNowPlaying" id="iPt-My-fro"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
+                                    <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
+                                            <rect key="frame" x="168" y="156" width="337" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.DesktopLyricsEnableFurigana" id="eep-JT-q3f"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="es4-R9-etL" column="8ba-lF-U7s" id="hk3-2P-FTU"/>
+                                    <gridCell row="es4-R9-etL" column="4uA-B7-Dvh" id="dui-8P-7d0">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D7U-qs-Keb">
+                                            <rect key="frame" x="168" y="125" width="167" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Enable Touch Bar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wnV-53-Dlj">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="6GV-2W-Qb0" column="8ba-lF-U7s" id="OEP-pE-Pg8"/>
+                                    <gridCell row="6GV-2W-Qb0" column="4uA-B7-Dvh" id="UZK-20-qw8">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jsm-Ub-qMX">
+                                            <rect key="frame" x="163" y="91" width="159" height="32"/>
+                                            <buttonCell key="cell" type="push" title="Customize TouchBar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7pm-7c-xyY">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="customizeTouchBarAction:" target="JPs-hn-m7d" id="7TW-gV-VJx"/>
+                                                <binding destination="DdU-cn-wN1" name="enabled" keyPath="values.TouchBarLyricsEnabled" id="6bE-Q9-wuW">
+                                                    <dictionary key="options">
+                                                        <integer key="NSMultipleValuesPlaceholder" value="0"/>
+                                                        <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                        <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                        <integer key="NSNullPlaceholder" value="0"/>
+                                                        <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="5Sc-jD-UJ4" column="8ba-lF-U7s" id="nOn-Ex-4vI">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="89S-CL-lsy">
+                                            <rect key="frame" x="17" y="64" width="135" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Write lyrics to iTunes:" id="kAi-t8-g5K">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="5Sc-jD-UJ4" column="4uA-B7-Dvh" id="Kbf-0T-apV">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GZZ-x3-lIt">
+                                            <rect key="frame" x="168" y="63" width="122" height="18"/>
+                                            <buttonCell key="cell" type="check" title="With translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="uXK-tg-wwl">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.WriteiTunesWithTranslation" id="SgC-Tk-7Lx"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="Wah-Ax-79z" column="8ba-lF-U7s" id="ubI-WM-7fC"/>
+                                    <gridCell row="Wah-Ax-79z" column="4uA-B7-Dvh" id="GRv-Th-Hm9">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="veZ-Dt-Ga7">
+                                            <rect key="frame" x="168" y="37" width="108" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oEV-Ku-uLM">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.WriteToiTunesAutomatically" id="QNL-ix-qgI"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="lhU-ZY-jGn" column="8ba-lF-U7s" id="T3Q-4J-uOx"/>
+                                    <gridCell row="lhU-ZY-jGn" column="4uA-B7-Dvh" id="YIm-rp-ZKR">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fmv-dB-BeO">
+                                            <rect key="frame" x="168" y="6" width="288" height="18"/>
+                                            <buttonCell key="cell" type="check" title="Combine menubar icon with menubar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rtU-Go-wwF">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.CombinedMenubarLyrics" id="gi4-hd-PrE"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                </gridCells>
+                            </gridView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="jUN-mS-kOf" secondAttribute="trailing" constant="20" id="RmC-Lb-X1D"/>
+                            <constraint firstItem="jUN-mS-kOf" firstAttribute="leading" secondItem="m1c-jC-l4b" secondAttribute="leading" constant="75" id="dkA-7X-tI8"/>
+                            <constraint firstAttribute="bottom" secondItem="jUN-mS-kOf" secondAttribute="bottom" constant="20" id="hvf-vh-65Z"/>
+                            <constraint firstItem="jUN-mS-kOf" firstAttribute="top" secondItem="m1c-jC-l4b" secondAttribute="top" constant="20" id="iAT-a8-Le9"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
+                    </connections>
+                </viewController>
+                <customObject id="WFr-RK-Q1o" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <userDefaultsController id="DdU-cn-wN1"/>
+            </objects>
+            <point key="canvasLocation" x="1977" y="1393"/>
         </scene>
     </scenes>
     <resources>

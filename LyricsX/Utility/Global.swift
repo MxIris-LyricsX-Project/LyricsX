@@ -146,6 +146,7 @@ extension UserDefaults.DefaultsKeys {
     
     // Lab
     static let useSystemWideNowPlaying = Key<Bool>("UseSystemWideNowPlaying")
+    static let systemWideNowPlayingAppList = Key<[String]>("SystemWideNowPlayingAppList")
     
     static let writeiTunesWithTranslation = Key<Bool>("WriteiTunesWithTranslation")
     static let writeToiTunesAutomatically = Key<Bool>("WriteToiTunesAutomatically")
@@ -160,4 +161,4 @@ extension UserDefaults.DefaultsKeys {
     static let appleLanguages = Key<[String]>("AppleLanguages")
 }
 
-extension CGFloat: DefaultConstructible {}
+extension CGFloat: @retroactive DefaultConstructible {}

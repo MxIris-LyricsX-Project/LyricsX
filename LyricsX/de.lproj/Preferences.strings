@@ -243,3 +243,36 @@
 
 // Class = "NSButtonCell"; title = "Hide Menu Bar Items"; ObjectID = "JXg-c9-vFH";
 "JXg-c9-vFH.title" = "Menüleistenelemente ausblenden";
+
+// Class = "NSButtonCell"; title = "Customize TouchBar"; ObjectID = "7pm-7c-xyY";
+"7pm-7c-xyY.title" = "TouchBar anpassen";
+
+// Class = "NSViewController"; title = "Lab"; ObjectID = "JPs-hn-m7d";
+"JPs-hn-m7d.title" = "Lab";
+
+// Class = "NSButtonCell"; title = "Automatically generate furigana for Japanese lyrics"; ObjectID = "UXo-KY-CwG";
+"UXo-KY-CwG.title" = "Automatisch \\"Furigana\\" für japanische Songtexte erzeugen";
+
+// Class = "NSTextFieldCell"; title = "Here are some experimental features that may not be stable enough, and may be removed in the future."; ObjectID = "hyR-zL-eAx";
+"hyR-zL-eAx.title" = "Hier sind einige experimentelle Funktionieren, die möglicherweise nicht stabil genug sind und in Zukunft entfernt werden können.";
+
+// Class = "NSButtonCell"; title = "Spotify"; ObjectID = "jhm-dK-4Y3"; Note = "#bc-ignore!";
+"jhm-dK-4Y3.title" = "Spotify";
+
+// Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "kAi-t8-g5K";
+"kAi-t8-g5K.title" = "Songtext in iTunes schreiben:";
+
+// Class = "NSButtonCell"; title = "Use system wide now playing application"; ObjectID = "mnU-3V-ZCW";
+"mnU-3V-ZCW.title" = "Verwenden Sie die systemweite, jetzt spielende Anwendung";
+
+// Class = "NSButtonCell"; title = "Automatically"; ObjectID = "oEV-Ku-uLM";
+"oEV-Ku-uLM.title" = "Automatisch";
+
+// Class = "NSButtonCell"; title = "Combine menubar icon with menubar lyrics"; ObjectID = "rtU-Go-wwF";
+"rtU-Go-wwF.title" = "Menüleiste-Icon mit Menüleiste-Songtexte verbinden";
+
+// Class = "NSButtonCell"; title = "With translation"; ObjectID = "uXK-tg-wwl";
+"uXK-tg-wwl.title" = "mit Übersetzung";
+
+// Class = "NSButtonCell"; title = "Enable Touch Bar lyrics"; ObjectID = "wnV-53-Dlj";
+"wnV-53-Dlj.title" = "TouchBar-Songtexte aktivieren";
