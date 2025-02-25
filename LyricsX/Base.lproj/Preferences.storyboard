@@ -391,6 +391,8 @@
                                             <menuItem title="No Conversion" state="on" id="zhB-kd-WWG"/>
                                             <menuItem title="Simplified Chinese" id="AiM-vg-FvQ"/>
                                             <menuItem title="Traditional Chinese" id="6FU-j0-FTV"/>
+                                            <menuItem title="Traditional Chinese(Taiwan)" id="6FU-jx-FTV"/>
+                                            <menuItem title="Traditional Chinese(Hong Kong)" id="6FU-ju-FTV"/>
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
@@ -1088,6 +1090,8 @@
                                                         <menuItem title="No Conversion" state="on" id="KR4-Qt-DFi"/>
                                                         <menuItem title="Simplified Chinese" id="CX0-PE-NAF"/>
                                                         <menuItem title="Traditional Chinese" id="xUw-4B-qN5"/>
+                                                        <menuItem title="Traditional Chinese(Taiwan)" id="xUw-4B-qN6"/>
+                                                        <menuItem title="Traditional Chinese(Hong Kong)" id="xUw-4B-qN7"/>
                                                     </items>
                                                 </menu>
                                             </popUpButtonCell>
