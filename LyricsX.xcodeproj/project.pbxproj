@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -90,6 +90,7 @@
 		E9EF0D512D6F5ECD00D45E0F /* UIFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D502D6F5ECD00D45E0F /* UIFoundation */; };
 		E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */; };
 		E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */; };
+		E9EF0D5A2D6F780000D45E0F /* MusicPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D592D6F780000D45E0F /* MusicPlayer */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -254,6 +255,7 @@
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */,
 				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
+				E9EF0D5A2D6F780000D45E0F /* MusicPlayer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +467,7 @@
 				E960A99F2D68ED3100A32EEC /* MusicPlayer */,
 				E9EF0D502D6F5ECD00D45E0F /* UIFoundation */,
 				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
+				E9EF0D592D6F780000D45E0F /* MusicPlayer */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
@@ -572,8 +575,8 @@
 				E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				E974B0442CB3A79400D1B97F /* XCRemoteSwiftPackageReference "LyricsKit" */,
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
-				E960A99E2D68ED3100A32EEC /* XCLocalSwiftPackageReference "../../Library/MusicPlayer" */,
 				E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */,
+				E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -1118,13 +1121,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		E960A99E2D68ED3100A32EEC /* XCLocalSwiftPackageReference "../../Library/MusicPlayer" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Library/MusicPlayer;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1238,6 +1234,14 @@
 				kind = branch;
 			};
 		};
+		E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MxIris-LyricsX-Project/MusicPlayer";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1323,6 +1327,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */;
 			productName = UIFoundationToolbox;
+		};
+		E9EF0D592D6F780000D45E0F /* MusicPlayer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */;
+			productName = MusicPlayer;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
