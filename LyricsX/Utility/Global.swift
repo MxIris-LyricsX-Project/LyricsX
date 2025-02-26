@@ -138,6 +138,7 @@ extension UserDefaults.DefaultsKeys {
     static let shortcutWriteToiTunes = Key<String>("ShortcutWriteToiTunes")
     static let shortcutSearchLyrics = Key<String>("ShortcutSearchLyrics")
     static let shortcutWrongLyrics = Key<String>("ShortcutWrongLyrics")
+    static let shortcutTogglePreferences = Key<String>("ShortcutTogglePreferences")
     
     // Filter
     static let lyricsFilterEnabled = Key<Bool>("LyricsFilterEnabled")
@@ -159,6 +160,8 @@ extension UserDefaults.DefaultsKeys {
     static let launchHelperTime = Key<Date?>("launchHelperTime")
     
     static let appleLanguages = Key<[String]>("AppleLanguages")
+    
+    static let isShowLyricsHUD = Key<Bool>("isShowLyricsHUD")
 }
 
 extension CGFloat: @retroactive DefaultConstructible {}

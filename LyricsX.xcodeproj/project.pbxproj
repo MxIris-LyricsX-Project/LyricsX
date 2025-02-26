@@ -86,6 +86,10 @@
 		E9C4E2A22AC9A3D6004B9EB2 /* SwiftCF in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2A12AC9A3D6004B9EB2 /* SwiftCF */; };
 		E9E55138207C4CB000F9958A /* TouchBarLyricsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */; };
 		E9EBDA2521115A150019FDF9 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EBDA2421115A150019FDF9 /* Observation.swift */; };
+		E9EF0D4E2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */; };
+		E9EF0D512D6F5ECD00D45E0F /* UIFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D502D6F5ECD00D45E0F /* UIFoundation */; };
+		E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */; };
+		E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -224,6 +228,8 @@
 		E9AAA38B2195650D0006EBC2 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
 		E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarLyricsController.swift; sourceTree = "<group>"; };
 		E9EBDA2421115A150019FDF9 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
+		E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsHUDWindowController.swift; sourceTree = "<group>"; };
+		E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchLyricsWindowController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -232,6 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */,
+				E9EF0D512D6F5ECD00D45E0F /* UIFoundation in Frameworks */,
 				E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */,
 				E960A9A02D68ED3100A32EEC /* MusicPlayer in Frameworks */,
 				BBA82F0A256AB8620076831F /* Sparkle in Frameworks */,
@@ -246,6 +253,7 @@
 				E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */,
+				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,6 +304,9 @@
 				BB6139761FCCFA6700CBD808 /* Preferences.storyboard */,
 				E9C49A8E2110490700159ADC /* Component */,
 				BB063B2F1E8A93CE00A25C3E /* View */,
+				BBC7C5561E6AEA4500E3EC4F /* Preferences */,
+				E9EF0D562D6F722B00D45E0F /* LyricsHUD */,
+				E9EF0D572D6F723A00D45E0F /* Search */,
 				BB7EC7B41E4ECFFB00A0AC3F /* Controller */,
 				BB7EC7B61E4ED03900A0AC3F /* Utility */,
 				BB4141BC1E45B26800A51775 /* Supporting Files */,
@@ -329,15 +340,11 @@
 		BB7EC7B41E4ECFFB00A0AC3F /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				BBC7C5561E6AEA4500E3EC4F /* Preferences */,
 				BB4141BF1E45B67800A51775 /* KaraokeLyricsController.swift */,
 				BBC1D57F1E4AE3B9008869EC /* MenuBarLyricsController.swift */,
 				E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */,
 				BB58B07E1E82901800598D4F /* AutoActivateWindowController.swift */,
-				BB7EC7B11E4E018C00A0AC3F /* LyricsHUDViewController.swift */,
-				BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */,
 				BB58D8BE248636900047E3C6 /* DonateViewController.swift */,
-				E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -368,6 +375,7 @@
 				BB4919351F00CD800054EA09 /* PreferenceShortcutViewController.swift */,
 				BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */,
 				BB72784920996DE900231C63 /* PreferenceLabViewController.swift */,
+				E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */,
 			);
 			path = Preferences;
 			sourceTree = "<group>";
@@ -398,6 +406,24 @@
 				BB63C24E22774B47008CFFBB /* TouchBarPlaybackControlViewController.swift */,
 			);
 			path = Component;
+			sourceTree = "<group>";
+		};
+		E9EF0D562D6F722B00D45E0F /* LyricsHUD */ = {
+			isa = PBXGroup;
+			children = (
+				E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */,
+				BB7EC7B11E4E018C00A0AC3F /* LyricsHUDViewController.swift */,
+			);
+			path = LyricsHUD;
+			sourceTree = "<group>";
+		};
+		E9EF0D572D6F723A00D45E0F /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */,
+				BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -437,6 +463,8 @@
 				E974B0452CB3A79400D1B97F /* LyricsKit */,
 				E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */,
 				E960A99F2D68ED3100A32EEC /* MusicPlayer */,
+				E9EF0D502D6F5ECD00D45E0F /* UIFoundation */,
+				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
@@ -545,6 +573,7 @@
 				E974B0442CB3A79400D1B97F /* XCRemoteSwiftPackageReference "LyricsKit" */,
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 				E960A99E2D68ED3100A32EEC /* XCLocalSwiftPackageReference "../../Library/MusicPlayer" */,
+				E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -671,9 +700,11 @@
 			files = (
 				BB4141C01E45B67800A51775 /* KaraokeLyricsController.swift in Sources */,
 				E97593E42150F47900D80616 /* Polyfill.swift in Sources */,
+				E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */,
 				BB72784A20996DE900231C63 /* PreferenceLabViewController.swift in Sources */,
 				BB7EC7B21E4E018C00A0AC3F /* LyricsHUDViewController.swift in Sources */,
 				E97593E62150F6FB00D80616 /* IBInspection.swift in Sources */,
+				E9EF0D4E2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift in Sources */,
 				BBC1D5911E4C80FC008869EC /* PreferenceDisplayViewController.swift in Sources */,
 				BBB9AAE31E57EE880078F91A /* SearchLyricsViewController.swift in Sources */,
 				E9E55138207C4CB000F9958A /* TouchBarLyricsController.swift in Sources */,
@@ -1199,6 +1230,14 @@
 				kind = branch;
 			};
 		};
+		E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1274,6 +1313,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9C4E2A02AC9A3D6004B9EB2 /* XCRemoteSwiftPackageReference "SwiftCF" */;
 			productName = SwiftCF;
+		};
+		E9EF0D502D6F5ECD00D45E0F /* UIFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */;
+			productName = UIFoundation;
+		};
+		E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */;
+			productName = UIFoundationToolbox;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

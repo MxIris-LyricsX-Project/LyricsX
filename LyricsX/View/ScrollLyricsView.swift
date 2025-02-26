@@ -221,7 +221,7 @@ class ScrollLyricsView: NSScrollView {
     
     func updateFont() {
         let range = textView.string.fullRange
-        let font = NSFont(name: fontName, size: fontSize)!
+        guard let font = NSFont(name: fontName, size: fontSize) else { return }
         textView.textStorage?.addAttribute(.font, value: font, range: range)
     }
     

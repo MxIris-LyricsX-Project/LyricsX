@@ -12,8 +12,9 @@ import CXExtensions
 import CXShim
 import LyricsService
 import MusicPlayer
+import UIFoundation
 
-class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate {
+class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate, StoryboardViewController {
     
     var imageCache = NSCache<NSURL, NSImage>()
     

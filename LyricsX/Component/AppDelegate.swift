@@ -25,24 +25,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var statusBarMenu: NSMenu!
 
     private let updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: nil)
-    
+
     var firstLaunchForShouldHanlderReopen: Bool = true
-    
+
     var karaokeLyricsWC: KaraokeLyricsWindowController?
 
-    lazy var searchLyricsWC: NSWindowController = {
-        // swiftlint:disable:next force_cast
-        let searchVC = NSStoryboard.main!.instantiateController(withIdentifier: .init("SearchLyricsViewController")) as! SearchLyricsViewController
-        let window = NSWindow(contentViewController: searchVC)
-        window.title = NSLocalizedString("Search Lyrics", comment: "window title")
-        return NSWindowController(window: window)
-    }()
+    lazy var searchLyricsWC: SearchLyricsWindowController = .init()
+    
+    lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
-    lazy var preferencesWindowController: PreferenceWindowController = {
-        return NSStoryboard(name: "Preferences", bundle: .main).instantiateController(identifier: .init(describing: PreferenceWindowController.self), creator: nil)
-    }()
-    
-    
+    lazy var preferencesWindowController: PreferenceWindowController = .create()
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         registerUserDefaults()
 
@@ -60,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             withKeyPath: #keyPath(AppController.lyricsOffset),
             options: [.continuouslyUpdatesValue: true]
         )
-        
+
         lyricsOffsetTextField.bind(
             .value,
             to: controller,
@@ -81,7 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         updateController.updater.checkForUpdatesInBackground()
-        
+
         if #available(OSX 10.12.2, *) {
             observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
                 if change.newValue, TouchBarLyricsController.shared == nil {
@@ -91,8 +84,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 }
             }
         }
+        
+        if defaults[.isShowLyricsHUD] {
+            lyricsHUD.showWindow(nil)
+        }
     }
-    
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         if firstLaunchForShouldHanlderReopen {
             firstLaunchForShouldHanlderReopen = false
@@ -110,11 +107,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             let url = Bundle.main.bundleURL
                 .appendingPathComponent("Contents/Library/LoginItems/LyricsXHelper.app")
             groupDefaults[.launchHelperTime] = Date()
-            do {
-                try NSWorkspace.shared.launchApplication(at: url, configuration: [:])
-                log("launch LyricsX Helper succeed.")
-            } catch {
-                log("launch LyricsX Helper failed. reason: \(error)")
+
+            NSWorkspace.shared.openApplication(at: url, configuration: .init()) { application, error in
+                if let error = error {
+                    log("launch LyricsX Helper failed. reason: \(error)")
+                } else {
+                    log("launch LyricsX Helper succeed.")
+                }
             }
         }
     }
@@ -129,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         binder.bindShortcut(.shortcutWriteToiTunes, to: #selector(writeToiTunes))
         binder.bindShortcut(.shortcutWrongLyrics, to: #selector(wrongLyrics))
         binder.bindShortcut(.shortcutSearchLyrics, to: #selector(searchLyrics))
+        binder.bindShortcut(.shortcutTogglePreferences, to: #selector(togglePreferences))
     }
 
     // MARK: - NSMenuDelegate
@@ -150,14 +150,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     // MARK: - Menubar Action
 
-    var lyricsHUD: NSWindowController?
 
     @IBAction func showLyricsHUD(_ sender: Any?) {
-        // swiftlint:disable:next force_cast
-        let controller = lyricsHUD ?? NSStoryboard.main?.instantiateController(withIdentifier: .init("LyricsHUD")) as! NSWindowController
-        controller.showWindow(nil)
+        if defaults[.isShowLyricsHUD] {
+            lyricsHUD.close()
+            defaults[.isShowLyricsHUD] = false
+        } else {
+            lyricsHUD.showWindow(nil)
+            defaults[.isShowLyricsHUD] = true
+        }
+        
         NSApp.activate(ignoringOtherApps: true)
-        lyricsHUD = controller
     }
 
     @IBAction func aboutLyricsXAction(_ sender: Any) {
@@ -173,6 +176,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     @IBAction func showPreferences(_ sender: Any?) {
         preferencesWindowController.showWindow(nil)
+    }
+
+    @objc func togglePreferences(_ sender: Any?) {
+        if preferencesWindowController.window?.isVisible ?? false {
+            preferencesWindowController.close()
+        } else {
+            preferencesWindowController.showWindow(nil)
+        }
     }
     
     @IBAction func checkUpdateAction(_ sender: Any) {

@@ -145,6 +145,10 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         }
     }
     
+    func windowWillClose(_ notification: Notification) {
+        defaults[.isShowLyricsHUD] = false
+    }
+    
 }
 
 class LyricsHUDAccessoryViewController: NSTitlebarAccessoryViewController {

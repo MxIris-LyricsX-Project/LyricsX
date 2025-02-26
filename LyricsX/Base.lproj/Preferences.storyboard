@@ -34,9 +34,9 @@
                     <tabViewItems>
                         <tabViewItem image="NSPreferencesGeneral" id="EbI-4v-6C3" userLabel="General"/>
                         <tabViewItem identifier="" image="NSFontPanel" id="8VI-6O-0Rn" userLabel="Display"/>
-                        <tabViewItem image="toolbar_shortcut" id="bJe-2l-VWO" userLabel="Shortcut"/>
+                        <tabViewItem image="toolbar_shortcut" id="MZ9-ON-TxW" userLabel="Shortcut"/>
                         <tabViewItem image="toolbar_filter" id="xcA-tm-q8A" userLabel="Filter"/>
-                        <tabViewItem image="toolbar_lab" id="Vr0-wO-OTg"/>
+                        <tabViewItem image="toolbar_lab" id="Vr0-wO-OTg" userLabel="Lab"/>
                     </tabViewItems>
                     <viewControllerTransitionOptions key="transitionOptions"/>
                     <tabView key="tabView" type="noTabsNoBorder" id="ufX-Bl-B8D">
@@ -51,7 +51,7 @@
                         <outlet property="tabView" destination="ufX-Bl-B8D" id="zxF-LK-KIY"/>
                         <segue destination="GaA-xG-8SL" kind="relationship" relationship="tabItems" id="rHI-ta-uXc"/>
                         <segue destination="8JF-Og-z6E" kind="relationship" relationship="tabItems" id="ybT-iY-287"/>
-                        <segue destination="ppx-ob-WJc" kind="relationship" relationship="tabItems" id="UNQ-1s-Cez"/>
+                        <segue destination="1GH-DC-cpo" kind="relationship" relationship="tabItems" id="MY0-FE-Tv6"/>
                         <segue destination="lN1-gG-AVq" kind="relationship" relationship="tabItems" id="wPI-VX-th7"/>
                         <segue destination="JPs-hn-m7d" kind="relationship" relationship="tabItems" id="1hg-lI-T8Z"/>
                     </connections>
@@ -382,7 +382,7 @@
                                 </textFieldCell>
                             </textField>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uoA-YU-YZk" userLabel="Convert">
-                                <rect key="frame" x="233" y="24" width="167" height="25"/>
+                                <rect key="frame" x="233" y="24" width="232" height="25"/>
                                 <popUpButtonCell key="cell" type="push" title="No Conversion" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="zhB-kd-WWG" id="MrM-UH-h3N" userLabel="Convert">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="message"/>
@@ -1081,7 +1081,7 @@
                                     </gridCell>
                                     <gridCell row="8If-Ei-6qA" column="IfN-lq-biT" id="olI-46-sCC">
                                         <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="J5D-YW-st4" userLabel="Convert">
-                                            <rect key="frame" x="214" y="99" width="167" height="25"/>
+                                            <rect key="frame" x="214" y="99" width="232" height="25"/>
                                             <popUpButtonCell key="cell" type="push" title="No Conversion" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="KR4-Qt-DFi" id="gCf-fG-Bxh" userLabel="Convert">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="message"/>
@@ -1943,6 +1943,246 @@
                 <customObject id="I0Z-pO-sVx" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1969" y="540"/>
+        </scene>
+        <!--Shortcut-->
+        <scene sceneID="cjR-dj-DhK">
+            <objects>
+                <viewController title="Shortcut" id="1GH-DC-cpo" customClass="PreferenceShortcutViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" id="x3o-Dl-7h6">
+                        <rect key="frame" x="0.0" y="0.0" width="550" height="342"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" rowSpacing="4" columnSpacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="cwU-lj-tR5">
+                                <rect key="frame" x="20" y="20" width="510" height="302"/>
+                                <rows>
+                                    <gridRow yPlacement="center" height="30" id="jY8-Kk-qdJ"/>
+                                    <gridRow yPlacement="center" height="30" id="AlP-AQ-saG"/>
+                                    <gridRow yPlacement="center" height="30" id="7ME-sH-ygQ"/>
+                                    <gridRow yPlacement="center" height="30" id="Gn0-sE-aMD"/>
+                                    <gridRow yPlacement="center" height="30" id="AkV-Sd-Bhi"/>
+                                    <gridRow yPlacement="center" height="30" id="5sV-rE-tmW"/>
+                                    <gridRow yPlacement="center" height="30" id="vwx-TH-aiN"/>
+                                    <gridRow yPlacement="center" height="30" id="4ka-ug-qrl"/>
+                                    <gridRow yPlacement="center" height="30" id="HL5-g7-57L"/>
+                                </rows>
+                                <columns>
+                                    <gridColumn xPlacement="trailing" width="280" id="esM-YS-kWh"/>
+                                    <gridColumn xPlacement="leading" width="220" id="bJv-P7-ixx"/>
+                                </columns>
+                                <gridCells>
+                                    <gridCell row="jY8-Kk-qdJ" column="esM-YS-kWh" id="AzW-ss-eYQ">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NBI-fD-Ykg">
+                                            <rect key="frame" x="105" y="279" width="177" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Show / Hide menu bar lyrics:" id="1So-eI-ovg">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="jY8-Kk-qdJ" column="bJv-P7-ixx" id="Enk-Oz-T9O">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="atC-aF-Wgo" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="278" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="qzP-hb-vHV"/>
+                                                <constraint firstAttribute="width" constant="160" id="vSh-RY-8P1"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleMenuBarLyrics"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="AlP-AQ-saG" column="esM-YS-kWh" id="PT7-w9-kSH">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ody-co-woU">
+                                            <rect key="frame" x="115" y="245" width="167" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Show / Hide karaoke lyrics:" id="L8S-rm-0tr">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AlP-AQ-saG" column="bJv-P7-ixx" id="m5q-ij-HSm">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="MOp-rl-QfB" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="244" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="XWB-l1-I2s"/>
+                                                <constraint firstAttribute="width" constant="160" id="ch0-F9-lsK"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleKaraokeLyrics"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="7ME-sH-ygQ" column="esM-YS-kWh" id="oyo-bg-eMb">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kHG-AN-g9Z">
+                                            <rect key="frame" x="155" y="211" width="127" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Show lyrics window:" id="OVq-fi-jsy">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="7ME-sH-ygQ" column="bJv-P7-ixx" id="opp-Mz-Mut">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="bhi-qY-Zz3" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="210" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="66b-et-Gqf"/>
+                                                <constraint firstAttribute="width" constant="160" id="yen-GH-bfa"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutShowLyricsWindow"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="Gn0-sE-aMD" column="esM-YS-kWh" id="Fz0-hZ-WNm">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="s4j-Pi-Jo5">
+                                            <rect key="frame" x="148" y="177" width="134" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Increase lyrics offset:" id="gOr-e9-SZS">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="Gn0-sE-aMD" column="bJv-P7-ixx" id="Q4E-cQ-VgF">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="gTB-qI-Cvh" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="176" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="160" id="70D-Wx-d8z"/>
+                                                <constraint firstAttribute="height" constant="19" id="BAo-a6-tsb"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetIncrease"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="AkV-Sd-Bhi" column="esM-YS-kWh" id="Bgv-ZT-yQ8">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SjG-qo-2tK">
+                                            <rect key="frame" x="142" y="143" width="140" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Decrease lyrics offset:" id="K3n-xg-phu">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AkV-Sd-Bhi" column="bJv-P7-ixx" id="DdI-Ru-LUh">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="BKg-jC-mLK" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="142" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="160" id="Box-jl-qlb"/>
+                                                <constraint firstAttribute="height" constant="19" id="IYL-PA-mmb"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetDecrease"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="5sV-rE-tmW" column="esM-YS-kWh" id="8TL-NR-HCc">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="d1P-5Y-Sra">
+                                            <rect key="frame" x="147" y="109" width="135" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Write lyrics to iTunes:" id="7n2-te-txG">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="5sV-rE-tmW" column="bJv-P7-ixx" id="GXo-co-qQW">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="glK-m4-7j5" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="108" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="Z46-l2-8BL"/>
+                                                <constraint firstAttribute="width" constant="160" id="g66-DM-OKn"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWriteToiTunes"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="vwx-TH-aiN" column="esM-YS-kWh" id="Zvr-M9-N8j">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="QsL-Pu-j2b">
+                                            <rect key="frame" x="196" y="75" width="86" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Search lyrics:" id="Ka5-iG-3e2">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="vwx-TH-aiN" column="bJv-P7-ixx" id="rwR-dM-l1D">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="T62-bQ-EP3" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="74" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="160" id="D8b-7w-K0M"/>
+                                                <constraint firstAttribute="height" constant="19" id="Ln2-v9-yiH"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutSearchLyrics"/>
+                                                <userDefinedRuntimeAttribute type="boolean" keyPath="isRemovedDuringMASReview" value="YES"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="4ka-ug-qrl" column="esM-YS-kWh" id="Pvt-TN-DHZ">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="VZj-JK-Rvx">
+                                            <rect key="frame" x="149" y="41" width="133" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Mark as wrong lyrics:" id="grJ-bz-uaa">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="4ka-ug-qrl" column="bJv-P7-ixx" id="3ph-hz-qTq">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="3hD-mN-dTP" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="40" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="3VQ-Lt-dR0"/>
+                                                <constraint firstAttribute="width" constant="160" id="kS4-EH-R8h"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWrongLyrics"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                    <gridCell row="HL5-g7-57L" column="esM-YS-kWh" id="Wyx-2e-n9e">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="i54-GO-kar">
+                                            <rect key="frame" x="76" y="7" width="206" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Show / Hide preferences window:" id="4dB-1O-BEa">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="HL5-g7-57L" column="bJv-P7-ixx" id="jgb-P0-uWw">
+                                        <customView key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="kOY-Kn-hij" customClass="MASShortcutView">
+                                            <rect key="frame" x="290" y="6" width="160" height="19"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="19" id="7zk-J0-nSs"/>
+                                                <constraint firstAttribute="width" constant="160" id="Z4m-0q-ELY"/>
+                                            </constraints>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutTogglePreferences"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                    </gridCell>
+                                </gridCells>
+                            </gridView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="cwU-lj-tR5" secondAttribute="bottom" constant="20" id="5Yz-43-ana"/>
+                            <constraint firstAttribute="trailing" secondItem="cwU-lj-tR5" secondAttribute="trailing" constant="20" id="L4l-WW-Mh9"/>
+                            <constraint firstItem="cwU-lj-tR5" firstAttribute="leading" secondItem="x3o-Dl-7h6" secondAttribute="leading" constant="20" id="ddQ-c0-Vol"/>
+                            <constraint firstItem="cwU-lj-tR5" firstAttribute="top" secondItem="x3o-Dl-7h6" secondAttribute="top" constant="20" id="pP3-kF-tIA"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <customObject id="vkD-ku-bhB" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2570" y="574"/>
         </scene>
         <!--Lab-->
         <scene sceneID="SoK-6E-AMw">
