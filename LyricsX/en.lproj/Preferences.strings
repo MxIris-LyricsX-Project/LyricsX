@@ -16,6 +16,12 @@
 // Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "6FU-j0-FTV";
 "6FU-j0-FTV.title" = "Traditional Chinese";
 
+// Class = "NSMenuItem"; title = "Traditional Chinese(Taiwan)"; ObjectID = "6FU-jx-FTV";
+"6FU-jx-FTV.title" = "Traditional Chinese(Taiwan)";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Hong Kong)"; ObjectID = "6FU-ju-FTV";
+"6FU-ju-FTV.title" = "Traditional Chinese(Hong Kong)";
+
 // Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "6We-TB-Wfc";
 "6We-TB-Wfc.title" = "Write lyrics to iTunes:";
 
@@ -237,6 +243,12 @@
 
 // Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "xUw-4B-qN5";
 "xUw-4B-qN5.title" = "Traditional Chinese";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Taiwan)"; ObjectID = "xUw-4B-qN6";
+"xUw-4B-qN6.title" = "Traditional Chinese(Taiwan)";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Hong Kong)"; ObjectID = "xUw-4B-qN7";
+"xUw-4B-qN7.title" = "Traditional Chinese(Hong Kong)";
 
 // Class = "NSButtonCell"; title = "Launch at login"; ObjectID = "HKg-Sp-6EN";
 "HKg-Sp-6EN.title" = "Launch at login";

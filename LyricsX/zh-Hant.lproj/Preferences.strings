@@ -14,7 +14,13 @@
 "5dp-p5-YmE.title" = "單行模式";
 
 // Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "6FU-j0-FTV";
-"6FU-j0-FTV.title" = "轉換為繁體中文";
+"6FU-j0-FTV.title" = "轉換為正體中文";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Taiwan)"; ObjectID = "6FU-jx-FTV";
+"6FU-jx-FTV.title" = "轉換為正體中文(台灣)";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Hong Kong)"; ObjectID = "6FU-ju-FTV";
+"6FU-ju-FTV.title" = "轉換為正體中文(香港)";
 
 // Class = "NSTextFieldCell"; title = "Write lyrics to iTunes:"; ObjectID = "6We-TB-Wfc";
 "6We-TB-Wfc.title" = "將歌詞輸入 iTunes：";
@@ -236,7 +242,13 @@
 "wzG-Up-fN8.title" = "文字：";
 
 // Class = "NSMenuItem"; title = "Traditional Chinese"; ObjectID = "xUw-4B-qN5";
-"xUw-4B-qN5.title" = "轉換為繁體中文";
+"xUw-4B-qN5.title" = "轉換為正體中文";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Taiwan)"; ObjectID = "xUw-4B-qN6";
+"xUw-4B-qN6.title" = "轉換為正體中文（台灣）";
+
+// Class = "NSMenuItem"; title = "Traditional Chinese(Hong Kong)"; ObjectID = "xUw-4B-qN7";
+"xUw-4B-qN7.title" = "轉換為正體中文（香港）";
 
 // Class = "NSButtonCell"; title = "Launch at login"; ObjectID = "HKg-Sp-6EN";
 "HKg-Sp-6EN.title" = "在登入時啟動";
