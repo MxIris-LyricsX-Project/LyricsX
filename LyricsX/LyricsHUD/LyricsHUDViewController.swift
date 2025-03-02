@@ -35,8 +35,9 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         super.awakeFromNib()
         
         view.window?.do {
+            $0.title = "Lyrics Window"
             $0.titlebarAppearsTransparent = true
-            $0.titleVisibility = .hidden
+//            $0.titleVisibility = .hidden
             $0.styleMask.insert(.borderless)
             $0.delegate = self
         }

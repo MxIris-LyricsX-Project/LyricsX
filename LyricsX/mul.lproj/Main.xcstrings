@@ -1,0 +1,3561 @@
+{
+  "strings" : {
+    "IFz-XQ-DHf.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "value" : "가사 싱크",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞のオフセット:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Зміщення тексту:",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Décalage des paroles :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Offset Lirik:",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Songtekst compensatie:",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "歌词偏移:",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "時間軸微調：",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atraso das Letras:"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "فاصله ترانه:",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offset de letras:"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Lyrics Offset:",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lyrics Offset:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Scostamento del testo:",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Смещение текста:"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "توزان الكلمات:",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtext-Abstand:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesunięcie napisów:"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Lyrics Offset:\"; ObjectID = \"IFz-XQ-DHf\";"
+    },
+    "vHn-zU-YCm.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Application",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Application",
+            "state" : "new"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Application\"; ObjectID = \"vHn-zU-YCm\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "Ubz-IV-XOU.title" : {
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSMenu\"; title = \"Window\"; ObjectID = \"Ubz-IV-XOU\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Window",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Window",
+            "state" : "new"
+          }
+        }
+      }
+    },
+    "cda-cm-Apk.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Window",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Window",
+            "state" : "translated"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSMenuItem\"; title = \"Window\"; ObjectID = \"cda-cm-Apk\"; Note = \"#bc-ignore!\";"
+    },
+    "VUf-dC-81X.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Paste\"; ObjectID = \"VUf-dC-81X\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Paste",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste"
+          }
+        }
+      }
+    },
+    "jWT-S5-YXM.headerCell.title" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "value" : "Título",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Titel",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Titre",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Tytuł",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Title",
+            "state" : "new"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Titolo",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Назва",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "タイトル",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Titel",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Judul",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "제목",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "歌曲",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Title",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عنوان"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "歌曲",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "العنوان",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTableColumn\"; headerCell.title = \"Title\"; ObjectID = \"jWT-S5-YXM\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "wvJ-8O-0Hq.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "0",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "0"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"0\"; ObjectID = \"wvJ-8O-0Hq\"; Note = \"#bc-ignore!\";"
+    },
+    "1Uc-zV-55H.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Text Cell",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Text Cell\"; ObjectID = \"1Uc-zV-55H\"; Note = \"#bc-ignore!\";"
+    },
+    "DNi-vI-MTr.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Show In Finder\"; ObjectID = \"DNi-vI-MTr\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finder에서 보기"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show In Finder"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Показати у Finder",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Show In Finder",
+            "state" : "new"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra nel Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "Finder で表示",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Monter dans Finder",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Exibir No Finder",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Finder 中显示"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Tampilkan di Finder",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Toon in Finder",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Pokaż w Finderze",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Mostrar en Finder",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "نمایش در مک بوک Finder",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "顯示於 Finder",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Finder anzeigen"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать в Finder"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار في Finder"
+          }
+        }
+      }
+    },
+    "RPR-IV-34T.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Quit LyricsX\"; ObjectID = \"RPR-IV-34T\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Quit LyricsX",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quit LyricsX"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Sair do Lyrics%s",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Zamknij LyricsX",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "الخروج من البرنامج",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Keluar LyricsX",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خروج"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉 LyricsX"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти из LyricsX"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Esci da LyricsX",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter LyricsX"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "LyricsX 종료",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir de LyricsX"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX beenden"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX afsluiten"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX を終了"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "退出 LyricsX",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вийти з LyricsX"
+          }
+        }
+      }
+    },
+    "SDr-c6-5JC.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Lyrics Delay Setter",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyrics Delay Setter"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Lyrics Delay Setter\"; ObjectID = \"SDr-c6-5JC\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "XQC-Z5-ZbS.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Hide Others",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Hide Others",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Hide Others\"; ObjectID = \"XQC-Z5-ZbS\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "fdG-90-G7K.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Crash",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Crash",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSButtonCell\"; title = \"Crash\"; ObjectID = \"fdG-90-G7K\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "CDj-ot-3DR.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Edit",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Edit",
+            "state" : "new"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSMenuItem\"; title = \"Edit\"; ObjectID = \"CDj-ot-3DR\"; Note = \"#bc-ignore!\";"
+    },
+    "Piu-i2-JjD.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Check For Update...\"; ObjectID = \"Piu-i2-JjD\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірити оновлення..."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Verifica aggiornamenti...",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Verificar Por Atualizações...",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Проверить обновление...",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Comprobar actualizaciones...",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "업데이트 확인...",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "التحقق من وجود تحديثات...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查更新⋯"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Auf Aktualisierung prüfen …",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "检查更新...",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des mises à jour..."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Controleren op updates...",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check For Update..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "アップデートの確認...",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "بررسی برای بروز رسانی...",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Check For Update..."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Periksa Pembaruan..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Sprawdź dostępność aktualizacji...",
+            "state" : "translated"
+          }
+        }
+      }
+    },
+    "uP6-6j-RSc.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Cut\"; ObjectID = \"uP6-6j-RSc\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Cut",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cut"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value"
+    },
+    "Nxv-i6-pWj.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Minimize"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Minimize",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Minimize\"; ObjectID = \"Nxv-i6-pWj\"; Note = \"#bc-ignore!\";"
+    },
+    "eb9-fE-Lgq.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Search\"; ObjectID = \"eb9-fE-Lgq\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "value" : "Buscar",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukaj"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Rechercher",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Пошук",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Search",
+            "state" : "new"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "검색",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeken"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "بحث",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "جستجو",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesquisar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca"
+          }
+        }
+      }
+    },
+    "AYu-sK-qS6.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Main Menu",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Main Menu",
+            "state" : "new"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenu\"; title = \"Main Menu\"; ObjectID = \"AYu-sK-qS6\"; Note = \"#bc-ignore!\";"
+    },
+    "hin-8a-QBn.title" : {
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSMenu\"; title = \"Edit\"; ObjectID = \"hin-8a-QBn\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Edit",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
+    "gPf-oY-cYP.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select All"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Select All",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Select All\"; ObjectID = \"gPf-oY-cYP\"; Note = \"#bc-ignore!\";"
+    },
+    "o52-Z0-lue.title" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "value" : "Se ti piace usare LyricsX e desideri comprarmi una tazza di caffè e, nello stesso tempo, aiutarmi a sviluppare questo software, puoi eseguire la scansione del codice QR qui sotto per fare una generosa donazione.",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli podoba Ci się LyricsX i chciałbyś mnie wesprzeć kubkiem kawy potrzebnym do pracy nad oprogramowaniem, możesz zeskanować poniższy kod QR i przesłać wsparcie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se você gosta de usar LyricsX e gostaria de me comprar uma xícara de café, além de me ajudar a manter este software em andamento, você pode digitalizar o código QR abaixo para fazer uma doação generosa."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Als je LyricsX leuk vindt en me een kopje koffie wil betalen, naast dat je me helpt deze software gaande te houden, kun je hieronder de QR-code scannen om een gulle donatie te doen.",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果您认为 LyricsX 对您有所帮助，并愿意支持软件的维护，可以扫描下方的二维码向我捐赠。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX が役に立てて、アプリのメンテナンスをサポートしたいと考えている場合は、下記のQRコードをスキャンして私に寄付することができます。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "如果你 LyricsX 用得還算開心，願意請杯咖啡好讓我可以繼續維護這個軟體的話，你可以掃描下面的 QR code 來贊助我，感謝。",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Si vous aimez utiliser LyricsX et souhaitez m'offrir une tasse de café ainsi que m'aider à continuer le développement de ce logiciel, vous pouvez scanner le code QR ci-dessous et faire un don généreux.",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Falls dir LyricsX gefällt, und du mir einen Kaffee ausgeben möchtest sowie mir dabei helfen willst, diese Software am Laufen zu halten, kannst du dafür ja den untenstehenden QR-Code scannen, um mir eine freiwillige Spende zukommen zu lassen.",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "If you enjoy using LyricsX, and would like to buy me a cup of coffee, as well as help me keep this software going, you can scan QR code below to make a generous donation."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если вам нравится LyricsX, и вы хотели бы купить мне чашечку кофе, а также помочь продолжить работу над этой программой, вы можете отсканировать QR-код ниже, чтобы сделать великодушное пожертвование."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إذا كنت تستمتع باستخدام LyricsX، وتود أن تشتري لي فنجان من القهوة، بالإضافة إلى مساعدتي على مواصلة هذا البرنامج، يمكنك مسح رمز QR أدناه لتقديم تبرع سخي."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "اگر از برنامه لذت بردید می توانید با اسکن کردن QR Code پایین به اندازه یک فنجان قهوه به توسعه دهنده کمک مالی کنید. اینجوری به برنامه نویس آن کمک می کنید که برنامه را به روز نگه داره و توسعه را ادامه بدهد.",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Якщо вам подобається LyricsX, і ви хочете купити мені чашечку кави, а також допомогти продовжити роботу над цією программою, ви можете відсканувати QR-код нижче, щоб зробити великодушну пожертву.",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "만약 LyricsX가 맘에 드시고 제게 커피 한 잔 사고싶으시다면, 아래 QR코드를 스캔해 후원하실 수 있습니다.",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika kamu menyukai LyricsX dan berkenan mentraktir saya secangkir kopi, juga membantu saya untuk tetap meningkatkan aplikasi ini, kamu bisa memindai kode QR di bawah ini untuk memberikan donasi."
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "If you enjoy using LyricsX, and would like to buy me a cup of coffee, as well as help me keep this software going, you can scan QR code below to make a generous donation.",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si le gusta usar LyricsX y desea comprarme una taza de café, además de ayudarme a mantener este software en funcionamiento, puede escanear el código QR a continuación para hacer una generosa donación."
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"If you enjoy using LyricsX, and would like to buy me a cup of coffee, as well as help me keep this software going, you can scan QR code below to make a generous donation.\"; ObjectID = \"o52-Z0-lue\";"
+    },
+    "HMU-fa-17B.headerCell.title" : {
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Wykonawca",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Artist"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artiste"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "艺人",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Виконавець",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Artist",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Artiest",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Исполнитель"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artista"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "الفنان",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artista"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Artis",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interpret"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "アーティスト",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Artista",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خواننده"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "藝人",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아티스트"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSTableColumn\"; headerCell.title = \"Artist\"; ObjectID = \"HMU-fa-17B\";"
+    },
+    "l8J-1r-dIZ.title" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artiste :"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "아티스트:",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Исполнитель:",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "خواننده:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "艺人:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーティスト:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Виконавець:",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artista:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artista :"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Artist:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Artiest: ",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "演唱人："
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Künstler:",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artista:"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Artis:",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykonawca:"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "الفنان:",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Artist:",
+            "state" : "translated"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Artist:\"; ObjectID = \"l8J-1r-dIZ\";"
+    },
+    "kNl-ZO-aX6.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "value" : "Zu iTunes übertragen",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Записати в iTunes",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schrijf naar iTunes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrivi su iTunes"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "نوشتن در آیتیونز",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribir a iTunes"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar no iTunes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Записать в iTunes"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將歌詞寫入 iTunes 歌曲"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Write to iTunes"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Write to iTunes",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "iTunes에 가사 내보내기",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz w iTunes"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tulis ke iTunes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écrire sur iTunes"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "الكتابة إلى iTunes",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写入歌词到 iTunes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "Musicに書き込む",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Write to iTunes\"; ObjectID = \"kNl-ZO-aX6\";"
+    },
+    "Jbz-xE-Ntb.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Redo\"; ObjectID = \"Jbz-xE-Ntb\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Redo"
+          }
+        }
+      }
+    },
+    "Wcz-DR-zeg.title" : {
+      "comment" : "Class = \"NSMenu\"; title = \"Lyrics\"; ObjectID = \"Wcz-DR-zeg\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyrics"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Lyrics",
+            "state" : "new"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value"
+    },
+    "RGl-MT-MQb.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تطبيق التغييرات"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apply"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "적용"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applicare"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Aplicar",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Terapkan",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastosuj"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Прийняти",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Appliquer",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Применить",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Übernehmen",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Toepassen",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Aplicar",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Apply",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "適用",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اعمال"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用"
+          }
+        }
+      },
+      "comment" : "Class = \"NSButtonCell\"; title = \"Apply\"; ObjectID = \"RGl-MT-MQb\";"
+    },
+    "EoO-ld-6Xv.title" : {
+      "extractionState" : "manual",
+      "comment" : "Class = \"NSMenuItem\"; title = \"Donate...\"; ObjectID = \"EoO-ld-6Xv\";",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Faire un don...",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doneren..."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "تبرع...",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Spenden...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捐赠..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "寄付...",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Підтримати...",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Donar...",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Fazer doação...",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Donate...",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Поддержать...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "贊助⋯",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Wesprzyj nas...",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "کمک مالی..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "후원하기..."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Fa una donazione...",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Donasi...",
+            "state" : "translated"
+          }
+        }
+      }
+    },
+    "Gza-SX-MCH.ibShadowedToolTip" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "置顶"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поверх усіх вікон"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toujours au premier plan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni in primo piano"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Selalu di atas",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "همیشه در بالا"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Always on top",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Always on top",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Immer im Vordergrund",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "البقاء فوق النوافذ الأخرى",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Zawsze na wierzchu",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поверх всех окон"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "畫面置頂",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常に最前面"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Siempre encima",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre no topo"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Altijd op de voorgrond",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "항상 다른 모든 창 위에 유지",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSButton\"; ibShadowedToolTip = \"Always on top\"; ObjectID = \"Gza-SX-MCH\";"
+    },
+    "FMI-7E-tCo.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Название:",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عنوان:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "タイトル:",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Titre :",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌曲："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제목:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Tytuł:",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Judul:",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titel:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Назва:",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Titel: ",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌曲:"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "العنوان:",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Título:",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Titolo:",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Title:"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Title:\"; ObjectID = \"FMI-7E-tCo\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "CWo-Qx-2Ut.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Preferences...\"; ObjectID = \"CWo-Qx-2Ut\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Preferences...",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Preferences...",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Préférences...",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "環境設定...",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Preferensi...",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Preferências...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "偏好设置...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偏好設定⋯"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Preferencias...",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "تنظیمات...",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorkeuren..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "환경설정..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Настройки...",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferenze..."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإعدادات..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Налаштування..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Ustawienia...",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen..."
+          }
+        }
+      }
+    },
+    "PHb-rX-39I.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Copy",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Copy",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Copy\"; ObjectID = \"PHb-rX-39I\"; Note = \"#bc-ignore!\";"
+    },
+    "O0D-VF-KGQ.title" : {
+      "comment" : "Class = \"NSWindow\"; title = \"Debug\"; ObjectID = \"O0D-VF-KGQ\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Debug",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Debug",
+            "state" : "new"
+          }
+        }
+      }
+    },
+    "2jf-zU-489.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Quit Application\"; ObjectID = \"2jf-zU-489\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Quit Application",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Quit Application",
+            "state" : "new"
+          }
+        }
+      }
+    },
+    "X70-gA-VCs.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Undo"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Undo",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Undo\"; ObjectID = \"X70-gA-VCs\"; Note = \"#bc-ignore!\";"
+    },
+    "PdE-VG-JUC.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"About LyricsX\"; ObjectID = \"PdE-VG-JUC\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O LyricsX"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About LyricsX"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre LyricsX"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "A proposito di LyricsX",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über LyricsX"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "LyricsX について",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "درباره LyricsX"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О LyricsX"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Tentang LyricsX",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de LyricsX"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "About LyricsX",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于 LyricsX"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關於 LyricsX"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "À propos de LyricsX",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Про LyricsX"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حول برنامج LyricsX"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "LyricsX에 대해",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over LyricsX"
+          }
+        }
+      }
+    },
+    "GGU-uz-d9h.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Enable Karaoke Lyrics\"; ObjectID = \"GGU-uz-d9h\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Enable Karaoke Lyrics",
+            "state" : "new"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用逐行歌词"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Habilitar Letras de Karaokê",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryb Karaoke"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用動態歌詞"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Activer les paroles de karaoké",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "노래방 모드 사용",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "فعالسازی ترانه کاراکویه",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Abilita il testo per il karaoke",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラオケ歌詞を有効にする"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Karaoke Lyrics"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Songtext aktivieren",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel karaoke-songteksten in"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнути караоке текст"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar letras Karaoke"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "تمكين كلمات كاراوكي",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Hidupkan Lirik Karaoke",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить караоке текст"
+          }
+        }
+      }
+    },
+    "hxE-X4-sJh.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letras"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyrics"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Lirik",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songteksten"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Текст",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "歌词",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "歌詞",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtext"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Paroles",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "كلمات الأغنية",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Lyrics",
+            "state" : "new"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Letras",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "가사",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "歌詞",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "ترانه ها",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Lyrics\"; ObjectID = \"hxE-X4-sJh\";"
+    },
+    "aRw-yQ-GNX.title" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا توجد كلمات\n\nاسحب وإسقط لاستيراد ملف LRC"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "歌詞なし\n\nドラッグ＆ドロップでLRCファイルをインポート",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가사가 없습니다\n\n드래그 & 드롭으로 LRC 파일을 불러오세요"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترانه ای پیدا نشد. فایل LRC رو به اینجا بکشید"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem letras\n\nArraste e solte para importar o arquivo LRC"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Brak tekstu\n\nPrzeciągnij tu plik LRC żeby zaimportować",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有歌词\n\n拖拽以导入 LRC 歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "沒有歌詞資訊\n請將 LRC 檔案拖曳匯入",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "No hay letras\nPara importar un fichero LRC realiza un Drag & Drop",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum Ada Lirik\n\nTarik & Lepas untuk mengimpor berkas LRC"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Geen songtekst\n\nSleep hier om een LRC-bestand te importeren",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Aucune paroles\n\nPas de glisser-et-déposer pour importer un fichier LRC",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Нет текста\n\nПеретащите для импорта LRC файла",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "No Lyrics\n\nDrag & Drop to import LRC file",
+            "state" : "new"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Kein Songtext, Drag & Drop zum Importieren der LRC-Datei",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "No Lyrics\\n\\nDrag & Drop to import LRC file",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun testo\nTrascina e rilascia per importare il file LRC"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Немає тексту\n\nПеретягніть для імпортування файлу LRC",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"No Lyrics\\n\\nDrag & Drop to import LRC file\"; ObjectID = \"aRw-yQ-GNX\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "kyJ-kV-2Du.title" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Показать окно с текстом",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtext-Fenster anzeigen"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Mostrar Janela de Letras",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "نمایش ترانه در پنجره",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Tampilkan Jendela Lirik",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати вікно з текстом"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار نافذة الكلمات"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示歌词窗口"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher la fenêtre des paroles"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Show Lyrics Window",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "가사 창 보기",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Show Lyrics Window",
+            "state" : "new"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Mostra la finestra con il testo",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Mostrar ventana de canciones",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż okno z tekstem"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞ウィンドウを表示"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Toon songtekst-venster",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "顯示歌詞視窗",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Show Lyrics Window\"; ObjectID = \"kyJ-kV-2Du\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "csd-w7-kJw.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Hide Application",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hide Application"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Hide Application\"; ObjectID = \"csd-w7-kJw\"; Note = \"#bc-ignore!\";"
+    },
+    "cnE-64-D67.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Text Cell",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Text Cell\"; ObjectID = \"cnE-64-D67\"; Note = \"#bc-ignore!\";"
+    },
+    "CW0-AL-Z6N.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fazer doação"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "value" : "Donasi",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "捐赠",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Wesprzyj nas",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Spenden",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "贊助"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "寄付"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبرع"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підтримати"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effettua una donazione"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "후원하기",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doneren"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faire un don"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Donate",
+            "state" : "new"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "کمک مالی",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donar"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donate"
+          }
+        }
+      },
+      "comment" : "Class = \"NSWindow\"; title = \"Donate\"; ObjectID = \"CW0-AL-Z6N\";"
+    },
+    "c9V-Dh-f1D.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Text Cell\"; ObjectID = \"c9V-Dh-f1D\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Text Cell",
+            "state" : "translated"
+          }
+        }
+      }
+    },
+    "1xI-G4-Fsc.headerCell.title" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "來源",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sumber"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Source"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "منبع",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Origen"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "소스",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Джерело"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Источник",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bron"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "المصدر",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参照元"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来源"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Source",
+            "state" : "translated"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSTableColumn\"; headerCell.title = \"Source\"; ObjectID = \"1xI-G4-Fsc\";"
+    },
+    "fmS-zv-RcJ.title" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "value" : "間違った歌詞",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lirik salah"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Wrong Lyrics"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zły tekst"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Mauvaises paroles",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "كلمات خاطئة",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letra equivocada"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前歌詞有誤"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falscher Songtext"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "잘못된 가사",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verkeerde songtekst"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testo errato"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wrong Lyrics"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متن ترانه اشتباه است"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неверный текст"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Letras Erradas",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "错误的歌词",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Невірний текст",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Wrong Lyrics\"; ObjectID = \"fmS-zv-RcJ\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "hgd-IJ-u14.title" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Désactiver les paroles pour l'album complet",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Songtexte für das gesamte Album deaktivieren",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desabilitar Letras para Todo o Álbum"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Disable Lyrics for Entire Album",
+            "state" : "new"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "停用整張專輯的歌詞",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вимкнути тексти для усього альбому"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отключить тексты для всего альбома"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "アルバム全体の歌詞を無効にする",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyłącz tekst dla całego albumu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Non mostrare i testi per l'intero album",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "تعطيل كلمات الاغنية لألبوم كامل",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "禁用整张专辑的歌词"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disable Lyrics for Entire Album"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Desactivar letras para el álbum completo",
+            "state" : "translated"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan Lirik untuk Seluruh Album"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غیرفعالسازی ترانه برای این آلبوم"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 앨범의 가사 안보기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Songteksten uitschakelen voor het volledige album",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Disable Lyrics for Entire Album\"; ObjectID = \"hgd-IJ-u14\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "YFT-fb-xcH.title" : {
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSMenuItem\"; title = \"Paste and Match Style\"; ObjectID = \"YFT-fb-xcH\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "value" : "Paste and Match Style",
+            "state" : "new"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste and Match Style"
+          }
+        }
+      }
+    },
+    "VQG-Pf-NsG.title" : {
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ms"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "ms",
+            "state" : "new"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value",
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"ms\"; ObjectID = \"VQG-Pf-NsG\"; Note = \"#bc-ignore!\";"
+    },
+    "Z7d-yp-uRx.title" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "value" : "Hidupkan Lirik Batang Menu",
+            "state" : "translated"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "啟用選單列歌詞",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel menubalk-songteksten in"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "メニューバー歌詞を有効にする",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Enable Menu Bar Lyrics",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Enable Menu Bar Lyrics",
+            "state" : "new"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar letras en la barra de menú"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнути текст у панелі меню"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "تمكين ظهور الكلمات في شريط القائمة",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 막대에 가사 표시 사용"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Afficher les paroles dans la barre de menu",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Mostra il testo nella barra del menu",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "فعالسازی ترانه در منو",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用菜单栏歌词"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtext in Menüleiste aktivieren"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить текст в панели меню"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Habilitar a Barra de Menu Letras",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz tekst w pasku menu"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Enable Menu Bar Lyrics\"; ObjectID = \"Z7d-yp-uRx\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "1fM-ec-bJX.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Close"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Close",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSMenuItem\"; title = \"Close\"; ObjectID = \"1fM-ec-bJX\"; Note = \"#bc-ignore!\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "h6D-jz-GbI.title" : {
+      "comment" : "Class = \"NSMenuItem\"; title = \"Search Lyrics...\"; ObjectID = \"h6D-jz-GbI\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songteksten zoeken..."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋歌詞⋯"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chercher des paroles..."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "value" : "Cerca testo...",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "搜索歌词...",
+            "state" : "translated"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "value" : "Nach Songtext suchen...",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가사 검색..."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari Lirik..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Шукати текст...",
+            "state" : "translated"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "البحث عن كلمات الأغاني...",
+            "state" : "translated"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Pesquisar Letras...",
+            "state" : "translated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Buscar letras...",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Искать текст...",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "value" : "جستجوی ترانه...",
+            "state" : "translated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞を検索..."
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search Lyrics..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "value" : "Szukaj tekstu...",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "value" : "Search Lyrics...",
+            "state" : "new"
+          }
+        }
+      }
+    },
+    "d5a-4n-6k8.ibShadowedToolTip" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مزامنة"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронизировать"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "value" : "同步",
+            "state" : "translated"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "value" : "동기화",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisme"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronisme"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Sincronizar",
+            "state" : "translated"
+          }
+        },
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Synchronism",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronism"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同期"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisieren"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizzazione"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Синхронізувати",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Synchronism"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "همگام سازی"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "value" : "Sincronismo",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Synchronisation",
+            "state" : "translated"
+          }
+        }
+      },
+      "comment" : "Class = \"NSButton\"; ibShadowedToolTip = \"Synchronism\"; ObjectID = \"d5a-4n-6k8\";",
+      "extractionState" : "extracted_with_value"
+    },
+    "L37-wq-P3U.title" : {
+      "comment" : "Class = \"NSMenu\"; title = \"Application\"; ObjectID = \"L37-wq-P3U\"; Note = \"#bc-ignore!\";",
+      "localizations" : {
+        "Base" : {
+          "stringUnit" : {
+            "value" : "Application",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Application"
+          }
+        }
+      },
+      "extractionState" : "extracted_with_value"
+    }
+  },
+  "version" : "1.0",
+  "sourceLanguage" : "en"
+}

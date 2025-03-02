@@ -1,0 +1,141 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "LyricsX"
+          }
+        }
+      }
+    },
+    "Lyrics File" : {
+
+    },
+    "NSAppleEventsUsageDescription" : {
+      "comment" : "Privacy - AppleEvents Sending Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "البرنامج بحاجة إلى معرفة الأغنية التي تلعب حاليًا، لعرض كلمات الأغاني وفقاً لذلك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX muss wissen, welches Lied aktuell gespielt wird, um korrekte Liedtexte anzeigen zu können."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "LyricsX needs to know what song you're currently playing, to show lyrics accordingly."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX necesita saber que canción se está reproduciéndo ahora, para mostrar letras acordemente."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "این برنامه برای نمایش متن ترانه نیاز دارد آهنگ در حال پخش شما رو بداند."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX a besoin de savoir quelle chanson vous écoutez actuellement pour en afficher les paroles."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX harus mengetahui lagu apa yang sedang kamu putar untuk menampilkan lirik."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX deve sapere quale canzone stai attualmente riproducendo, per mostrarne il testo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX は現在再生中の音楽を取得し、それに応じて歌詞を表示する必要があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가사를 표시하기 위해서 LyricsX는 당신이 현재 무슨 노래를 듣고 있는지 알아야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX moet weten welk nummer je momenteel aan het spelen bent om songteksten te laten zien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX musi wiedzieć jaką piosenkę właśnie odtwarzasz, żeby wyświetlić odpowiedni tekst."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O LyricsX precisa saber qual música você está tocando no momento, para mostrar a letra de acordo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX нужно знать, какая песня сейчас играет, чтобы показывать соответствующий текст."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX повинен знати, яка пісня зараз грає, щоб показувати текст відповідно."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX 需要获取当前播放的音乐，并据此展示歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX 需要了解你正在播放的音樂，並依此顯示歌詞。"
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright" : {
+      "comment" : "Copyright (human-readable)",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copyright © 2017-2020 Xander Deng. All rights reserved."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
