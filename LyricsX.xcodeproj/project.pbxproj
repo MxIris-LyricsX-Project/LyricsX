@@ -1048,7 +1048,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MxIris-LyricsX-Project/LyricsKit";
 			requirement = {
-				branch = temporary;
+				branch = main;
 				kind = branch;
 			};
 		};
@@ -1078,7 +1078,7 @@
 		};
 		E9C4E2A02AC9A3D6004B9EB2 /* XCRemoteSwiftPackageReference "SwiftCF" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Mx-Iris/SwiftCF";
+			repositoryURL = "https://github.com/MxIris-Library-Forks/SwiftCF";
 			requirement = {
 				branch = master;
 				kind = branch;
