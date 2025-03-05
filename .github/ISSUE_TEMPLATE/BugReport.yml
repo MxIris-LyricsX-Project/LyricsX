@@ -1,14 +1,8 @@
 name: Bug报告 / Bug Report
 description: 创建一个报告以帮助我们改进 / Create a report to help us improve
 title: "[Bug]: "
-labels: ["bug"]
+labels: ["Bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        感谢您抽出时间填写这份Bug报告！
-        Thanks for taking the time to fill out this bug report!
-  
   - type: textarea
     id: bug-description
     attributes:
