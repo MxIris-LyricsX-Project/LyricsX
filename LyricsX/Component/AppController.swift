@@ -11,6 +11,7 @@ import AppKit
 import CXShim
 import CXExtensions
 import LyricsService
+import LyricsServiceUI
 import MusicPlayer
 import OpenCC
 import Regex
@@ -19,7 +20,7 @@ class AppController: NSObject {
     
     static let shared = AppController()
     
-    let lyricsManager = LyricsProviders.Group()
+    var lyricsManager = LyricsProviders.Group()
     
     @Published var currentLyrics: Lyrics? {
         willSet {
@@ -71,6 +72,12 @@ class AppController: NSObject {
                 }
             }.store(in: &cancelBag)
         currentTrackChanged()
+        
+        Task { @MainActor in
+            if let accessToken = await SpotifyLoginManager.shared.accessTokenString {
+                lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(accessToken: accessToken)])
+            }
+        }
     }
     
     var currentLineCheckSchedule: Cancellable?

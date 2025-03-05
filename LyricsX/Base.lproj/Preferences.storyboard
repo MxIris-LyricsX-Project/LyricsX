@@ -2336,11 +2336,11 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="328"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="364"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="288"/>
+                                <rect key="frame" x="75" y="20" width="520" height="324"/>
                                 <rows>
                                     <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
                                     <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
@@ -2351,6 +2351,7 @@
                                     <gridRow yPlacement="center" height="20" topPadding="10" id="5Sc-jD-UJ4"/>
                                     <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
+                                    <gridRow yPlacement="center" height="30" id="18P-nC-uyg"/>
                                 </rows>
                                 <columns>
                                     <gridColumn xPlacement="trailing" width="150" id="8ba-lF-U7s"/>
@@ -2359,7 +2360,7 @@
                                 <gridCells>
                                     <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
-                                            <rect key="frame" x="-2" y="247" width="524" height="32"/>
+                                            <rect key="frame" x="-2" y="283" width="524" height="32"/>
                                             <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2371,7 +2372,7 @@
                                     <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
                                     <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
-                                            <rect key="frame" x="168" y="213" width="274" height="18"/>
+                                            <rect key="frame" x="168" y="249" width="274" height="18"/>
                                             <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2384,7 +2385,7 @@
                                     <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
                                     <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
-                                            <rect key="frame" x="163" y="179" width="216" height="32"/>
+                                            <rect key="frame" x="163" y="215" width="216" height="32"/>
                                             <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2398,7 +2399,7 @@
                                     <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
                                     <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
-                                            <rect key="frame" x="168" y="156" width="337" height="18"/>
+                                            <rect key="frame" x="168" y="192" width="337" height="18"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2411,7 +2412,7 @@
                                     <gridCell row="es4-R9-etL" column="8ba-lF-U7s" id="hk3-2P-FTU"/>
                                     <gridCell row="es4-R9-etL" column="4uA-B7-Dvh" id="dui-8P-7d0">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D7U-qs-Keb">
-                                            <rect key="frame" x="168" y="125" width="167" height="18"/>
+                                            <rect key="frame" x="168" y="161" width="167" height="18"/>
                                             <buttonCell key="cell" type="check" title="Enable Touch Bar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wnV-53-Dlj">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2421,7 +2422,7 @@
                                     <gridCell row="6GV-2W-Qb0" column="8ba-lF-U7s" id="OEP-pE-Pg8"/>
                                     <gridCell row="6GV-2W-Qb0" column="4uA-B7-Dvh" id="UZK-20-qw8">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jsm-Ub-qMX">
-                                            <rect key="frame" x="163" y="91" width="159" height="32"/>
+                                            <rect key="frame" x="163" y="127" width="159" height="32"/>
                                             <buttonCell key="cell" type="push" title="Customize TouchBar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7pm-7c-xyY">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2442,7 +2443,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="8ba-lF-U7s" id="nOn-Ex-4vI">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="89S-CL-lsy">
-                                            <rect key="frame" x="17" y="64" width="135" height="16"/>
+                                            <rect key="frame" x="17" y="100" width="135" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Write lyrics to iTunes:" id="kAi-t8-g5K">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2452,7 +2453,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="4uA-B7-Dvh" id="Kbf-0T-apV">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GZZ-x3-lIt">
-                                            <rect key="frame" x="168" y="63" width="122" height="18"/>
+                                            <rect key="frame" x="168" y="99" width="122" height="18"/>
                                             <buttonCell key="cell" type="check" title="With translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="uXK-tg-wwl">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2465,7 +2466,7 @@
                                     <gridCell row="Wah-Ax-79z" column="8ba-lF-U7s" id="ubI-WM-7fC"/>
                                     <gridCell row="Wah-Ax-79z" column="4uA-B7-Dvh" id="GRv-Th-Hm9">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="veZ-Dt-Ga7">
-                                            <rect key="frame" x="168" y="37" width="108" height="18"/>
+                                            <rect key="frame" x="168" y="73" width="108" height="18"/>
                                             <buttonCell key="cell" type="check" title="Automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oEV-Ku-uLM">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2478,7 +2479,7 @@
                                     <gridCell row="lhU-ZY-jGn" column="8ba-lF-U7s" id="T3Q-4J-uOx"/>
                                     <gridCell row="lhU-ZY-jGn" column="4uA-B7-Dvh" id="YIm-rp-ZKR">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fmv-dB-BeO">
-                                            <rect key="frame" x="168" y="6" width="288" height="18"/>
+                                            <rect key="frame" x="168" y="42" width="288" height="18"/>
                                             <buttonCell key="cell" type="check" title="Combine menubar icon with menubar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rtU-Go-wwF">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2487,6 +2488,39 @@
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.CombinedMenubarLyrics" id="gi4-hd-PrE"/>
                                             </connections>
                                         </button>
+                                    </gridCell>
+                                    <gridCell row="18P-nC-uyg" column="8ba-lF-U7s" id="gdV-Lb-4b5">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vmc-9I-Urh">
+                                            <rect key="frame" x="62" y="7" width="90" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Spotify Lyrics:" id="9yS-oJ-E3S">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="18P-nC-uyg" column="4uA-B7-Dvh" id="IRt-bJ-bbU">
+                                        <stackView key="contentView" distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J0L-CL-fOR">
+                                            <rect key="frame" x="170" y="5" width="54" height="20"/>
+                                            <subviews>
+                                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KfG-RH-rUg">
+                                                    <rect key="frame" x="-7" y="-7" width="68" height="32"/>
+                                                    <buttonCell key="cell" type="push" title="Login" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="xv6-tD-l7c">
+                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <font key="font" metaFont="system"/>
+                                                    </buttonCell>
+                                                    <connections>
+                                                        <action selector="spotifyLoginAction:" target="JPs-hn-m7d" id="RBg-8H-fSY"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <visibilityPriorities>
+                                                <integer value="1000"/>
+                                            </visibilityPriorities>
+                                            <customSpacing>
+                                                <real value="3.4028234663852886e+38"/>
+                                            </customSpacing>
+                                        </stackView>
                                     </gridCell>
                                 </gridCells>
                             </gridView>
@@ -2500,6 +2534,7 @@
                     </view>
                     <connections>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
+                        <outlet property="spotifyLoginButton" destination="KfG-RH-rUg" id="wgo-Jx-swh"/>
                     </connections>
                 </viewController>
                 <customObject id="WFr-RK-Q1o" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>

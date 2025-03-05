@@ -12,6 +12,7 @@ import GenericID
 import MASShortcut
 import MusicPlayer
 import Sparkle
+import Semver
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {

@@ -8,15 +8,45 @@
 //
 
 import Cocoa
+import LyricsService
+import LyricsServiceUI
 
 class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet var enableTouchBarLyricsButton: NSButton!
 
+    @IBOutlet var spotifyLoginButton: NSButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
+        Task {
+            if await SpotifyLoginManager.shared.isLogin {
+                spotifyLoginButton.title = "Logout"
+            } else {
+                spotifyLoginButton.title = "Login"
+            }
+        }
     }
 
+    @IBAction func spotifyLoginAction(_ sender: NSButton) {
+        Task {
+            if await !SpotifyLoginManager.shared.isLogin {
+                try await SpotifyLoginManager.shared.login()
+                guard let accessToken = await SpotifyLoginManager.shared.accessTokenString else { return }
+                await MainActor.run {
+                    AppController.shared.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices +  [.spotify(accessToken: accessToken)])
+                }
+                spotifyLoginButton.title = "Logout"
+            } else {
+                await SpotifyLoginManager.shared.logout()
+                await MainActor.run {
+                    AppController.shared.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices)
+                }
+                spotifyLoginButton.title = "Login"
+            }
+        }
+    }
+    
     @IBAction func customizeAllowsNowPlayingApplicationsAction(_ sender: NSButton) {
         let viewController = NowPlayingApplicationListViewController()
         viewController.preferredContentSize = .init(width: 600, height: 500)

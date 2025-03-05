@@ -25,7 +25,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
     }
     
-    let lyricsManager = LyricsProviders.Group()
+    var lyricsManager: LyricsProviders.Group { AppController.shared.lyricsManager }
     var searchRequest: LyricsSearchRequest?
     var searchCanceller: Cancellable?
     var searchResult: [Lyrics] = []
