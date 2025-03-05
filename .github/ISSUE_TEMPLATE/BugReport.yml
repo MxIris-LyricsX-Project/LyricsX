@@ -1,0 +1,89 @@
+name: Bug报告 / Bug Report
+description: 创建一个报告以帮助我们改进 / Create a report to help us improve
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您抽出时间填写这份Bug报告！
+        Thanks for taking the time to fill out this bug report!
+  
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 描述这个Bug / Describe the bug
+      description: 请清晰、简洁地描述这个Bug是什么 / A clear and concise description of what the bug is
+      placeholder: |
+        当我...时，发生了...
+        When I..., what happened was...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现路径 / To Reproduce
+      description: 描述复现这个Bug的步骤 / Steps to reproduce the behavior
+      placeholder: |
+        1. 前往 '...' / Go to '...'
+        2. 点击 '....' / Click on '....'
+        3. 滚动到 '....' / Scroll down to '....'
+        4. 出现错误 / See error
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为 / Expected behavior
+      description: 清晰、简洁地描述您期望发生的情况 / A clear and concise description of what you expected to happen
+    validations:
+      required: true
+      
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图 [可选] / Screenshots [Optional]
+      description: 如果适用，添加截图以帮助解释您的问题 / If applicable, add screenshots to help explain your problem
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: macos-version
+    attributes:
+      label: macOS 版本 / macOS Version
+      description: 您正在使用的macOS版本（需要注明是否为beta版本）/ The macOS version you're using (specify if it's a beta version)
+      options:
+        - macOS 15.3.1
+        - macOS 15.3.1 Beta
+        - macOS 15.3
+        - macOS 15.2
+        - macOS 15.1
+        - macOS 15.0
+        - macOS 14.x
+        - Other / 其他 (please specify in additional context / 请在其他描述中注明)
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: lyricsx-version
+    attributes:
+      label: LyricsX 版本 / LyricsX Version
+      description: 您正在使用的LyricsX版本 / The LyricsX version you're using
+      options:
+        - LyricsX 1.7.3
+        - LyricsX 1.7.2
+        - LyricsX 1.7.1
+        - LyricsX 1.7.0
+        - Other / 其他 (please specify in additional context / 请在其他描述中注明)
+    validations:
+      required: true
+      
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他描述 / Additional context
+      description: 在此处添加有关该问题的任何其他上下文 / Add any other context about the problem here
+    validations:
+      required: false
