@@ -49,34 +49,19 @@ body:
     validations:
       required: false
       
-  - type: dropdown
+  - type: input
     id: macos-version
     attributes:
       label: macOS 版本 / macOS Version
       description: 您正在使用的macOS版本（需要注明是否为beta版本）/ The macOS version you're using (specify if it's a beta version)
-      options:
-        - macOS 15.3.1
-        - macOS 15.3.1 Beta
-        - macOS 15.3
-        - macOS 15.2
-        - macOS 15.1
-        - macOS 15.0
-        - macOS 14.x
-        - Other / 其他 (please specify in additional context / 请在其他描述中注明)
     validations:
       required: true
       
-  - type: dropdown
+  - type: input
     id: lyricsx-version
     attributes:
       label: LyricsX 版本 / LyricsX Version
       description: 您正在使用的LyricsX版本 / The LyricsX version you're using
-      options:
-        - LyricsX 1.7.3
-        - LyricsX 1.7.2
-        - LyricsX 1.7.1
-        - LyricsX 1.7.0
-        - Other / 其他 (please specify in additional context / 请在其他描述中注明)
     validations:
       required: true
       
