@@ -167,7 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBAction func aboutLyricsXAction(_ sender: Any) {
         if #available(OSX 10.13, *) {
             let channel = "GitHub"
-            let versionString = "\(channel) Version \(Bundle.main.semanticVersion!)"
+            let versionString = "\(channel) Version \(Bundle.main.semanticVersion ?? "Unknown")"
             NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: versionString])
         } else {
             NSApp.orderFrontStandardAboutPanel(sender)
@@ -217,7 +217,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     @IBAction func searchLyrics(_ sender: Any?) {
         searchLyricsWC.showWindow(nil)
-        (searchLyricsWC.contentViewController as! SearchLyricsViewController?)?.reloadKeyword()
         NSApp.activate(ignoringOtherApps: true)
     }
 

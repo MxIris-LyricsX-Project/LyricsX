@@ -17,11 +17,10 @@ import OpenCC
 import Regex
 
 class AppController: NSObject {
-    
     static let shared = AppController()
-    
+
     var lyricsManager = LyricsProviders.Group()
-    
+
     @Published var currentLyrics: Lyrics? {
         willSet {
             willChangeValue(forKey: "lyricsOffset")
@@ -32,14 +31,14 @@ class AppController: NSObject {
             scheduleCurrentLineCheck()
         }
     }
-    
+
     @Published var currentLineIndex: Int?
-    
+
     var searchRequest: LyricsSearchRequest?
     var searchCanceller: Cancellable?
-    
+
     private var cancelBag = Set<AnyCancellable>()
-    
+
     @objc dynamic var lyricsOffset: Int {
         get {
             return currentLyrics?.offset ?? 0
@@ -50,7 +49,7 @@ class AppController: NSObject {
             scheduleCurrentLineCheck()
         }
     }
-    
+
     private override init() {
         super.init()
         selectedPlayer.currentTrackWillChange
@@ -63,23 +62,24 @@ class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay.cx)
             .invoke(AppController.scheduleCurrentLineCheck, weaklyOn: self)
             .store(in: &cancelBag)
-        
+
         workspaceNC.cx.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
-            .sink { n in
-                let bundleID = (n.userInfo![NSWorkspace.applicationUserInfoKey] as! NSRunningApplication).bundleIdentifier
+            .sink { notification in
+                guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
+                let bundleID = application.bundleIdentifier
                 if defaults[.launchAndQuitWithPlayer], (selectedPlayer.designatedPlayer as? MusicPlayers.Scriptable)?.playerBundleID == bundleID {
                     NSApplication.shared.terminate(nil)
                 }
             }.store(in: &cancelBag)
         currentTrackChanged()
-        
+
         Task { @MainActor in
             if let accessToken = await SpotifyLoginManager.shared.accessTokenString {
-                lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(accessToken: accessToken)])
+                self.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(accessToken: accessToken)])
             }
         }
     }
-    
+
     var currentLineCheckSchedule: Cancellable?
     func scheduleCurrentLineCheck() {
         currentLineCheckSchedule?.cancel()
@@ -100,12 +100,12 @@ class AppController: NSObject {
             }
         }
     }
-    
+
     func writeToiTunes(overwrite: Bool) {
         guard selectedPlayer.name == .appleMusic,
-            let currentLyrics = currentLyrics,
-            let sbTrack = selectedPlayer.currentTrack?.originalTrack,
-            overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
+              let currentLyrics = currentLyrics,
+              let sbTrack = selectedPlayer.currentTrack?.originalTrack,
+              overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
         let content = currentLyrics.lines.map { line -> String in
@@ -130,7 +130,7 @@ class AppController: NSObject {
         let replaced = content.replacingMatches(of: regex, with: "\n\n")
         sbTrack.setValue(replaced, forKey: "lyrics")
     }
-    
+
     func currentTrackChanged() {
         if currentLyrics?.metadata.needsPersist == true {
             currentLyrics?.persist()
@@ -144,18 +144,18 @@ class AppController: NSObject {
         // FIXME: deal with optional value
         let title = track.title ?? ""
         let artist = track.artist ?? ""
-        
+
         guard !defaults[.noSearchingTrackIds].contains(track.id) else {
             return
         }
-        
-        var candidateLyricsURL: [(URL, Bool, Bool)] = []  // (fileURL, isSecurityScoped, needsSearching)
-        
+
+        var candidateLyricsURL: [(URL, Bool, Bool)] = [] // (fileURL, isSecurityScoped, needsSearching)
+
         if defaults[.loadLyricsBesideTrack] {
             if let fileName = track.fileURL?.deletingPathExtension() {
                 candidateLyricsURL += [
                     (fileName.appendingPathExtension("lrcx"), false, false),
-                    (fileName.appendingPathExtension("lrc"), false, false)
+                    (fileName.appendingPathExtension("lrc"), false, false),
                 ]
             }
         }
@@ -165,9 +165,9 @@ class AppController: NSObject {
         let fileName = url.appendingPathComponent("\(titleForReading) - \(artistForReading)")
         candidateLyricsURL += [
             (fileName.appendingPathExtension("lrcx"), security, false),
-            (fileName.appendingPathExtension("lrc"), security, true)
+            (fileName.appendingPathExtension("lrc"), security, true),
         ]
-        
+
         for (url, security, needsSearching) in candidateLyricsURL {
             if security {
                 guard url.startAccessingSecurityScopedResource() else {
@@ -179,9 +179,9 @@ class AppController: NSObject {
                     url.stopAccessingSecurityScopedResource()
                 }
             }
-            
+
             if let lrcContents = try? String(contentsOf: url, encoding: String.Encoding.utf8),
-                let lyrics = Lyrics(lrcContents) {
+               let lyrics = Lyrics(lrcContents) {
                 lyrics.metadata.localURL = url
                 lyrics.metadata.title = title
                 lyrics.metadata.artist = artist
@@ -195,39 +195,34 @@ class AppController: NSObject {
                 }
             }
         }
-        
-        #if IS_FOR_MAS
-            guard defaults[.isInMASReview] == false else {
-                return
-            }
-            checkForMASReview()
-        #endif
-        
+
         if let album = track.album, defaults[.noSearchingAlbumNames].contains(album) {
             return
         }
-        
+
         let duration = track.duration ?? 0
         let req = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
         searchRequest = req
         searchCanceller = lyricsManager.lyricsPublisher(request: req)
             .timeout(.seconds(10), scheduler: DispatchQueue.lyricsDisplay.cx)
             .first()
-            .sink(receiveCompletion: { [unowned self] _ in
+            .sink(receiveCompletion: { [weak self] _ in
+                guard let self else { return }
                 if defaults[.writeToiTunesAutomatically] {
                     self.writeToiTunes(overwrite: true)
                 }
-            }, receiveValue: { [unowned self] lyrics in
+            }, receiveValue: { [weak self] lyrics in
+                guard let self else { return }
                 self.lyricsReceived(lyrics: lyrics)
             })
     }
-    
+
     // MARK: LyricsSourceDelegate
-    
+
     func lyricsReceived(lyrics: Lyrics) {
         guard let req = searchRequest,
-            lyrics.metadata.request == req,
-            let track = selectedPlayer.currentTrack else {
+              lyrics.metadata.request == req,
+              let track = selectedPlayer.currentTrack else {
             return
         }
         if defaults[.strictSearchEnabled] && !lyrics.isMatched() {
@@ -245,12 +240,11 @@ class AppController: NSObject {
 }
 
 extension AppController {
-    
     func importLyrics(_ lyricsString: String) throws {
         guard let lrc = Lyrics(lyricsString) else {
             let errorInfo = [
                 NSLocalizedDescriptionKey: "Invalid lyric file",
-                NSLocalizedRecoverySuggestionErrorKey: "Please try another one."
+                NSLocalizedRecoverySuggestionErrorKey: "Please try another one.",
             ]
             let error = NSError(domain: lyricsXErrorDomain, code: 0, userInfo: errorInfo)
             throw error
@@ -258,7 +252,7 @@ extension AppController {
         guard let track = selectedPlayer.currentTrack else {
             let errorInfo = [
                 NSLocalizedDescriptionKey: "No music playing",
-                NSLocalizedRecoverySuggestionErrorKey: "Play a music and try again."
+                NSLocalizedRecoverySuggestionErrorKey: "Play a music and try again.",
             ]
             let error = NSError(domain: lyricsXErrorDomain, code: 0, userInfo: errorInfo)
             throw error

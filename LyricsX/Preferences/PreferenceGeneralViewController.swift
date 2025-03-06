@@ -58,7 +58,7 @@ class PreferenceGeneralViewController: PreferenceViewController {
             userPathMenuItem.isHidden = true
         }
         
-        let localizedLan: [String] = localizations.filter { $0 != "base" }.map { lan in
+        let localizedLan: [String] = localizations.map { lan in
             if let idx = lan.firstIndex(of: "-") {
                 let script = lan[idx...].dropFirst()
                 return Locale(identifier: lan).localizedString(forScriptCode: String(script))!
@@ -140,4 +140,4 @@ class PreferenceGeneralViewController: PreferenceViewController {
     }
 }
 
-private let localizations = Bundle.main.localizations.filter { $0 != "Base" }.sorted()
+private let localizations = Bundle.main.localizations.filter { !$0.localizedCaseInsensitiveContains("Base") }.sorted()

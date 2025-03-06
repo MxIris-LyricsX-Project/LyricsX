@@ -77,6 +77,7 @@
 		E975C5BC2D380B920059BE92 /* PreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */; };
 		E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA202C85EA6E00170CF7 /* MarqueeLabel */; };
 		E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA232C86302200170CF7 /* MarqueeLabel */; };
+		E9A24A7E2D787CEC0090B197 /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9A24A7D2D787CEC0090B197 /* LyricsKit */; };
 		E9A38A6B2D7337E700DEFE0E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E9A38A6A2D7337E700DEFE0E /* Localizable.xcstrings */; };
 		E9A38A6E2D7337E700DEFE0E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E9A38A6D2D7337E700DEFE0E /* InfoPlist.xcstrings */; };
 		E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2982AC9A10F004B9EB2 /* MASShortcut */; };
@@ -186,6 +187,7 @@
 				E9C4E8A62D77EE8300E3D8CA /* LyricsKit in Frameworks */,
 				E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */,
 				E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */,
+				E9A24A7E2D787CEC0090B197 /* LyricsKit in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */,
 				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
@@ -409,6 +411,7 @@
 				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
 				E9EF0D592D6F780000D45E0F /* MusicPlayer */,
 				E9C4E8A52D77EE8300E3D8CA /* LyricsKit */,
+				E9A24A7D2D787CEC0090B197 /* LyricsKit */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
@@ -517,7 +520,7 @@
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 				E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */,
 				E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */,
-				E9C4E8A42D77EE8300E3D8CA /* XCLocalSwiftPackageReference "../LyricsKit" */,
+				E9A24A7C2D787CEC0090B197 /* XCLocalSwiftPackageReference "../../Library/LyricsKit" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -984,9 +987,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E9C4E8A42D77EE8300E3D8CA /* XCLocalSwiftPackageReference "../LyricsKit" */ = {
+		E9A24A7C2D787CEC0090B197 /* XCLocalSwiftPackageReference "../../Library/LyricsKit" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../LyricsKit;
+			relativePath = ../../Library/LyricsKit;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -1158,6 +1161,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
+		};
+		E9A24A7D2D787CEC0090B197 /* LyricsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LyricsKit;
 		};
 		E9C4E2982AC9A10F004B9EB2 /* MASShortcut */ = {
 			isa = XCSwiftPackageProductDependency;

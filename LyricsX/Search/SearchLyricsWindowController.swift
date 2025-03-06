@@ -10,10 +10,19 @@ import AppKit
 import UIFoundation
 
 final class SearchLyricsWindowController: NSWindowController {
+    let viewController: SearchLyricsViewController
+    
     init() {
-        let window = NSWindow(contentViewController: SearchLyricsViewController.create())
+        let viewController = SearchLyricsViewController.create()
+        self.viewController = viewController
+        let window = NSWindow(contentViewController: viewController)
         window.title = NSLocalizedString("Search Lyrics", comment: "window title")
         super.init(window: window)
+    }
+
+    override func showWindow(_ sender: Any?) {
+        super.showWindow(sender)
+        viewController.reloadKeyword()
     }
 
     @available(*, unavailable)

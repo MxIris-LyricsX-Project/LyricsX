@@ -169,7 +169,11 @@ class MenuBarLyricsController {
     
     private func setupStatusItemMenu() {
         if defaults[.combinedMenubarLyrics] {
-            lyricStatusItem?.menu = statusBarMenu
+            if defaults[.menuBarLyricsEnabled] {
+                lyricStatusItem?.menu = statusBarMenu
+            } else {
+                iconStatusItem?.menu = statusBarMenu
+            }
         } else {
             iconStatusItem?.menu = statusBarMenu
         }
