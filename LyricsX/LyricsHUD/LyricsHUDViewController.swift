@@ -29,6 +29,8 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         }
     }
     
+    private var isWillTerminate = false
+    
     private var cancelBag = Set<AnyCancellable>()
     
     override func awakeFromNib() {
@@ -76,6 +78,7 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         observeNotification(name: NSScrollView.willStartLiveScrollNotification,
                             object: lyricsScrollView,
                             queue: .main) { [unowned self] _ in self.isTracking = false }
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillTerminate(_:)), name: NSApplication.willTerminateNotification, object: nil)
     }
     
     override func viewWillAppear() {
@@ -147,9 +150,13 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
     }
     
     func windowWillClose(_ notification: Notification) {
+        guard !isWillTerminate else { return }
         defaults[.isShowLyricsHUD] = false
     }
     
+    @objc func applicationWillTerminate(_ notification: Notification) {
+        isWillTerminate = true
+    }
 }
 
 class LyricsHUDAccessoryViewController: NSTitlebarAccessoryViewController {

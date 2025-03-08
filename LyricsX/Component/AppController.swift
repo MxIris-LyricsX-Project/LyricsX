@@ -68,7 +68,7 @@ class AppController: NSObject {
                 guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
                 let bundleID = application.bundleIdentifier
                 if defaults[.launchAndQuitWithPlayer], (selectedPlayer.designatedPlayer as? MusicPlayers.Scriptable)?.playerBundleID == bundleID {
-                    NSApplication.shared.terminate(nil)
+                    NSApplication.shared.terminate(self)
                 }
             }.store(in: &cancelBag)
         currentTrackChanged()

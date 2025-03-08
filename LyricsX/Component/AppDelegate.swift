@@ -89,6 +89,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if defaults[.isShowLyricsHUD] {
             lyricsHUD.showWindow(nil)
         }
+        
+        NSLog("%@, %@", #function, "isShowLyricsHUD: \(defaults[.isShowLyricsHUD])")
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
