@@ -27,6 +27,7 @@ class KaraokeLyricsView: NSView {
     }
     
     @objc dynamic var drawFurigana = false
+    @objc dynamic var drawRomajin = false
     
     @objc dynamic var font = NSFont.labelFont(ofSize: 24) { didSet { updateFontSize() } }
     @objc dynamic var textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
@@ -96,6 +97,7 @@ class KaraokeLyricsView: NSView {
             $0.bind(\._shadowColor, to: self, withKeyPath: \.shadowColor)
             $0.bind(\.isVertical, to: self, withKeyPath: \.isVertical)
             $0.bind(\.drawFurigana, to: self, withKeyPath: \.drawFurigana)
+            $0.bind(\.drawRomajin, to: self, withKeyPath: \.drawRomajin)
             $0.alphaValue = 0
         }
     }

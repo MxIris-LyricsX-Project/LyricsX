@@ -35,7 +35,25 @@ extension CFStringTokenizer {
         nsrangeToAnnotate.location += range.location
         return (annotation, nsrangeToAnnotate)
     }
+    
+    func currentRomanjiAnnotation(in string: NSString) -> (NSString, NSRange)? {
+            let range = currentTokenRange()
+            let tokenStr = string.substring(with: range.asNS)
+
+            let japaneseChars = CharacterSet.kanji
+                .union(.hiragana)
+                .union(.katakana)
+
+            guard tokenStr.unicodeScalars.contains(where: japaneseChars.contains),
+                  let latin = currentTokenAttribute(.latinTranscription)?.asNS() else {
+                return nil
+            }
+
+            let romanji = latin as NSString
+            return (romanji, range.asNS)
+        }
 }
+
 
 private func rangeOfUncommonContent(_ s1: String, _ s2: String) -> (Range<String.Index>, Range<String.Index>)? {
     guard s1 != s2, !s1.isEmpty, !s2.isEmpty else {
