@@ -2336,17 +2336,17 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="364"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="390"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="324"/>
+                                <rect key="frame" x="75" y="20" width="520" height="350"/>
                                 <rows>
                                     <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
                                     <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
                                     <gridRow yPlacement="center" height="20" id="aXA-4O-lyR"/>
-                                    <gridRow yPlacement="center" height="30" id="qxK-7k-u6w"/>
-                                    <gridRow yPlacement="center" height="20" id="new-Romajin-Row"/>
+                                    <gridRow yPlacement="center" height="25" id="qxK-7k-u6w"/>
+                                    <gridRow yPlacement="center" height="25" id="new-Romajin-Row"/>
                                     <gridRow yPlacement="center" height="20" id="es4-R9-etL"/>
                                     <gridRow yPlacement="center" height="20" id="6GV-2W-Qb0"/>
                                     <gridRow yPlacement="center" height="20" topPadding="10" id="5Sc-jD-UJ4"/>
@@ -2361,7 +2361,7 @@
                                 <gridCells>
                                     <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
-                                            <rect key="frame" x="-2" y="283" width="524" height="32"/>
+                                            <rect key="frame" x="-2" y="309" width="524" height="32"/>
                                             <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -2373,7 +2373,7 @@
                                     <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
                                     <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
-                                            <rect key="frame" x="168" y="249" width="274" height="18"/>
+                                            <rect key="frame" x="168" y="275" width="274" height="18"/>
                                             <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2386,7 +2386,7 @@
                                     <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
                                     <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
-                                            <rect key="frame" x="163" y="215" width="216" height="32"/>
+                                            <rect key="frame" x="163" y="241" width="216" height="32"/>
                                             <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2400,7 +2400,7 @@
                                     <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
                                     <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
-                                            <rect key="frame" x="168" y="192" width="337" height="18"/>
+                                            <rect key="frame" x="168" y="221" width="337" height="18"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -2414,7 +2414,7 @@
                                     <gridCell row="new-Romajin-Row" column="8ba-lF-U7s" id="new-Romajin-Left"/>
                                     <gridCell row="new-Romajin-Row" column="4uA-B7-Dvh" id="new-Romajin-Right">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="new-Romajin-Button">
-                                            <rect key="frame" x="168" y="156" width="337" height="18"/>
+                                            <rect key="frame" x="168" y="190" width="331" height="18"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate romajin for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="new-Romajin-Cell">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
