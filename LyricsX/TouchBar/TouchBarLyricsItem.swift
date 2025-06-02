@@ -9,7 +9,7 @@
 
 import AppKit
 import CXShim
-import LyricsCore
+import LyricsXFoundation
 import OpenCC
 
 @available(OSX 10.12.2, *)

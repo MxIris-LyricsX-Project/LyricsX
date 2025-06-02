@@ -11,7 +11,7 @@ import Cocoa
 import CXExtensions
 import CXShim
 import GenericID
-import LyricsCore
+import LyricsXFoundation
 import MusicPlayer
 import OpenCC
 import SwiftCF

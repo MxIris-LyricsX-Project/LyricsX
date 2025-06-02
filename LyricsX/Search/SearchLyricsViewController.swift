@@ -10,7 +10,7 @@
 import Cocoa
 import CXExtensions
 import CXShim
-import LyricsService
+import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
 

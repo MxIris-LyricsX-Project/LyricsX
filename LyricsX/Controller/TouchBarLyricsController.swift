@@ -8,7 +8,7 @@
 //
 
 import Cocoa
-import LyricsCore
+import LyricsXFoundation
 import TouchBarHelper
 import OpenCC
 

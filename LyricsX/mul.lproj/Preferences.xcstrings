@@ -8897,6 +8897,12 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romajin for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically generate romajin for Japanese lyrics"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",

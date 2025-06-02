@@ -8,7 +8,7 @@
 //
 
 import Cocoa
-import LyricsCore
+import LyricsXFoundation
 import MusicPlayer
 import Regex
 

@@ -8,7 +8,7 @@
 //
 
 import Foundation
-import LyricsCore
+import LyricsXFoundation
 
 extension Lyrics.Metadata.Key {
     static var localURL = Lyrics.Metadata.Key("localURL")

@@ -8,8 +8,7 @@
 //
 
 import Cocoa
-import LyricsService
-import LyricsServiceUI
+import LyricsXFoundation
 
 class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet var enableTouchBarLyricsButton: NSButton!

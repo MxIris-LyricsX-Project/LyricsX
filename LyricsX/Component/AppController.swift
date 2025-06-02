@@ -10,8 +10,7 @@
 import AppKit
 import CXShim
 import CXExtensions
-import LyricsService
-import LyricsServiceUI
+import LyricsXFoundation
 import MusicPlayer
 import OpenCC
 import Regex

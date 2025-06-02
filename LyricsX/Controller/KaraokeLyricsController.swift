@@ -10,7 +10,7 @@
 import Cocoa
 import CXShim
 import GenericID
-import LyricsCore
+import LyricsXFoundation
 import MusicPlayer
 import OpenCC
 import SnapKit

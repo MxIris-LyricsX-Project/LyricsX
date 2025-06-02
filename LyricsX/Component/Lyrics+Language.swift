@@ -8,7 +8,7 @@
 //
 
 import Foundation
-import LyricsCore
+import LyricsXFoundation
 
 private extension NSCountedSet {
     

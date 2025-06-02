@@ -8,7 +8,7 @@
 //
 
 import Cocoa
-import LyricsCore
+import LyricsXFoundation
 import OpenCC
 
 protocol ScrollLyricsViewDelegate: AnyObject {
