@@ -11,7 +11,7 @@ extension Package.Dependency {
         } else {
             URL(fileURLWithPath: path)
         }
-        
+
         if FileManager.default.fileExists(atPath: url.path) {
             return .package(path: url.path)
         } else {
@@ -22,7 +22,7 @@ extension Package.Dependency {
 
 let package = Package(
     name: "LyricsXPackage",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v11)],
     products: [
         .library(
             name: "LyricsXFoundation",
@@ -45,3 +45,4 @@ let package = Package(
         ),
     ]
 )
+

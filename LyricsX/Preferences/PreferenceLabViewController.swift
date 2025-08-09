@@ -18,7 +18,7 @@ class PreferenceLabViewController: PreferenceViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
-        Task {
+        Task { @MainActor in
             if await SpotifyLoginManager.shared.isLogin {
                 spotifyLoginButton.title = "Logout"
             } else {
@@ -28,19 +28,14 @@ class PreferenceLabViewController: PreferenceViewController {
     }
 
     @IBAction func spotifyLoginAction(_ sender: NSButton) {
-        Task {
+        Task { @MainActor in
             if await !SpotifyLoginManager.shared.isLogin {
                 try await SpotifyLoginManager.shared.login()
-                guard let accessToken = await SpotifyLoginManager.shared.accessTokenString else { return }
-                await MainActor.run {
-                    AppController.shared.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices +  [.spotify(accessToken: accessToken)])
-                }
+                try await AppController.shared.updateLyricsManager()
                 spotifyLoginButton.title = "Logout"
             } else {
                 await SpotifyLoginManager.shared.logout()
-                await MainActor.run {
-                    AppController.shared.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices)
-                }
+                try await AppController.shared.updateLyricsManager()
                 spotifyLoginButton.title = "Login"
             }
         }

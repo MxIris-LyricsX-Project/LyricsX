@@ -1,12 +1,3 @@
-//
-//  AppController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
 import AppKit
 import CXShim
 import CXExtensions
@@ -72,14 +63,27 @@ class AppController: NSObject {
             }.store(in: &cancelBag)
         currentTrackChanged()
 
-        Task { @MainActor in
-            if let accessToken = await SpotifyLoginManager.shared.accessTokenString {
-                self.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(accessToken: accessToken)])
+        Task {
+            try await updateLyricsManager()
+            
+            SpotifyLoginManager.shared.accessTokenChanged = { [weak self] in
+                guard let self else { return }
+                try await updateLyricsManager()
             }
         }
     }
 
+    @MainActor
+    func updateLyricsManager() async throws {
+        if let lyricsAccessToken = await SpotifyLoginManager.shared.lyricsAccessTokenString, let searchAccessToken = await SpotifyLoginManager.shared.searchAccessTokenString {
+            lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(searchAccessToken: searchAccessToken, lyricsAccessToken: lyricsAccessToken)])
+        } else {
+            lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices)
+        }
+    }
+
     var currentLineCheckSchedule: Cancellable?
+    
     func scheduleCurrentLineCheck() {
         currentLineCheckSchedule?.cancel()
         guard let lyrics = currentLyrics else {
