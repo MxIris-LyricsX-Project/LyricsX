@@ -15,7 +15,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
     }
 
-    var lyricsManager: LyricsProviders.Group { AppController.shared.lyricsManager }
+    var lyricsManager: LyricsProvider { AppController.shared.lyricsManager }
     var searchRequest: LyricsSearchRequest?
     var searchCanceller: Cancellable?
     var searchResult: [Lyrics] = []
@@ -72,16 +72,18 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         let duration = track?.duration ?? 0
         let req = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: searchArtist), duration: duration, limit: 8)
         searchRequest = req
-        searchCanceller = lyricsManager.lyricsPublisher(request: req)
-            .sink(receiveCompletion: { [unowned self] _ in
-                DispatchQueue.main.async {
-                    self.progressIndicator.stopAnimation(nil)
-                }
-            }, receiveValue: { [unowned self] lyrics in
-                self.lyricsReceived(lyrics: lyrics)
-            }).cancel(after: .seconds(10), scheduler: DispatchQueue.lyricsDisplay.cx)
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
+        Task {
+            do {
+                for try await lyrics in lyricsManager.lyrics(for: req) {
+                    lyricsReceived(lyrics: lyrics)
+                }
+                progressIndicator.stopAnimation(nil)
+            } catch {
+                print(error)
+            }
+        }
     }
 
     @IBAction func useLyricsAction(_ sender: Any) {

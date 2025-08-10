@@ -9,7 +9,7 @@ import Regex
 class AppController: NSObject {
     static let shared = AppController()
 
-    var lyricsManager = LyricsProviders.Group()
+    var lyricsManager: LyricsProvider
 
     @Published var currentLyrics: Lyrics? {
         willSet {
@@ -41,6 +41,7 @@ class AppController: NSObject {
     }
 
     private override init() {
+        lyricsManager = LyricsProviders.Group()
         super.init()
         selectedPlayer.currentTrackWillChange
             .signal()
@@ -65,7 +66,7 @@ class AppController: NSObject {
 
         Task {
             try await updateLyricsManager()
-            
+
             SpotifyLoginManager.shared.accessTokenChanged = { [weak self] in
                 guard let self else { return }
                 try await updateLyricsManager()
@@ -76,14 +77,14 @@ class AppController: NSObject {
     @MainActor
     func updateLyricsManager() async throws {
         if let lyricsAccessToken = await SpotifyLoginManager.shared.lyricsAccessTokenString, let searchAccessToken = await SpotifyLoginManager.shared.searchAccessTokenString {
-            lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(searchAccessToken: searchAccessToken, lyricsAccessToken: lyricsAccessToken)])
+            lyricsManager = LyricsProviders.Group(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(searchAccessToken: searchAccessToken, lyricsAccessToken: lyricsAccessToken)])
         } else {
-            lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices)
+            lyricsManager = LyricsProviders.Group()
         }
     }
 
     var currentLineCheckSchedule: Cancellable?
-    
+
     func scheduleCurrentLineCheck() {
         currentLineCheckSchedule?.cancel()
         guard let lyrics = currentLyrics else {
@@ -204,20 +205,21 @@ class AppController: NSObject {
         }
 
         let duration = track.duration ?? 0
-        let req = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
-        searchRequest = req
-        searchCanceller = lyricsManager.lyricsPublisher(request: req)
-            .timeout(.seconds(10), scheduler: DispatchQueue.lyricsDisplay.cx)
-            .first()
-            .sink(receiveCompletion: { [weak self] _ in
-                guard let self else { return }
-                if defaults[.writeToiTunesAutomatically] {
-                    self.writeToiTunes(overwrite: true)
+        let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
+        searchRequest = request
+        Task {
+            do {
+                for try await lyrics in lyricsManager.lyrics(for: request) {
+                    lyricsReceived(lyrics: lyrics)
+                    break
                 }
-            }, receiveValue: { [weak self] lyrics in
-                guard let self else { return }
-                self.lyricsReceived(lyrics: lyrics)
-            })
+                if defaults[.writeToiTunesAutomatically] {
+                    writeToiTunes(overwrite: true)
+                }
+            } catch {
+                print("Failed to fetch lyrics: \(error.localizedDescription)")
+            }
+        }
     }
 
     // MARK: LyricsSourceDelegate
