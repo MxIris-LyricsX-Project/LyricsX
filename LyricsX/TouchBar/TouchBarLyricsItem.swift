@@ -8,7 +8,7 @@
 //
 
 import AppKit
-import CXShim
+import Combine
 import LyricsXFoundation
 import OpenCC
 
@@ -36,7 +36,7 @@ class TouchBarLyricsItem: NSCustomTouchBarItem {
         customizationLabel = "Lyrics"
         AppController.shared.$currentLyrics
             .combineLatest(AppController.shared.$currentLineIndex)
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(TouchBarLyricsItem.handleLyricsDisplay, weaklyOn: self)
             .store(in: &cancelBag)
     }

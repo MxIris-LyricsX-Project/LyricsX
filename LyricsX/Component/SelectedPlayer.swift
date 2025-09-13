@@ -10,7 +10,9 @@
 import Foundation
 import MusicPlayer
 import GenericID
-import CXShim
+//import CXShim
+
+import Combine
 
 extension MusicPlayers {
     
@@ -64,8 +66,8 @@ extension MusicPlayers {
         func scheduleManualUpdate() {
             scheduleCanceller?.cancel()
             guard manualUpdateInterval > 0 else { return }
-            let q = DispatchQueue.global().cx
-            let i: CXWrappers.DispatchQueue.SchedulerTimeType.Stride = .seconds(manualUpdateInterval)
+            let q = DispatchQueue.global()
+            let i: DispatchQueue.SchedulerTimeType.Stride = .seconds(manualUpdateInterval)
             scheduleCanceller = q.schedule(after: q.now.advanced(by: i), interval: i, tolerance: i * 0.1, options: nil) { [unowned self] in
                 self.designatedPlayer?.updatePlayerState()
             }

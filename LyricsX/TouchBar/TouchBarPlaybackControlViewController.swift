@@ -9,7 +9,9 @@
 
 import AppKit
 import MusicPlayer
-import CXShim
+//import CXShim
+
+import Combine
 
 @available(OSX 10.12.2, *)
 class TouchBarPlaybackControlViewController: NSViewController {
@@ -35,7 +37,7 @@ class TouchBarPlaybackControlViewController: NSViewController {
         self.segmentedControl = seg
         
         selectedPlayer.playbackStateWillChange
-            .receive(on: DispatchQueue.main.cx)
+            .receive(on: DispatchQueue.main)
             .invoke(TouchBarPlaybackControlViewController.updatePlayPauseIcon, weaklyOn: self)
             .store(in: &cancelBag)
         updatePlayPauseIcon(state: selectedPlayer.playbackState)

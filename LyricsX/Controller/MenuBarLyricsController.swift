@@ -8,8 +8,10 @@
 //
 
 import Cocoa
-import CXExtensions
-import CXShim
+//import CXExtensions
+//import CXShim
+
+import Combine
 import GenericID
 import LyricsXFoundation
 import MusicPlayer
@@ -62,10 +64,10 @@ class MenuBarLyricsController {
         }
         AppController.shared.$currentLyrics
             .combineLatest(AppController.shared.$currentLineIndex)
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(MenuBarLyricsController.handleLyricsDisplay, weaklyOn: self)
             .store(in: &cancelBag)
-        workspaceNC.cx
+        workspaceNC
             .publisher(for: NSWorkspace.didActivateApplicationNotification)
             .signal()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)

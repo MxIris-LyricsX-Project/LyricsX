@@ -1,6 +1,7 @@
 import AppKit
-import CXShim
-import CXExtensions
+//import CXShim
+//import CXExtensions
+import Combine
 import LyricsXFoundation
 import MusicPlayer
 import OpenCC
@@ -45,16 +46,16 @@ class AppController: NSObject {
         super.init()
         selectedPlayer.currentTrackWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.scheduleCurrentLineCheck, weaklyOn: self)
             .store(in: &cancelBag)
 
-        workspaceNC.cx.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
+        workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
             .sink { notification in
                 guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
                 let bundleID = application.bundleIdentifier
@@ -98,7 +99,7 @@ class AppController: NSObject {
         }
         if let next = next, playbackState.isPlaying {
             let dt = lyrics.lines[next].position - playbackTime - lyrics.adjustedTimeDelay
-            let q = DispatchQueue.lyricsDisplay.cx
+            let q = DispatchQueue.lyricsDisplay
             currentLineCheckSchedule = q.schedule(after: q.now.advanced(by: .seconds(dt)), interval: .seconds(42), tolerance: .milliseconds(20)) { [unowned self] in
                 self.scheduleCurrentLineCheck()
             }

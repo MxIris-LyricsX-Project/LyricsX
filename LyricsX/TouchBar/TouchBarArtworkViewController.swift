@@ -8,7 +8,9 @@
 //
 
 import AppKit
-import CXShim
+//import CXShim
+
+import Combine
 import MusicPlayer
 
 class TouchBarArtworkViewController: NSViewController {
@@ -24,7 +26,7 @@ class TouchBarArtworkViewController: NSViewController {
     override func viewDidLoad() {
         selectedPlayer.currentTrackWillChange
             .signal()
-            .receive(on: DispatchQueue.main.cx)
+            .receive(on: DispatchQueue.main)
             .invoke(TouchBarArtworkViewController.updateArtworkImage, weaklyOn: self)
             .store(in: &cancelBag)
         updateArtworkImage()

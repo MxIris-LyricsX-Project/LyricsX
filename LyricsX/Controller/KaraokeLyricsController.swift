@@ -8,7 +8,9 @@
 //
 
 import Cocoa
-import CXShim
+//import CXShim
+
+import Combine
 import GenericID
 import LyricsXFoundation
 import MusicPlayer
@@ -47,17 +49,17 @@ class KaraokeLyricsWindowController: NSWindowController {
             self.lyricsView.displayLrc("")
             AppController.shared.$currentLyrics
                 .signal()
-                .receive(on: DispatchQueue.lyricsDisplay.cx)
+                .receive(on: DispatchQueue.lyricsDisplay)
                 .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
                 .store(in: &self.cancelBag)
             AppController.shared.$currentLineIndex
                 .signal()
-                .receive(on: DispatchQueue.lyricsDisplay.cx)
+                .receive(on: DispatchQueue.lyricsDisplay)
                 .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
                 .store(in: &self.cancelBag)
             selectedPlayer.playbackStateWillChange
                 .signal()
-                .receive(on: DispatchQueue.lyricsDisplay.cx)
+                .receive(on: DispatchQueue.lyricsDisplay)
                 .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
                 .store(in: &self.cancelBag)
             defaults.publisher(for: [.preferBilingualLyrics, .desktopLyricsOneLineMode])
