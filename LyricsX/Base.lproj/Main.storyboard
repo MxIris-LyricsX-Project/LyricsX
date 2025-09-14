@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -385,11 +385,11 @@
                     </items>
                 </menu>
                 <customView id="LV9-pp-2tz" userLabel="Lyrics Offset View">
-                    <rect key="frame" x="0.0" y="0.0" width="242" height="23"/>
+                    <rect key="frame" x="0.0" y="0.0" width="248" height="26"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                     <subviews>
                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DG2-8b-vTy">
-                            <rect key="frame" x="19" y="4" width="85" height="16"/>
+                            <rect key="frame" x="19" y="5" width="85" height="16"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Lyrics Offset:" id="IFz-XQ-DHf">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -397,11 +397,11 @@
                             </textFieldCell>
                         </textField>
                         <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FwA-Sj-odc">
-                            <rect key="frame" x="185" y="0.0" width="15" height="22"/>
+                            <rect key="frame" x="187" y="2" width="17" height="22"/>
                             <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" increment="100" minValue="-10000" maxValue="10000" id="Cnt-sc-zit"/>
                         </stepper>
                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ii-PC-ZCl">
-                            <rect key="frame" x="201" y="4" width="22" height="16"/>
+                            <rect key="frame" x="207" y="5" width="22" height="16"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="ms" id="VQG-Pf-NsG">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -417,7 +417,7 @@
                             </textFieldCell>
                         </textField>
                         <textField focusRingType="none" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BE8-Ux-QD2">
-                            <rect key="frame" x="110" y="2" width="72" height="19"/>
+                            <rect key="frame" x="110" y="2" width="72" height="22"/>
                             <constraints>
                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="72" id="s38-xY-35C"/>
                             </constraints>
@@ -647,7 +647,7 @@ IA
                                         </textFieldCell>
                                     </textField>
                                     <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ViJ-II-hW8">
-                                        <rect key="frame" x="51" y="3" width="192" height="19"/>
+                                        <rect key="frame" x="51" y="1" width="192" height="22"/>
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="513-43-6tC"/>
                                         </constraints>
@@ -674,7 +674,7 @@ IA
                                         </textFieldCell>
                                     </textField>
                                     <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1eb-gg-tTU">
-                                        <rect key="frame" x="303" y="3" width="192" height="19"/>
+                                        <rect key="frame" x="303" y="1" width="192" height="22"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" focusRingType="none" drawsBackground="YES" id="q3k-EA-zCa">
                                             <font key="font" metaFont="message" size="11"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -856,15 +856,15 @@ IA
                             <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO">
                                 <rect key="frame" x="0.0" y="-201" width="600" height="200"/>
                                 <clipView key="contentView" drawsBackground="NO" id="YmL-P6-FDf">
-                                    <rect key="frame" x="0.0" y="0.0" width="585" height="200"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="PEz-rD-ja1">
-                                            <rect key="frame" x="0.0" y="0.0" width="585" height="200"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="585" height="200"/>
+                                            <size key="minSize" width="583" height="200"/>
                                             <size key="maxSize" width="640" height="10000000"/>
                                             <attributedString key="textStorage">
                                                 <fragment content="Lyrics Preview">
@@ -887,7 +887,7 @@ IA
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="gNp-w1-80P">
-                                    <rect key="frame" x="585" y="0.0" width="15" height="200"/>
+                                    <rect key="frame" x="583" y="0.0" width="17" height="200"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
