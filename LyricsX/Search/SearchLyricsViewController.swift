@@ -120,7 +120,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
-        if let idx = searchResult.firstIndex(where: { lyrics.quality > $0.quality }) {
+        if let idx = searchResult.firstIndex(where: { shouldInsertBefore(lyrics, $0) }) {
             searchResult.insert(lyrics, at: idx)
         } else {
             searchResult.append(lyrics)
@@ -128,6 +128,24 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         DispatchQueue.main.async {
             self.tableView.reloadData()
         }
+    }
+    
+   // Same as AppController.swift
+    private func shouldInsertBefore(_ newLyrics: Lyrics, _ existingLyrics: Lyrics) -> Bool {
+        if defaults[.lyricsSourcePriorityEnabled] {
+            let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
+            let newSource = newLyrics.metadata.service ?? ""
+            let existingSource = existingLyrics.metadata.service ?? ""
+            
+            let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
+            let existingSourceIndex = sourceOrder.firstIndex(of: existingSource) ?? Int.max
+            
+            if newSourceIndex != existingSourceIndex {
+                return newSourceIndex < existingSourceIndex
+            }
+        }
+        
+        return newLyrics.quality > existingLyrics.quality
     }
 
     // MARK: - TableViewDelegate

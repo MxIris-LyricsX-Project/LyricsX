@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
 		BB03C8891FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */; };
 		BB063B2E1E8A93C900A25C3E /* KaraokeLyricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */; };
 		BB0B296A1E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */; };
@@ -112,6 +113,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceSourceViewController.swift; sourceTree = "<group>"; };
 		BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChineseConverter+Singleton.swift"; sourceTree = "<group>"; };
 		BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KaraokeLyricsView.swift; sourceTree = "<group>"; };
 		BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceFilterViewController.swift; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 		BBC7C5561E6AEA4500E3EC4F /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
+				0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */,
 				E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */,
 				E91F76EA21211B8D00755698 /* PreferenceViewController.swift */,
 				BBC7C5541E6AE28600E3EC4F /* PreferenceGeneralViewController.swift */,
@@ -718,6 +721,7 @@
 				BBE2A79824041E36004A7E93 /* CombineExtension.swift in Sources */,
 				BBC1D35B1E485BA7002538A2 /* AppController.swift in Sources */,
 				BB0B296A1E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift in Sources */,
+				0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */,
 				BB89089E21ED69410078F522 /* Lyrics+Language.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

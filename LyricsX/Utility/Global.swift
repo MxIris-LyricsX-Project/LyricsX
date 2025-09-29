@@ -165,6 +165,11 @@ extension UserDefaults.DefaultsKeys {
     static let appleLanguages = Key<[String]>("AppleLanguages")
     
     static let isShowLyricsHUD = Key<Bool>("isShowLyricsHUD")
+    
+    // Source Priority
+    static let lyricsSourcePriorityEnabled = Key<Bool>("LyricsSourcePriorityEnabled")
+    static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
+    
 }
 
 extension CGFloat: @retroactive DefaultConstructible {}

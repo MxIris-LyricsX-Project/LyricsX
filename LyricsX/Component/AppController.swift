@@ -234,14 +234,37 @@ class AppController: NSObject {
         if defaults[.strictSearchEnabled] && !lyrics.isMatched() {
             return
         }
-        if let current = currentLyrics, current.quality >= lyrics.quality {
-            return
+        if let current = currentLyrics {
+            let shouldReplace = shouldReplaceLyrics(current: current, new: lyrics)
+            if !shouldReplace {
+                return
+            }
         }
+        
         lyrics.associateWithTrack(track)
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
         currentLyrics = lyrics
+    }
+    
+    private func shouldReplaceLyrics(current: Lyrics, new: Lyrics) -> Bool {
+        // If source priority is enabled, use it for comparison
+        if defaults[.lyricsSourcePriorityEnabled] {
+            let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
+            let currentSource = current.metadata.service ?? ""
+            let newSource = new.metadata.service ?? ""
+            
+            let currentSourceIndex = sourceOrder.firstIndex(of: currentSource) ?? Int.max
+            let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
+            
+            if currentSourceIndex != newSourceIndex {
+                return newSourceIndex < currentSourceIndex
+            }
+        }
+        
+        // Use quality for comparison if priorities are the same or disabled
+        return new.quality > current.quality
     }
 }
 
