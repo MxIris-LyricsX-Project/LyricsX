@@ -66,12 +66,12 @@
 	<key>LyricsSourcePriorityEnabled</key>
 	<false/>
 	<key>LyricsSourcePriorityOrder</key>
-	<array
+	<array>
 	    <string>Kugou</string>
 	    <string>LRCLIB</string>
 	    <string>NetEase</string>
 	    <string>QQMusic</string>
-	    <string>Spotify</string>>
+	    <string>Spotify</string>
 	</array>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>

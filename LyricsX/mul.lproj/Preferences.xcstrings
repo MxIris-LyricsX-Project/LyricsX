@@ -4076,7 +4076,7 @@
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste as linhas para reordenar a prioridade da fonte. Se desativado, será ordenado por qualidade.\n\n"
+            "value" : "Arraste as linhas para reordenar a prioridade da fonte. Se desativado, será ordenado por qualidade."
           }
         },
         "ru" : {
