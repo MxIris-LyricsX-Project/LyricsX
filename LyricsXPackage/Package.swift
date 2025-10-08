@@ -30,7 +30,11 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../../../Library/LyricsKit", isRelative: true, alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/LyricsKit", branch: "main")),
+        .package(
+            path: "../../../Library/LyricsKit",
+            isRelative: true,
+            alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/LyricsKit", branch: "main")
+        ),
     ],
     targets: [
         .target(

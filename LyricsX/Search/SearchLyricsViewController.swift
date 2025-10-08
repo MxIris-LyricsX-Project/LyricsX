@@ -1,7 +1,4 @@
-import Cocoa
-//import CXExtensions
-//import CXShim
-
+import AppKit
 import Combine
 import LyricsXFoundation
 import MusicPlayer
@@ -129,22 +126,22 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             self.tableView.reloadData()
         }
     }
-    
-   // Same as AppController.swift
+
+    // Same as AppController.swift
     private func shouldInsertBefore(_ newLyrics: Lyrics, _ existingLyrics: Lyrics) -> Bool {
         if defaults[.lyricsSourcePriorityEnabled] {
             let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
             let newSource = newLyrics.metadata.service ?? ""
             let existingSource = existingLyrics.metadata.service ?? ""
-            
+
             let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
             let existingSourceIndex = sourceOrder.firstIndex(of: existingSource) ?? Int.max
-            
+
             if newSourceIndex != existingSourceIndex {
                 return newSourceIndex < existingSourceIndex
             }
         }
-        
+
         return newLyrics.quality > existingLyrics.quality
     }
 

@@ -1,43 +1,30 @@
-//
-//  AppController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
 import Foundation
 import MusicPlayer
 import GenericID
-//import CXShim
-
 import Combine
 
 extension MusicPlayers {
-    
     final class Selected: Agent {
-        
         static let shared = MusicPlayers.Selected()
-        
+
         private var defaultsObservation: DefaultsObservation?
-        
+
         private var manualUpdateObservation: AnyCancellable?
-        
+
         var manualUpdateInterval: TimeInterval = 1.0 {
             didSet {
                 scheduleManualUpdate()
             }
         }
-        
+
         override init() {
             super.init()
             selectPlayer()
             scheduleManualUpdate()
-            defaultsObservation = defaults.observe(keys: [.preferredPlayerIndex, .useSystemWideNowPlaying, .systemWideNowPlayingAppList]) { [weak self] in
+            self.defaultsObservation = defaults.observe(keys: [.preferredPlayerIndex, .useSystemWideNowPlaying, .systemWideNowPlayingAppList]) { [weak self] in
                 self?.selectPlayer()
             }
-            manualUpdateObservation = playbackStateWillChange.sink { [weak self] state in
+            self.manualUpdateObservation = playbackStateWillChange.sink { [weak self] state in
                 if state.isPlaying {
                     self?.scheduleManualUpdate()
                 } else {
@@ -45,7 +32,7 @@ extension MusicPlayers {
                 }
             }
         }
-        
+
         private func selectPlayer() {
             let idx = defaults[.preferredPlayerIndex]
             if idx == -1 {
@@ -61,7 +48,7 @@ extension MusicPlayers {
                 designatedPlayer = MusicPlayerName(index: idx).flatMap(MusicPlayers.Scriptable.init)
             }
         }
-        
+
         private var scheduleCanceller: Cancellable?
         func scheduleManualUpdate() {
             scheduleCanceller?.cancel()

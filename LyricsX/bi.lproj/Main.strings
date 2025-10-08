@@ -19,9 +19,6 @@
 /* Class = "NSButtonCell"; title = "Search"; ObjectID = "eb9-fE-Lgq"; */
 "eb9-fE-Lgq.title" = "Search";
 
-/* Class = "NSMenuItem"; title = "Donate..."; ObjectID = "EoO-ld-6Xv"; */
-"EoO-ld-6Xv.title" = "Donate...";
-
 /* Class = "NSTextFieldCell"; title = "Title:"; ObjectID = "FMI-7E-tCo"; */
 "FMI-7E-tCo.title" = "Title:";
 

@@ -1,33 +1,23 @@
-//
-//  KaraokeLabel.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
 import Cocoa
 import SwiftCF
 import CoreGraphicsExt
 import CoreTextExt
 
 class KaraokeLabel: NSTextField {
-    
     @objc dynamic var isVertical = false {
         didSet {
             clearCache()
             invalidateIntrinsicContentSize()
         }
     }
-    
+
     @objc dynamic var drawFurigana = false {
         didSet {
             clearCache()
             invalidateIntrinsicContentSize()
         }
     }
-    
+
     @objc dynamic var drawRomajin = false {
         didSet {
             clearCache()
@@ -40,25 +30,25 @@ class KaraokeLabel: NSTextField {
             clearCache()
         }
     }
-    
+
     override var stringValue: String {
         didSet {
             clearCache()
         }
     }
-    
+
     @objc override dynamic var font: NSFont? {
         didSet {
             clearCache()
         }
     }
-    
+
     @objc override dynamic var textColor: NSColor? {
         didSet {
             clearCache()
         }
     }
-    
+
     private func clearCache() {
         _attrString = nil
         _ctFrame = nil
@@ -66,10 +56,10 @@ class KaraokeLabel: NSTextField {
         needsDisplay = true
         removeProgressAnimation()
     }
-    
+
     private var _attrString: NSAttributedString?
     private var romajinAnnotations: [(String, NSRange)] = []
-    
+
     private var attrString: NSAttributedString {
         if let attrString = _attrString {
             return attrString
@@ -104,7 +94,7 @@ class KaraokeLabel: NSTextField {
         _attrString = attrString
         return attrString
     }
-    
+
     private var _ctFrame: CTFrame?
 //    private var ctFrame: CTFrame {
 //        if let ctFrame = _ctFrame {
@@ -121,7 +111,7 @@ class KaraokeLabel: NSTextField {
 //        _ctFrame = ctFrame
 //        return ctFrame
 //    }
-    
+
     private func ctFrame(_ dirtyRect: NSRect? = nil) -> CTFrame {
         if let ctFrame = _ctFrame {
             return ctFrame
@@ -138,7 +128,7 @@ class KaraokeLabel: NSTextField {
         _ctFrame = ctFrame
         return ctFrame
     }
-    
+
     override var intrinsicContentSize: NSSize {
         let progression: CTFrameProgression = isVertical ? .rightToLeft : .topToBottom
         let frameAttr: [CTFrame.AttributeKey: Any] = [.progression: progression.rawValue as NSNumber]
@@ -146,9 +136,8 @@ class KaraokeLabel: NSTextField {
         let constraints = CGSize(width: CGFloat.infinity, height: .infinity)
         return framesetter.suggestFrameSize(constraints: constraints, frameAttributes: frameAttr).size
     }
-    
+
     override func draw(_ dirtyRect: NSRect) {
-        
 //        let image = NSImage(size: dirtyRect.size, flipped: true) { rect in
 //            guard let context = NSGraphicsContext.current else { return false }
 //            let cgContext = context.cgContext
@@ -165,12 +154,12 @@ class KaraokeLabel: NSTextField {
         cgContext.translateBy(x: 0, y: bounds.height)
         cgContext.scaleBy(x: 1.0, y: -1.0)
         CTFrameDraw(ctFrame(dirtyRect), cgContext)
-        
+
         drawRomajiAnnotations(in: cgContext, frame: ctFrame())
     }
-    
+
     // MARK: - Progress
-    
+
     // TODO: multi-line
     private lazy var progressLayer: CALayer = {
         let pLayer = CALayer()
@@ -178,7 +167,7 @@ class KaraokeLabel: NSTextField {
         layer?.addSublayer(pLayer)
         return pLayer
     }()
-    
+
     @objc dynamic var progressColor: NSColor? {
         get {
             return progressLayer.backgroundColor.flatMap(NSColor.init)
@@ -187,12 +176,12 @@ class KaraokeLabel: NSTextField {
             progressLayer.backgroundColor = newValue?.cgColor
         }
     }
-    
+
     func setProgressAnimation(color: NSColor, progress: [(TimeInterval, Int)]) {
         removeProgressAnimation()
         guard let line = ctFrame().lines.first,
-            let origin = ctFrame().lineOrigins(range: CFRange(location: 0, length: 1)).first else {
-                return
+              let origin = ctFrame().lineOrigins(range: CFRange(location: 0, length: 1)).first else {
+            return
         }
         var lineBounds = line.bounds()
         var transform = CGAffineTransform.translate(x: origin.x, y: origin.y)
@@ -201,7 +190,7 @@ class KaraokeLabel: NSTextField {
             transform *= .flip(height: bounds.height)
         }
         lineBounds.apply(t: transform)
-        
+
         progressLayer.anchorPoint = isVertical ? CGPoint(x: 0.5, y: 0) : CGPoint(x: 0, y: 0.5)
         progressLayer.frame = lineBounds
         progressLayer.backgroundColor = color.cgColor
@@ -232,13 +221,13 @@ class KaraokeLabel: NSTextField {
         animation.duration = duration
         progressLayer.add(animation, forKey: "inlineProgress")
     }
-    
+
     func pauseProgressAnimation() {
         let pausedTime = progressLayer.convertTime(CACurrentMediaTime(), from: nil)
         progressLayer.speed = 0
         progressLayer.timeOffset = pausedTime
     }
-    
+
     func resumeProgressAnimation() {
         let pausedTime = progressLayer.timeOffset
         progressLayer.speed = 1
@@ -247,7 +236,7 @@ class KaraokeLabel: NSTextField {
         let timeSincePause = progressLayer.convertTime(CACurrentMediaTime(), from: nil) - pausedTime
         progressLayer.beginTime = timeSincePause
     }
-    
+
     func removeProgressAnimation() {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -257,21 +246,21 @@ class KaraokeLabel: NSTextField {
         progressLayer.frame = .zero
         CATransaction.commit()
     }
-    
+
     private func drawRomajiAnnotations(in context: CGContext, frame: CTFrame) {
-        guard drawRomajin && !romajinAnnotations.isEmpty else { return }
-        
+        guard drawRomajin, !romajinAnnotations.isEmpty else { return }
+
         let lines = frame.lines
         let origins = frame.lineOrigins(range: CFRangeMake(0, lines.count))
         var annotationIndex = 0
-        
+
         // 处理每行和每个 glyph run
         for (line, origin) in zip(lines, origins) {
             let runs = line.glyphRuns
             for run in runs {
                 let range = run.stringRange
                 var subIndex = 0
-                
+
                 while annotationIndex + subIndex < romajinAnnotations.count {
                     let (romajin, annotationRange) = romajinAnnotations[annotationIndex + subIndex]
                     if NSRange(location: range.location, length: range.length).contains(annotationRange.location) {
@@ -282,7 +271,7 @@ class KaraokeLabel: NSTextField {
                         var position = CGPoint.zero
                         CTRunGetPositions(run, CFRangeMake(0, 1), &position)
                         let glyphX = origin.x + position.x
-                        
+
                         let relativeOffset = CGFloat(annotationRange.location - range.location) / CGFloat(range.length) * width
                         let glyphBounds = CGRect(
                             x: glyphX + relativeOffset,
@@ -290,29 +279,29 @@ class KaraokeLabel: NSTextField {
                             width: width / CGFloat(range.length) * CGFloat(annotationRange.length),
                             height: ascent + descent
                         )
-                        
+
                         let fontSize = font?.pointSize ?? 24
                         var rubyFontSize = fontSize * 0.3
                         let rubyFontBase = NSFont.systemFont(ofSize: rubyFontSize)
                         let rubyAttrBase: [NSAttributedString.Key: Any] = [
                             .foregroundColor: textColor ?? .black,
-                            .font: rubyFontBase
+                            .font: rubyFontBase,
                         ]
                         var rubyString = NSAttributedString(string: romajin, attributes: rubyAttrBase)
                         var rubyWidth = rubyString.size().width
                         let maxWidth = glyphBounds.width
-                        
-                        while rubyWidth > maxWidth * 0.8 && rubyFontSize > 1 {
+
+                        while rubyWidth > maxWidth * 0.8, rubyFontSize > 1 {
                             rubyFontSize *= 0.9
                             let rubyFont = NSFont.systemFont(ofSize: rubyFontSize)
                             let rubyAttr: [NSAttributedString.Key: Any] = [
                                 .font: rubyFont,
-                                .foregroundColor: textColor ?? .black
+                                .foregroundColor: textColor ?? .black,
                             ]
                             rubyString = NSAttributedString(string: romajin, attributes: rubyAttr)
                             rubyWidth = rubyString.size().width
                         }
-                        
+
                         let glyphWidth = glyphBounds.width
                         let xOffset = (glyphWidth - rubyWidth) / 2
                         let rubyPoint = CGPoint(
@@ -322,7 +311,7 @@ class KaraokeLabel: NSTextField {
                         let rubyLine = CTLineCreateWithAttributedString(rubyString)
                         context.textPosition = rubyPoint
                         CTLineDraw(rubyLine, context)
-                        
+
                         subIndex += 1
                     } else {
                         break
@@ -331,7 +320,7 @@ class KaraokeLabel: NSTextField {
                 annotationIndex += subIndex
             }
         }
-        
+
         // 处理剩余的 annotations
         while annotationIndex < romajinAnnotations.count {
             let (romajin, _) = romajinAnnotations[annotationIndex]
@@ -349,27 +338,27 @@ class KaraokeLabel: NSTextField {
                     width: width,
                     height: ascent + descent
                 )
-                
+
                 let fontSize = font?.pointSize ?? 24
                 var rubyFontSize = fontSize * 0.3
                 let rubyAttrBase: [NSAttributedString.Key: Any] = [
-                    .foregroundColor: textColor ?? .black
+                    .foregroundColor: textColor ?? .black,
                 ]
                 var rubyString = NSAttributedString(string: romajin, attributes: rubyAttrBase)
                 var rubyWidth = rubyString.size().width
                 let maxWidth = glyphBounds.width
-                
-                while rubyWidth > maxWidth * 0.8 && rubyFontSize > 1 {
+
+                while rubyWidth > maxWidth * 0.8, rubyFontSize > 1 {
                     rubyFontSize *= 0.9
                     let rubyFont = NSFont.systemFont(ofSize: rubyFontSize)
                     let rubyAttr: [NSAttributedString.Key: Any] = [
                         .font: rubyFont,
-                        .foregroundColor: textColor ?? .black
+                        .foregroundColor: textColor ?? .black,
                     ]
                     rubyString = NSAttributedString(string: romajin, attributes: rubyAttr)
                     rubyWidth = rubyString.size().width
                 }
-                
+
                 let glyphWidth = glyphBounds.width
                 let xOffset = (glyphWidth - rubyWidth) / 2
                 let rubyPoint = CGPoint(

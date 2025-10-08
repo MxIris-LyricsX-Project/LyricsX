@@ -1,16 +1,4 @@
-//
-//  MenuBarLyrics.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
-import Cocoa
-//import CXExtensions
-//import CXShim
-
+import AppKit
 import Combine
 import GenericID
 import LyricsXFoundation
@@ -25,7 +13,7 @@ class MenuBarLyricsController {
 //    let logger = Logger(subsystem: "com.JH.LyricsX", category: "MenuBarLyricsController")
 
     static let shared = MenuBarLyricsController()
-    
+
     var statusBarMenu: NSMenu? {
         didSet {
             setupStatusItemMenu()
@@ -160,7 +148,7 @@ class MenuBarLyricsController {
         lyricStatusItem?.button?.addSubview(marqueeLabel)
         setupStatusItemMenu()
     }
-    
+
     private func setupIconStatusItem() {
         iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         iconStatusItem?.button?.title = ""
@@ -168,7 +156,7 @@ class MenuBarLyricsController {
         iconStatusItem?.length = buttonlength
         setupStatusItemMenu()
     }
-    
+
     private func setupStatusItemMenu() {
         if defaults[.combinedMenubarLyrics] {
             if defaults[.menuBarLyricsEnabled] {

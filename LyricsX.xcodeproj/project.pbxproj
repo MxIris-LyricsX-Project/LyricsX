@@ -1109,8 +1109,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				branch = main;
+				kind = branch;
 			};
 		};
 		E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */ = {

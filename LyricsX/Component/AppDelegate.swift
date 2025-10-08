@@ -1,4 +1,4 @@
-import Cocoa
+import AppKit
 import GenericID
 import MASShortcut
 import MusicPlayer

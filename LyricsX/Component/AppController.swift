@@ -1,11 +1,9 @@
 import AppKit
-//import CXShim
-//import CXExtensions
 import Combine
-import LyricsXFoundation
-import MusicPlayer
-import OpenCC
 import Regex
+import OpenCC
+import MusicPlayer
+import LyricsXFoundation
 
 class AppController: NSObject {
     static let shared = AppController()
@@ -42,7 +40,7 @@ class AppController: NSObject {
     }
 
     private override init() {
-        lyricsManager = LyricsProviders.Group()
+        self.lyricsManager = LyricsProviders.Group()
         super.init()
         selectedPlayer.currentTrackWillChange
             .signal()
@@ -77,11 +75,27 @@ class AppController: NSObject {
 
     @MainActor
     func updateLyricsManager() async throws {
-        if let lyricsAccessToken = await SpotifyLoginManager.shared.lyricsAccessTokenString, let searchAccessToken = await SpotifyLoginManager.shared.searchAccessTokenString {
-            lyricsManager = LyricsProviders.Group(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(searchAccessToken: searchAccessToken, lyricsAccessToken: lyricsAccessToken)])
-        } else {
-            lyricsManager = LyricsProviders.Group()
+        var services: [LyricsProviders.Service] = LyricsProviders.Service.noAuthenticationRequiredServices
+
+        if await SpotifyLoginManager.shared.isAccessible {
+            services.append(.spotify)
         }
+
+        var providers: [LyricsProvider] = []
+        for service in services {
+            do {
+                if service.requiresAuthentication {
+                    let provider = try await service.create(with: SpotifyLoginManager.shared)
+                    providers.append(provider)
+                } else {
+                    providers.append(service.create())
+                }
+            } catch {
+                print("Failed to create provider for \(service.displayName): \(error)")
+            }
+        }
+
+        lyricsManager = LyricsProviders.Group(providers: providers)
     }
 
     var currentLineCheckSchedule: Cancellable?
@@ -231,7 +245,7 @@ class AppController: NSObject {
               let track = selectedPlayer.currentTrack else {
             return
         }
-        if defaults[.strictSearchEnabled] && !lyrics.isMatched() {
+        if defaults[.strictSearchEnabled], !lyrics.isMatched() {
             return
         }
         if let current = currentLyrics {
@@ -240,29 +254,29 @@ class AppController: NSObject {
                 return
             }
         }
-        
+
         lyrics.associateWithTrack(track)
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
         currentLyrics = lyrics
     }
-    
+
     private func shouldReplaceLyrics(current: Lyrics, new: Lyrics) -> Bool {
         // If source priority is enabled, use it for comparison
         if defaults[.lyricsSourcePriorityEnabled] {
             let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
             let currentSource = current.metadata.service ?? ""
             let newSource = new.metadata.service ?? ""
-            
+
             let currentSourceIndex = sourceOrder.firstIndex(of: currentSource) ?? Int.max
             let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
-            
+
             if currentSourceIndex != newSourceIndex {
                 return newSourceIndex < currentSourceIndex
             }
         }
-        
+
         // Use quality for comparison if priorities are the same or disabled
         return new.quality > current.quality
     }

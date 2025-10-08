@@ -1,20 +1,11 @@
-//
-//  PreferenceLabViewController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
-import Cocoa
+import AppKit
 import LyricsXFoundation
 
 class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet var enableTouchBarLyricsButton: NSButton!
 
     @IBOutlet var spotifyLoginButton: NSButton!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
@@ -40,7 +31,7 @@ class PreferenceLabViewController: PreferenceViewController {
             }
         }
     }
-    
+
     @IBAction func customizeAllowsNowPlayingApplicationsAction(_ sender: NSButton) {
         let viewController = NowPlayingApplicationListViewController()
         viewController.preferredContentSize = .init(width: 600, height: 500)
