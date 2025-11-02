@@ -131,11 +131,13 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     private func shouldInsertBefore(_ newLyrics: Lyrics, _ existingLyrics: Lyrics) -> Bool {
         if defaults[.lyricsSourcePriorityEnabled] {
             let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
-            let newSource = newLyrics.metadata.service ?? ""
-            let existingSource = existingLyrics.metadata.service ?? ""
+            let normalizedOrder = sourceOrder.map { $0.lowercased() }
 
-            let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
-            let existingSourceIndex = sourceOrder.firstIndex(of: existingSource) ?? Int.max
+            let newSource = (newLyrics.metadata.service ?? "").lowercased()
+            let existingSource = (existingLyrics.metadata.service ?? "").lowercased()
+
+            let newSourceIndex = normalizedOrder.firstIndex(of: newSource) ?? Int.max
+            let existingSourceIndex = normalizedOrder.firstIndex(of: existingSource) ?? Int.max
 
             if newSourceIndex != existingSourceIndex {
                 return newSourceIndex < existingSourceIndex
