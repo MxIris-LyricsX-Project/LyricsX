@@ -266,11 +266,14 @@ class AppController: NSObject {
         // If source priority is enabled, use it for comparison
         if defaults[.lyricsSourcePriorityEnabled] {
             let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
-            let currentSource = current.metadata.service ?? ""
-            let newSource = new.metadata.service ?? ""
+            // Normalize to lowercase to perform case-insensitive comparison
+            let normalizedOrder = sourceOrder.map { $0.lowercased() }
 
-            let currentSourceIndex = sourceOrder.firstIndex(of: currentSource) ?? Int.max
-            let newSourceIndex = sourceOrder.firstIndex(of: newSource) ?? Int.max
+            let currentSource = (current.metadata.service ?? "").lowercased()
+            let newSource = (new.metadata.service ?? "").lowercased()
+
+            let currentSourceIndex = normalizedOrder.firstIndex(of: currentSource) ?? Int.max
+            let newSourceIndex = normalizedOrder.firstIndex(of: newSource) ?? Int.max
 
             if currentSourceIndex != newSourceIndex {
                 return newSourceIndex < currentSourceIndex
