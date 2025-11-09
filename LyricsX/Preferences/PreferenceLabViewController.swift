@@ -44,7 +44,7 @@ class PreferenceLabViewController: PreferenceViewController {
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {
         let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if value.isEmpty {
-            defaults[.musixmatchToken] = nil
+            defaults.remove(.musixmatchToken)
         } else {
             defaults[.musixmatchToken] = value
         }
