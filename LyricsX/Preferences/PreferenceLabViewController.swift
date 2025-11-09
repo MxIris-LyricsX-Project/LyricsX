@@ -6,6 +6,8 @@ class PreferenceLabViewController: PreferenceViewController {
 
     @IBOutlet var spotifyLoginButton: NSButton!
 
+    @IBOutlet var musixmatchTokenField: NSTextField!
+
     override func viewDidLoad() {
         super.viewDidLoad()
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
@@ -16,6 +18,13 @@ class PreferenceLabViewController: PreferenceViewController {
                 spotifyLoginButton.title = "Login"
             }
         }
+
+        if let token = defaults[.musixmatchToken] {
+            musixmatchTokenField.stringValue = token
+        } else {
+            musixmatchTokenField.stringValue = ""
+        }
+
     }
 
     @IBAction func spotifyLoginAction(_ sender: NSButton) {
@@ -29,6 +38,20 @@ class PreferenceLabViewController: PreferenceViewController {
                 try await AppController.shared.updateLyricsManager()
                 spotifyLoginButton.title = "Login"
             }
+        }
+    }
+
+    @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {
+        let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if value.isEmpty {
+            defaults[.musixmatchToken] = nil
+        } else {
+            defaults[.musixmatchToken] = value
+        }
+        
+        // Update lyrics manager when token changes
+        Task { @MainActor in
+            try await AppController.shared.updateLyricsManager()
         }
     }
 

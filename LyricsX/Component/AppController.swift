@@ -95,6 +95,16 @@ class AppController: NSObject {
             }
         }
 
+        // Add Musixmatch provider with saved token if available
+        if let token = defaults[.musixmatchToken], !token.isEmpty {
+            do {
+                let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
+                providers.append(musixmatchProvider)
+            } catch {
+                print("Failed to create Musixmatch provider: \(error)")
+            }
+        }
+
         lyricsManager = LyricsProviders.Group(providers: providers)
     }
 
@@ -224,10 +234,33 @@ class AppController: NSObject {
         searchRequest = request
         Task {
             do {
+                // Accept the first arrived lyrics immediately, 
+                // but keep collecting for a short window to allow higher-priority providers,
+                // which might be slower, to replace it.
+                let window = defaults[.lyricsPriorityWindow] ?? 5 // seconds
+                var firstReceived = false
+                var collectionStart: Date?
+
                 for try await lyrics in lyricsManager.lyrics(for: request) {
-                    lyricsReceived(lyrics: lyrics)
-                    break
+                    if !firstReceived {
+                        lyricsReceived(lyrics: lyrics)
+                        if let current = currentLyrics, current === lyrics {
+                            firstReceived = true
+                            collectionStart = Date()
+                        }
+                        continue
+                    }
+
+                    if let start = collectionStart,
+                       Date().timeIntervalSince(start) <= window {
+                        lyricsReceived(lyrics: lyrics)
+                        continue
+                    } else {
+                        // window expired
+                        break
+                    }
                 }
+
                 if defaults[.writeToiTunesAutomatically] {
                     writeToiTunes(overwrite: true)
                 }

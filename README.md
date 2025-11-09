@@ -23,6 +23,8 @@ brew install brewforge/extras/lyricsx-mxiris
 
 Download from [releases](https://github.com/MxIris-LyricsX-Project/LyricsX/releases).
 
+To use **Musixmatch** as lyrics source, you need to follow the steps provided [here](https://gist.github.com/TrueMyst/0461aea999e347182486934fd83a4cf9) or [here](https://spicetify.app/docs/faq#sometimes-popup-lyrics-andor-lyrics-plus-seem-to-not-work) to obtain a **usertoken** and fill it in LyricsX's preferences.
+
 ### Requirements
 
 - macOS 11+

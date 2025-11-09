@@ -69,6 +69,7 @@
 	<array>
 	    <string>Kugou</string>
 	    <string>LRCLIB</string>
+		<string>Musixmatch</string>
 	    <string>NetEase</string>
 	    <string>QQMusic</string>
 	    <string>Spotify</string>

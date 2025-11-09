@@ -142,6 +142,8 @@ extension UserDefaults.DefaultsKeys {
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
 
+    static let musixmatchToken = Key<String?>("MusixmatchToken")
+
     //
     static let isInMASReview = Key<Bool?>("isInMASReview")
 
@@ -154,6 +156,7 @@ extension UserDefaults.DefaultsKeys {
     // Source Priority
     static let lyricsSourcePriorityEnabled = Key<Bool>("LyricsSourcePriorityEnabled")
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
+    static let lyricsPriorityWindow = Key<Double>("LyricsPriorityWindow")
 }
 
 extension CGFloat: @retroactive DefaultConstructible {}
