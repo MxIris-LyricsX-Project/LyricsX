@@ -2338,11 +2338,14 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="390"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="423"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="350"/>
+                                <rect key="frame" x="75" y="20" width="520" height="384"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="384" id="jkt-jq-tQd"/>
+                                </constraints>
                                 <rows>
                                     <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
                                     <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
@@ -2355,6 +2358,7 @@
                                     <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="center" height="30" id="18P-nC-uyg"/>
+                                    <gridRow id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
                                     <gridColumn xPlacement="trailing" width="150" id="8ba-lF-U7s"/>
@@ -2538,6 +2542,29 @@
                                             </customSpacing>
                                         </stackView>
                                     </gridCell>
+                                    <gridCell row="lp0-JX-wTa" column="8ba-lF-U7s" id="YZh-w9-vzD">
+                                        <textField key="contentView" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g7i-g1-pzs">
+                                            <rect key="frame" x="32" y="0.0" width="120" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Musixmatch Lyrics:" id="sd9-qh-b73">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="lp0-JX-wTa" column="4uA-B7-Dvh" id="6H5-pL-F8l">
+                                        <textField key="contentView" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="PeC-aV-j5M">
+                                            <rect key="frame" x="170" y="0.0" width="200" height="22"/>
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Enter usertoken" usesSingleLineMode="YES" bezelStyle="round" id="2Lo-TU-WWD">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <action selector="musixmatchTokenChanged:" target="JPs-hn-m7d" id="THk-pN-aJS"/>
+                                            </connections>
+                                        </textField>
+                                    </gridCell>
                                 </gridCells>
                             </gridView>
                         </subviews>
@@ -2550,6 +2577,7 @@
                     </view>
                     <connections>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
+                        <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
                         <outlet property="spotifyLoginButton" destination="KfG-RH-rUg" id="wgo-Jx-swh"/>
                     </connections>
                 </viewController>

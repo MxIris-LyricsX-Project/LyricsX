@@ -95,6 +95,16 @@ class AppController: NSObject {
             }
         }
 
+        // Add Musixmatch provider with saved token if available
+        if let token = defaults[.musixmatchToken], !token.isEmpty {
+            do {
+                let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
+                providers.append(musixmatchProvider)
+            } catch {
+                print("Failed to create Musixmatch provider: \(error)")
+            }
+        }
+
         lyricsManager = LyricsProviders.Group(providers: providers)
     }
 

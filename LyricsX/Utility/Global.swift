@@ -142,6 +142,8 @@ extension UserDefaults.DefaultsKeys {
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
 
+    static let musixmatchToken = Key<String?>("MusixmatchToken")
+
     //
     static let isInMASReview = Key<Bool?>("isInMASReview")
 
