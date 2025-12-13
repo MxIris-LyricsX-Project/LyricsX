@@ -42,6 +42,17 @@ extension MusicTrack {
         }
         originalTrack.setValue(lyrics, forKey: "lyrics")
     }
+    
+    var localFileURL: URL? {
+        if let url = fileURL {
+            return url
+        }
+        guard let originalTrack = originalTrack,
+              originalTrack.responds(to: Selector(("location"))) else {
+            return nil
+        }
+        return originalTrack.value(forKey: "location") as? URL
+    }
 }
 
 extension NSFont {

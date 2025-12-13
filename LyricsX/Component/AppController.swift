@@ -181,13 +181,29 @@ class AppController: NSObject {
         var candidateLyricsURL: [(URL, Bool, Bool)] = [] // (fileURL, isSecurityScoped, needsSearching)
 
         if defaults[.loadLyricsBesideTrack] {
-            if let fileName = track.fileURL?.deletingPathExtension() {
+
+            if let embeddedLyrics = track.lyrics, !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if let lyrics = Lyrics(embeddedLyrics) {
+                    if lyrics.metadata.title == nil || lyrics.metadata.title?.isEmpty == true {
+                        lyrics.metadata.title = title
+                    }
+                    if lyrics.metadata.artist == nil || lyrics.metadata.artist?.isEmpty == true {
+                        lyrics.metadata.artist = artist
+                    }
+                    lyrics.filtrate()
+                    lyrics.recognizeLanguage()
+                    currentLyrics = lyrics
+                    return
+                }
+            }
+            if let fileName = track.localFileURL?.deletingPathExtension() {
                 candidateLyricsURL += [
                     (fileName.appendingPathExtension("lrcx"), false, false),
                     (fileName.appendingPathExtension("lrc"), false, false),
                 ]
             }
         }
+
         let (url, security) = defaults.lyricsSavingPath()
         let titleForReading = title.replacingOccurrences(of: "/", with: ":")
         let artistForReading = artist.replacingOccurrences(of: "/", with: ":")

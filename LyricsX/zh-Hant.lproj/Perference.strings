@@ -34,8 +34,8 @@
 /* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
 "Cmt-it-PXW.title" = "字型：";
 
-/* Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "EDv-ax-0hI"; */
-"EDv-ax-0hI.title" = "讀取同名的歌詞檔案";
+/* Class = "NSButtonCell"; title = "Load lyrics from music file (beside/embedded)"; ObjectID = "EDv-ax-0hI"; */
+"EDv-ax-0hI.title" = "從音樂檔案載入歌詞（順序：內嵌 > 同目錄）";
 
 /* Class = "NSMenuItem"; title = "Other..."; ObjectID = "HvN-Ou-h1t"; */
 "HvN-Ou-h1t.title" = "其他⋯";
