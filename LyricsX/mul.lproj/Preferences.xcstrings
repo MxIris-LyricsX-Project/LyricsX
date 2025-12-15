@@ -4322,7 +4322,7 @@
       }
     },
     "EDv-ax-0hI.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics beside music file\"; ObjectID = \"EDv-ax-0hI\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (beside/embedded)\"; ObjectID = \"EDv-ax-0hI\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
@@ -4334,7 +4334,7 @@
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (beside/embedded)"
           }
         },
         "de" : {
@@ -4346,7 +4346,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (order: embedded > beside)"
           }
         },
         "es" : {
@@ -4424,13 +4424,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加载同名歌词"
+            "value" : "从音乐文件加载歌词（同目录/内嵌）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "讀取同名的歌詞檔案"
+            "value" : "從音樂檔案載入歌詞（同目錄/內嵌）"
           }
         }
       }
@@ -12548,7 +12548,7 @@
       }
     },
     "vUt-b5-jlE.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics beside music file\"; ObjectID = \"vUt-b5-jlE\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (beside/embedded)\"; ObjectID = \"vUt-b5-jlE\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
@@ -12560,7 +12560,7 @@
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (beside/embedded)"
           }
         },
         "de" : {
@@ -12572,7 +12572,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (beside/embedded)"
           }
         },
         "es" : {
@@ -12650,13 +12650,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加载同名歌词"
+            "value" : "从音乐文件加载歌词（顺序：内嵌 > 同目录）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "讀取同名的歌詞檔案"
+            "value" : "從音樂檔案載入歌詞（同目錄/內嵌）"
           }
         }
       }
