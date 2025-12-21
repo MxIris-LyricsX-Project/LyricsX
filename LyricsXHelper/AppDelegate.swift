@@ -12,7 +12,6 @@ import ScriptingBridge
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-    
     var musicPlayers: [SBApplication] = []
     var shouldWaitForPlayerQuit = false
 
@@ -21,49 +20,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSApplication.shared.terminate(nil)
             abort() // fake invoking, just make compiler happy.
         }
-        
+
         let index = groupDefaults.integer(forKey: preferredPlayerIndex)
         let ident = playerBundleIdentifiers[index]
         musicPlayers = ident.compactMap(SBApplication.init)
-        
+
         let event = NSAppleEventManager.shared().currentAppleEvent
         let isLaunchedAsLoginItem = event?.eventID == kAEOpenApplication &&
             event?.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
         let isLaunchedByMain = (groupDefaults.object(forKey: launchHelperTime) as? Date).map { Date().timeIntervalSince($0) < 10 } ?? false
         shouldWaitForPlayerQuit = !isLaunchedAsLoginItem && isLaunchedByMain && musicPlayers.contains { $0.isRunning }
-        
+
         let wsnc = NSWorkspace.shared.notificationCenter
         wsnc.addObserver(self, selector: #selector(checkTargetApplication), name: NSWorkspace.didLaunchApplicationNotification, object: nil)
         wsnc.addObserver(self, selector: #selector(checkTargetApplication), name: NSWorkspace.didTerminateApplicationNotification, object: nil)
-        
+
         checkTargetApplication()
     }
-    
+
     @objc func checkTargetApplication() {
         let isRunning = musicPlayers.contains { $0.isRunning }
         if shouldWaitForPlayerQuit {
             shouldWaitForPlayerQuit = isRunning
             return
         } else if isRunning {
-            self.launchMainAndQuit()
+            launchMainAndQuit()
         }
     }
 
     func launchMainAndQuit() -> Never {
         var host = Bundle.main.bundleURL
-        for _ in 0..<4 {
+        for _ in 0 ..< 4 {
             host.deleteLastPathComponent()
         }
-        do {
-            try NSWorkspace.shared.launchApplication(at: host, configuration: [:])
-            NSLog("launch LyricsX succeed.")
-        } catch {
-            NSLog("launch LyricsX failed. reason: \(error)")
+
+        NSWorkspace.shared.openApplication(at: host, configuration: .init()) { app, error in
+            if let error {
+                NSLog("launch LyricsX failed. reason: \(error)")
+            } else {
+                NSLog("launch LyricsX succeed.")
+            }
         }
+        
         NSApp.terminate(nil)
         abort() // fake invoking, just make compiler happy.
     }
-
 }
 
 let playerBundleIdentifiers = [

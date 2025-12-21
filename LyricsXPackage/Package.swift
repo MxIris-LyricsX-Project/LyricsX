@@ -35,17 +35,25 @@ let package = Package(
             isRelative: true,
             alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/LyricsKit", branch: "main")
         ),
+        .package(
+            path: "../../../Library/MusicPlayer",
+            isRelative: true,
+            alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer", branch: "main")
+        ),
     ],
     targets: [
         .target(
             name: "LyricsXFoundation",
             dependencies: [
                 .product(name: "LyricsKit", package: "LyricsKit"),
+                .product(name: "MusicPlayer", package: "MusicPlayer"),
             ]
         ),
         .testTarget(
             name: "LyricsXFoundationTests",
-            dependencies: ["LyricsXFoundation"]
+            dependencies: [
+                "LyricsXFoundation"
+            ]
         ),
     ]
 )

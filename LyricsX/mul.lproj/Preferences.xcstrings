@@ -4322,7 +4322,7 @@
       }
     },
     "EDv-ax-0hI.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (beside/embedded)\"; ObjectID = \"EDv-ax-0hI\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (order: embedded > beside)\"; ObjectID = \"EDv-ax-0hI\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
@@ -12548,114 +12548,114 @@
       }
     },
     "vUt-b5-jlE.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (beside/embedded)\"; ObjectID = \"vUt-b5-jlE\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (order: embedded > beside)\"; ObjectID = \"vUt-b5-jlE\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "تحميل كلمات الأغاني بجانب ملف الموسيقى"
           }
         },
         "base" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Load lyrics from music file (beside/embedded)"
           }
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Songtext neben Musikdatei laden"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Load lyrics from music file (beside/embedded)"
+            "value" : "Load lyrics from music file (order: embedded > beside)"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Cargar la letra al lado del archivo de música"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "بارگذاری ترانه کنار فایل موزیک"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Charger les paroles à côté du fichier musique"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Muat lirik di samping berkas musik"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Carica il testo accanto al file musicale"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "同じ名前の歌詞を読み込む"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "음원 파일로부터 가사 불러오기"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Laad songteksten naast muziek bestand"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Szukaj tekstu w folderze z utworem"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Carregar letras ao lado do arquivo de música"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Загружать текст рядом с музыкальным файлом"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Завантажувати текст поруч із музичним файлом"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "从音乐文件加载歌词（顺序：内嵌 > 同目录）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "從音樂檔案載入歌詞（同目錄/內嵌）"
           }
         }
