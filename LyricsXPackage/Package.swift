@@ -38,7 +38,7 @@ let package = Package(
         .package(
             path: "../../../Library/MusicPlayer",
             isRelative: true,
-            alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer", branch: "main")
+            alternative: .package(url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer", branch: "master")
         ),
     ],
     targets: [
