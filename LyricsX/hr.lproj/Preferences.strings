@@ -95,10 +95,10 @@
 "jFb-kX-VbY.title" = "S prijevodom";
 
 /* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-buttonCell-inner"; */
-"convertLRC-buttonCell-inner.title" = "Convert to plain LRC (no karaoke)";
+"convertLRC-buttonCell-inner.title" = "Pretvori u obični LRC (bez karaoke)";
 
 /* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-cell-scene1"; */
-"convertLRC-cell-scene1.title" = "Convert to plain LRC (no karaoke)";
+"convertLRC-cell-scene1.title" = "Pretvori u obični LRC (bez karaoke)";
 
 /* Class = "NSTextFieldCell"; title = "Auto Chinese conversion:"; ObjectID = "JPB-ag-MN7"; */
 "JPB-ag-MN7.title" = "Automatska konverzija u Kineski:";
