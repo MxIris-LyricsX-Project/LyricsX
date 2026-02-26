@@ -140,7 +140,16 @@ class AppController: NSObject {
         
         let content: String
         if defaults[.writeiTunesConvertToPlainLRC] {
-            content = currentLyrics.legacyDescription
+            // For plain LRC export, preserve the legacy LRC formatting but still respect
+            // the Chinese conversion setting for consistency with the non-plain branch.
+            var legacy = currentLyrics.legacyDescription
+            if let converter = ChineseConverter.shared {
+                legacy = converter.convert(legacy)
+            }
+            // Note: translations are intentionally not appended for plain LRC export,
+            // even when `writeiTunesWithTranslation` is enabled, to keep the legacy
+            // LRC output single-line per timestamp.
+            content = legacy
         } else {
             content = currentLyrics.lines.map { line -> String in
                 var content = line.content
