@@ -137,23 +137,29 @@ class AppController: NSObject {
               overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
-        let content = currentLyrics.lines.map { line -> String in
-            var content = line.content
-            if let converter = ChineseConverter.shared {
-                content = converter.convert(content)
-            }
-            if defaults[.writeiTunesWithTranslation] {
-                // TODO: tagged translation
-                let code = currentLyrics.metadata.translationLanguages.first
-                if var translation = line.attachments[.translation(languageCode: code)] {
-                    if let converter = ChineseConverter.shared {
-                        translation = converter.convert(translation)
-                    }
-                    content += "\n" + translation
+        
+        let content: String
+        if defaults[.writeiTunesConvertToPlainLRC] {
+            content = currentLyrics.legacyDescription
+        } else {
+            content = currentLyrics.lines.map { line -> String in
+                var content = line.content
+                if let converter = ChineseConverter.shared {
+                    content = converter.convert(content)
                 }
-            }
-            return content
-        }.joined(separator: "\n")
+                if defaults[.writeiTunesWithTranslation] {
+                    // TODO: tagged translation
+                    let code = currentLyrics.metadata.translationLanguages.first
+                    if var translation = line.attachments[.translation(languageCode: code)] {
+                        if let converter = ChineseConverter.shared {
+                            translation = converter.convert(translation)
+                        }
+                        content += "\n" + translation
+                    }
+                }
+                return content
+            }.joined(separator: "\n")
+        }
         // swiftlint:disable:next force_try
         let regex = Regex(#"\n{3,}"#)
         let replaced = content.replacingMatches(of: regex, with: "\n\n")

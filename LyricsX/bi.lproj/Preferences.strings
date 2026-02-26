@@ -94,6 +94,12 @@
 /* Class = "NSButtonCell"; title = "With translation"; ObjectID = "jFb-kX-VbY"; */
 "jFb-kX-VbY.title" = "With translation";
 
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-buttonCell-inner"; */
+"convertLRC-buttonCell-inner.title" = "Convert to plain LRC (no karaoke)";
+
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-cell-scene1"; */
+"convertLRC-cell-scene1.title" = "Convert to plain LRC (no karaoke)";
+
 /* Class = "NSTextFieldCell"; title = "Auto Chinese conversion:"; ObjectID = "JPB-ag-MN7"; */
 "JPB-ag-MN7.title" = "Auto Chinese conversion:";
 
