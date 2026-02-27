@@ -137,23 +137,38 @@ class AppController: NSObject {
               overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
-        let content = currentLyrics.lines.map { line -> String in
-            var content = line.content
+        
+        let content: String
+        if defaults[.writeiTunesConvertToPlainLRC] {
+            // For plain LRC export, preserve the legacy LRC formatting but still respect
+            // the Chinese conversion setting for consistency with the non-plain branch.
+            var legacy = currentLyrics.legacyDescription
             if let converter = ChineseConverter.shared {
-                content = converter.convert(content)
+                legacy = converter.convert(legacy)
             }
-            if defaults[.writeiTunesWithTranslation] {
-                // TODO: tagged translation
-                let code = currentLyrics.metadata.translationLanguages.first
-                if var translation = line.attachments[.translation(languageCode: code)] {
-                    if let converter = ChineseConverter.shared {
-                        translation = converter.convert(translation)
-                    }
-                    content += "\n" + translation
+            // Note: translations are intentionally not appended for plain LRC export,
+            // even when `writeiTunesWithTranslation` is enabled, to keep the legacy
+            // LRC output single-line per timestamp.
+            content = legacy
+        } else {
+            content = currentLyrics.lines.map { line -> String in
+                var content = line.content
+                if let converter = ChineseConverter.shared {
+                    content = converter.convert(content)
                 }
-            }
-            return content
-        }.joined(separator: "\n")
+                if defaults[.writeiTunesWithTranslation] {
+                    // TODO: tagged translation
+                    let code = currentLyrics.metadata.translationLanguages.first
+                    if var translation = line.attachments[.translation(languageCode: code)] {
+                        if let converter = ChineseConverter.shared {
+                            translation = converter.convert(translation)
+                        }
+                        content += "\n" + translation
+                    }
+                }
+                return content
+            }.joined(separator: "\n")
+        }
         // swiftlint:disable:next force_try
         let regex = Regex(#"\n{3,}"#)
         let replaced = content.replacingMatches(of: regex, with: "\n\n")

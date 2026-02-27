@@ -139,6 +139,7 @@ extension UserDefaults.DefaultsKeys {
 
     static let writeiTunesWithTranslation = Key<Bool>("WriteiTunesWithTranslation")
     static let writeToiTunesAutomatically = Key<Bool>("WriteToiTunesAutomatically")
+    static let writeiTunesConvertToPlainLRC = Key<Bool>("WriteiTunesConvertToPlainLRC")
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
 

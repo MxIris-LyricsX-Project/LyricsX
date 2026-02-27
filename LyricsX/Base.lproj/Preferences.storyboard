@@ -2214,6 +2214,16 @@
                                     <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesWithTranslation" id="YcT-LV-fEn"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="convertLRC-btn-scene1">
+                                <rect key="frame" x="236" y="68" width="200" height="16"/>
+                                <buttonCell key="cell" type="check" title="Convert to plain LRC (no karaoke)" bezelStyle="regularSquare" imagePosition="left" inset="2" id="convertLRC-cell-scene1">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesConvertToPlainLRC" id="convertLRC-bind-scene1"/>
+                                </connections>
+                            </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
                                 <rect key="frame" x="87" y="80" width="135" height="16"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="8Sx-vb-5pB">
@@ -2317,7 +2327,9 @@
                             <constraint firstItem="rkh-fs-CDd" firstAttribute="top" secondItem="BIz-Ld-Wfi" secondAttribute="bottom" constant="16" id="fXk-DN-uKd"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Tvk-yf-w4p" secondAttribute="trailing" constant="20" id="nVW-K7-QKb"/>
                             <constraint firstItem="BIz-Ld-Wfi" firstAttribute="top" secondItem="GqQ-7c-IhI" secondAttribute="bottom" constant="20" id="snG-fw-aST"/>
-                            <constraint firstItem="Tvk-yf-w4p" firstAttribute="top" secondItem="IKY-aR-ZdS" secondAttribute="bottom" constant="8" id="tKi-Ka-ZTQ"/>
+                            <constraint firstItem="convertLRC-btn-scene1" firstAttribute="top" secondItem="IKY-aR-ZdS" secondAttribute="bottom" constant="8" id="convertLRC-top-constraint"/>
+                            <constraint firstItem="convertLRC-btn-scene1" firstAttribute="leading" secondItem="IKY-aR-ZdS" secondAttribute="leading" id="convertLRC-leading-constraint"/>
+                            <constraint firstItem="Tvk-yf-w4p" firstAttribute="top" secondItem="convertLRC-btn-scene1" secondAttribute="bottom" constant="8" id="tKi-Ka-ZTQ"/>
                             <constraint firstItem="GqQ-7c-IhI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uY5-7S-zG1" secondAttribute="leading" constant="75" id="tiw-jZ-dmo"/>
                             <constraint firstItem="QO9-t0-epx" firstAttribute="top" secondItem="rkh-fs-CDd" secondAttribute="bottom" constant="16" id="uQF-nl-tLo"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="BIz-Ld-Wfi" secondAttribute="trailing" constant="20" id="wNF-TT-kUC"/>
@@ -2352,6 +2364,7 @@
                                     <gridRow yPlacement="center" height="20" id="es4-R9-etL"/>
                                     <gridRow yPlacement="center" height="20" id="6GV-2W-Qb0"/>
                                     <gridRow yPlacement="center" height="20" topPadding="10" id="5Sc-jD-UJ4"/>
+                                    <gridRow yPlacement="center" height="20" id="convertLRC-row"/>
                                     <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="center" height="30" id="18P-nC-uyg"/>
@@ -2477,6 +2490,19 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.WriteiTunesWithTranslation" id="SgC-Tk-7Lx"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="convertLRC-row" column="8ba-lF-U7s" id="convertLRC-labelCell"/>
+                                    <gridCell row="convertLRC-row" column="4uA-B7-Dvh" id="convertLRC-buttonCell">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="convertLRC-button">
+                                            <rect key="frame" x="170" y="116" width="200" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Convert to plain LRC (no karaoke)" bezelStyle="regularSquare" imagePosition="left" inset="2" id="convertLRC-buttonCell-inner">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.WriteiTunesConvertToPlainLRC" id="convertLRC-binding"/>
                                             </connections>
                                         </button>
                                     </gridCell>

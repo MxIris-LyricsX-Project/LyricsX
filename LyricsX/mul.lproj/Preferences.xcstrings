@@ -6487,6 +6487,66 @@
         }
       }
     },
+    "convertLRC-buttonCell-inner.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-buttonCell-inner\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
+    "convertLRC-cell-scene1.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-cell-scene1\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
     "jhm-dK-4Y3.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Spotify\"; ObjectID = \"jhm-dK-4Y3\"; Note = \"#bc-ignore!\";",
       "extractionState" : "extracted_with_value",
