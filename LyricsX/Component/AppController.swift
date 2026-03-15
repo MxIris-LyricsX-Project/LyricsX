@@ -24,7 +24,7 @@ class AppController: NSObject {
     @Published var currentLineIndex: Int?
 
     var searchRequest: LyricsSearchRequest?
-    var searchCanceller: Cancellable?
+    var searchTask: Task<Void, Never>?
 
     private var cancelBag = Set<AnyCancellable>()
 
@@ -97,12 +97,8 @@ class AppController: NSObject {
 
         // Add Musixmatch provider with saved token if available
         if let token = defaults[.musixmatchToken], !token.isEmpty {
-            do {
-                let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
-                providers.append(musixmatchProvider)
-            } catch {
-                print("Failed to create Musixmatch provider: \(error)")
-            }
+            let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
+            providers.append(musixmatchProvider)
         }
 
         lyricsManager = LyricsProviders.Group(providers: providers)
@@ -181,7 +177,7 @@ class AppController: NSObject {
         }
         currentLyrics = nil
         currentLineIndex = nil
-        searchCanceller?.cancel()
+        searchTask?.cancel()
         guard let track = selectedPlayer.currentTrack else {
             return
         }
@@ -263,9 +259,9 @@ class AppController: NSObject {
         let duration = track.duration ?? 0
         let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
         searchRequest = request
-        Task {
+        searchTask = Task {
             do {
-                // Accept the first arrived lyrics immediately, 
+                // Accept the first arrived lyrics immediately,
                 // but keep collecting for a short window to allow higher-priority providers,
                 // which might be slower, to replace it.
                 let window = defaults[.lyricsPriorityWindow] ?? 5 // seconds
@@ -295,6 +291,8 @@ class AppController: NSObject {
                 if defaults[.writeToiTunesAutomatically] {
                     writeToiTunes(overwrite: true)
                 }
+            } catch is CancellationError {
+                // Search was cancelled due to track change
             } catch {
                 print("Failed to fetch lyrics: \(error.localizedDescription)")
             }
@@ -312,11 +310,8 @@ class AppController: NSObject {
         if defaults[.strictSearchEnabled], !lyrics.isMatched() {
             return
         }
-        if let current = currentLyrics {
-            let shouldReplace = shouldReplaceLyrics(current: current, new: lyrics)
-            if !shouldReplace {
-                return
-            }
+        if let current = currentLyrics, !lyricsHasHigherPriority(lyrics, over: current) {
+            return
         }
 
         lyrics.associateWithTrack(track)
@@ -326,27 +321,6 @@ class AppController: NSObject {
         currentLyrics = lyrics
     }
 
-    private func shouldReplaceLyrics(current: Lyrics, new: Lyrics) -> Bool {
-        // If source priority is enabled, use it for comparison
-        if defaults[.lyricsSourcePriorityEnabled] {
-            let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
-            // Normalize to lowercase to perform case-insensitive comparison
-            let normalizedOrder = sourceOrder.map { $0.lowercased() }
-
-            let currentSource = (current.metadata.service ?? "").lowercased()
-            let newSource = (new.metadata.service ?? "").lowercased()
-
-            let currentSourceIndex = normalizedOrder.firstIndex(of: currentSource) ?? Int.max
-            let newSourceIndex = normalizedOrder.firstIndex(of: newSource) ?? Int.max
-
-            if currentSourceIndex != newSourceIndex {
-                return newSourceIndex < currentSourceIndex
-            }
-        }
-
-        // Use quality for comparison if priorities are the same or disabled
-        return new.quality > current.quality
-    }
 }
 
 extension AppController {

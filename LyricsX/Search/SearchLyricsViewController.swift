@@ -1,5 +1,4 @@
 import AppKit
-import Combine
 import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
@@ -16,7 +15,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     var lyricsManager: LyricsProvider { AppController.shared.lyricsManager }
     var searchRequest: LyricsSearchRequest?
-    var searchCanceller: Cancellable?
+    var searchTask: Task<Void, Never>?
     var searchResult: [Lyrics] = []
     var progressObservation: NSKeyValueObservation?
 
@@ -43,7 +42,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     func reloadKeyword() {
         guard let track = selectedPlayer.currentTrack else {
-            searchCanceller?.cancel()
+            searchTask?.cancel()
             searchResult = []
             searchArtist = ""
             searchTitle = ""
@@ -61,7 +60,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     }
 
     @IBAction func searchAction(_ sender: Any?) {
-        searchCanceller?.cancel()
+        searchTask?.cancel()
         progressObservation?.invalidate()
         searchResult = []
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
@@ -73,12 +72,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         searchRequest = req
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
-        Task {
+        searchTask = Task {
             do {
                 for try await lyrics in lyricsManager.lyrics(for: req) {
                     lyricsReceived(lyrics: lyrics)
                 }
                 progressIndicator.stopAnimation(nil)
+            } catch is CancellationError {
+                // Search was cancelled
             } catch {
                 print(error)
             }
@@ -117,7 +118,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
-        if let idx = searchResult.firstIndex(where: { shouldInsertBefore(lyrics, $0) }) {
+        if let idx = searchResult.firstIndex(where: { lyricsHasHigherPriority(lyrics, over: $0) }) {
             searchResult.insert(lyrics, at: idx)
         } else {
             searchResult.append(lyrics)
@@ -125,26 +126,6 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         DispatchQueue.main.async {
             self.tableView.reloadData()
         }
-    }
-
-    // Same as AppController.swift
-    private func shouldInsertBefore(_ newLyrics: Lyrics, _ existingLyrics: Lyrics) -> Bool {
-        if defaults[.lyricsSourcePriorityEnabled] {
-            let sourceOrder = defaults[.lyricsSourcePriorityOrder] ?? []
-            let normalizedOrder = sourceOrder.map { $0.lowercased() }
-
-            let newSource = (newLyrics.metadata.service ?? "").lowercased()
-            let existingSource = (existingLyrics.metadata.service ?? "").lowercased()
-
-            let newSourceIndex = normalizedOrder.firstIndex(of: newSource) ?? Int.max
-            let existingSourceIndex = normalizedOrder.firstIndex(of: existingSource) ?? Int.max
-
-            if newSourceIndex != existingSourceIndex {
-                return newSourceIndex < existingSourceIndex
-            }
-        }
-
-        return newLyrics.quality > existingLyrics.quality
     }
 
     // MARK: - TableViewDelegate
