@@ -220,7 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             try? FileManager.default.removeItem(at: url)
         }
         AppController.shared.currentLyrics = nil
-        AppController.shared.searchCanceller?.cancel()
+        AppController.shared.searchTask?.cancel()
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {

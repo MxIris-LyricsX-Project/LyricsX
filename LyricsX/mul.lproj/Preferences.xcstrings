@@ -2049,7 +2049,7 @@
     },
     "9yS-oJ-E3S.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Spotify Lyrics:\"; ObjectID = \"9yS-oJ-E3S\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3757,6 +3757,66 @@
         }
       }
     },
+    "convertLRC-buttonCell-inner.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-buttonCell-inner\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
+    "convertLRC-cell-scene1.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-cell-scene1\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
     "cRD-iF-2qo.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"iTunes\"; ObjectID = \"cRD-iF-2qo\"; Note = \"#bc-ignore!\";",
       "extractionState" : "extracted_with_value",
@@ -3986,114 +4046,114 @@
       }
     },
     "d5d-dC-DK4.title" : {
-      "comment" : "Class = \"NSViewController\"; title = \"General\"; ObjectID = \"d5d-dC-DK4\";",
+      "comment" : "Class = \"NSViewController\"; title = \"General (Deprecated)\"; ObjectID = \"d5d-dC-DK4\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "الإعدادات العامة"
           }
         },
         "base" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "General"
           }
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Allgemein"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "General"
+            "value" : "General (Deprecated)"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "General"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "عمومی"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Général"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Umum"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Generale"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "一般"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "일반"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Algemeen"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ogólne"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Geral"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Основные"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Основні"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "通用"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "一般"
           }
         }
@@ -6483,66 +6543,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "包含翻譯"
-          }
-        }
-      }
-    },
-    "convertLRC-buttonCell-inner.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-buttonCell-inner\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Convert to plain LRC (no karaoke)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Convert to plain LRC (no karaoke)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "转换为普通LRC（无卡拉OK）"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "轉換為普通LRC（無卡拉OK）"
-          }
-        }
-      }
-    },
-    "convertLRC-cell-scene1.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-cell-scene1\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Convert to plain LRC (no karaoke)"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Convert to plain LRC (no karaoke)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "转换为普通LRC（无卡拉OK）"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "轉換為普通LRC（無卡拉OK）"
           }
         }
       }
@@ -14090,7 +14090,7 @@
     },
     "xv6-tD-l7c.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Login\"; ObjectID = \"xv6-tD-l7c\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

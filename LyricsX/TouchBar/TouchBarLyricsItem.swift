@@ -3,7 +3,6 @@ import Combine
 import LyricsXFoundation
 import OpenCC
 
-@available(OSX 10.12.2, *)
 class TouchBarLyricsItem: NSCustomTouchBarItem {
     private var lyricsTextField = KaraokeLabel(labelWithString: "")
 

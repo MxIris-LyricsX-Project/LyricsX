@@ -65,34 +65,16 @@ class AppController: NSObject {
 
         Task {
             try await updateLyricsManager()
-
-            SpotifyLoginManager.shared.accessTokenChanged = { [weak self] in
-                guard let self else { return }
-                try await updateLyricsManager()
-            }
         }
     }
 
     @MainActor
     func updateLyricsManager() async throws {
-        var services: [LyricsProviders.Service] = LyricsProviders.Service.noAuthenticationRequiredServices
-
-        if await SpotifyLoginManager.shared.isAccessible {
-            services.append(.spotify)
-        }
+        let services: [LyricsProviders.Service] = LyricsProviders.Service.noAuthenticationRequiredServices
 
         var providers: [LyricsProvider] = []
         for service in services {
-            do {
-                if service.requiresAuthentication {
-                    let provider = try await service.create(with: SpotifyLoginManager.shared)
-                    providers.append(provider)
-                } else {
-                    providers.append(service.create())
-                }
-            } catch {
-                print("Failed to create provider for \(service.displayName): \(error)")
-            }
+            providers.append(service.create())
         }
 
         // Add Musixmatch provider with saved token if available
@@ -133,7 +115,7 @@ class AppController: NSObject {
               overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
-        
+
         let content: String
         if defaults[.writeiTunesConvertToPlainLRC] {
             // For plain LRC export, preserve the legacy LRC formatting but still respect
@@ -192,7 +174,6 @@ class AppController: NSObject {
         var candidateLyricsURL: [(URL, Bool, Bool)] = [] // (fileURL, isSecurityScoped, needsSearching)
 
         if defaults[.loadLyricsBesideTrack] {
-
             if let embeddedLyrics = track.lyrics, !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 if let lyrics = Lyrics(embeddedLyrics) {
                     if lyrics.metadata.title == nil || lyrics.metadata.title?.isEmpty == true {
@@ -320,7 +301,6 @@ class AppController: NSObject {
         lyrics.metadata.needsPersist = true
         currentLyrics = lyrics
     }
-
 }
 
 extension AppController {

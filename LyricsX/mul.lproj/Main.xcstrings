@@ -375,7 +375,7 @@
     },
     "CW0-AL-Z6N.title" : {
       "comment" : "Class = \"NSWindow\"; title = \"Donate\"; ObjectID = \"CW0-AL-Z6N\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1053,7 +1053,7 @@
     },
     "fdG-90-G7K.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Crash\"; ObjectID = \"fdG-90-G7K\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "base" : {
           "stringUnit" : {
@@ -2643,7 +2643,7 @@
     },
     "O0D-VF-KGQ.title" : {
       "comment" : "Class = \"NSWindow\"; title = \"Debug\"; ObjectID = \"O0D-VF-KGQ\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "base" : {
           "stringUnit" : {
@@ -2661,7 +2661,7 @@
     },
     "o52-Z0-lue.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"If you enjoy using LyricsX, and would like to buy me a cup of coffee, as well as help me keep this software going, you can scan QR code below to make a generous donation.\"; ObjectID = \"o52-Z0-lue\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

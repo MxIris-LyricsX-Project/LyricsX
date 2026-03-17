@@ -2,7 +2,6 @@ import AppKit
 import MusicPlayer
 import Combine
 
-@available(OSX 10.12.2, *)
 class TouchBarPlaybackControlViewController: NSViewController {
     private weak var segmentedControl: NSSegmentedControl!
 
