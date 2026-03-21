@@ -68,8 +68,8 @@ class KaraokeLyricsWindowController: NSWindowController {
         lyricsView.bind(\.shadowColor, withDefaultName: .desktopLyricsShadowColor)
         lyricsView.bind(\.backgroundColor, withDefaultName: .desktopLyricsBackgroundColor)
         lyricsView.bind(\.isVertical, withDefaultName: .desktopLyricsVerticalMode, options: [.nullPlaceholder: false])
-        lyricsView.bind(\.drawFurigana, withDefaultName: .desktopLyricsEnableFurigana)
-        lyricsView.bind(\.drawRomajin, withDefaultName: .desktopLyricsEnableRomajin)
+        lyricsView.bind(\.drawFurigana, withDefaultName: .desktopLyricsEnableFurigana, options: [.nullPlaceholder: false])
+        lyricsView.bind(\.drawRomajin, withDefaultName: .desktopLyricsEnableRomajin, options: [.nullPlaceholder: false])
 
         let negateOption = [NSBindingOption.valueTransformerName: NSValueTransformerName.negateBooleanTransformerName]
         window?.contentView?.bind(.hidden, withDefaultName: .desktopLyricsEnabled, options: negateOption)
