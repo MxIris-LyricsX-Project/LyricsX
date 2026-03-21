@@ -16,7 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
-    private let updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: nil)
+    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
 
@@ -274,6 +274,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 lyricsOffsetConstraint?.constant += 10
             }
         }
+    }
+}
+
+extension AppDelegate: SPUStandardUserDriverDelegate {
+    func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool {
+        return true
     }
 }
 
