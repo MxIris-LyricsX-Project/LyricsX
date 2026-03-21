@@ -21,7 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		BB003EFF248F89A700860FF7 /* CXShim in Frameworks */ = {isa = PBXBuildFile; productRef = BB003EFE248F89A700860FF7 /* CXShim */; };
+		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
 		BB03C8891FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */; };
 		BB063B2E1E8A93C900A25C3E /* KaraokeLyricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */; };
 		BB0B296A1E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */; };
@@ -29,7 +29,6 @@
 		BB1B300320E878AE002F1AF8 /* StdExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1B300220E878AE002F1AF8 /* StdExtension.swift */; };
 		BB1B300520E87CC9002F1AF8 /* KaraokeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1B300420E87CC9002F1AF8 /* KaraokeLabel.swift */; };
 		BB1B631B1E8CD7CA004CC9E0 /* ScrollLyricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1B631A1E8CD7CA004CC9E0 /* ScrollLyricsView.swift */; };
-		BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = BB350ABD23D0613D00500146 /* CXExtensions */; };
 		BB4141AE1E458BA800A51775 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4141AD1E458BA800A51775 /* AppDelegate.swift */; };
 		BB4141B21E458BA800A51775 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB4141B11E458BA800A51775 /* Assets.xcassets */; };
 		BB4141B51E458BA900A51775 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB4141B31E458BA900A51775 /* Main.storyboard */; };
@@ -41,7 +40,6 @@
 		BB58B07F1E82901800598D4F /* AutoActivateWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB58B07E1E82901800598D4F /* AutoActivateWindowController.swift */; };
 		BB58B0821E82971400598D4F /* UserDefaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB58B0811E82971400598D4F /* UserDefaults.plist */; };
 		BB58B0891E82CA9B00598D4F /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = BB58B0881E82CA9B00598D4F /* Credits.rtf */; };
-		BB58D8BF248636900047E3C6 /* DonateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB58D8BE248636900047E3C6 /* DonateViewController.swift */; };
 		BB5D4B2D2094A1D700844D9F /* FontSelectTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5D4B2C2094A1D700844D9F /* FontSelectTextField.swift */; };
 		BB60F3041E889A1B00BA1FD2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB60F3031E889A1B00BA1FD2 /* AppDelegate.swift */; };
 		BB60F3061E889A1B00BA1FD2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB60F3051E889A1B00BA1FD2 /* Assets.xcassets */; };
@@ -69,28 +67,33 @@
 		BBE2A79824041E36004A7E93 /* CombineExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE2A79724041E36004A7E93 /* CombineExtension.swift */; };
 		BBE8FC751F6BEA6200122AFA /* Then.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE8FC741F6BEA6200122AFA /* Then.swift */; };
 		E91F76EB21211B8D00755698 /* PreferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F76EA21211B8D00755698 /* PreferenceViewController.swift */; };
-		E960A9A02D68ED3100A32EEC /* MusicPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E960A99F2D68ED3100A32EEC /* MusicPlayer */; };
 		E960A9A22D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E960A9A12D68F9FA00A32EEC /* NowPlayingApplicationListViewController.swift */; };
 		E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */; };
 		E97593E42150F47900D80616 /* Polyfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E32150F47800D80616 /* Polyfill.swift */; };
 		E97593E62150F6FB00D80616 /* IBInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97593E52150F6FB00D80616 /* IBInspection.swift */; };
 		E975C5BC2D380B920059BE92 /* PreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */; };
+		E97F2CFB2E757C19005466D1 /* AnyScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF32E757C19005466D1 /* AnyScheduler.swift */; };
+		E97F2CFC2E757C19005466D1 /* IgnoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF62E757C19005466D1 /* IgnoreError.swift */; };
+		E97F2CFD2E757C19005466D1 /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF92E757C19005466D1 /* Signal.swift */; };
+		E97F2CFE2E757C19005466D1 /* SelfRetainedCancellable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF82E757C19005466D1 /* SelfRetainedCancellable.swift */; };
+		E97F2CFF2E757C19005466D1 /* Blocking.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF42E757C19005466D1 /* Blocking.swift */; };
+		E97F2D002E757C19005466D1 /* DelayedAutoCancellable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF52E757C19005466D1 /* DelayedAutoCancellable.swift */; };
+		E97F2D012E757C19005466D1 /* Invoke.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CF72E757C19005466D1 /* Invoke.swift */; };
+		E97F2D022E757C19005466D1 /* WeakAssign.swift in Sources */ = {isa = PBXBuildFile; fileRef = E97F2CFA2E757C19005466D1 /* WeakAssign.swift */; };
 		E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA202C85EA6E00170CF7 /* MarqueeLabel */; };
 		E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = E983FA232C86302200170CF7 /* MarqueeLabel */; };
-		E9A24A7E2D787CEC0090B197 /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9A24A7D2D787CEC0090B197 /* LyricsKit */; };
 		E9A38A6B2D7337E700DEFE0E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E9A38A6A2D7337E700DEFE0E /* Localizable.xcstrings */; };
 		E9A38A6E2D7337E700DEFE0E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E9A38A6D2D7337E700DEFE0E /* InfoPlist.xcstrings */; };
 		E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2982AC9A10F004B9EB2 /* MASShortcut */; };
 		E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E29B2AC9A124004B9EB2 /* SnapKit */; };
 		E9C4E2A22AC9A3D6004B9EB2 /* SwiftCF in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2A12AC9A3D6004B9EB2 /* SwiftCF */; };
-		E9C4E8A62D77EE8300E3D8CA /* LyricsKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E8A52D77EE8300E3D8CA /* LyricsKit */; };
+		E9C5763D2DEDF539009107B5 /* LyricsXFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9C5763C2DEDF539009107B5 /* LyricsXFoundation */; };
 		E9E55138207C4CB000F9958A /* TouchBarLyricsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */; };
 		E9EBDA2521115A150019FDF9 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EBDA2421115A150019FDF9 /* Observation.swift */; };
 		E9EF0D4E2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */; };
 		E9EF0D512D6F5ECD00D45E0F /* UIFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D502D6F5ECD00D45E0F /* UIFoundation */; };
 		E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */; };
 		E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */; };
-		E9EF0D5A2D6F780000D45E0F /* MusicPlayer in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D592D6F780000D45E0F /* MusicPlayer */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -108,6 +111,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceSourceViewController.swift; sourceTree = "<group>"; };
 		BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChineseConverter+Singleton.swift"; sourceTree = "<group>"; };
 		BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KaraokeLyricsView.swift; sourceTree = "<group>"; };
 		BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceFilterViewController.swift; sourceTree = "<group>"; };
@@ -115,7 +119,7 @@
 		BB1B300220E878AE002F1AF8 /* StdExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StdExtension.swift; sourceTree = "<group>"; };
 		BB1B300420E87CC9002F1AF8 /* KaraokeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KaraokeLabel.swift; sourceTree = "<group>"; };
 		BB1B631A1E8CD7CA004CC9E0 /* ScrollLyricsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollLyricsView.swift; sourceTree = "<group>"; };
-		BB4141AA1E458BA800A51775 /* LyricsX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LyricsX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB4141AA1E458BA800A51775 /* LyricsX-Debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LyricsX-Debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB4141AD1E458BA800A51775 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BB4141B11E458BA800A51775 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
 		BB4141B41E458BA900A51775 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -128,7 +132,6 @@
 		BB58B07E1E82901800598D4F /* AutoActivateWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AutoActivateWindowController.swift; sourceTree = "<group>"; };
 		BB58B0811E82971400598D4F /* UserDefaults.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserDefaults.plist; sourceTree = "<group>"; };
 		BB58B0881E82CA9B00598D4F /* Credits.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
-		BB58D8BE248636900047E3C6 /* DonateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonateViewController.swift; sourceTree = "<group>"; };
 		BB5D4B2C2094A1D700844D9F /* FontSelectTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSelectTextField.swift; sourceTree = "<group>"; };
 		BB60F3011E889A1B00BA1FD2 /* LyricsXHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LyricsXHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB60F3031E889A1B00BA1FD2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -158,10 +161,19 @@
 		E97593E32150F47800D80616 /* Polyfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polyfill.swift; sourceTree = "<group>"; };
 		E97593E52150F6FB00D80616 /* IBInspection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IBInspection.swift; sourceTree = "<group>"; };
 		E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceWindowController.swift; sourceTree = "<group>"; };
+		E97F2CF32E757C19005466D1 /* AnyScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyScheduler.swift; sourceTree = "<group>"; };
+		E97F2CF42E757C19005466D1 /* Blocking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blocking.swift; sourceTree = "<group>"; };
+		E97F2CF52E757C19005466D1 /* DelayedAutoCancellable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedAutoCancellable.swift; sourceTree = "<group>"; };
+		E97F2CF62E757C19005466D1 /* IgnoreError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgnoreError.swift; sourceTree = "<group>"; };
+		E97F2CF72E757C19005466D1 /* Invoke.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invoke.swift; sourceTree = "<group>"; };
+		E97F2CF82E757C19005466D1 /* SelfRetainedCancellable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfRetainedCancellable.swift; sourceTree = "<group>"; };
+		E97F2CF92E757C19005466D1 /* Signal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
+		E97F2CFA2E757C19005466D1 /* WeakAssign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakAssign.swift; sourceTree = "<group>"; };
 		E9A38A6A2D7337E700DEFE0E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E9A38A6C2D7337E700DEFE0E /* mul */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = mul; path = mul.lproj/Main.xcstrings; sourceTree = "<group>"; };
 		E9A38A6D2D7337E700DEFE0E /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		E9A38A6F2D73383200DEFE0E /* mul */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = mul; path = mul.lproj/Preferences.xcstrings; sourceTree = "<group>"; };
+		E9C5763A2DEDF135009107B5 /* LyricsXPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LyricsXPackage; sourceTree = "<group>"; };
 		E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarLyricsController.swift; sourceTree = "<group>"; };
 		E9EBDA2421115A150019FDF9 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsHUDWindowController.swift; sourceTree = "<group>"; };
@@ -176,22 +188,17 @@
 				E9C4E2992AC9A10F004B9EB2 /* MASShortcut in Frameworks */,
 				E9EF0D512D6F5ECD00D45E0F /* UIFoundation in Frameworks */,
 				E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */,
-				E960A9A02D68ED3100A32EEC /* MusicPlayer in Frameworks */,
 				BBA82F0A256AB8620076831F /* Sparkle in Frameworks */,
 				E967A20C2D2AD6DB00982E06 /* LaunchAtLogin in Frameworks */,
 				BBB03F3A2331D8A800A3879E /* OpenCC in Frameworks */,
-				BB003EFF248F89A700860FF7 /* CXShim in Frameworks */,
 				BBB03F30232FB40400A3879E /* Semver in Frameworks */,
 				BB6C75E8248B908500804AEB /* TouchBarHelper in Frameworks */,
 				E9C4E2A22AC9A3D6004B9EB2 /* SwiftCF in Frameworks */,
-				E9C4E8A62D77EE8300E3D8CA /* LyricsKit in Frameworks */,
 				E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */,
 				E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */,
-				E9A24A7E2D787CEC0090B197 /* LyricsKit in Frameworks */,
+				E9C5763D2DEDF539009107B5 /* LyricsXFoundation in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
-				BB350ABE23D0613D00500146 /* CXExtensions in Frameworks */,
 				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
-				E9EF0D5A2D6F780000D45E0F /* MusicPlayer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,8 +227,10 @@
 		BB4141A11E458BA800A51775 = {
 			isa = PBXGroup;
 			children = (
+				E9C5763A2DEDF135009107B5 /* LyricsXPackage */,
 				BB4141AC1E458BA800A51775 /* LyricsX */,
 				BB60F3021E889A1B00BA1FD2 /* LyricsXHelper */,
+				E9C5763B2DEDF539009107B5 /* Frameworks */,
 				BB4141AB1E458BA800A51775 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -229,7 +238,7 @@
 		BB4141AB1E458BA800A51775 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB4141AA1E458BA800A51775 /* LyricsX.app */,
+				BB4141AA1E458BA800A51775 /* LyricsX-Debug.app */,
 				BB60F3011E889A1B00BA1FD2 /* LyricsXHelper.app */,
 			);
 			name = Products;
@@ -283,7 +292,6 @@
 				BBC1D57F1E4AE3B9008869EC /* MenuBarLyricsController.swift */,
 				E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */,
 				BB58B07E1E82901800598D4F /* AutoActivateWindowController.swift */,
-				BB58D8BE248636900047E3C6 /* DonateViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -291,6 +299,7 @@
 		BB7EC7B61E4ED03900A0AC3F /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				E97F2CF22E757C0A005466D1 /* CXExtensions */,
 				BBC1D35E1E499A6D002538A2 /* Global.swift */,
 				E97593E32150F47800D80616 /* Polyfill.swift */,
 				E97593E52150F6FB00D80616 /* IBInspection.swift */,
@@ -307,6 +316,7 @@
 		BBC7C5561E6AEA4500E3EC4F /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
+				0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */,
 				E975C5BA2D380B920059BE92 /* PreferenceWindowController.swift */,
 				E91F76EA21211B8D00755698 /* PreferenceViewController.swift */,
 				BBC7C5541E6AE28600E3EC4F /* PreferenceGeneralViewController.swift */,
@@ -330,6 +340,21 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		E97F2CF22E757C0A005466D1 /* CXExtensions */ = {
+			isa = PBXGroup;
+			children = (
+				E97F2CF32E757C19005466D1 /* AnyScheduler.swift */,
+				E97F2CF42E757C19005466D1 /* Blocking.swift */,
+				E97F2CF52E757C19005466D1 /* DelayedAutoCancellable.swift */,
+				E97F2CF62E757C19005466D1 /* IgnoreError.swift */,
+				E97F2CF72E757C19005466D1 /* Invoke.swift */,
+				E97F2CF82E757C19005466D1 /* SelfRetainedCancellable.swift */,
+				E97F2CF92E757C19005466D1 /* Signal.swift */,
+				E97F2CFA2E757C19005466D1 /* WeakAssign.swift */,
+			);
+			path = CXExtensions;
+			sourceTree = "<group>";
+		};
 		E9C49A8E2110490700159ADC /* Component */ = {
 			isa = PBXGroup;
 			children = (
@@ -351,6 +376,13 @@
 				BB63C24E22774B47008CFFBB /* TouchBarPlaybackControlViewController.swift */,
 			);
 			path = TouchBar;
+			sourceTree = "<group>";
+		};
+		E9C5763B2DEDF539009107B5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		E9EF0D562D6F722B00D45E0F /* LyricsHUD */ = {
@@ -384,7 +416,6 @@
 				BB4141A81E458BA800A51775 /* Resources */,
 				BB60F3111E889FC000BA1FD2 /* Copy Helper */,
 				E967A20D2D2AD6F800982E06 /* Copy “Launch at Login Helper” */,
-				BB0BE9531F444BE20068FF67 /* Update Localization */,
 				BBC1D5811E4AFE64008869EC /* Bump Build */,
 			);
 			buildRules = (
@@ -396,9 +427,7 @@
 				BBB03F2C232FB3AF00A3879E /* GenericID */,
 				BBB03F2F232FB40400A3879E /* Semver */,
 				BBB03F392331D8A800A3879E /* OpenCC */,
-				BB350ABD23D0613D00500146 /* CXExtensions */,
 				BB6C75E7248B908500804AEB /* TouchBarHelper */,
-				BB003EFE248F89A700860FF7 /* CXShim */,
 				BBA82F09256AB8620076831F /* Sparkle */,
 				E9C4E2982AC9A10F004B9EB2 /* MASShortcut */,
 				E9C4E29B2AC9A124004B9EB2 /* SnapKit */,
@@ -406,15 +435,12 @@
 				E983FA202C85EA6E00170CF7 /* MarqueeLabel */,
 				E983FA232C86302200170CF7 /* MarqueeLabel */,
 				E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */,
-				E960A99F2D68ED3100A32EEC /* MusicPlayer */,
 				E9EF0D502D6F5ECD00D45E0F /* UIFoundation */,
 				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
-				E9EF0D592D6F780000D45E0F /* MusicPlayer */,
-				E9C4E8A52D77EE8300E3D8CA /* LyricsKit */,
-				E9A24A7D2D787CEC0090B197 /* LyricsKit */,
+				E9C5763C2DEDF539009107B5 /* LyricsXFoundation */,
 			);
 			productName = LyricsX;
-			productReference = BB4141AA1E458BA800A51775 /* LyricsX.app */;
+			productReference = BB4141AA1E458BA800A51775 /* LyricsX-Debug.app */;
 			productType = "com.apple.product-type.application";
 		};
 		BB60F3001E889A1B00BA1FD2 /* LyricsXHelper */ = {
@@ -481,7 +507,7 @@
 				};
 			};
 			buildConfigurationList = BB4141A51E458BA800A51775 /* Build configuration list for PBXProject "LyricsX" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -509,9 +535,7 @@
 				BBB03F2B232FB3AF00A3879E /* XCRemoteSwiftPackageReference "GenericID" */,
 				BBB03F2E232FB40400A3879E /* XCRemoteSwiftPackageReference "Semver" */,
 				BBB03F382331D8A800A3879E /* XCRemoteSwiftPackageReference "SwiftyOpenCC" */,
-				BB350ABC23D0613D00500146 /* XCRemoteSwiftPackageReference "CXExtensions" */,
 				BB6C75E6248B908500804AEB /* XCRemoteSwiftPackageReference "TouchBarHelper" */,
-				BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */,
 				BBA82F08256AB8620076831F /* XCRemoteSwiftPackageReference "Sparkle" */,
 				E9C4E2972AC9A10F004B9EB2 /* XCRemoteSwiftPackageReference "MASShortcut" */,
 				E9C4E29A2AC9A124004B9EB2 /* XCRemoteSwiftPackageReference "SnapKit" */,
@@ -519,8 +543,6 @@
 				E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 				E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */,
-				E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */,
-				E9A24A7C2D787CEC0090B197 /* XCLocalSwiftPackageReference "../../Library/LyricsKit" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -562,6 +584,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		BB0A3AE02280312A006C2E52 /* Update Build Time */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -578,20 +601,6 @@
 			shellPath = /bin/sh;
 			shellScript = "/usr/libexec/PlistBuddy -c \"Set :LX_BUILD_TIME $(date +\"%s\")\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n";
 		};
-		BB0BE9531F444BE20068FF67 /* Update Localization */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Update Localization";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n    # Incrementally update all strings files\n    bartycrouch update\n\n    # Trim leading newline of string file for Clowdin\n    find \"${PROJECT_DIR}/LyricsX\" -name '*.strings' ! -path '*/en.lproj/*' -print0 | xargs -0 -n 1 sed -i '' -e '/./,$!d'\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
 		BB30651420878623008A9AC8 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -607,6 +616,7 @@
 		};
 		BBC1D5811E4AFE64008869EC /* Bump Build */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -655,6 +665,14 @@
 				BBC1D5911E4C80FC008869EC /* PreferenceDisplayViewController.swift in Sources */,
 				BBB9AAE31E57EE880078F91A /* SearchLyricsViewController.swift in Sources */,
 				E9E55138207C4CB000F9958A /* TouchBarLyricsController.swift in Sources */,
+				E97F2CFB2E757C19005466D1 /* AnyScheduler.swift in Sources */,
+				E97F2CFC2E757C19005466D1 /* IgnoreError.swift in Sources */,
+				E97F2CFD2E757C19005466D1 /* Signal.swift in Sources */,
+				E97F2CFE2E757C19005466D1 /* SelfRetainedCancellable.swift in Sources */,
+				E97F2CFF2E757C19005466D1 /* Blocking.swift in Sources */,
+				E97F2D002E757C19005466D1 /* DelayedAutoCancellable.swift in Sources */,
+				E97F2D012E757C19005466D1 /* Invoke.swift in Sources */,
+				E97F2D022E757C19005466D1 /* WeakAssign.swift in Sources */,
 				BB1B631B1E8CD7CA004CC9E0 /* ScrollLyricsView.swift in Sources */,
 				BB1B300520E87CC9002F1AF8 /* KaraokeLabel.swift in Sources */,
 				BBD03C371E9B2C7200EFB975 /* DragNDropView.swift in Sources */,
@@ -678,12 +696,12 @@
 				BB063B2E1E8A93C900A25C3E /* KaraokeLyricsView.swift in Sources */,
 				BBC1D5801E4AE3B9008869EC /* MenuBarLyricsController.swift in Sources */,
 				BB03C8891FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift in Sources */,
-				BB58D8BF248636900047E3C6 /* DonateViewController.swift in Sources */,
 				BB5D4B2D2094A1D700844D9F /* FontSelectTextField.swift in Sources */,
 				BB9BCEBA1E843157001BC54B /* Extension.swift in Sources */,
 				BBE2A79824041E36004A7E93 /* CombineExtension.swift in Sources */,
 				BBC1D35B1E485BA7002538A2 /* AppController.swift in Sources */,
 				BB0B296A1E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift in Sources */,
+				0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */,
 				BB89089E21ED69410078F522 /* Lyrics+Language.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -789,6 +807,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LX_BUNDLE_ID_PREFIX = dev.JH;
+				LX_HELPER_BUNDLE_ID = dev.JH.LyricsXHelper;
+				LX_ICLOUD_CONTAINER = iCloud.dev.JH.LyricsX;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -845,6 +866,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LX_BUNDLE_ID_PREFIX = com.JH;
+				LX_HELPER_BUNDLE_ID = com.JH.LyricsXHelper;
+				LX_ICLOUD_CONTAINER = iCloud.com.JH.LyricsX;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_SWIFT_FLAGS = "-DRELEASE";
@@ -868,16 +892,17 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "LyricsX/Supporting Files/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.JH.LyricsX;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.JH.LyricsX;
+				PRODUCT_NAME = "$(TARGET_NAME)-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
@@ -893,10 +918,10 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "LyricsX/Supporting Files/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -921,7 +946,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.JH.LyricsXHelper;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.JH.LyricsXHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -986,30 +1012,7 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		E9A24A7C2D787CEC0090B197 /* XCLocalSwiftPackageReference "../../Library/LyricsKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Library/LyricsKit;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
-		BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MxIris-LyricsX-Project/CombineX";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-		BB350ABC23D0613D00500146 /* XCRemoteSwiftPackageReference "CXExtensions" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MxIris-LyricsX-Project/CXExtensions";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 		BB6C75E6248B908500804AEB /* XCRemoteSwiftPackageReference "TouchBarHelper" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ddddxxx/TouchBarHelper";
@@ -1030,8 +1033,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MxIris-LyricsX-Project/GenericID";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.0;
 			};
 		};
 		BBB03F2E232FB40400A3879E /* XCRemoteSwiftPackageReference "Semver" */ = {
@@ -1062,8 +1065,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MxIris-LyricsX-Project/MarqueeLabel";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
 			};
 		};
 		E9C4E2972AC9A10F004B9EB2 /* XCRemoteSwiftPackageReference "MASShortcut" */ = {
@@ -1086,39 +1089,21 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MxIris-Library-Forks/SwiftCF";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.2;
 			};
 		};
 		E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
 			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-		E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MxIris-LyricsX-Project/MusicPlayer";
-			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BB003EFE248F89A700860FF7 /* CXShim */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BB003EFD248F89A700860FF7 /* XCRemoteSwiftPackageReference "CombineX" */;
-			productName = CXShim;
-		};
-		BB350ABD23D0613D00500146 /* CXExtensions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BB350ABC23D0613D00500146 /* XCRemoteSwiftPackageReference "CXExtensions" */;
-			productName = CXExtensions;
-		};
 		BB6C75E7248B908500804AEB /* TouchBarHelper */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BB6C75E6248B908500804AEB /* XCRemoteSwiftPackageReference "TouchBarHelper" */;
@@ -1144,10 +1129,6 @@
 			package = BBB03F382331D8A800A3879E /* XCRemoteSwiftPackageReference "SwiftyOpenCC" */;
 			productName = OpenCC;
 		};
-		E960A99F2D68ED3100A32EEC /* MusicPlayer */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = MusicPlayer;
-		};
 		E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */;
@@ -1161,10 +1142,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
-		};
-		E9A24A7D2D787CEC0090B197 /* LyricsKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = LyricsKit;
 		};
 		E9C4E2982AC9A10F004B9EB2 /* MASShortcut */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1181,9 +1158,9 @@
 			package = E9C4E2A02AC9A3D6004B9EB2 /* XCRemoteSwiftPackageReference "SwiftCF" */;
 			productName = SwiftCF;
 		};
-		E9C4E8A52D77EE8300E3D8CA /* LyricsKit */ = {
+		E9C5763C2DEDF539009107B5 /* LyricsXFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = LyricsKit;
+			productName = LyricsXFoundation;
 		};
 		E9EF0D502D6F5ECD00D45E0F /* UIFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1194,11 +1171,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */;
 			productName = UIFoundationToolbox;
-		};
-		E9EF0D592D6F780000D45E0F /* MusicPlayer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E9EF0D582D6F77FF00D45E0F /* XCRemoteSwiftPackageReference "MusicPlayer" */;
-			productName = MusicPlayer;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

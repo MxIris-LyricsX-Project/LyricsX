@@ -34,8 +34,8 @@
 /* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
 "Cmt-it-PXW.title" = "字型：";
 
-/* Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "EDv-ax-0hI"; */
-"EDv-ax-0hI.title" = "讀取同名的歌詞檔案";
+/* Class = "NSButtonCell"; title = "Load lyrics from music file (beside/embedded)"; ObjectID = "EDv-ax-0hI"; */
+"EDv-ax-0hI.title" = "從音樂檔案載入歌詞（順序：內嵌 > 同目錄）";
 
 /* Class = "NSMenuItem"; title = "Other..."; ObjectID = "HvN-Ou-h1t"; */
 "HvN-Ou-h1t.title" = "其他⋯";
@@ -105,6 +105,12 @@
 
 /* Class = "NSButtonCell"; title = "With translation"; ObjectID = "jFb-kX-VbY"; */
 "jFb-kX-VbY.title" = "包含翻譯";
+
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-buttonCell-inner"; */
+"convertLRC-buttonCell-inner.title" = "轉換為普通LRC（無卡拉OK）";
+
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-cell-scene1"; */
+"convertLRC-cell-scene1.title" = "轉換為普通LRC（無卡拉OK）";
 
 /* Class = "NSButtonCell"; title = "Enable lyrics filter"; ObjectID = "kEd-lC-aAH"; */
 "kEd-lC-aAH.title" = "啟用歌詞過濾";

@@ -571,6 +571,114 @@
         }
       }
     },
+    "2Lo-TU-WWD.placeholderString" : {
+      "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Enter usertoken\"; ObjectID = \"2Lo-TU-WWD\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter usertoken"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usertoken eingeben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter usertoken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingrese usertoken"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "usertoken را وارد کنید"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrez usertoken"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan usertoken"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci usertoken"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "usertoken を入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "usertoken 입력"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voer usertoken in"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wprowadź usertoken"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insira usertoken"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введите usertoken"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Введіть usertoken"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入 usertoken"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入usertoken"
+          }
+        }
+      }
+    },
     "3Bt-md-QNc.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Lyrics\"; ObjectID = \"3Bt-md-QNc\";",
       "extractionState" : "extracted_with_value",
@@ -1941,7 +2049,7 @@
     },
     "9yS-oJ-E3S.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Spotify Lyrics:\"; ObjectID = \"9yS-oJ-E3S\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2619,6 +2727,120 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "精確搜尋"
+          }
+        }
+      }
+    },
+    "au8-ou-Duf.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Enable source priority ranking\"; ObjectID = \"au8-ou-Duf\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تفعيل ترتيب المصادر حسب الأولوية"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable source priority ranking"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rangfolge nach Quellenpriorität aktivieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enable source priority ranking"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar clasificación por prioridad de fuente"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فعال‌سازی رتبه‌بندی اولویت منابع"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer le classement par priorité des sources"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktifkan peringkat prioritas sumber"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilita ordinamento per priorità delle fonti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取得元の優先順位を有効にする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처 우선 순위 순서 활성화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rangschikking op bronprioriteit inschakelen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz ranking priorytetów źródeł"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativar classificação por prioridade da fonte"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить ранжирование источников по приоритету"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Увімкнути ранжування джерел за пріоритетом"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用歌词源优先级排序"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用歌詞源優先級排序"
           }
         }
       }
@@ -3535,6 +3757,66 @@
         }
       }
     },
+    "convertLRC-buttonCell-inner.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-buttonCell-inner\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
+    "convertLRC-cell-scene1.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-cell-scene1\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为普通LRC（无卡拉OK）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉換為普通LRC（無卡拉OK）"
+          }
+        }
+      }
+    },
     "cRD-iF-2qo.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"iTunes\"; ObjectID = \"cRD-iF-2qo\"; Note = \"#bc-ignore!\";",
       "extractionState" : "extracted_with_value",
@@ -3764,115 +4046,223 @@
       }
     },
     "d5d-dC-DK4.title" : {
-      "comment" : "Class = \"NSViewController\"; title = \"General\"; ObjectID = \"d5d-dC-DK4\";",
+      "comment" : "Class = \"NSViewController\"; title = \"General (Deprecated)\"; ObjectID = \"d5d-dC-DK4\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "الإعدادات العامة"
           }
         },
         "base" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "General"
           }
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Allgemein"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "General"
+            "value" : "General (Deprecated)"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "General"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "عمومی"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Général"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Umum"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Generale"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "一般"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "일반"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Algemeen"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Ogólne"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Geral"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Основные"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Основні"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "通用"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "一般"
+          }
+        }
+      }
+    },
+    "e8O-oC-igZ.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Drag rows to reorder source priority. If disabled, it will be sorted by quality.\"; ObjectID = \"e8O-oC-igZ\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب الصفوف لإعادة ترتيب أولوية المصدر. إذا تم تعطيله، سيتم الترتيب حسب الجودة."
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag rows to reorder source priority. If disabled, it will be sorted by quality."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeilen ziehen, um die Quellenpriorität neu anzuordnen. Wenn deaktiviert, wird nach Qualität sortiert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Drag rows to reorder source priority. If disabled, it will be sorted by quality."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra las filas para reordenar la prioridad de la fuente. Si está desactivado, se ordenará por calidad."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برای ترتیب مجدد اولویت منابع، سطرها را بکشید. در صورت غیرفعال بودن، بر اساس کیفیت مرتب خواهد شد."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser les lignes pour réorganiser la priorité des sources. Si désactivé, le tri se fera par qualité."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seret baris untuk menyusun ulang prioritas sumber. Jika dinonaktifkan, akan diurutkan berdasarkan kualitas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina le righe per riordinare la priorità delle fonti. Se disabilitato, l'ordinamento avverrà per qualità."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "行をドラッグして取得元の優先順位を変更します。無効の場合、品質順でソートされます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "행을 드래그하여 출처 우선 순위를 변경하세요. 비활성화 시 품질 순으로 정렬됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep rijen om de bronprioriteit opnieuw te rangschikken. Indien uitgeschakeld, wordt er op kwaliteit gesorteerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij wiersze, aby zmienić kolejność priorytetów źródeł. Jeśli opcja jest wyłączona, sortowanie odbędzie się według jakości."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste as linhas para reordenar a prioridade da fonte. Se desativado, será ordenado por qualidade."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетаскивайте строки, чтобы изменить приоритет источников. Если отключено, сортировка будет по качеству."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖动以重新排序歌词源优先级。若关闭该功能则按照质量排序。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可拖動調整歌詞來源的優先順序。停用時，則依照歌詞品質排列。"
           }
         }
       }
@@ -3992,7 +4382,7 @@
       }
     },
     "EDv-ax-0hI.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics beside music file\"; ObjectID = \"EDv-ax-0hI\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (order: embedded > beside)\"; ObjectID = \"EDv-ax-0hI\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
@@ -4004,7 +4394,7 @@
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (beside/embedded)"
           }
         },
         "de" : {
@@ -4016,7 +4406,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (order: embedded > beside)"
           }
         },
         "es" : {
@@ -4094,13 +4484,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "加载同名歌词"
+            "value" : "从音乐文件加载歌词（同目录/内嵌）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "讀取同名的歌詞檔案"
+            "value" : "從音樂檔案載入歌詞（同目錄/內嵌）"
           }
         }
       }
@@ -7867,6 +8257,120 @@
         }
       }
     },
+    "KTZ-mJ-lpY.title" : {
+      "comment" : "Class = \"NSViewController\"; title = \"Source\"; ObjectID = \"KTZ-mJ-lpY\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المصدر"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Source"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuente"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منبع"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sumber"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取得元"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bron"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Источник"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Джерело"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞來源"
+          }
+        }
+      }
+    },
     "L8S-rm-0tr.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Show / Hide karaoke lyrics:\"; ObjectID = \"L8S-rm-0tr\";",
       "extractionState" : "extracted_with_value",
@@ -8897,6 +9401,12 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romajin for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically generate romajin for Japanese lyrics"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
@@ -10269,6 +10779,120 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將選單列圖示與歌詞顯示合併"
+          }
+        }
+      }
+    },
+    "sd9-qh-b73.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Musixmatch Lyrics:\"; ObjectID = \"sd9-qh-b73\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كلمات ميوزكسماتش:"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch Lyrics:"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch Songtexte:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Musixmatch Lyrics:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letras de Musixmatch:"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متن آهنگ‌های اسپاتیفای:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paroles Musixmatch :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lirik Musixmatch:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testi di Musixmatch:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミュージックスマッチの歌詞:"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "뮤직스매치 가사:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch Songteksten:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch teksty:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letras do Musixmatch:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тексты песен Musixmatch:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тексти пісень Musixmatch:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch 歌词："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Musixmatch 歌詞："
           }
         }
       }
@@ -11869,116 +12493,230 @@
         }
       }
     },
-    "vUt-b5-jlE.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics beside music file\"; ObjectID = \"vUt-b5-jlE\";",
+    "Vdv-QC-53v.headerCell.title" : {
+      "comment" : "Class = \"NSTableColumn\"; headerCell.title = \"Priority\"; ObjectID = \"Vdv-QC-53v\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تحميل كلمات الأغاني بجانب ملف الموسيقى"
+            "value" : "الأولوية"
           }
         },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Load lyrics beside music file"
+            "value" : "Priority"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Priorität"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Priority"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioridad"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اولویت"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorité"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioritas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorità"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "우선 순위"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioriteit"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorytet"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioridade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приоритет"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пріоритет"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优先级"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先級"
+          }
+        }
+      }
+    },
+    "vUt-b5-jlE.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (order: embedded > beside)\"; ObjectID = \"vUt-b5-jlE\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تحميل كلمات الأغاني بجانب ملف الموسيقى"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Load lyrics from music file (beside/embedded)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Songtext neben Musikdatei laden"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Load lyrics beside music file"
+            "value" : "Load lyrics from music file (order: embedded > beside)"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Cargar la letra al lado del archivo de música"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "بارگذاری ترانه کنار فایل موزیک"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Charger les paroles à côté du fichier musique"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Muat lirik di samping berkas musik"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Carica il testo accanto al file musicale"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "同じ名前の歌詞を読み込む"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "음원 파일로부터 가사 불러오기"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Laad songteksten naast muziek bestand"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Szukaj tekstu w folderze z utworem"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Carregar letras ao lado do arquivo de música"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Загружать текст рядом с музыкальным файлом"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Завантажувати текст поруч із музичним файлом"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "加载同名歌词"
+            "state" : "needs_review",
+            "value" : "从音乐文件加载歌词（顺序：内嵌 > 同目录）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "讀取同名的歌詞檔案"
+            "state" : "needs_review",
+            "value" : "從音樂檔案載入歌詞（同目錄/內嵌）"
           }
         }
       }
@@ -13352,7 +14090,7 @@
     },
     "xv6-tD-l7c.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Login\"; ObjectID = \"xv6-tD-l7c\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13460,6 +14198,120 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入"
+          }
+        }
+      }
+    },
+    "xXN-7W-SKY.headerCell.title" : {
+      "comment" : "Class = \"NSTableColumn\"; headerCell.title = \"Source\"; ObjectID = \"xXN-7W-SKY\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المصدر"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Source"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuente"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منبع"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sumber"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取得元"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bron"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Źródło"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Источник"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Джерело"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞來源"
           }
         }
       }

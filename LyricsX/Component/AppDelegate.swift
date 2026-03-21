@@ -1,13 +1,4 @@
-//
-//  AppDelegate.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
-import Cocoa
+import AppKit
 import GenericID
 import MASShortcut
 import MusicPlayer
@@ -25,14 +16,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
-    private let updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: nil)
+    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
 
     var karaokeLyricsWC: KaraokeLyricsWindowController?
 
     lazy var searchLyricsWC: SearchLyricsWindowController = .init()
-    
+
     lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
     lazy var preferencesWindowController: PreferenceWindowController = .create()
@@ -76,21 +67,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         updateController.updater.checkForUpdatesInBackground()
 
-        if #available(OSX 10.12.2, *) {
-            observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
-                if change.newValue, TouchBarLyricsController.shared == nil {
-                    TouchBarLyricsController.shared = TouchBarLyricsController()
-                } else if !change.newValue, TouchBarLyricsController.shared != nil {
-                    TouchBarLyricsController.shared = nil
-                }
+        observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
+            if change.newValue, TouchBarLyricsController.shared == nil {
+                TouchBarLyricsController.shared = TouchBarLyricsController()
+            } else if !change.newValue, TouchBarLyricsController.shared != nil {
+                TouchBarLyricsController.shared = nil
             }
         }
-        
+
         if defaults[.isShowLyricsHUD] {
             lyricsHUD.showWindow(nil)
         }
-        
-        NSLog("%@, %@", #function, "isShowLyricsHUD: \(defaults[.isShowLyricsHUD])")
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -153,7 +140,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     // MARK: - Menubar Action
 
-
     @IBAction func showLyricsHUD(_ sender: Any?) {
         if defaults[.isShowLyricsHUD] {
             lyricsHUD.close()
@@ -162,7 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             lyricsHUD.showWindow(nil)
             defaults[.isShowLyricsHUD] = true
         }
-        
+
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -188,7 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             preferencesWindowController.showWindow(nil)
         }
     }
-    
+
     @IBAction func checkUpdateAction(_ sender: Any) {
         updateController.checkForUpdates(sender)
     }
@@ -234,7 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             try? FileManager.default.removeItem(at: url)
         }
         AppController.shared.currentLyrics = nil
-        AppController.shared.searchCanceller?.cancel()
+        AppController.shared.searchTask?.cancel()
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
@@ -288,6 +274,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 lyricsOffsetConstraint?.constant += 10
             }
         }
+    }
+}
+
+extension AppDelegate: SPUStandardUserDriverDelegate {
+    func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool {
+        return true
     }
 }
 

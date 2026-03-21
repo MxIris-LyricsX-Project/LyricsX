@@ -1,22 +1,12 @@
-//
-//  PreferenceDisplayViewController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
-import Cocoa
+import AppKit
 
 class PreferenceDisplayViewController: PreferenceViewController, FontSelectTextFieldDelegate {
-    
-    @IBOutlet weak var karaokeFontSelectField: FontSelectTextField!
-    @IBOutlet weak var hudFontSelectField: FontSelectTextField!
-    
-    @IBOutlet weak var fontFallbackLabel: NSTextField!
-    @IBOutlet weak var removeFontFallbackButton: NSButton!
-    
+    @IBOutlet var karaokeFontSelectField: FontSelectTextField!
+    @IBOutlet var hudFontSelectField: FontSelectTextField!
+
+    @IBOutlet var fontFallbackLabel: NSTextField!
+    @IBOutlet var removeFontFallbackButton: NSButton!
+
     override func viewDidLoad() {
         karaokeFontSelectField.selectedFont = defaults.desktopLyricsFont
         karaokeFontSelectField.fontChangeDelegate = self
@@ -25,7 +15,7 @@ class PreferenceDisplayViewController: PreferenceViewController, FontSelectTextF
         updateScreenFontFallback()
         super.viewDidLoad()
     }
-    
+
     func updateScreenFontFallback() {
         guard let fallback = defaults[.desktopLyricsFontNameFallback].first else {
             fontFallbackLabel.isHidden = true
@@ -37,12 +27,12 @@ class PreferenceDisplayViewController: PreferenceViewController, FontSelectTextF
         let format = NSLocalizedString("Font Fallback: %@", comment: "")
         fontFallbackLabel.stringValue = String(format: format, arguments: [fallback])
     }
-    
+
     @IBAction func removeFontFallbackAction(_ sender: Any) {
         defaults[.desktopLyricsFontNameFallback].removeAll()
         updateScreenFontFallback()
     }
-    
+
     func fontChanged(from oldFont: NSFont, to newFont: NSFont, sender: FontSelectTextField) {
         if sender === karaokeFontSelectField {
             defaults[.desktopLyricsFontName] = newFont.fontName
@@ -66,12 +56,11 @@ class PreferenceDisplayViewController: PreferenceViewController, FontSelectTextF
 }
 
 class AlphaColorWell: NSColorWell {
-    
     override func activate(_ exclusive: Bool) {
         NSColorPanel.shared.showsAlpha = true
         super.activate(exclusive)
     }
-    
+
     override func deactivate() {
         super.deactivate()
         NSColorPanel.shared.showsAlpha = false

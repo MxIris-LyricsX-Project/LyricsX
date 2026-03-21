@@ -1,25 +1,14 @@
-//
-//  AppController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
 import AppKit
-import CXShim
-import CXExtensions
-import LyricsService
-import LyricsServiceUI
-import MusicPlayer
-import OpenCC
+import Combine
 import Regex
+import OpenCC
+import MusicPlayer
+import LyricsXFoundation
 
 class AppController: NSObject {
     static let shared = AppController()
 
-    var lyricsManager = LyricsProviders.Group()
+    var lyricsManager: LyricsProvider
 
     @Published var currentLyrics: Lyrics? {
         willSet {
@@ -35,7 +24,7 @@ class AppController: NSObject {
     @Published var currentLineIndex: Int?
 
     var searchRequest: LyricsSearchRequest?
-    var searchCanceller: Cancellable?
+    var searchTask: Task<Void, Never>?
 
     private var cancelBag = Set<AnyCancellable>()
 
@@ -51,19 +40,20 @@ class AppController: NSObject {
     }
 
     private override init() {
+        self.lyricsManager = LyricsProviders.Group()
         super.init()
         selectedPlayer.currentTrackWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay.cx)
+            .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.scheduleCurrentLineCheck, weaklyOn: self)
             .store(in: &cancelBag)
 
-        workspaceNC.cx.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
+        workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
             .sink { notification in
                 guard let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else { return }
                 let bundleID = application.bundleIdentifier
@@ -73,14 +63,31 @@ class AppController: NSObject {
             }.store(in: &cancelBag)
         currentTrackChanged()
 
-        Task { @MainActor in
-            if let accessToken = await SpotifyLoginManager.shared.accessTokenString {
-                self.lyricsManager = .init(service: LyricsProviders.Service.noAuthenticationRequiredServices + [.spotify(accessToken: accessToken)])
-            }
+        Task {
+            try await updateLyricsManager()
         }
     }
 
+    @MainActor
+    func updateLyricsManager() async throws {
+        let services: [LyricsProviders.Service] = LyricsProviders.Service.noAuthenticationRequiredServices
+
+        var providers: [LyricsProvider] = []
+        for service in services {
+            providers.append(service.create())
+        }
+
+        // Add Musixmatch provider with saved token if available
+        if let token = defaults[.musixmatchToken], !token.isEmpty {
+            let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
+            providers.append(musixmatchProvider)
+        }
+
+        lyricsManager = LyricsProviders.Group(providers: providers)
+    }
+
     var currentLineCheckSchedule: Cancellable?
+
     func scheduleCurrentLineCheck() {
         currentLineCheckSchedule?.cancel()
         guard let lyrics = currentLyrics else {
@@ -94,7 +101,7 @@ class AppController: NSObject {
         }
         if let next = next, playbackState.isPlaying {
             let dt = lyrics.lines[next].position - playbackTime - lyrics.adjustedTimeDelay
-            let q = DispatchQueue.lyricsDisplay.cx
+            let q = DispatchQueue.lyricsDisplay
             currentLineCheckSchedule = q.schedule(after: q.now.advanced(by: .seconds(dt)), interval: .seconds(42), tolerance: .milliseconds(20)) { [unowned self] in
                 self.scheduleCurrentLineCheck()
             }
@@ -108,23 +115,38 @@ class AppController: NSObject {
               overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
-        let content = currentLyrics.lines.map { line -> String in
-            var content = line.content
+
+        let content: String
+        if defaults[.writeiTunesConvertToPlainLRC] {
+            // For plain LRC export, preserve the legacy LRC formatting but still respect
+            // the Chinese conversion setting for consistency with the non-plain branch.
+            var legacy = currentLyrics.legacyDescription
             if let converter = ChineseConverter.shared {
-                content = converter.convert(content)
+                legacy = converter.convert(legacy)
             }
-            if defaults[.writeiTunesWithTranslation] {
-                // TODO: tagged translation
-                let code = currentLyrics.metadata.translationLanguages.first
-                if var translation = line.attachments[.translation(languageCode: code)] {
-                    if let converter = ChineseConverter.shared {
-                        translation = converter.convert(translation)
-                    }
-                    content += "\n" + translation
+            // Note: translations are intentionally not appended for plain LRC export,
+            // even when `writeiTunesWithTranslation` is enabled, to keep the legacy
+            // LRC output single-line per timestamp.
+            content = legacy
+        } else {
+            content = currentLyrics.lines.map { line -> String in
+                var content = line.content
+                if let converter = ChineseConverter.shared {
+                    content = converter.convert(content)
                 }
-            }
-            return content
-        }.joined(separator: "\n")
+                if defaults[.writeiTunesWithTranslation] {
+                    // TODO: tagged translation
+                    let code = currentLyrics.metadata.translationLanguages.first
+                    if var translation = line.attachments[.translation(languageCode: code)] {
+                        if let converter = ChineseConverter.shared {
+                            translation = converter.convert(translation)
+                        }
+                        content += "\n" + translation
+                    }
+                }
+                return content
+            }.joined(separator: "\n")
+        }
         // swiftlint:disable:next force_try
         let regex = Regex(#"\n{3,}"#)
         let replaced = content.replacingMatches(of: regex, with: "\n\n")
@@ -137,7 +159,7 @@ class AppController: NSObject {
         }
         currentLyrics = nil
         currentLineIndex = nil
-        searchCanceller?.cancel()
+        searchTask?.cancel()
         guard let track = selectedPlayer.currentTrack else {
             return
         }
@@ -152,13 +174,28 @@ class AppController: NSObject {
         var candidateLyricsURL: [(URL, Bool, Bool)] = [] // (fileURL, isSecurityScoped, needsSearching)
 
         if defaults[.loadLyricsBesideTrack] {
-            if let fileName = track.fileURL?.deletingPathExtension() {
+            if let embeddedLyrics = track.lyrics, !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if let lyrics = Lyrics(embeddedLyrics) {
+                    if lyrics.metadata.title == nil || lyrics.metadata.title?.isEmpty == true {
+                        lyrics.metadata.title = title
+                    }
+                    if lyrics.metadata.artist == nil || lyrics.metadata.artist?.isEmpty == true {
+                        lyrics.metadata.artist = artist
+                    }
+                    lyrics.filtrate()
+                    lyrics.recognizeLanguage()
+                    currentLyrics = lyrics
+                    return
+                }
+            }
+            if let fileName = track.localFileURL?.deletingPathExtension() {
                 candidateLyricsURL += [
                     (fileName.appendingPathExtension("lrcx"), false, false),
                     (fileName.appendingPathExtension("lrc"), false, false),
                 ]
             }
         }
+
         let (url, security) = defaults.lyricsSavingPath()
         let titleForReading = title.replacingOccurrences(of: "/", with: ":")
         let artistForReading = artist.replacingOccurrences(of: "/", with: ":")
@@ -201,20 +238,46 @@ class AppController: NSObject {
         }
 
         let duration = track.duration ?? 0
-        let req = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
-        searchRequest = req
-        searchCanceller = lyricsManager.lyricsPublisher(request: req)
-            .timeout(.seconds(10), scheduler: DispatchQueue.lyricsDisplay.cx)
-            .first()
-            .sink(receiveCompletion: { [weak self] _ in
-                guard let self else { return }
-                if defaults[.writeToiTunesAutomatically] {
-                    self.writeToiTunes(overwrite: true)
+        let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
+        searchRequest = request
+        searchTask = Task { @MainActor in
+            do {
+                // Accept the first arrived lyrics immediately,
+                // but keep collecting for a short window to allow higher-priority providers,
+                // which might be slower, to replace it.
+                let window = defaults[.lyricsPriorityWindow] ?? 5 // seconds
+                var firstReceived = false
+                var collectionStart: Date?
+
+                for try await lyrics in lyricsManager.lyrics(for: request) {
+                    if !firstReceived {
+                        lyricsReceived(lyrics: lyrics)
+                        if let current = currentLyrics, current === lyrics {
+                            firstReceived = true
+                            collectionStart = Date()
+                        }
+                        continue
+                    }
+
+                    if let start = collectionStart,
+                       Date().timeIntervalSince(start) <= window {
+                        lyricsReceived(lyrics: lyrics)
+                        continue
+                    } else {
+                        // window expired
+                        break
+                    }
                 }
-            }, receiveValue: { [weak self] lyrics in
-                guard let self else { return }
-                self.lyricsReceived(lyrics: lyrics)
-            })
+
+                if defaults[.writeToiTunesAutomatically] {
+                    writeToiTunes(overwrite: true)
+                }
+            } catch is CancellationError {
+                // Search was cancelled due to track change
+            } catch {
+                print("Failed to fetch lyrics: \(error.localizedDescription)")
+            }
+        }
     }
 
     // MARK: LyricsSourceDelegate
@@ -225,12 +288,13 @@ class AppController: NSObject {
               let track = selectedPlayer.currentTrack else {
             return
         }
-        if defaults[.strictSearchEnabled] && !lyrics.isMatched() {
+        if defaults[.strictSearchEnabled], !lyrics.isMatched() {
             return
         }
-        if let current = currentLyrics, current.quality >= lyrics.quality {
+        if let current = currentLyrics, !lyricsHasHigherPriority(lyrics, over: current) {
             return
         }
+
         lyrics.associateWithTrack(track)
         lyrics.filtrate()
         lyrics.recognizeLanguage()

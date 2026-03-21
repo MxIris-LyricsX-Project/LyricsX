@@ -1,17 +1,9 @@
-//
-//  SearchLyricsWindowController.swift
-//  LyricsX
-//
-//  Created by JH on 2025/2/26.
-//  Copyright © 2025 ddddxxx. All rights reserved.
-//
-
 import AppKit
 import UIFoundation
 
 final class SearchLyricsWindowController: NSWindowController {
     let viewController: SearchLyricsViewController
-    
+
     init() {
         let viewController = SearchLyricsViewController.create()
         self.viewController = viewController

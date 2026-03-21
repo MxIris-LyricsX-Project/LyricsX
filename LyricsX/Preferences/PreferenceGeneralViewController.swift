@@ -1,38 +1,29 @@
-//
-//  PreferenceGeneralViewController.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
-import Cocoa
+import AppKit
 import MusicPlayer
 import ServiceManagement
 import LaunchAtLogin
 
 class PreferenceGeneralViewController: PreferenceViewController {
     @objc dynamic var launchAtLogin = LaunchAtLogin.kvo
-    @IBOutlet weak var preferAuto: NSButton!
-    @IBOutlet weak var preferiTunes: NSButton!
-    @IBOutlet weak var preferSpotify: NSButton!
-    @IBOutlet weak var preferVox: NSButton!
-    @IBOutlet weak var preferAudirvana: NSButton!
-    @IBOutlet weak var preferSwinsian: NSButton!
-    
-    @IBOutlet weak var autoLaunchButton: NSButton!
-    
-    @IBOutlet weak var savingPathPopUp: NSPopUpButton!
-    @IBOutlet weak var userPathMenuItem: NSMenuItem!
-    
-    @IBOutlet weak var loadHomonymLrcButton: NSButton!
-    
-    @IBOutlet weak var languagePopUp: NSPopUpButton!
-    
+    @IBOutlet var preferAuto: NSButton!
+    @IBOutlet var preferiTunes: NSButton!
+    @IBOutlet var preferSpotify: NSButton!
+    @IBOutlet var preferVox: NSButton!
+    @IBOutlet var preferAudirvana: NSButton!
+    @IBOutlet var preferSwinsian: NSButton!
+
+    @IBOutlet var autoLaunchButton: NSButton!
+
+    @IBOutlet var savingPathPopUp: NSPopUpButton!
+    @IBOutlet var userPathMenuItem: NSMenuItem!
+
+    @IBOutlet var loadHomonymLrcButton: NSButton!
+
+    @IBOutlet var languagePopUp: NSPopUpButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         switch defaults[.preferredPlayerIndex] {
         case 0:
             preferiTunes.state = .on
@@ -50,14 +41,14 @@ class PreferenceGeneralViewController: PreferenceViewController {
             preferAuto.state = .on
             autoLaunchButton.isEnabled = false
         }
-        
+
         if let url = defaults.lyricsCustomSavingPath {
             userPathMenuItem.title = url.lastPathComponent
             userPathMenuItem.toolTip = url.path
         } else {
             userPathMenuItem.isHidden = true
         }
-        
+
         let localizedLan: [String] = localizations.map { lan in
             if let idx = lan.firstIndex(of: "-") {
                 let script = lan[idx...].dropFirst()
@@ -67,30 +58,30 @@ class PreferenceGeneralViewController: PreferenceViewController {
             }
         }
         languagePopUp.addItems(withTitles: localizedLan)
-        
+
         if let lan = defaults[.selectedLanguage],
-            let idx = localizations.firstIndex(of: lan) {
+           let idx = localizations.firstIndex(of: lan) {
             languagePopUp.selectItem(at: idx + 2)
         }
     }
-    
+
     @IBAction func toggleAutoLaunchAction(_ sender: NSButton) {
         let enabled = sender.state == .on
         if !SMLoginItemSetEnabled(lyricsXHelperIdentifier as CFString, enabled) {
             log("Failed to set login item enabled")
         }
     }
-    
+
     @IBAction func showInFinderAction(_ sender: Any) {
         let url = defaults.lyricsSavingPath().0
         NSWorkspace.shared.open(url)
     }
-    
+
     @IBAction func chooseSavingPathAction(_ sender: Any) {
         let openPanel = NSOpenPanel()
         openPanel.canChooseFiles = false
         openPanel.canChooseDirectories = true
-        openPanel.beginSheetModal(for: self.view.window!) { result in
+        openPanel.beginSheetModal(for: view.window!) { result in
             if result == .OK {
                 let url = openPanel.url!
                 defaults.lyricsCustomSavingPath = url
@@ -103,6 +94,7 @@ class PreferenceGeneralViewController: PreferenceViewController {
             }
         }
     }
+
     @IBAction func chooseLanguageAction(_ sender: NSPopUpButton) {
         let selectedIdx = sender.indexOfSelectedItem
         if selectedIdx == 0 {
@@ -114,14 +106,14 @@ class PreferenceGeneralViewController: PreferenceViewController {
             defaults[.appleLanguages] = [lan]
         }
     }
-    
+
     @IBAction func helpTranslateAction(_ sender: NSButton) {
         NSWorkspace.shared.open(crowdinProjectURL)
     }
-    
+
     @IBAction func preferredPlayerAction(_ sender: NSButton) {
         defaults[.preferredPlayerIndex] = sender.tag
-        
+
         if sender.tag < 0 {
             autoLaunchButton.isEnabled = false
             autoLaunchButton.state = .off
@@ -129,7 +121,7 @@ class PreferenceGeneralViewController: PreferenceViewController {
         } else {
             autoLaunchButton.isEnabled = true
         }
-        
+
         if sender.tag == 1 || sender.tag == 3 || sender.tag == 4 {
             loadHomonymLrcButton.isEnabled = false
             loadHomonymLrcButton.state = .off

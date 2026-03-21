@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.com.JH.LyricsX</string>
+		<string>$(LX_ICLOUD_CONTAINER)</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
@@ -12,13 +12,13 @@
 	</array>
 	<key>com.apple.developer.ubiquity-container-identifiers</key>
 	<array>
-		<string>iCloud.com.JH.LyricsX</string>
+		<string>$(LX_ICLOUD_CONTAINER)</string>
 	</array>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>$(TeamIdentifierPrefix)group.com.JH.LyricsX</string>
+		<string>$(TeamIdentifierPrefix)group.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	</array>
 	<key>com.apple.security.assets.music.read-write</key>
 	<true/>
@@ -52,7 +52,7 @@
 		<string>com.audirvana.Audirvana-Plus</string>
 		<string>com.audirvana.Audirvana</string>
 		<string>com.swinsian.Swinsian</string>
-		<string>com.JH.LyricsXHelper</string>
+		<string>$(LX_HELPER_BUNDLE_ID)</string>
 	</array>
 	<key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
 	<array>
@@ -62,7 +62,7 @@
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)com.JH.LyricsKit</string>
-		<string>$(AppIdentifierPrefix)com.JH.LyricsX</string>
+		<string>$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		<string>$(AppIdentifierPrefix)com.JH.LyricsKit.SpotifyLoginManager</string>
 	</array>
 </dict>

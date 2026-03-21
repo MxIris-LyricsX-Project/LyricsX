@@ -1,18 +1,8 @@
-//
-//  Lyrics+Language.swift
-//  LyricsX - https://github.com/ddddxxx/LyricsX
-//
-//  This Source Code Form is subject to the terms of the Mozilla Public
-//  License, v. 2.0. If a copy of the MPL was not distributed with this
-//  file, You can obtain one at https://mozilla.org/MPL/2.0/.
-//
-
 import Foundation
-import LyricsCore
+import LyricsXFoundation
 
-private extension NSCountedSet {
-    
-    var mostFrequentElement: Any? {
+extension NSCountedSet {
+    fileprivate var mostFrequentElement: Any? {
         var result: (Any?, Int) = (nil, 0)
         for element in self {
             let count = self.count(for: element)
@@ -25,7 +15,6 @@ private extension NSCountedSet {
 }
 
 extension Lyrics {
-    
     func recognizeLanguage() {
         var lyricsContent = ""
         var translationContent = ""

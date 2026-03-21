@@ -34,7 +34,7 @@
 /* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
 "Cmt-it-PXW.title" = "Fuente:";
 
-/* Class = "NSButtonCell"; title = "Load lyrics beside music file"; ObjectID = "EDv-ax-0hI"; */
+/* Class = "NSButtonCell"; title = "Load lyrics from music file (order: embedded > beside)"; ObjectID = "EDv-ax-0hI"; */
 "EDv-ax-0hI.title" = "Cargar la letra al lado del archivo de música";
 
 /* Class = "NSMenuItem"; title = "Other..."; ObjectID = "HvN-Ou-h1t"; */
@@ -105,6 +105,12 @@
 
 /* Class = "NSButtonCell"; title = "With translation"; ObjectID = "jFb-kX-VbY"; */
 "jFb-kX-VbY.title" = "Con traducción";
+
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-buttonCell-inner"; */
+"convertLRC-buttonCell-inner.title" = "Convertir a LRC simple (sin karaoke)";
+
+/* Class = "NSButtonCell"; title = "Convert to plain LRC (no karaoke)"; ObjectID = "convertLRC-cell-scene1"; */
+"convertLRC-cell-scene1.title" = "Convertir a LRC simple (sin karaoke)";
 
 /* Class = "NSButtonCell"; title = "Enable lyrics filter"; ObjectID = "kEd-lC-aAH"; */
 "kEd-lC-aAH.title" = "Activar filtro de letras";
