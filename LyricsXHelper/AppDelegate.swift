@@ -75,7 +75,11 @@ let playerBundleIdentifiers = [
     ["com.swinsian.Swinsian"],
 ]
 
+#if DEBUG
+let groupDefaults = UserDefaults(suiteName: "D5Q73692VW.group.dev.JH.LyricsX")!
+#else
 let groupDefaults = UserDefaults(suiteName: "D5Q73692VW.group.com.JH.LyricsX")!
+#endif
 
 // Preference
 let preferredPlayerIndex = "PreferredPlayerIndex"

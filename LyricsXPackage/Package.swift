@@ -4,6 +4,21 @@
 import PackageDescription
 import Foundation
 
+func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
+    guard let value = Context.environment[key] else {
+        return defaultValue
+    }
+    if value == "1" {
+        return true
+    } else if value == "0" {
+        return false
+    } else {
+        return defaultValue
+    }
+}
+
+let useLocalDependency = envEnable("LYRICSX_USE_LOCAL_DEPENDENCY")
+
 extension Package.Dependency {
     enum LocalSearchPath {
         case package(path: String, isRelative: Bool, isEnabled: Bool)
@@ -51,7 +66,7 @@ let package = Package(
             local: .package(
                 path: "../../LyricsKit",
                 isRelative: true,
-                isEnabled: false
+                isEnabled: useLocalDependency
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/LyricsKit",
@@ -62,7 +77,7 @@ let package = Package(
             local: .package(
                 path: "../../MusicPlayer",
                 isRelative: true,
-                isEnabled: false
+                isEnabled: useLocalDependency
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer",

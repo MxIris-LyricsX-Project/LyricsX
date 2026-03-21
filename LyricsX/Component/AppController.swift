@@ -240,7 +240,7 @@ class AppController: NSObject {
         let duration = track.duration ?? 0
         let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
         searchRequest = request
-        searchTask = Task {
+        searchTask = Task { @MainActor in
             do {
                 // Accept the first arrived lyrics immediately,
                 // but keep collecting for a short window to allow higher-priority providers,

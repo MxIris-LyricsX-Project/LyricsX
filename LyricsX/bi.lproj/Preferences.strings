@@ -61,10 +61,10 @@
 /* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
 "Cmt-it-PXW.title" = "Font:";
 
-/* Class = "NSViewController"; title = "General"; ObjectID = "d5d-dC-DK4"; */
+/* Class = "NSViewController"; title = "General (Deprecated)"; ObjectID = "d5d-dC-DK4"; */
 "d5d-dC-DK4.title" = "General";
 
-/* Class = "NSButtonCell"; title = "Load lyrics from music file (beside/embedded)"; ObjectID = "EDv-ax-0hI"; */
+/* Class = "NSButtonCell"; title = "Load lyrics from music file (order: embedded > beside)"; ObjectID = "EDv-ax-0hI"; */
 "EDv-ax-0hI.title" = "Load lyrics from music file (beside/embedded)";
 
 /* Class = "NSTextFieldCell"; title = "Here are some experimental features that may not be stable enough, and may be removed in the future."; ObjectID = "g2u-8D-dln"; */
@@ -214,9 +214,6 @@
 /* Class = "NSButtonCell"; title = "Customize TouchBar"; ObjectID = "7pm-7c-xyY"; */
 "7pm-7c-xyY.title" = "Customize TouchBar";
 
-/* Class = "NSTextFieldCell"; title = "Spotify Lyrics:"; ObjectID = "9yS-oJ-E3S"; */
-"9yS-oJ-E3S.title" = "Spotify Lyrics:";
-
 /* Class = "NSMenuItem"; title = "Simplified Chinese"; ObjectID = "CX0-PE-NAF"; */
 "CX0-PE-NAF.title" = "Simplified Chinese";
 
@@ -328,7 +325,7 @@
 /* Class = "NSButtonCell"; title = "With translation"; ObjectID = "uXK-tg-wwl"; */
 "uXK-tg-wwl.title" = "With translation";
 
-/* Class = "NSButtonCell"; title = "Load lyrics from music file (beside/embedded)"; ObjectID = "vUt-b5-jlE"; */
+/* Class = "NSButtonCell"; title = "Load lyrics from music file (order: embedded > beside)"; ObjectID = "vUt-b5-jlE"; */
 "vUt-b5-jlE.title" = "Load lyrics from music file (beside/embedded)";
 
 /* Class = "NSButtonCell"; title = "Enable Touch Bar lyrics"; ObjectID = "wnV-53-Dlj"; */
@@ -346,8 +343,11 @@
 /* Class = "NSTableColumn"; headerCell.title = "Source"; ObjectID = "xXN-7W-SKY"; */
 "xXN-7W-SKY.headerCell.title" = "Source";
 
-/* Class = "NSButtonCell"; title = "Login"; ObjectID = "xv6-tD-l7c"; */
-"xv6-tD-l7c.title" = "Login";
-
 /* Class = "NSTextFieldCell"; title = "Global offset (ms):"; ObjectID = "zS6-oP-7aR"; */
 "zS6-oP-7aR.title" = "Global offset (ms):";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Enter usertoken"; ObjectID = "2Lo-TU-WWD"; */
+"2Lo-TU-WWD.placeholderString" = "Enter usertoken";
+
+/* Class = "NSTextFieldCell"; title = "Musixmatch Lyrics:"; ObjectID = "sd9-qh-b73"; */
+"sd9-qh-b73.title" = "Musixmatch Lyrics:";
