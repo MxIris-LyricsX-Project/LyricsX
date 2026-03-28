@@ -17,7 +17,7 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
     }
 }
 
-let useLocalDependency = envEnable("LYRICSX_USE_LOCAL_DEPENDENCY")
+let useLocalDependency = envEnable("LYRICSX_USE_LOCAL_DEPENDENCY", default: true)
 
 extension Package.Dependency {
     enum LocalSearchPath {

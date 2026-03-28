@@ -10,7 +10,7 @@ struct MediumWidgetView: View {
             EmptyStateView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 if let coverURL = entry.coverImageURL,
                    let nsImage = NSImage(contentsOf: coverURL) {
                     Image(nsImage: nsImage)
@@ -69,8 +69,6 @@ struct MediumWidgetView: View {
                             }
                         }
                     }
-
-                    Spacer(minLength: 0)
                 }
 
                 Spacer(minLength: 0)
