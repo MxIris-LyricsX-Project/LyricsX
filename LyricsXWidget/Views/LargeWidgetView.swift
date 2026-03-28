@@ -11,7 +11,6 @@ struct LargeWidgetView: View {
         if entry.isEmpty {
             EmptyStateView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(gradientBackground)
         } else {
             VStack(spacing: 0) {
                 HStack {
@@ -39,7 +38,6 @@ struct LargeWidgetView: View {
                 PlaybackControlView(isPlaying: entry.isPlaying)
                     .padding(.bottom, 14)
             }
-            .background(gradientBackground)
         }
     }
 
@@ -62,13 +60,5 @@ struct LargeWidgetView: View {
             }
         }
         .padding(.horizontal, 16)
-    }
-
-    private var gradientBackground: some View {
-        LinearGradient(
-            colors: entry.backgroundColor?.gradientColors ?? Color.defaultGradientColors,
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 }
