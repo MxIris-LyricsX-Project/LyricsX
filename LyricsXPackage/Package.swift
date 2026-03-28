@@ -60,6 +60,10 @@ let package = Package(
             name: "LyricsXFoundation",
             targets: ["LyricsXFoundation"]
         ),
+        .library(
+            name: "LyricsXWidgetShared",
+            targets: ["LyricsXWidgetShared"]
+        ),
     ],
     dependencies: [
         .package(
@@ -97,6 +101,10 @@ let package = Package(
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
                 .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
             ]
+        ),
+        .target(
+            name: "LyricsXWidgetShared",
+            dependencies: []
         ),
         .testTarget(
             name: "LyricsXFoundationTests",
