@@ -112,6 +112,10 @@ let package = Package(
                 "LyricsXFoundation"
             ]
         ),
+        .testTarget(
+            name: "LyricsXWidgetSharedTests",
+            dependencies: ["LyricsXWidgetShared"]
+        ),
     ]
 )
 
