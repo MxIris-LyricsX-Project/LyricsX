@@ -4,6 +4,8 @@ import Regex
 import OpenCC
 import MusicPlayer
 import LyricsXFoundation
+import WidgetKit
+import LyricsXWidgetShared
 
 class AppController: NSObject {
     static let shared = AppController()
@@ -27,6 +29,8 @@ class AppController: NSObject {
     var searchTask: Task<Void, Never>?
 
     private var cancelBag = Set<AnyCancellable>()
+
+    private let widgetDataStore = WidgetDataStore(groupIdentifier: lyricsXGroupIdentifier)
 
     @objc dynamic var lyricsOffset: Int {
         get {
@@ -61,6 +65,24 @@ class AppController: NSObject {
                     NSApplication.shared.terminate(self)
                 }
             }.store(in: &cancelBag)
+
+        // Widget data bridge: update widget on lyrics or line changes
+        $currentLyrics
+            .combineLatest($currentLineIndex)
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] _, _ in
+                self?.updateWidgetData()
+            }
+            .store(in: &cancelBag)
+
+        selectedPlayer.playbackStateWillChange
+            .signal()
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] _ in
+                self?.updateWidgetData()
+            }
+            .store(in: &cancelBag)
+
         currentTrackChanged()
 
         Task {
@@ -300,6 +322,93 @@ class AppController: NSObject {
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
         currentLyrics = lyrics
+    }
+
+    // MARK: Widget Data Bridge
+
+    func updateWidgetData() {
+        guard #available(macOS 14, *) else { return }
+
+        guard let track = selectedPlayer.currentTrack else {
+            widgetDataStore.clear()
+            WidgetCenter.shared.reloadAllTimelines()
+            return
+        }
+
+        let playbackState = selectedPlayer.playbackState
+        let playbackTime = playbackState.time
+
+        // Build lyrics lines with context window
+        var lyricsLines: [LyricsLineEntry] = []
+        var widgetCurrentLineIndex = 0
+        var availableTranslationLanguages: [String] = []
+
+        if let lyrics = currentLyrics {
+            availableTranslationLanguages = lyrics.metadata.translationLanguages
+            let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
+            let contextRadius = 50
+            let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
+
+            // Find the position of currentIndex in enabledLines
+            let enabledCurrentPosition = enabledLines.firstIndex { $0.offset == currentIndex } ?? 0
+
+            let startPosition = max(0, enabledCurrentPosition - contextRadius)
+            let endPosition = min(enabledLines.count - 1, enabledCurrentPosition + contextRadius)
+
+            if startPosition <= endPosition {
+                let windowSlice = enabledLines[startPosition...endPosition]
+                lyricsLines = windowSlice.enumerated().map { windowIndex, indexedLine in
+                    let line = indexedLine.element
+                    let nextPosition = line.position  // startTime
+                    // Calculate endTime from the next enabled line
+                    let sliceArray = Array(windowSlice)
+                    let endTime: TimeInterval? = (windowIndex + 1 < sliceArray.count)
+                        ? sliceArray[windowIndex + 1].element.position
+                        : nil
+
+                    // Collect translations for all available languages
+                    let firstTranslationLanguage = availableTranslationLanguages.first
+                    let translation = firstTranslationLanguage.flatMap {
+                        line.attachments[.translation(languageCode: $0)]
+                    }
+
+                    return LyricsLineEntry(
+                        text: line.content,
+                        translation: translation,
+                        startTime: nextPosition,
+                        endTime: endTime
+                    )
+                }
+                widgetCurrentLineIndex = enabledCurrentPosition - startPosition
+            }
+        }
+
+        // Extract artwork color and cover data
+        var backgroundColor: CodableColor?
+        if let artwork = track.artwork {
+            backgroundColor = AlbumColorExtractor.dominantColor(from: artwork)
+            if let coverData = AlbumColorExtractor.compressedCoverData(from: artwork) {
+                try? widgetDataStore.writeCover(coverData)
+            }
+        } else {
+            widgetDataStore.clearCover()
+        }
+
+        let widgetData = LyricsWidgetData(
+            trackTitle: track.title ?? "Unknown",
+            artist: track.artist ?? "Unknown",
+            albumName: track.album,
+            backgroundColor: backgroundColor,
+            lyricsLines: lyricsLines,
+            currentLineIndex: widgetCurrentLineIndex,
+            isPlaying: playbackState.isPlaying,
+            timestamp: Date(),
+            playbackPosition: playbackTime,
+            availableTranslationLanguages: availableTranslationLanguages
+        )
+
+        try? widgetDataStore.write(widgetData)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 

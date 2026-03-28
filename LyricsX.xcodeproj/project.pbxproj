@@ -89,6 +89,7 @@
 		E9C4E29C2AC9A124004B9EB2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E29B2AC9A124004B9EB2 /* SnapKit */; };
 		E9C4E2A22AC9A3D6004B9EB2 /* SwiftCF in Frameworks */ = {isa = PBXBuildFile; productRef = E9C4E2A12AC9A3D6004B9EB2 /* SwiftCF */; };
 		E9C5763D2DEDF539009107B5 /* LyricsXFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9C5763C2DEDF539009107B5 /* LyricsXFoundation */; };
+		E9C5763F2DEDF539009107B5 /* LyricsXWidgetShared in Frameworks */ = {isa = PBXBuildFile; productRef = E9C5763E2DEDF539009107B5 /* LyricsXWidgetShared */; };
 		E9E55138207C4CB000F9958A /* TouchBarLyricsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9E55137207C4CB000F9958A /* TouchBarLyricsController.swift */; };
 		E9EBDA2521115A150019FDF9 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EBDA2421115A150019FDF9 /* Observation.swift */; };
 		E9EF0D4E2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D4D2D6F5E0A00D45E0F /* LyricsHUDWindowController.swift */; };
@@ -199,6 +200,7 @@
 				E983FA212C85EA6E00170CF7 /* MarqueeLabel in Frameworks */,
 				E983FA242C86302200170CF7 /* MarqueeLabel in Frameworks */,
 				E9C5763D2DEDF539009107B5 /* LyricsXFoundation in Frameworks */,
+				E9C5763F2DEDF539009107B5 /* LyricsXWidgetShared in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
 			);
@@ -433,6 +435,7 @@
 				E9EF0D502D6F5ECD00D45E0F /* UIFoundation */,
 				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
 				E9C5763C2DEDF539009107B5 /* LyricsXFoundation */,
+				E9C5763E2DEDF539009107B5 /* LyricsXWidgetShared */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX-Debug.app */;
@@ -1157,6 +1160,10 @@
 		E9C5763C2DEDF539009107B5 /* LyricsXFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LyricsXFoundation;
+		};
+		E9C5763E2DEDF539009107B5 /* LyricsXWidgetShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LyricsXWidgetShared;
 		};
 		E9EF0D502D6F5ECD00D45E0F /* UIFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
