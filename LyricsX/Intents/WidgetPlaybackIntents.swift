@@ -3,6 +3,7 @@ import AppIntents
 import MusicPlayer
 #endif
 
+@available(macOS 13.0, *)
 struct PlayPauseIntent: AppIntent {
     static var title: LocalizedStringResource = "Play/Pause"
     static var description: IntentDescription = "Toggle music playback"
@@ -18,6 +19,7 @@ struct PlayPauseIntent: AppIntent {
     }
 }
 
+@available(macOS 13.0, *)
 struct NextTrackIntent: AppIntent {
     static var title: LocalizedStringResource = "Next Track"
     static var description: IntentDescription = "Skip to next track"
@@ -33,6 +35,7 @@ struct NextTrackIntent: AppIntent {
     }
 }
 
+@available(macOS 13.0, *)
 struct PreviousTrackIntent: AppIntent {
     static var title: LocalizedStringResource = "Previous Track"
     static var description: IntentDescription = "Skip to previous track"
