@@ -9,7 +9,6 @@ struct SmallWidgetView: View {
         if entry.isEmpty {
             EmptyStateView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(gradientBackground)
         } else {
             ZStack(alignment: .bottomLeading) {
                 if let coverURL = entry.coverImageURL,
@@ -19,8 +18,6 @@ struct SmallWidgetView: View {
                         .aspectRatio(contentMode: .fill)
                         .blur(radius: 20)
                         .overlay(Color.black.opacity(0.4))
-                } else {
-                    gradientBackground
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -36,13 +33,5 @@ struct SmallWidgetView: View {
                 .padding(12)
             }
         }
-    }
-
-    private var gradientBackground: some View {
-        LinearGradient(
-            colors: entry.backgroundColor?.gradientColors ?? Color.defaultGradientColors,
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 }

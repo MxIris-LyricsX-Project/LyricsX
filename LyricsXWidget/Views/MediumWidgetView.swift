@@ -9,7 +9,6 @@ struct MediumWidgetView: View {
         if entry.isEmpty {
             EmptyStateView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(gradientBackground)
         } else {
             HStack(spacing: 12) {
                 if let coverURL = entry.coverImageURL,
@@ -77,15 +76,6 @@ struct MediumWidgetView: View {
                 Spacer(minLength: 0)
             }
             .padding(12)
-            .background(gradientBackground)
         }
-    }
-
-    private var gradientBackground: some View {
-        LinearGradient(
-            colors: entry.backgroundColor?.gradientColors ?? Color.defaultGradientColors,
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
     }
 }

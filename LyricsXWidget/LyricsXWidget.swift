@@ -20,7 +20,11 @@ struct LyricsWidget: Widget {
         ) { entry in
             LyricsWidgetEntryView(entry: entry)
                 .containerBackground(for: .widget) {
-                    Color.clear
+                    LinearGradient(
+                        colors: entry.backgroundColor?.gradientColors ?? Color.defaultGradientColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 }
         }
         .configurationDisplayName("LyricsX")
