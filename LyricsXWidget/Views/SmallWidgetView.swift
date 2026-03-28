@@ -16,9 +16,13 @@ struct SmallWidgetView: View {
                     Image(nsImage: nsImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .blur(radius: 20)
-                        .overlay(Color.black.opacity(0.4))
                 }
+
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.6)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(entry.trackTitle)
@@ -32,6 +36,7 @@ struct SmallWidgetView: View {
                 }
                 .padding(12)
             }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 }
