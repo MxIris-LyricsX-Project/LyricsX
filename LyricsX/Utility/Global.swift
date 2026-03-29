@@ -161,6 +161,8 @@ extension UserDefaults.DefaultsKeys {
 
     static let isShowLyricsHUD = Key<Bool>("isShowLyricsHUD")
 
+    static let appleMusicLyricsBackgroundMode = Key<Int>("AppleMusicLyricsBackgroundMode")
+
     // Source Priority
     static let lyricsSourcePriorityEnabled = Key<Bool>("LyricsSourcePriorityEnabled")
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
