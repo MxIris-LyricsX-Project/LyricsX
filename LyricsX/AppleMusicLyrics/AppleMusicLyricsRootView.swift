@@ -66,21 +66,18 @@ struct AppleMusicLyricsRootView: View {
 
     @ViewBuilder
     private func wideLayout(windowSize: CGSize) -> some View {
-        let coverSize = min(windowSize.height * 0.55, windowSize.width * 0.35, 320)
+        let coverSize = min(windowSize.height * 0.6, 320)
 
         HStack(spacing: 0) {
-            // Left: Album cover
-            VStack {
-                Spacer()
-                albumCoverView(size: coverSize)
-                Spacer()
-            }
-            .frame(width: coverSize + 60)
-            .padding(.leading, 30)
+            // Left: Album cover — fixed proportion of window width
+            albumCoverView(size: coverSize)
+                .frame(maxHeight: .infinity)
+                .padding(.horizontal, 40)
 
-            // Right: Lyrics
+            // Right: Lyrics — fills remaining space
             if let lyrics = currentLyrics {
                 lyricsContent(lyrics: lyrics)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 noLyricsView
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
