@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		0847F51B09568CE31C071F17 /* LyricsTextRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */; };
+		B8E4D2A16F930C7523AB1E48 /* LyricsLineRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2F8E3D4B1C6A9058D7E2F1 /* LyricsLineRowView.swift */; };
 		3503C8545C0336564CBDE15F /* InteractionStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */; };
 		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
 		67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D172338FB311CE693629763C /* ProgressDotsView.swift */; };
@@ -246,6 +247,7 @@
 		FF12F2CAEC284911492773CD /* TranslationLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationLanguage.swift; sourceTree = "<group>"; };
 		3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTextRenderer.swift; sourceTree = "<group>"; };
 		A043BAE1603803A839C0CB52 /* BackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundView.swift; sourceTree = "<group>"; };
+		7A2F8E3D4B1C6A9058D7E2F1 /* LyricsLineRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsLineRowView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -294,6 +296,7 @@
 			children = (
 				A043BAE1603803A839C0CB52 /* BackgroundView.swift */,
 				67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */,
+				7A2F8E3D4B1C6A9058D7E2F1 /* LyricsLineRowView.swift */,
 				3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */,
 				D172338FB311CE693629763C /* ProgressDotsView.swift */,
 			);
@@ -918,6 +921,7 @@
 				67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */,
 				F511D9CB8F68D9D9B0341314 /* BackgroundView.swift in Sources */,
 				0847F51B09568CE31C071F17 /* LyricsTextRenderer.swift in Sources */,
+				B8E4D2A16F930C7523AB1E48 /* LyricsLineRowView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
