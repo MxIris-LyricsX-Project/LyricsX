@@ -31,7 +31,7 @@ struct AppleMusicLyricsScrollView: View {
             .padding(.vertical, containerSize.height / 2)
         }
         .scrollPosition($scrollPosition, anchor: .center)
-        .scrollIndicators(interactionState.isFollowing ? .hidden : .visible)
+        .scrollIndicators(.hidden)
         .onGeometryChange(for: CGSize.self) { geometryProxy in
             geometryProxy.size
         } action: { newSize in

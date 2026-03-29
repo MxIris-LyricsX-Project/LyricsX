@@ -28,7 +28,7 @@ struct LyricsLineRowView: View {
                 translationView
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 10)
+            .padding(.vertical, 20)
             .padding(.horizontal, 20)
         }
         .buttonStyle(.plain)
