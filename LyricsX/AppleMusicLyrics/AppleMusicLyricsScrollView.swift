@@ -18,7 +18,7 @@ struct AppleMusicLyricsScrollView: View {
     @State private var contentOffset: [Int: CGFloat] = [:]
     @State private var lineHeights: [Int: CGFloat] = [:]
     @State private var previousHighlightedIndex: Int?
-    private let interludeThreshold: TimeInterval = 4.5
+    private let interludeThreshold: TimeInterval = 12.0
 
     var body: some View {
         ScrollView {
