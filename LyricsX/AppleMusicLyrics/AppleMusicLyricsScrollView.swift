@@ -18,7 +18,6 @@ struct AppleMusicLyricsScrollView: View {
     @State private var contentOffset: [Int: CGFloat] = [:]
     @State private var lineHeights: [Int: CGFloat] = [:]
     @State private var previousHighlightedIndex: Int?
-    private let interludeThreshold: TimeInterval = 12.0
 
     var body: some View {
         ScrollView {
@@ -79,9 +78,6 @@ struct AppleMusicLyricsScrollView: View {
         let lineDuration = computeLineDuration(at: index)
 
         VStack(spacing: 0) {
-            // Interlude dots
-            interludeDotsIfNeeded(beforeIndex: index)
-
             LyricsLineRowView(
                 line: line,
                 index: index,
@@ -117,27 +113,6 @@ struct AppleMusicLyricsScrollView: View {
             return lyrics.lines[nextIndex].position - lyrics.lines[index].position
         }
         return 5.0 // fallback for last line
-    }
-
-    // MARK: - Interlude Dots
-
-    @ViewBuilder
-    private func interludeDotsIfNeeded(beforeIndex index: Int) -> some View {
-        let previousEnabledIndex = enabledLineIndices.last(where: { $0 < index })
-        if let previousIndex = previousEnabledIndex {
-            let previousPosition = lyrics.lines[previousIndex].position
-            let currentPosition = lyrics.lines[index].position
-            let gap = currentPosition - previousPosition
-            // Only show interlude dots between actual lyrics (not metadata lines near position 0),
-            // and only when the gap is long enough
-            let isAfterIntro = previousPosition > 1.0
-            if gap >= interludeThreshold && isAfterIntro {
-                let adjustedPlayback = playbackTime + lyrics.adjustedTimeDelay
-                let gapProgress = max(0, min(1, (adjustedPlayback - previousPosition) / gap))
-                ProgressDotsView(progress: gapProgress)
-                    .frame(height: 40)
-            }
-        }
     }
 
     // MARK: - Cascade Scroll Animation
