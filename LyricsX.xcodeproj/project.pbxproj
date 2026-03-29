@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		3503C8545C0336564CBDE15F /* InteractionStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */; };
 		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
 		67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D172338FB311CE693629763C /* ProgressDotsView.swift */; };
 		16278BBA54BB9D32F9D54614 /* LyricsTimelineEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C9350426EBEEED023E39EF /* LyricsTimelineEntry.swift */; };
@@ -153,6 +154,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractionStateModel.swift; sourceTree = "<group>"; };
 		0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceSourceViewController.swift; sourceTree = "<group>"; };
 		1B6876B106641531C50176C9 /* MediumWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediumWidgetView.swift; sourceTree = "<group>"; };
 		1FEBC0157A34EACB0616DCE0 /* WidgetPlaybackIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPlaybackIntents.swift; sourceTree = "<group>"; };
@@ -286,6 +288,8 @@
 		21FB0FFDB4EF0FB65FE837EA /* AppleMusicLyrics */ = {
 			isa = PBXGroup;
 			children = (
+				A043BAE1603803A839C0CB52 /* BackgroundView.swift */,
+				67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */,
 				D172338FB311CE693629763C /* ProgressDotsView.swift */,
 			);
 			path = AppleMusicLyrics;
@@ -539,14 +543,6 @@
 				BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */,
 			);
 			path = Search;
-			sourceTree = "<group>";
-		};
-		A5534EA92B26FA8ADC30543F /* AppleMusicLyrics */ = {
-			isa = PBXGroup;
-			children = (
-				A043BAE1603803A839C0CB52 /* BackgroundView.swift */,
-			);
-			path = AppleMusicLyrics;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -868,6 +864,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3503C8545C0336564CBDE15F /* InteractionStateModel.swift in Sources */,
 				BB4141C01E45B67800A51775 /* KaraokeLyricsController.swift in Sources */,
 				E97593E42150F47900D80616 /* Polyfill.swift in Sources */,
 				E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */,
@@ -919,6 +916,7 @@
 				21E9D9F49FD8CB857FCBB1B9 /* WidgetPlaybackIntents.swift in Sources */,
 				1EA6872EFCA5373B4B3565C8 /* AlbumColorExtractor.swift in Sources */,
 				67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */,
+				F511D9CB8F68D9D9B0341314 /* BackgroundView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
