@@ -42,13 +42,20 @@ struct AppleMusicLyricsRootView: View {
         }
         .onReceive(AppController.shared.$currentLyrics.receive(on: DispatchQueue.main)) { lyrics in
             currentLyrics = lyrics
-            artwork = selectedPlayer.currentTrack?.artwork
+            refreshArtwork()
         }
         .onReceive(AppController.shared.$currentLineIndex.receive(on: DispatchQueue.main)) { index in
             currentLineIndex = index
         }
+        .onReceive(selectedPlayer.currentTrackWillChange.receive(on: DispatchQueue.main)) { _ in
+            refreshArtwork()
+        }
         .onReceive(playbackTimerPublisher) { _ in
             playbackTime = selectedPlayer.playbackTime
+            // Lazily try to load artwork if still nil
+            if artwork == nil {
+                refreshArtwork()
+            }
         }
     }
 
@@ -74,6 +81,14 @@ struct AppleMusicLyricsRootView: View {
         Text("No Lyrics")
             .font(.system(size: 24, weight: .medium))
             .foregroundStyle(Color.white.opacity(0.4))
+    }
+
+    // MARK: - Artwork
+
+    private func refreshArtwork() {
+        if let trackArtwork = selectedPlayer.currentTrack?.artwork {
+            artwork = trackArtwork
+        }
     }
 
     // MARK: - Interaction Button
