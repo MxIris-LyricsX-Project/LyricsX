@@ -19,6 +19,7 @@ struct AppleMusicLyricsScrollView: View {
     @State private var containerSize: CGSize = .zero
     @State private var contentOffset: [Int: CGFloat] = [:]
     @State private var lineHeights: [Int: CGFloat] = [:]
+    @State private var lastHighlightTime: Date = .distantPast
 
     private static let cascadeSpring: Animation = .spring(duration: 0.6, bounce: 0.275)
     private static let settleAnimation: Animation = .smooth(duration: 0.5)
@@ -26,6 +27,7 @@ struct AppleMusicLyricsScrollView: View {
     private static let aboveLineCount = 3
     private static let belowLineCount = 6
     private static let jumpThreshold = 5
+    private static let rapidThreshold: TimeInterval = 0.4
 
     var body: some View {
         ScrollView {
@@ -62,8 +64,12 @@ struct AppleMusicLyricsScrollView: View {
         }
         .onChange(of: highlightedLineIndex) { oldValue, newValue in
             guard let newValue else { return }
+            let now = Date()
+            let timeSinceLast = now.timeIntervalSince(lastHighlightTime)
+            lastHighlightTime = now
             let isJump = oldValue.map { abs(newValue - $0) > Self.jumpThreshold } ?? true
-            scrollToHighlighted(index: newValue, jumped: isJump)
+            let isRapid = timeSinceLast < Self.rapidThreshold && !isJump
+            scrollToHighlighted(index: newValue, jumped: isJump, rapid: isRapid)
         }
     }
 
@@ -80,9 +86,12 @@ struct AppleMusicLyricsScrollView: View {
         let line = lyrics.lines[index]
         let isHighlighted = highlightedLineIndex == index
         let highlightedIndex = highlightedLineIndex ?? 0
-        let lineStartTime = line.position
-        let elapsedTime = playbackTime + lyrics.adjustedTimeDelay - lineStartTime
-        let lineDuration = computeLineDuration(at: index)
+
+        // Only compute time-dependent values for the highlighted line (karaoke).
+        // Non-highlighted lines get constant 0, so SwiftUI skips their re-render
+        // when playbackTime updates at 30fps.
+        let elapsedTime = isHighlighted ? (playbackTime + lyrics.adjustedTimeDelay - line.position) : 0
+        let lineDuration = isHighlighted ? computeLineDuration(at: index) : 0
 
         LyricsLineRowView(
             line: line,
@@ -116,11 +125,11 @@ struct AppleMusicLyricsScrollView: View {
 
     // MARK: - Scroll Animation
 
-    private func scrollToHighlighted(index: Int, jumped: Bool) {
+    private func scrollToHighlighted(index: Int, jumped: Bool, rapid: Bool) {
         guard interactionState.isFollowing else { return }
 
+        // Large jump: reset all offsets, scroll instantly
         if jumped {
-            // Large jump: reset all offsets, scroll instantly
             withAnimation(nil) {
                 contentOffset.removeAll()
                 scrollPosition.scrollTo(id: index, anchor: .center)
@@ -128,12 +137,26 @@ struct AppleMusicLyricsScrollView: View {
             return
         }
 
+        // Rapid succession: cancel in-flight cascades, simple smooth scroll
+        if rapid {
+            withAnimation(nil) {
+                for key in contentOffset.keys {
+                    contentOffset[key] = 0
+                }
+            }
+            withAnimation(Self.settleAnimation) {
+                scrollPosition.scrollTo(id: index, anchor: .center)
+            }
+            return
+        }
+
+        // Normal: full cascade
+        let enabledIndices = enabledLineIndices
         let offset = lineHeights[index] ?? 50
-        let previousHeight = lineHeights.first(where: { enabledLineIndices.contains($0.key) && $0.key < index })?.value ?? offset
+        let previousEnabledIndex = enabledIndices.last(where: { $0 < index })
+        let previousHeight = previousEnabledIndex.flatMap { lineHeights[$0] } ?? offset
         let compensate = (previousHeight - offset) / 2
         let displacement = offset + compensate
-
-        let enabledIndices = enabledLineIndices
         let aboveIndices = Array(enabledIndices.filter { $0 < index }.suffix(Self.aboveLineCount))
         let belowIndices = Array(enabledIndices.filter { $0 >= index }.prefix(Self.belowLineCount))
 

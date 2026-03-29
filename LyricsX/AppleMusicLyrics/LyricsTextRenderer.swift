@@ -25,7 +25,7 @@ struct LyricsTextRenderer: TextRenderer {
     var wordTimings: [WordTimingEntry]
     var contentLength: Int // actual character count of the lyrics line content
     var mode: KaraokeMode
-    var inactiveOpacity: Double = 0.55
+    var inactiveOpacity: Double = 0.35
     var highlightBrightness: Double = 0.5
     var blendRadius: CGFloat = 8
 

@@ -29,7 +29,7 @@ struct AppleMusicLyricsRootView: View {
                 .ignoresSafeArea()
 
             GeometryReader { geometry in
-                let isWideEnough = geometry.size.width > 500
+                let isWideEnough = geometry.size.width > 640
 
                 if isWideEnough {
                     wideLayout(windowSize: geometry.size)
@@ -69,6 +69,7 @@ struct AppleMusicLyricsRootView: View {
                 refreshTrackInfo()
             }
         }
+        .frame(minWidth: 900, minHeight: 500)
     }
 
     // MARK: - Adaptive Sizing
