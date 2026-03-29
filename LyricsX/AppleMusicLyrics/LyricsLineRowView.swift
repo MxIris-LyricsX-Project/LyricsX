@@ -12,13 +12,12 @@ struct LyricsLineRowView: View {
     var elapsedTime: TimeInterval     // seconds since this line started
     var lineDuration: TimeInterval    // this line's duration
     var karaokeMode: KaraokeMode
+    var mainFontSize: CGFloat
+    var translationFontSize: CGFloat
     var onTap: () -> Void
 
     @State private var isActive: Bool = false
     @State private var isHovering: Bool = false
-
-    private let mainFontSize: CGFloat = 28
-    private let translationFontSize: CGFloat = 16
     private let highlightReleasingDelay: TimeInterval = 0.25
 
     var body: some View {
@@ -28,8 +27,8 @@ struct LyricsLineRowView: View {
                 translationView
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 20)
-            .padding(.horizontal, 20)
+            .padding(.vertical, 28)
+            .padding(.horizontal, 24)
         }
         .buttonStyle(.plain)
         .onHover { hovering in
