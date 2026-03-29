@@ -17,24 +17,35 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         window.minSize = NSSize(width: 500, height: 350)
         window.isMovableByWindowBackground = true
         window.setFrameAutosaveName("AppleMusicLyricsWindow")
-
-        // Dark appearance
         window.appearance = NSAppearance(named: .darkAqua)
 
         self.init(window: window)
         window.delegate = self
+
+        // Add pin/unpin titlebar accessory
+        let pinAccessory = NSTitlebarAccessoryViewController()
+        let pinButton = NSButton(image: NSImage(systemSymbolName: "pin", accessibilityDescription: "Pin window")!, target: self, action: #selector(togglePin(_:)))
+        pinButton.bezelStyle = .accessoryBarAction
+        pinButton.setButtonType(.toggle)
+        pinButton.isBordered = false
+        pinButton.contentTintColor = .white
+        pinAccessory.view = pinButton
+        pinAccessory.layoutAttribute = .right
+        window.addTitlebarAccessoryViewController(pinAccessory)
     }
 
     func windowWillClose(_ notification: Notification) {
         defaults[.isShowLyricsHUD] = false
     }
 
-    func toggleWindowLevel() {
+    @objc private func togglePin(_ sender: NSButton) {
         guard let window else { return }
-        if window.level == .normal {
+        if sender.state == .on {
             window.level = .floating
+            sender.contentTintColor = .controlAccentColor
         } else {
             window.level = .normal
+            sender.contentTintColor = .white
         }
     }
 }
