@@ -19,7 +19,13 @@ struct AppleMusicLyricsScrollView: View {
     @State private var containerSize: CGSize = .zero
     @State private var contentOffset: [Int: CGFloat] = [:]
     @State private var lineHeights: [Int: CGFloat] = [:]
-    @State private var previousHighlightedIndex: Int?
+
+    private static let cascadeSpring: Animation = .spring(duration: 0.6, bounce: 0.275)
+    private static let settleAnimation: Animation = .smooth(duration: 0.5)
+    private static let cascadeStagger: TimeInterval = 0.08
+    private static let aboveLineCount = 3
+    private static let belowLineCount = 6
+    private static let jumpThreshold = 5
 
     var body: some View {
         ScrollView {
@@ -27,6 +33,12 @@ struct AppleMusicLyricsScrollView: View {
                 ForEach(enabledLineIndices, id: \.self) { lineIndex in
                     lineContent(at: lineIndex)
                         .id(lineIndex)
+                        .onGeometryChange(for: CGFloat.self) { proxy in
+                            proxy.size.height
+                        } action: { height in
+                            lineHeights[lineIndex] = height
+                        }
+                        .offset(y: contentOffset[lineIndex] ?? 0)
                 }
             }
             .padding(.vertical, containerSize.height / 2)
@@ -44,21 +56,14 @@ struct AppleMusicLyricsScrollView: View {
             }
         }
         .onAppear {
-            // Scroll to current highlighted line on initial appearance
             if let highlightedLineIndex {
                 scrollPosition.scrollTo(id: highlightedLineIndex, anchor: .center)
             }
         }
         .onChange(of: highlightedLineIndex) { oldValue, newValue in
-            previousHighlightedIndex = oldValue
             guard let newValue else { return }
-            scrollToHighlighted(index: newValue)
-        }
-        .onChange(of: ObjectIdentifier(lyrics)) { _, _ in
-            // Track changed: reset all offsets
-            contentOffset.removeAll()
-            lineHeights.removeAll()
-            previousHighlightedIndex = nil
+            let isJump = oldValue.map { abs(newValue - $0) > Self.jumpThreshold } ?? true
+            scrollToHighlighted(index: newValue, jumped: isJump)
         }
     }
 
@@ -79,73 +84,84 @@ struct AppleMusicLyricsScrollView: View {
         let elapsedTime = playbackTime + lyrics.adjustedTimeDelay - lineStartTime
         let lineDuration = computeLineDuration(at: index)
 
-        VStack(spacing: 0) {
-            LyricsLineRowView(
-                line: line,
-                index: index,
-                isHighlighted: isHighlighted,
-                highlightedIndex: highlightedIndex,
-                elapsedTime: elapsedTime,
-                lineDuration: lineDuration,
-                karaokeMode: karaokeMode,
-                mainFontSize: mainFontSize,
-                translationFontSize: translationFontSize,
-                onTap: {
-                    onSeek(line.position + 0.01)
-                    interactionState.returnToFollowing()
-                }
-            )
-        }
-        .onGeometryChange(for: CGFloat.self) { geometryProxy in
-            geometryProxy.size.height
-        } action: { newHeight in
-            lineHeights[index] = newHeight
-        }
-        .offset(y: contentOffset[index] ?? 0)
+        LyricsLineRowView(
+            line: line,
+            index: index,
+            isHighlighted: isHighlighted,
+            highlightedIndex: highlightedIndex,
+            elapsedTime: elapsedTime,
+            lineDuration: lineDuration,
+            karaokeMode: karaokeMode,
+            mainFontSize: mainFontSize,
+            translationFontSize: translationFontSize,
+            onTap: {
+                onSeek(line.position + 0.01)
+                interactionState.returnToFollowing()
+            }
+        )
     }
 
     // MARK: - Line Duration
 
     private func computeLineDuration(at index: Int) -> TimeInterval {
-        // Use timetag duration if available
         if let duration = lyrics.lines[index].timetagDuration, duration > 0 {
             return duration
         }
-        // Otherwise compute from next line's position
         let nextEnabledIndex = enabledLineIndices.first(where: { $0 > index })
         if let nextIndex = nextEnabledIndex {
             return lyrics.lines[nextIndex].position - lyrics.lines[index].position
         }
-        return 5.0 // fallback for last line
+        return 5.0
     }
 
-    // MARK: - Cascade Scroll Animation
+    // MARK: - Scroll Animation
 
-    private func scrollToHighlighted(index: Int) {
+    private func scrollToHighlighted(index: Int, jumped: Bool) {
         guard interactionState.isFollowing else { return }
 
-        let offset: CGFloat = 12
+        if jumped {
+            // Large jump: reset all offsets, scroll instantly
+            withAnimation(nil) {
+                contentOffset.removeAll()
+                scrollPosition.scrollTo(id: index, anchor: .center)
+            }
+            return
+        }
 
-        // Phase 1: spring lines before highlight back to zero
-        for lineIndex in max(0, index - 10) ..< index {
-            withAnimation(.spring(duration: 0.6, bounce: 0.275)) {
+        let offset = lineHeights[index] ?? 50
+        let previousHeight = lineHeights.first(where: { enabledLineIndices.contains($0.key) && $0.key < index })?.value ?? offset
+        let compensate = (previousHeight - offset) / 2
+        let displacement = offset + compensate
+
+        let enabledIndices = enabledLineIndices
+        let aboveIndices = Array(enabledIndices.filter { $0 < index }.suffix(Self.aboveLineCount))
+        let belowIndices = Array(enabledIndices.filter { $0 >= index }.prefix(Self.belowLineCount))
+
+        // Phase 1: Set displacement + scroll with NO animation
+        withAnimation(nil) {
+            for lineIndex in aboveIndices {
+                contentOffset[lineIndex] = displacement
+            }
+            for lineIndex in belowIndices {
+                contentOffset[lineIndex] = displacement
+            }
+            scrollPosition.scrollTo(id: index, anchor: .center)
+        }
+
+        // Phase 2: Lines above — smooth settle (no bounce, saves frames)
+        for lineIndex in aboveIndices {
+            withAnimation(Self.settleAnimation) {
                 contentOffset[lineIndex] = 0
             }
         }
 
-        // Phase 2: stagger-animate lines at and after highlight
-        var staggerDelay: TimeInterval = 0.08
-
-        for lineIndex in index ..< min(lyrics.lines.count, index + 10) {
-            staggerDelay += 0.08
-            withAnimation(.spring(duration: 0.6, bounce: 0.275).delay(staggerDelay)) {
-                contentOffset[lineIndex] = offset
+        // Phase 3: Lines at/below — cascade spring back to 0
+        var delay = Self.cascadeStagger
+        for lineIndex in belowIndices {
+            delay += Self.cascadeStagger
+            withAnimation(Self.cascadeSpring.delay(delay)) {
+                contentOffset[lineIndex] = 0
             }
-        }
-
-        // Scroll to center
-        withAnimation(.spring(duration: 0.6, bounce: 0.275)) {
-            scrollPosition.scrollTo(id: index, anchor: .center)
         }
     }
 }

@@ -35,7 +35,6 @@ struct LyricsLineRowView: View {
             isHovering = hovering
         }
         .opacity(fadingOpacity)
-        .blur(radius: fadingBlur)
         .brightness(isActive ? 0.5 : 0)
         .animation(.smooth(duration: 0.8), value: isActive)
         .onChange(of: isHighlighted, initial: true) { _, newValue in
@@ -105,9 +104,4 @@ struct LyricsLineRowView: View {
         return max(0.125, min(factor, 0.55))
     }
 
-    private var fadingBlur: CGFloat {
-        guard shouldFade else { return 0 }
-        let factor = CGFloat(distance) * 1.0
-        return max(1.0, min(factor, 6.0))
-    }
 }
