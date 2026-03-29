@@ -13,8 +13,8 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.backgroundColor = .black
-        window.setContentSize(NSSize(width: 400, height: 600))
-        window.minSize = NSSize(width: 300, height: 400)
+        window.setContentSize(NSSize(width: 900, height: 500))
+        window.minSize = NSSize(width: 500, height: 350)
         window.isMovableByWindowBackground = true
         window.setFrameAutosaveName("AppleMusicLyricsWindow")
 

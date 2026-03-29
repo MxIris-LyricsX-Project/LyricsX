@@ -24,10 +24,14 @@ struct AppleMusicLyricsRootView: View {
             BackgroundView(artwork: artwork, backgroundMode: backgroundMode)
                 .ignoresSafeArea()
 
-            if let lyrics = currentLyrics {
-                lyricsContent(lyrics: lyrics)
-            } else {
-                noLyricsView
+            GeometryReader { geometry in
+                let isWideEnough = geometry.size.width > 500
+
+                if isWideEnough {
+                    wideLayout(windowSize: geometry.size)
+                } else {
+                    compactLayout
+                }
             }
 
             // Interaction state button overlay
@@ -52,10 +56,69 @@ struct AppleMusicLyricsRootView: View {
         }
         .onReceive(playbackTimerPublisher) { _ in
             playbackTime = selectedPlayer.playbackTime
-            // Lazily try to load artwork if still nil
             if artwork == nil {
                 refreshArtwork()
             }
+        }
+    }
+
+    // MARK: - Wide Layout (cover left, lyrics right)
+
+    @ViewBuilder
+    private func wideLayout(windowSize: CGSize) -> some View {
+        let coverSize = min(windowSize.height * 0.55, windowSize.width * 0.35, 320)
+
+        HStack(spacing: 0) {
+            // Left: Album cover
+            VStack {
+                Spacer()
+                albumCoverView(size: coverSize)
+                Spacer()
+            }
+            .frame(width: coverSize + 60)
+            .padding(.leading, 30)
+
+            // Right: Lyrics
+            if let lyrics = currentLyrics {
+                lyricsContent(lyrics: lyrics)
+            } else {
+                noLyricsView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    // MARK: - Compact Layout (lyrics only, for narrow windows)
+
+    @ViewBuilder
+    private var compactLayout: some View {
+        if let lyrics = currentLyrics {
+            lyricsContent(lyrics: lyrics)
+        } else {
+            noLyricsView
+        }
+    }
+
+    // MARK: - Album Cover
+
+    @ViewBuilder
+    private func albumCoverView(size: CGFloat) -> some View {
+        if let artwork {
+            Image(nsImage: artwork)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: size, height: size)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+        } else {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+                .frame(width: size, height: size)
+                .overlay {
+                    Image(systemName: "music.note")
+                        .font(.system(size: size * 0.3))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
         }
     }
 

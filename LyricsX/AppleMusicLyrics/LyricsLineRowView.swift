@@ -17,8 +17,8 @@ struct LyricsLineRowView: View {
     @State private var isActive: Bool = false
     @State private var isHovering: Bool = false
 
-    private let mainFontSize: CGFloat = 24
-    private let translationFontSize: CGFloat = 14
+    private let mainFontSize: CGFloat = 28
+    private let translationFontSize: CGFloat = 16
     private let highlightReleasingDelay: TimeInterval = 0.25
 
     var body: some View {
