@@ -42,6 +42,12 @@ struct AppleMusicLyricsScrollView: View {
                 interactionState.userDidScroll()
             }
         }
+        .onAppear {
+            // Scroll to current highlighted line on initial appearance
+            if let highlightedLineIndex {
+                scrollPosition.scrollTo(id: highlightedLineIndex, anchor: .center)
+            }
+        }
         .onChange(of: highlightedLineIndex) { oldValue, newValue in
             previousHighlightedIndex = oldValue
             guard let newValue else { return }
@@ -58,7 +64,7 @@ struct AppleMusicLyricsScrollView: View {
     // MARK: - Enabled Lines
 
     private var enabledLineIndices: [Int] {
-        lyrics.lines.indices.filter { lyrics.lines[$0].enabled }
+        lyrics.lines.indices.filter { lyrics.lines[$0].enabled && !lyrics.lines[$0].content.isEmpty }
     }
 
     // MARK: - Line Content
@@ -119,11 +125,15 @@ struct AppleMusicLyricsScrollView: View {
     private func interludeDotsIfNeeded(beforeIndex index: Int) -> some View {
         let previousEnabledIndex = enabledLineIndices.last(where: { $0 < index })
         if let previousIndex = previousEnabledIndex {
-            let gap = lyrics.lines[index].position - lyrics.lines[previousIndex].position
-            if gap >= interludeThreshold {
-                let gapStart = lyrics.lines[previousIndex].position
+            let previousPosition = lyrics.lines[previousIndex].position
+            let currentPosition = lyrics.lines[index].position
+            let gap = currentPosition - previousPosition
+            // Only show interlude dots between actual lyrics (not metadata lines near position 0),
+            // and only when the gap is long enough
+            let isAfterIntro = previousPosition > 1.0
+            if gap >= interludeThreshold && isAfterIntro {
                 let adjustedPlayback = playbackTime + lyrics.adjustedTimeDelay
-                let gapProgress = max(0, min(1, (adjustedPlayback - gapStart) / gap))
+                let gapProgress = max(0, min(1, (adjustedPlayback - previousPosition) / gap))
                 ProgressDotsView(progress: gapProgress)
                     .frame(height: 40)
             }
