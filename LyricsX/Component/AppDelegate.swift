@@ -26,6 +26,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
+    private var appleMusicLyricsWindowControllerStorage: Any?
+
+    @available(macOS 15, *)
+    private var appleMusicLyricsWindowController: AppleMusicLyricsWindowController {
+        if let existing = appleMusicLyricsWindowControllerStorage as? AppleMusicLyricsWindowController {
+            return existing
+        }
+        let controller = AppleMusicLyricsWindowController()
+        appleMusicLyricsWindowControllerStorage = controller
+        return controller
+    }
+
     lazy var preferencesWindowController: PreferenceWindowController = .create()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -76,7 +88,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         if defaults[.isShowLyricsHUD] {
-            lyricsHUD.showWindow(nil)
+            if #available(macOS 15, *) {
+                appleMusicLyricsWindowController.showWindow(nil)
+            } else {
+                lyricsHUD.showWindow(nil)
+            }
         }
     }
 
@@ -142,10 +158,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     @IBAction func showLyricsHUD(_ sender: Any?) {
         if defaults[.isShowLyricsHUD] {
-            lyricsHUD.close()
+            if #available(macOS 15, *) {
+                appleMusicLyricsWindowController.close()
+            } else {
+                lyricsHUD.close()
+            }
             defaults[.isShowLyricsHUD] = false
         } else {
-            lyricsHUD.showWindow(nil)
+            if #available(macOS 15, *) {
+                appleMusicLyricsWindowController.showWindow(nil)
+            } else {
+                lyricsHUD.showWindow(nil)
+            }
             defaults[.isShowLyricsHUD] = true
         }
 
