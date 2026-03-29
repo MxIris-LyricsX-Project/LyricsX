@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "-%@" : {
+
+    },
     "Download" : {
       "comment" : "title of download button on the update alert. Download new version of the app.",
       "extractionState" : "manual",
@@ -323,6 +326,9 @@
       }
     },
     "Next Track" : {
+
+    },
+    "No Lyrics" : {
 
     },
     "OK" : {

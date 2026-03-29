@@ -35,7 +35,7 @@ struct LyricsLineRowView: View {
             isHovering = hovering
         }
         .opacity(fadingOpacity)
-        .brightness(isActive ? 0.5 : 0)
+        .brightness(highlightBrightness)
         .animation(.smooth(duration: 0.8), value: isActive)
         .onChange(of: isHighlighted, initial: true) { _, newValue in
             withAnimation(newValue
@@ -86,6 +86,19 @@ struct LyricsLineRowView: View {
                 .font(.system(size: translationFontSize, weight: .medium))
                 .foregroundStyle(Color.white.opacity(0.7))
         }
+    }
+
+    // MARK: - Karaoke Awareness
+
+    private var hasActiveKaraoke: Bool {
+        line.wordTimingEntries != nil && isHighlighted
+    }
+
+    // When karaoke is active, the renderer handles highlight brightness internally;
+    // applying row-level brightness would over-brighten the un-sung portion.
+    private var highlightBrightness: Double {
+        guard isActive else { return 0 }
+        return hasActiveKaraoke ? 0 : 0.5
     }
 
     // MARK: - Fading Effect

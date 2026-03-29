@@ -3,8 +3,20 @@ import SwiftUI
 
 @available(macOS 15, *)
 final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelegate {
+    init() {
+        super.init(window: nil)
+    }
 
-    convenience init() {
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var windowNibName: NSNib.Name? {
+        ""
+    }
+
+    override func loadWindow() {
         let rootView = AppleMusicLyricsRootView()
         let hostingController = NSHostingController(rootView: rootView)
 
@@ -13,22 +25,22 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.backgroundColor = .black
-        window.setContentSize(NSSize(width: 900, height: 500))
-        window.minSize = NSSize(width: 700, height: 420)
-        window.contentMinSize = NSSize(width: 700, height: 420)
         window.isMovableByWindowBackground = true
-        window.setFrameAutosaveName("AppleMusicLyricsWindow")
         window.appearance = NSAppearance(named: .darkAqua)
+        if !window.setFrameAutosaveName("AppleMusicLyricsWindow") {
+            window.center()
+        }
+        window.delegate = self
+        self.window = window
+    }
 
-        // Restore pinned state
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        
         let isPinned = defaults[.appleMusicLyricsWindowPinned]
         if isPinned {
-            window.level = .floating
+            window?.level = .floating
         }
-
-        self.init(window: window)
-        window.delegate = self
-
         // Add pin/unpin titlebar accessory
         let pinAccessory = NSTitlebarAccessoryViewController()
         let pinButton = NSButton(image: NSImage(systemSymbolName: "pin", accessibilityDescription: "Pin window")!, target: self, action: #selector(togglePin(_:)))
@@ -39,7 +51,7 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         pinButton.contentTintColor = isPinned ? .controlAccentColor : .white
         pinAccessory.view = pinButton
         pinAccessory.layoutAttribute = .right
-        window.addTitlebarAccessoryViewController(pinAccessory)
+        window?.addTitlebarAccessoryViewController(pinAccessory)
     }
 
     func windowWillClose(_ notification: Notification) {
