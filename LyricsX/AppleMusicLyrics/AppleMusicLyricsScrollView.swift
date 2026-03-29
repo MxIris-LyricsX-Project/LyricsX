@@ -10,6 +10,8 @@ struct AppleMusicLyricsScrollView: View {
     var playbackTime: TimeInterval
     var karaokeMode: KaraokeMode
     var interactionState: InteractionStateModel
+    var mainFontSize: CGFloat
+    var translationFontSize: CGFloat
 
     var onSeek: (TimeInterval) -> Void
 
@@ -30,7 +32,7 @@ struct AppleMusicLyricsScrollView: View {
             .padding(.vertical, containerSize.height / 2)
         }
         .scrollPosition($scrollPosition, anchor: .center)
-        .scrollIndicators(.hidden)
+        .scrollIndicators(.never)
         .onGeometryChange(for: CGSize.self) { geometryProxy in
             geometryProxy.size
         } action: { newSize in
@@ -86,6 +88,8 @@ struct AppleMusicLyricsScrollView: View {
                 elapsedTime: elapsedTime,
                 lineDuration: lineDuration,
                 karaokeMode: karaokeMode,
+                mainFontSize: mainFontSize,
+                translationFontSize: translationFontSize,
                 onTap: {
                     onSeek(line.position + 0.01)
                     interactionState.returnToFollowing()
