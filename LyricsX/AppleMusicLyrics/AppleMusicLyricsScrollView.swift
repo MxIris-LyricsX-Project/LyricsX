@@ -124,8 +124,7 @@ struct AppleMusicLyricsScrollView: View {
     private func scrollToHighlighted(index: Int) {
         guard interactionState.isFollowing else { return }
 
-        let currentLineHeight = lineHeights[index] ?? 40
-        let offset = currentLineHeight / 2
+        let offset: CGFloat = 12
 
         // Phase 1: spring lines before highlight back to zero
         for lineIndex in max(0, index - 10) ..< index {
@@ -136,25 +135,11 @@ struct AppleMusicLyricsScrollView: View {
 
         // Phase 2: stagger-animate lines at and after highlight
         var staggerDelay: TimeInterval = 0.08
-        let previousLineHeight = lineHeights[previousHighlightedIndex ?? index] ?? 40
-        let compensationOffset: CGFloat = {
-            guard let previousHighlightedIndex else { return 0 }
-            let differenceBeforeHighlight = abs(previousLineHeight - currentLineHeight)
-            let nextLineHeight = lineHeights[index + 1] ?? 40
-            let differenceAfterHighlight = abs(nextLineHeight - currentLineHeight)
-            if abs(index - previousHighlightedIndex) > 3 {
-                return 0
-            } else if differenceBeforeHighlight > differenceAfterHighlight {
-                return (previousLineHeight - currentLineHeight) / 2
-            } else {
-                return (nextLineHeight - currentLineHeight) / 2
-            }
-        }()
 
         for lineIndex in index ..< min(lyrics.lines.count, index + 10) {
             staggerDelay += 0.08
             withAnimation(.spring(duration: 0.6, bounce: 0.275).delay(staggerDelay)) {
-                contentOffset[lineIndex] = offset + compensationOffset
+                contentOffset[lineIndex] = offset
             }
         }
 
