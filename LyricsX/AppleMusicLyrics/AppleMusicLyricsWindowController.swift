@@ -20,6 +20,12 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         window.setFrameAutosaveName("AppleMusicLyricsWindow")
         window.appearance = NSAppearance(named: .darkAqua)
 
+        // Restore pinned state
+        let isPinned = defaults[.appleMusicLyricsWindowPinned]
+        if isPinned {
+            window.level = .floating
+        }
+
         self.init(window: window)
         window.delegate = self
 
@@ -29,7 +35,8 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         pinButton.bezelStyle = .accessoryBarAction
         pinButton.setButtonType(.toggle)
         pinButton.isBordered = false
-        pinButton.contentTintColor = .white
+        pinButton.state = isPinned ? .on : .off
+        pinButton.contentTintColor = isPinned ? .controlAccentColor : .white
         pinAccessory.view = pinButton
         pinAccessory.layoutAttribute = .right
         window.addTitlebarAccessoryViewController(pinAccessory)
@@ -41,12 +48,9 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
 
     @objc private func togglePin(_ sender: NSButton) {
         guard let window else { return }
-        if sender.state == .on {
-            window.level = .floating
-            sender.contentTintColor = .controlAccentColor
-        } else {
-            window.level = .normal
-            sender.contentTintColor = .white
-        }
+        let pinned = sender.state == .on
+        window.level = pinned ? .floating : .normal
+        sender.contentTintColor = pinned ? .controlAccentColor : .white
+        defaults[.appleMusicLyricsWindowPinned] = pinned
     }
 }
