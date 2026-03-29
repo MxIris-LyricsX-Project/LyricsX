@@ -23,6 +23,7 @@ struct LyricsTextRenderer: TextRenderer {
     var elapsedTime: TimeInterval // seconds since line start
     var lineDuration: TimeInterval // total line duration in seconds
     var wordTimings: [WordTimingEntry]
+    var contentLength: Int // actual character count of the lyrics line content
     var mode: KaraokeMode
     var inactiveOpacity: Double = 0.55
     var highlightBrightness: Double = 0.5
@@ -163,8 +164,10 @@ struct LyricsTextRenderer: TextRenderer {
     // MARK: - Helpers
 
     private func estimateTotalCharacterCount() -> Int {
-        // Use the last word timing's character index as an estimate,
-        // adding 1 to account for the final segment beyond the last tag
+        // Use the actual content length if available, otherwise approximate
+        if contentLength > 0 {
+            return contentLength
+        }
         if let lastTiming = wordTimings.last {
             return max(lastTiming.characterIndex + 1, wordTimings.count)
         }

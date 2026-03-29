@@ -18,8 +18,6 @@ struct AppleMusicLyricsScrollView: View {
     @State private var contentOffset: [Int: CGFloat] = [:]
     @State private var lineHeights: [Int: CGFloat] = [:]
     @State private var previousHighlightedIndex: Int?
-    @Namespace private var coordinateSpace
-
     private let interludeThreshold: TimeInterval = 4.5
 
     var body: some View {
@@ -49,7 +47,7 @@ struct AppleMusicLyricsScrollView: View {
             guard let newValue else { return }
             scrollToHighlighted(index: newValue)
         }
-        .onChange(of: lyrics.description) { _, _ in
+        .onChange(of: ObjectIdentifier(lyrics)) { _, _ in
             // Track changed: reset all offsets
             contentOffset.removeAll()
             lineHeights.removeAll()
