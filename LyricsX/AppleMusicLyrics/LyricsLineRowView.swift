@@ -59,6 +59,7 @@ struct LyricsLineRowView: View {
                 elapsedTime: elapsedTime,
                 lineDuration: lineDuration,
                 wordTimings: line.wordTimingEntries ?? [],
+                contentLength: line.content.count,
                 mode: karaokeMode
             )
             Text(line.content)
