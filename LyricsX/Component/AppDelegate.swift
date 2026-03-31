@@ -29,11 +29,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     private var appleMusicLyricsWindowControllerStorage: Any?
 
     @available(macOS 15, *)
-    private var appleMusicLyricsWindowController: AppleMusicLyricsWindowController {
-        if let existing = appleMusicLyricsWindowControllerStorage as? AppleMusicLyricsWindowController {
+    private var appleMusicLyricsWindowController: AppleMusicLyrics.WindowController {
+        if let existing = appleMusicLyricsWindowControllerStorage as? AppleMusicLyrics.WindowController {
             return existing
         }
-        let controller = AppleMusicLyricsWindowController()
+        let controller = AppleMusicLyrics.WindowController()
         appleMusicLyricsWindowControllerStorage = controller
         return controller
     }

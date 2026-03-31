@@ -3,11 +3,13 @@ import Combine
 import LyricsXFoundation
 
 @available(macOS 15, *)
-struct AppleMusicLyricsScrollView: View {
+extension AppleMusicLyrics {
+
+struct LyricsScrollView: View {
 
     var lyrics: Lyrics
     var highlightedLineIndex: Int?
-    var playbackTime: TimeInterval
+    var playbackTimeModel: PlaybackTimeModel
     var karaokeMode: KaraokeMode
     var interactionState: InteractionStateModel
     var mainFontSize: CGFloat
@@ -30,10 +32,14 @@ struct AppleMusicLyricsScrollView: View {
     private static let rapidThreshold: TimeInterval = 0.4
 
     var body: some View {
+        let enabledIndices = lyrics.lines.indices.filter {
+            lyrics.lines[$0].enabled && !lyrics.lines[$0].content.isEmpty
+        }
+
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(enabledLineIndices, id: \.self) { lineIndex in
-                    lineContent(at: lineIndex)
+                ForEach(enabledIndices, id: \.self) { lineIndex in
+                    lineContent(at: lineIndex, enabledIndices: enabledIndices)
                         .id(lineIndex)
                         .onGeometryChange(for: CGFloat.self) { proxy in
                             proxy.size.height
@@ -69,29 +75,23 @@ struct AppleMusicLyricsScrollView: View {
             lastHighlightTime = now
             let isJump = oldValue.map { abs(newValue - $0) > Self.jumpThreshold } ?? true
             let isRapid = timeSinceLast < Self.rapidThreshold && !isJump
-            scrollToHighlighted(index: newValue, jumped: isJump, rapid: isRapid)
+            scrollToHighlighted(index: newValue, jumped: isJump, rapid: isRapid, enabledIndices: enabledIndices)
         }
-    }
-
-    // MARK: - Enabled Lines
-
-    private var enabledLineIndices: [Int] {
-        lyrics.lines.indices.filter { lyrics.lines[$0].enabled && !lyrics.lines[$0].content.isEmpty }
     }
 
     // MARK: - Line Content
 
     @ViewBuilder
-    private func lineContent(at index: Int) -> some View {
+    private func lineContent(at index: Int, enabledIndices: [Int]) -> some View {
         let line = lyrics.lines[index]
         let isHighlighted = highlightedLineIndex == index
         let highlightedIndex = highlightedLineIndex ?? 0
 
         // Only compute time-dependent values for the highlighted line (karaoke).
-        // Non-highlighted lines get constant 0, so SwiftUI skips their re-render
-        // when playbackTime updates at 30fps.
-        let elapsedTime = isHighlighted ? (playbackTime + lyrics.adjustedTimeDelay - line.position) : 0
-        let lineDuration = isHighlighted ? computeLineDuration(at: index) : 0
+        // Non-highlighted lines get constant 0, so the Equatable check on
+        // LyricsLineRowView prevents their body from re-evaluating at 30fps.
+        let elapsedTime = isHighlighted ? (playbackTimeModel.playbackTime + lyrics.adjustedTimeDelay - line.position) : 0
+        let lineDuration = isHighlighted ? computeLineDuration(at: index, enabledIndices: enabledIndices) : 0
 
         LyricsLineRowView(
             line: line,
@@ -108,15 +108,16 @@ struct AppleMusicLyricsScrollView: View {
                 interactionState.returnToFollowing()
             }
         )
+        .equatable()
     }
 
     // MARK: - Line Duration
 
-    private func computeLineDuration(at index: Int) -> TimeInterval {
+    private func computeLineDuration(at index: Int, enabledIndices: [Int]) -> TimeInterval {
         if let duration = lyrics.lines[index].timetagDuration, duration > 0 {
             return duration
         }
-        let nextEnabledIndex = enabledLineIndices.first(where: { $0 > index })
+        let nextEnabledIndex = enabledIndices.first(where: { $0 > index })
         if let nextIndex = nextEnabledIndex {
             return lyrics.lines[nextIndex].position - lyrics.lines[index].position
         }
@@ -125,7 +126,7 @@ struct AppleMusicLyricsScrollView: View {
 
     // MARK: - Scroll Animation
 
-    private func scrollToHighlighted(index: Int, jumped: Bool, rapid: Bool) {
+    private func scrollToHighlighted(index: Int, jumped: Bool, rapid: Bool, enabledIndices: [Int]) {
         guard interactionState.isFollowing else { return }
 
         // Large jump: reset all offsets, scroll instantly
@@ -151,7 +152,6 @@ struct AppleMusicLyricsScrollView: View {
         }
 
         // Normal: full cascade
-        let enabledIndices = enabledLineIndices
         let offset = lineHeights[index] ?? 50
         let previousEnabledIndex = enabledIndices.last(where: { $0 < index })
         let previousHeight = previousEnabledIndex.flatMap { lineHeights[$0] } ?? offset
@@ -187,4 +187,6 @@ struct AppleMusicLyricsScrollView: View {
             }
         }
     }
+}
+
 }

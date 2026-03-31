@@ -1,6 +1,8 @@
 import SwiftUI
 
 @available(macOS 15, *)
+extension AppleMusicLyrics {
+
 struct ProgressDotsView: View {
 
     var progress: Double  // 0.0 ... 1.0
@@ -36,4 +38,6 @@ struct ProgressDotsView: View {
             )
             .animation(.smooth(duration: 0.3), value: isActive)
     }
+}
+
 }

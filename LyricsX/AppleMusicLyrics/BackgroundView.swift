@@ -1,6 +1,8 @@
 import SwiftUI
 
 @available(macOS 15, *)
+extension AppleMusicLyrics {
+
 struct BackgroundView: View {
 
     var artwork: NSImage?
@@ -27,6 +29,7 @@ struct BackgroundView: View {
                 .saturation(1.5)
                 .overlay(Color.black.opacity(0.4))
                 .clipped()
+                .drawingGroup()
         } else {
             darkBackground
         }
@@ -41,4 +44,6 @@ struct BackgroundView: View {
             .fill(.ultraThinMaterial)
             .environment(\.colorScheme, .dark)
     }
+}
+
 }

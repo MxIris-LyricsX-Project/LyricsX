@@ -3,7 +3,20 @@ import LyricsXFoundation
 import OpenCC
 
 @available(macOS 15, *)
-struct LyricsLineRowView: View {
+extension AppleMusicLyrics {
+
+struct LyricsLineRowView: View, Equatable {
+
+    static func == (lhs: LyricsLineRowView, rhs: LyricsLineRowView) -> Bool {
+        lhs.index == rhs.index &&
+        lhs.isHighlighted == rhs.isHighlighted &&
+        lhs.highlightedIndex == rhs.highlightedIndex &&
+        lhs.elapsedTime == rhs.elapsedTime &&
+        lhs.lineDuration == rhs.lineDuration &&
+        lhs.mainFontSize == rhs.mainFontSize &&
+        lhs.translationFontSize == rhs.translationFontSize
+    }
+
 
     var line: LyricsLine
     var index: Int
@@ -116,5 +129,7 @@ struct LyricsLineRowView: View {
         let factor = 0.55 - Double(distance) * 0.05
         return max(0.125, min(factor, 0.55))
     }
+
+}
 
 }

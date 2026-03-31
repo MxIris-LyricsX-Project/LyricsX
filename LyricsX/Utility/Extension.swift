@@ -43,6 +43,22 @@ extension MusicTrack {
         originalTrack.setValue(lyrics, forKey: "lyrics")
     }
     
+    /// Returns artwork, falling back to direct SBObject KVC access when the struct's
+    /// cached artwork is nil due to ScriptingBridge's NSNull caching race condition.
+    /// KVC returns NSAppleEventDescriptor instead of NSImage, so raw bytes are extracted manually.
+    var resolvedArtwork: NSImage? {
+        if let artwork = artwork {
+            return artwork
+        }
+        guard let originalTrack = originalTrack as? NSObject,
+              let artworksArray = originalTrack.value(forKey: "artworks") as? NSArray,
+              let firstArtwork = artworksArray.firstObject as? NSObject,
+              let descriptor = firstArtwork.value(forKey: "data") as? NSAppleEventDescriptor else {
+            return nil
+        }
+        return NSImage(data: descriptor.data)
+    }
+
     var localFileURL: URL? {
         if let url = fileURL {
             return url

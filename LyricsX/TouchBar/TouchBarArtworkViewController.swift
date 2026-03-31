@@ -21,7 +21,7 @@ class TouchBarArtworkViewController: NSViewController {
     }
 
     func updateArtworkImage() {
-        if let image = selectedPlayer.currentTrack?.artwork ?? selectedPlayer.name?.icon {
+        if let image = selectedPlayer.currentTrack?.resolvedArtwork ?? selectedPlayer.name?.icon {
             let size = CGSize(width: 30, height: 30)
             artworkView.image = NSImage(size: size, flipped: false) { rect in
                 image.draw(in: rect)

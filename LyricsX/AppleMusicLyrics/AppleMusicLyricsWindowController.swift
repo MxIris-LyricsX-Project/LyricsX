@@ -2,7 +2,12 @@ import AppKit
 import SwiftUI
 
 @available(macOS 15, *)
-final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelegate {
+enum AppleMusicLyrics {}
+
+@available(macOS 15, *)
+extension AppleMusicLyrics {
+
+final class WindowController: NSWindowController, NSWindowDelegate {
     init() {
         super.init(window: nil)
     }
@@ -17,7 +22,7 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
     }
 
     override func loadWindow() {
-        let rootView = AppleMusicLyricsRootView()
+        let rootView = RootView()
         let hostingController = NSHostingController(rootView: rootView)
 
         let window = NSWindow(contentViewController: hostingController)
@@ -36,7 +41,7 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
 
     override func windowDidLoad() {
         super.windowDidLoad()
-        
+
         let isPinned = defaults[.appleMusicLyricsWindowPinned]
         if isPinned {
             window?.level = .floating
@@ -65,4 +70,6 @@ final class AppleMusicLyricsWindowController: NSWindowController, NSWindowDelega
         sender.contentTintColor = pinned ? .controlAccentColor : .white
         defaults[.appleMusicLyricsWindowPinned] = pinned
     }
+}
+
 }
