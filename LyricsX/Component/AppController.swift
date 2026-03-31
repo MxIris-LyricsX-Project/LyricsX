@@ -385,7 +385,7 @@ class AppController: NSObject {
 
         // Extract artwork color and cover data
         var backgroundColor: CodableColor?
-        if let artwork = track.artwork {
+        if let artwork = track.resolvedArtwork {
             backgroundColor = AlbumColorExtractor.dominantColor(from: artwork)
             if let coverData = AlbumColorExtractor.compressedCoverData(from: artwork) {
                 try? widgetDataStore.writeCover(coverData)

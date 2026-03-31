@@ -2,6 +2,13 @@ import SwiftUI
 import Combine
 
 @available(macOS 15, *)
+extension AppleMusicLyrics {
+
+@Observable
+final class PlaybackTimeModel {
+    var playbackTime: TimeInterval = 0
+}
+
 @Observable
 final class InteractionStateModel {
 
@@ -78,4 +85,6 @@ final class InteractionStateModel {
         countdownTask?.cancel()
         countdownTask = nil
     }
+}
+
 }

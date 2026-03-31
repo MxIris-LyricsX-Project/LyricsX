@@ -4,12 +4,13 @@ import LyricsXFoundation
 // MARK: - Word Timing Data
 
 @available(macOS 15, *)
+extension AppleMusicLyrics {
+
 struct WordTimingEntry {
     var characterIndex: Int
     var timeOffset: TimeInterval // seconds from line start
 }
 
-@available(macOS 15, *)
 enum KaraokeMode {
     case wordLevel
     case characterLevel
@@ -17,7 +18,6 @@ enum KaraokeMode {
 
 // MARK: - LyricsTextRenderer
 
-@available(macOS 15, *)
 struct LyricsTextRenderer: TextRenderer {
 
     var elapsedTime: TimeInterval // seconds since line start
@@ -175,14 +175,16 @@ struct LyricsTextRenderer: TextRenderer {
     }
 }
 
+}
+
 // MARK: - Helper to Extract Word Timings from LyricsKit InlineTimeTag
 
 @available(macOS 15, *)
 extension LyricsLine {
-    var wordTimingEntries: [WordTimingEntry]? {
+    var wordTimingEntries: [AppleMusicLyrics.WordTimingEntry]? {
         guard let timetag = attachments.timetag else { return nil }
         return timetag.tags.map { tag in
-            WordTimingEntry(characterIndex: tag.index, timeOffset: tag.time)
+            AppleMusicLyrics.WordTimingEntry(characterIndex: tag.index, timeOffset: tag.time)
         }
     }
 

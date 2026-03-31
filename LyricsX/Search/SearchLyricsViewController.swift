@@ -224,10 +224,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         guard index >= 0 else {
             return
         }
-        guard let url = searchResult[index].metadata.artworkURL else {
+        let lyrics = searchResult[index]
+        guard let url = lyrics.metadata.artworkURL else {
+            NSLog("[SearchArtwork] index=%d, service=%@, artworkURL=nil", index, lyrics.metadata.service ?? "unknown")
             artworkView.image = #imageLiteral(resourceName: "missing_artwork")
             return
         }
+
+        NSLog("[SearchArtwork] index=%d, service=%@, url=%@", index, lyrics.metadata.service ?? "unknown", url.absoluteString)
 
         if let cacheImage = imageCache.object(forKey: url as NSURL) {
             artworkView.image = cacheImage
@@ -235,44 +239,26 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
 
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
-//        DispatchQueue.global().async {
-//            guard let image = NSImage(contentsOf: url) else {
-//                return
-//            }
-//            self.imageCache.setObject(image, forKey: url as NSURL)
-//            DispatchQueue.main.async {
-//                self.updateImage()
-//            }
-//        }
 
-        // Use URLSession for asynchronous network requests to avoid blocking threads.
-        // This is the recommended way to fetch remote data.
         URLSession.shared.dataTask(with: url) { data, response, error in
-            // This completion handler is executed on a background thread
-            // once the network request is complete.
-
-            // 1. Check for errors and ensure we received valid data.
             guard let data = data, error == nil else {
-                print("Failed to download image data: \(error?.localizedDescription ?? "Unknown error")")
+                NSLog("[SearchArtwork] download FAILED: %@", error?.localizedDescription ?? "unknown")
                 return
             }
 
-            // 2. Create the image from the downloaded data.
-            // This is now very fast because the data is already in memory.
+            let httpResponse = response as? HTTPURLResponse
+            NSLog("[SearchArtwork] download OK: %d bytes, HTTP %d, contentType=%@", data.count, httpResponse?.statusCode ?? 0, httpResponse?.value(forHTTPHeaderField: "Content-Type") ?? "unknown")
+
             guard let image = NSImage(data: data) else {
-                print("Failed to create image from data.")
+                let preview = String(data: data.prefix(200), encoding: .utf8) ?? "(binary)"
+                NSLog("[SearchArtwork] NSImage init FAILED, data preview: %@", preview)
                 return
             }
 
-            // 3. The completion handler is already on a background thread,
-            // so it's safe to update the cache here.
             self.imageCache.setObject(image, forKey: url as NSURL)
-
-            // 4. Switch back to the main thread to perform any UI updates.
             DispatchQueue.main.async {
                 self.updateImage()
             }
-
-        }.resume() // IMPORTANT: Don't forget to start the task!
+        }.resume()
     }
 }

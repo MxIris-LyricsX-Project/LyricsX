@@ -4,11 +4,13 @@ import LyricsXFoundation
 import MusicPlayer
 
 @available(macOS 15, *)
-struct AppleMusicLyricsRootView: View {
+extension AppleMusicLyrics {
+
+struct RootView: View {
 
     @State private var currentLyrics: Lyrics?
     @State private var currentLineIndex: Int?
-    @State private var playbackTime: TimeInterval = 0
+    @State private var playbackTimeModel = PlaybackTimeModel()
     @State private var artwork: NSImage?
     @State private var interactionState = InteractionStateModel()
     @State private var karaokeMode: KaraokeMode = .characterLevel
@@ -16,6 +18,8 @@ struct AppleMusicLyricsRootView: View {
     @State private var trackArtist: String?
     @State private var trackDuration: TimeInterval?
     @State private var isPlaying: Bool = false
+    @State private var currentTrackID: String?
+    @State private var lastArtworkFetchAttemptTime: Date = .distantPast
 
     private let playbackTimerPublisher = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common).autoconnect()
 
@@ -56,11 +60,17 @@ struct AppleMusicLyricsRootView: View {
             currentLineIndex = index
         }
         .onReceive(selectedPlayer.currentTrackWillChange.receive(on: DispatchQueue.main)) { _ in
+            let newTrackID = selectedPlayer.currentTrack?.id
+            if newTrackID != currentTrackID {
+                currentTrackID = newTrackID
+                artwork = nil
+                lastArtworkFetchAttemptTime = .distantPast
+            }
             refreshArtwork()
             refreshTrackInfo()
         }
         .onReceive(playbackTimerPublisher) { _ in
-            playbackTime = selectedPlayer.playbackTime
+            playbackTimeModel.playbackTime = selectedPlayer.playbackTime
             isPlaying = selectedPlayer.playbackState.isPlaying
             if artwork == nil {
                 refreshArtwork()
@@ -104,7 +114,11 @@ struct AppleMusicLyricsRootView: View {
 
                 Spacer().frame(height: 16)
 
-                progressBarView(width: coverSize)
+                ProgressBarView(
+                    playbackTimeModel: playbackTimeModel,
+                    trackDuration: trackDuration,
+                    width: coverSize
+                )
 
                 Spacer().frame(height: 16)
 
@@ -180,47 +194,6 @@ struct AppleMusicLyricsRootView: View {
         .frame(maxWidth: maxWidth, alignment: .leading)
     }
 
-    // MARK: - Progress Bar
-
-    @ViewBuilder
-    private func progressBarView(width: CGFloat) -> some View {
-        let duration = trackDuration ?? 0
-        let progress = duration > 0 ? min(1, max(0, playbackTime / duration)) : 0
-
-        VStack(spacing: 4) {
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(height: 4)
-
-                    Capsule()
-                        .fill(Color.white)
-                        .frame(width: geometry.size.width * progress, height: 4)
-                }
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-                            guard duration > 0 else { return }
-                            let fraction = max(0, min(1, value.location.x / geometry.size.width))
-                            selectedPlayer.playbackTime = fraction * duration
-                        }
-                )
-            }
-            .frame(height: 4)
-
-            HStack {
-                Text(formatTime(playbackTime))
-                Spacer()
-                Text("-\(formatTime(max(0, duration - playbackTime)))")
-            }
-            .font(.system(size: 11, weight: .medium).monospacedDigit())
-            .foregroundStyle(Color.white.opacity(0.6))
-        }
-        .frame(width: width)
-    }
-
     // MARK: - Playback Controls
 
     private var playbackControlsView: some View {
@@ -258,10 +231,10 @@ struct AppleMusicLyricsRootView: View {
 
     @ViewBuilder
     private func lyricsContent(lyrics: Lyrics, mainFontSize: CGFloat, translationFontSize: CGFloat) -> some View {
-        AppleMusicLyricsScrollView(
+        LyricsScrollView(
             lyrics: lyrics,
             highlightedLineIndex: currentLineIndex,
-            playbackTime: playbackTime,
+            playbackTimeModel: playbackTimeModel,
             karaokeMode: karaokeMode,
             interactionState: interactionState,
             mainFontSize: mainFontSize,
@@ -283,7 +256,16 @@ struct AppleMusicLyricsRootView: View {
     // MARK: - Artwork & Track Info
 
     private func refreshArtwork() {
+        // Fast path: struct's cached artwork (no IPC overhead)
         if let trackArtwork = selectedPlayer.currentTrack?.artwork {
+            artwork = trackArtwork
+            return
+        }
+        // Slow path: SBObject KVC fallback, throttled to at most once per second
+        let now = Date()
+        guard now.timeIntervalSince(lastArtworkFetchAttemptTime) >= 1.0 else { return }
+        lastArtworkFetchAttemptTime = now
+        if let trackArtwork = selectedPlayer.currentTrack?.resolvedArtwork {
             artwork = trackArtwork
         }
     }
@@ -292,15 +274,6 @@ struct AppleMusicLyricsRootView: View {
         trackTitle = selectedPlayer.currentTrack?.title
         trackArtist = selectedPlayer.currentTrack?.artist
         trackDuration = selectedPlayer.currentTrack?.duration
-    }
-
-    // MARK: - Time Formatting
-
-    private func formatTime(_ time: TimeInterval) -> String {
-        let totalSeconds = Int(max(0, time))
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%d:%02d", minutes, seconds)
     }
 
     // MARK: - Interaction Button
@@ -332,4 +305,60 @@ struct AppleMusicLyricsRootView: View {
         .opacity(interactionState.isDelegated ? 1.0 : 0.0)
         .animation(.smooth(duration: 0.3), value: interactionState.isDelegated)
     }
+}
+
+// MARK: - Progress Bar (isolated observation scope for 30fps playback time updates)
+
+struct ProgressBarView: View {
+
+    var playbackTimeModel: PlaybackTimeModel
+    var trackDuration: TimeInterval?
+    var width: CGFloat
+
+    var body: some View {
+        let duration = trackDuration ?? 0
+        let progress = duration > 0 ? min(1, max(0, playbackTimeModel.playbackTime / duration)) : 0
+
+        VStack(spacing: 4) {
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(height: 4)
+
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: geometry.size.width * progress, height: 4)
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            guard duration > 0 else { return }
+                            let fraction = max(0, min(1, value.location.x / geometry.size.width))
+                            selectedPlayer.playbackTime = fraction * duration
+                        }
+                )
+            }
+            .frame(height: 4)
+
+            HStack {
+                Text(Self.formatTime(playbackTimeModel.playbackTime))
+                Spacer()
+                Text("-\(Self.formatTime(max(0, duration - playbackTimeModel.playbackTime)))")
+            }
+            .font(.system(size: 11, weight: .medium).monospacedDigit())
+            .foregroundStyle(Color.white.opacity(0.6))
+        }
+        .frame(width: width)
+    }
+
+    private static func formatTime(_ time: TimeInterval) -> String {
+        let totalSeconds = Int(max(0, time))
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
 }
