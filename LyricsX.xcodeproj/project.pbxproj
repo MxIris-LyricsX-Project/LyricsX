@@ -383,7 +383,6 @@
 				BB4141AC1E458BA800A51775 /* LyricsX */,
 				BB60F3021E889A1B00BA1FD2 /* LyricsXHelper */,
 				3020D902A01C52F8B679ACA7 /* LyricsXWidget */,
-				E9C5763B2DEDF539009107B5 /* Frameworks */,
 				BB4141AB1E458BA800A51775 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -533,13 +532,6 @@
 				BB63C24E22774B47008CFFBB /* TouchBarPlaybackControlViewController.swift */,
 			);
 			path = TouchBar;
-			sourceTree = "<group>";
-		};
-		E9C5763B2DEDF539009107B5 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		E9EF0D562D6F722B00D45E0F /* LyricsHUD */ = {
