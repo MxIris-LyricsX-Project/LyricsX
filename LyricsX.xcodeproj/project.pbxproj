@@ -6,20 +6,6 @@
 	objectVersion = 60;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		BB30651020878608008A9AC8 /* SwiftLint */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = BB30651320878608008A9AC8 /* Build configuration list for PBXAggregateTarget "SwiftLint" */;
-			buildPhases = (
-				BB30651420878623008A9AC8 /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = SwiftLint;
-			productName = SwiftLint;
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		0847F51B09568CE31C071F17 /* LyricsTextRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */; };
 		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
@@ -314,9 +300,9 @@
 		21FB0FFDB4EF0FB65FE837EA /* AppleMusicLyrics */ = {
 			isa = PBXGroup;
 			children = (
+				C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */,
 				9E8C4D1F3A72B5E60D9F14C3 /* AppleMusicLyricsRootView.swift */,
 				8B6F3EA72D4C91A0F5E87B34 /* AppleMusicLyricsScrollView.swift */,
-				C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */,
 				A043BAE1603803A839C0CB52 /* BackgroundView.swift */,
 				67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */,
 				7A2F8E3D4B1C6A9058D7E2F1 /* LyricsLineRowView.swift */,
@@ -661,9 +647,6 @@
 							};
 						};
 					};
-					BB30651020878608008A9AC8 = {
-						CreatedOnToolsVersion = 9.3;
-					};
 					BB4141A91E458BA800A51775 = {
 						CreatedOnToolsVersion = 8.2.1;
 						LastSwiftMigration = 1020;
@@ -742,7 +725,6 @@
 				BB4141A91E458BA800A51775 /* LyricsX */,
 				BB60F3001E889A1B00BA1FD2 /* LyricsXHelper */,
 				1E11AF12B3274D813B724258 /* LyricsXWidget */,
-				BB30651020878608008A9AC8 /* SwiftLint */,
 			);
 		};
 /* End PBXProject section */
@@ -799,19 +781,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/usr/libexec/PlistBuddy -c \"Set :LX_BUILD_TIME $(date +\"%s\")\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n";
-		};
-		BB30651420878623008A9AC8 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n    swiftlint\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi";
 		};
 		BBC1D5811E4AFE64008869EC /* Bump Build */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1001,7 +970,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.JH.LyricsX.LyricsWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1026,7 +995,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.8.0;
+				MARKETING_VERSION = 1.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.JH.LyricsX.LyricsWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1034,18 +1003,6 @@
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
-		};
-		BB30651120878608008A9AC8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Debug;
-		};
-		BB30651220878608008A9AC8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Release;
 		};
 		BB4141B71E458BA900A51775 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1263,15 +1220,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB30651320878608008A9AC8 /* Build configuration list for PBXAggregateTarget "SwiftLint" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BB30651120878608008A9AC8 /* Debug */,
-				BB30651220878608008A9AC8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		BB4141A51E458BA800A51775 /* Build configuration list for PBXProject "LyricsX" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
