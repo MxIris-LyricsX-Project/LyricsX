@@ -2,48 +2,45 @@ import SwiftUI
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
+    struct BackgroundView: View {
+        var artwork: NSImage?
+        var backgroundMode: Int // 0 = artwork blur, 1 = dark, 2 = system
 
-struct BackgroundView: View {
+        var body: some View {
+            switch backgroundMode {
+            case 0:
+                artworkBlurBackground
+            case 2:
+                systemMaterialBackground
+            default:
+                darkBackground
+            }
+        }
 
-    var artwork: NSImage?
-    var backgroundMode: Int  // 0 = artwork blur, 1 = dark, 2 = system
+        @ViewBuilder
+        private var artworkBlurBackground: some View {
+            if let artwork {
+                Image(nsImage: artwork)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .blur(radius: 80)
+                    .saturation(1.5)
+                    .overlay(Color.black.opacity(0.4))
+                    .clipped()
+                    .drawingGroup()
+            } else {
+                darkBackground
+            }
+        }
 
-    var body: some View {
-        switch backgroundMode {
-        case 0:
-            artworkBlurBackground
-        case 2:
-            systemMaterialBackground
-        default:
-            darkBackground
+        private var darkBackground: some View {
+            Color.black
+        }
+
+        private var systemMaterialBackground: some View {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, .dark)
         }
     }
-
-    @ViewBuilder
-    private var artworkBlurBackground: some View {
-        if let artwork {
-            Image(nsImage: artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .blur(radius: 80)
-                .saturation(1.5)
-                .overlay(Color.black.opacity(0.4))
-                .clipped()
-                .drawingGroup()
-        } else {
-            darkBackground
-        }
-    }
-
-    private var darkBackground: some View {
-        Color.black
-    }
-
-    private var systemMaterialBackground: some View {
-        Rectangle()
-            .fill(.ultraThinMaterial)
-            .environment(\.colorScheme, .dark)
-    }
-}
-
 }
