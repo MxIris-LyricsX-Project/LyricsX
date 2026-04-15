@@ -51,8 +51,10 @@ extension MusicTrack {
             return artwork
         }
         guard let originalTrack = originalTrack as? NSObject,
+              originalTrack.responds(to: NSSelectorFromString("artworks")),
               let artworksArray = originalTrack.value(forKey: "artworks") as? NSArray,
               let firstArtwork = artworksArray.firstObject as? NSObject,
+              firstArtwork.responds(to: NSSelectorFromString("data")),
               let descriptor = firstArtwork.value(forKey: "data") as? NSAppleEventDescriptor else {
             return nil
         }
