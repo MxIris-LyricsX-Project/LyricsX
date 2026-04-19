@@ -27,6 +27,20 @@ class MenuBarLyricsController {
 
     private let marqueeLabel = MarqueeLabel(frame: .init(x: 0, y: 0, width: 183, height: 22))
 
+    private let previousButton = NSButton()
+    private let playPauseButton = NSButton()
+    private let nextButton = NSButton()
+
+    private static let controlButtonSize: CGFloat = 22
+    private static let lyricsToControlsGap: CGFloat = 6
+    private static let lyricsWidth: CGFloat = 183
+
+    private var controlsVisible: Bool {
+        !defaults[.hideMenuBarItems]
+            && defaults[.menuBarLyricsEnabled]
+            && defaults[.menuBarPlaybackControlsEnabled]
+    }
+
     private var lastDisplayMode: DisplayMode?
 
     private enum DisplayMode {
@@ -47,6 +61,9 @@ class MenuBarLyricsController {
     private var cancelBag = Set<AnyCancellable>()
 
     private init() {
+        setupControlButtons()
+        updatePlayPauseIcon()
+        updateButtonsEnabledState()
         if !defaults[.hideMenuBarItems] {
             updateStatusItems()
         }
@@ -64,6 +81,99 @@ class MenuBarLyricsController {
             .prepend()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
+    }
+
+    // MARK: - Control Button Setup
+
+    private func setupControlButtons() {
+        configureControlButton(
+            previousButton,
+            symbolName: "backward.fill",
+            action: #selector(previousAction)
+        )
+        configureControlButton(
+            playPauseButton,
+            symbolName: "play.fill",
+            action: #selector(playPauseAction)
+        )
+        configureControlButton(
+            nextButton,
+            symbolName: "forward.fill",
+            action: #selector(nextAction)
+        )
+    }
+
+    private func configureControlButton(_ button: NSButton, symbolName: String, action: Selector) {
+        button.isBordered = false
+        button.imagePosition = .imageOnly
+        button.imageScaling = .scaleProportionallyDown
+        button.bezelStyle = .regularSquare
+        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+        button.target = self
+        button.action = action
+    }
+
+    // MARK: - Control Button Actions
+
+    @objc private func previousAction() {
+        selectedPlayer.skipToPreviousItem()
+    }
+
+    @objc private func playPauseAction() {
+        selectedPlayer.playPause()
+    }
+
+    @objc private func nextAction() {
+        selectedPlayer.skipToNextItem()
+    }
+
+    // MARK: - Layout
+
+    private func layoutLyricStatusItemContents() {
+        guard let button = lyricStatusItem?.button else { return }
+
+        let lyricsWidth = MenuBarLyricsController.lyricsWidth
+        let buttonSize = MenuBarLyricsController.controlButtonSize
+        let gap = MenuBarLyricsController.lyricsToControlsGap
+
+        let totalWidth: CGFloat
+        if controlsVisible {
+            totalWidth = lyricsWidth + gap + buttonSize * 3
+        } else {
+            totalWidth = lyricsWidth
+        }
+
+        button.frame = CGRect(x: 0, y: 0, width: totalWidth, height: buttonSize)
+        marqueeLabel.frame = CGRect(x: 0, y: 0, width: lyricsWidth, height: buttonSize)
+
+        if controlsVisible {
+            let firstButtonX = lyricsWidth + gap
+            previousButton.frame  = CGRect(x: firstButtonX, y: 0, width: buttonSize, height: buttonSize)
+            playPauseButton.frame = CGRect(x: firstButtonX + buttonSize, y: 0, width: buttonSize, height: buttonSize)
+            nextButton.frame      = CGRect(x: firstButtonX + buttonSize * 2, y: 0, width: buttonSize, height: buttonSize)
+            if previousButton.superview !== button { button.addSubview(previousButton) }
+            if playPauseButton.superview !== button { button.addSubview(playPauseButton) }
+            if nextButton.superview !== button { button.addSubview(nextButton) }
+        } else {
+            previousButton.removeFromSuperview()
+            playPauseButton.removeFromSuperview()
+            nextButton.removeFromSuperview()
+        }
+    }
+
+    // MARK: - State Update Helpers
+
+    private func updatePlayPauseIcon() {
+        let isPlaying = selectedPlayer.playbackState.isPlaying
+        let symbolName = isPlaying ? "pause.fill" : "play.fill"
+        playPauseButton.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+    }
+
+    private func updateButtonsEnabledState() {
+        let hasTrack = selectedPlayer.currentTrack != nil
+        previousButton.isEnabled = hasTrack
+        playPauseButton.isEnabled = hasTrack
+        nextButton.isEnabled = hasTrack
     }
 
     private func handleLyricsDisplay(event: (lyrics: Lyrics?, index: Int?)) {
@@ -140,12 +250,15 @@ class MenuBarLyricsController {
 
     private func setupLyricStatusItem() {
         marqueeLabel.removeFromSuperview()
+        previousButton.removeFromSuperview()
+        playPauseButton.removeFromSuperview()
+        nextButton.removeFromSuperview()
         lyricStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         lyricStatusItem?.button?.title = ""
         lyricStatusItem?.button?.image = nil
         lyricStatusItem?.length = NSStatusItem.variableLength
-        lyricStatusItem?.button?.frame = marqueeLabel.bounds
         lyricStatusItem?.button?.addSubview(marqueeLabel)
+        layoutLyricStatusItemContents()
         setupStatusItemMenu()
     }
 
