@@ -81,6 +81,16 @@ class MenuBarLyricsController {
             .prepend()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
+        selectedPlayer.playbackStateWillChange
+            .signal()
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .invoke(MenuBarLyricsController.updatePlayPauseIcon, weaklyOn: self)
+            .store(in: &cancelBag)
+        selectedPlayer.currentTrackWillChange
+            .signal()
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .invoke(MenuBarLyricsController.updateButtonsEnabledState, weaklyOn: self)
+            .store(in: &cancelBag)
     }
 
     // MARK: - Control Button Setup
