@@ -25,7 +25,7 @@ class MenuBarLyricsController {
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
     private var buttonlength: CGFloat = 30
 
-    private let marqueeLabel = MarqueeLabel(frame: .init(x: 0, y: 0, width: 183, height: 22))
+    private let marqueeLabel = MarqueeLabel(frame: .zero)
 
     private let previousButton = NSButton()
     private let playPauseButton = NSButton()
