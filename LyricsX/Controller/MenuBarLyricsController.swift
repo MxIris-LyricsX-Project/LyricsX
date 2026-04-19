@@ -27,9 +27,9 @@ class MenuBarLyricsController {
 
     private let marqueeLabel = MarqueeLabel(frame: .zero)
 
-    private let previousButton = NSButton()
-    private let playPauseButton = NSButton()
-    private let nextButton = NSButton()
+    private let previousButton = MenuBarControlButton()
+    private let playPauseButton = MenuBarControlButton()
+    private let nextButton = MenuBarControlButton()
 
     private static let controlButtonSize: CGFloat = 22
     private static let lyricsToControlsGap: CGFloat = 6
@@ -103,7 +103,7 @@ class MenuBarLyricsController {
     private func setupControlButtons() {
         configureControlButton(
             previousButton,
-            symbolName: "backward.fill",
+            symbolName: "backward.end.fill",
             accessibilityDescription: NSLocalizedString("Previous Track", comment: "Menu bar playback previous button"),
             action: #selector(previousAction)
         )
@@ -115,13 +115,13 @@ class MenuBarLyricsController {
         )
         configureControlButton(
             nextButton,
-            symbolName: "forward.fill",
+            symbolName: "forward.end.fill",
             accessibilityDescription: NSLocalizedString("Next Track", comment: "Menu bar playback next button"),
             action: #selector(nextAction)
         )
     }
 
-    private func configureControlButton(_ button: NSButton, symbolName: String, accessibilityDescription: String, action: Selector) {
+    private func configureControlButton(_ button: MenuBarControlButton, symbolName: String, accessibilityDescription: String, action: Selector) {
         button.isBordered = false
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
@@ -301,6 +301,20 @@ class MenuBarLyricsController {
         } else {
             iconStatusItem?.menu = statusBarMenu
         }
+    }
+}
+
+// MARK: - Menu Bar Control Button
+
+private final class MenuBarControlButton: NSButton {
+    override func draw(_ dirtyRect: NSRect) {
+        if isHighlighted {
+            let highlightRect = bounds.insetBy(dx: 2, dy: 2)
+            let path = NSBezierPath(roundedRect: highlightRect, xRadius: 4, yRadius: 4)
+            NSColor.controlAccentColor.setFill()
+            path.fill()
+        }
+        super.draw(dirtyRect)
     }
 }
 
