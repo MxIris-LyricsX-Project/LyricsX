@@ -1474,6 +1474,7 @@
                                     <gridRow yPlacement="center" height="20" id="convertLRC-row"/>
                                     <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
+                                    <gridRow yPlacement="center" height="30" id="MBP-Ro-W01"/>
                                     <gridRow height="30" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
@@ -1635,6 +1636,19 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.CombinedMenubarLyrics" id="gi4-hd-PrE"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="MBP-Ro-W01" column="8ba-lF-U7s" id="MBP-Ce-L01"/>
+                                    <gridCell row="MBP-Ro-W01" column="4uA-B7-Dvh" id="MBP-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MBP-Bt-N01">
+                                            <rect key="frame" x="170" y="12" width="284" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Show playback controls in menu bar" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="MBP-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.MenuBarPlaybackControlsEnabled" id="MBP-Bn-D01"/>
                                             </connections>
                                         </button>
                                     </gridCell>
