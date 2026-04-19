@@ -35,6 +35,23 @@ class MenuBarLyricsController {
     private static let lyricsToControlsGap: CGFloat = 6
     private static let lyricsWidth: CGFloat = 183
 
+    private static let previousImage = NSImage(
+        systemSymbolName: "backward.end.fill",
+        accessibilityDescription: NSLocalizedString("Previous Track", comment: "Menu bar playback previous button")
+    )
+    private static let nextImage = NSImage(
+        systemSymbolName: "forward.end.fill",
+        accessibilityDescription: NSLocalizedString("Next Track", comment: "Menu bar playback next button")
+    )
+    private static let playImage = NSImage(
+        systemSymbolName: "play.fill",
+        accessibilityDescription: NSLocalizedString("Play", comment: "Menu bar playback play button")
+    )
+    private static let pauseImage = NSImage(
+        systemSymbolName: "pause.fill",
+        accessibilityDescription: NSLocalizedString("Pause", comment: "Menu bar playback pause button")
+    )
+
     private var controlsVisible: Bool {
         !defaults[.hideMenuBarItems]
             && defaults[.menuBarLyricsEnabled]
@@ -103,30 +120,27 @@ class MenuBarLyricsController {
     private func setupControlButtons() {
         configureControlButton(
             previousButton,
-            symbolName: "backward.end.fill",
-            accessibilityDescription: NSLocalizedString("Previous Track", comment: "Menu bar playback previous button"),
+            image: MenuBarLyricsController.previousImage,
             action: #selector(previousAction)
         )
         configureControlButton(
             playPauseButton,
-            symbolName: "play.fill",
-            accessibilityDescription: NSLocalizedString("Play", comment: "Menu bar playback play button"),
+            image: MenuBarLyricsController.playImage,
             action: #selector(playPauseAction)
         )
         configureControlButton(
             nextButton,
-            symbolName: "forward.end.fill",
-            accessibilityDescription: NSLocalizedString("Next Track", comment: "Menu bar playback next button"),
+            image: MenuBarLyricsController.nextImage,
             action: #selector(nextAction)
         )
     }
 
-    private func configureControlButton(_ button: MenuBarControlButton, symbolName: String, accessibilityDescription: String, action: Selector) {
+    private func configureControlButton(_ button: MenuBarControlButton, image: NSImage?, action: Selector) {
         button.isBordered = false
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
         button.bezelStyle = .regularSquare
-        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)
+        button.image = image
         button.target = self
         button.action = action
     }
@@ -182,12 +196,9 @@ class MenuBarLyricsController {
     // MARK: - State Update Helpers
 
     private func updatePlayPauseIcon() {
-        let isPlaying = selectedPlayer.playbackState.isPlaying
-        let symbolName = isPlaying ? "pause.fill" : "play.fill"
-        let description = isPlaying
-            ? NSLocalizedString("Pause", comment: "Menu bar playback pause button")
-            : NSLocalizedString("Play", comment: "Menu bar playback play button")
-        playPauseButton.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: description)
+        playPauseButton.image = selectedPlayer.playbackState.isPlaying
+            ? MenuBarLyricsController.pauseImage
+            : MenuBarLyricsController.playImage
     }
 
     private func updateButtonsEnabledState() {
