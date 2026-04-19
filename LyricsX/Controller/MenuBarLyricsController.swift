@@ -1,4 +1,5 @@
 import AppKit
+import SnapKit
 import Combine
 import GenericID
 import LyricsXFoundation
@@ -8,6 +9,7 @@ import SwiftCF
 import AccessibilityExt
 import OSLog
 import MarqueeLabel
+import UIFoundation
 
 class MenuBarLyricsController {
 //    let logger = Logger(subsystem: "com.JH.LyricsX", category: "MenuBarLyricsController")
@@ -31,9 +33,26 @@ class MenuBarLyricsController {
     private let playPauseButton = MenuBarControlButton()
     private let nextButton = MenuBarControlButton()
 
-    private static let controlButtonSize: CGFloat = 22
+    private static let controlButtonSize: CGFloat = 24
     private static let lyricsToControlsGap: CGFloat = 6
     private static let lyricsWidth: CGFloat = 183
+    private static let lyricsHeight: CGFloat = 24
+
+    private lazy var contentStackView = HStackView(
+        distribution: .fill,
+        alignment: .centerY,
+        spacing: 4
+    ) {
+        marqueeLabel
+            .size(width: MenuBarLyricsController.lyricsWidth, height: MenuBarLyricsController.lyricsHeight)
+            .customSpacing(MenuBarLyricsController.lyricsToControlsGap)
+        previousButton
+            .size(MenuBarLyricsController.controlButtonSize)
+        playPauseButton
+            .size(MenuBarLyricsController.controlButtonSize)
+        nextButton
+            .size(MenuBarLyricsController.controlButtonSize)
+    }
 
     private static let previousImage = NSImage(
         systemSymbolName: "backward.end.fill",
@@ -164,33 +183,25 @@ class MenuBarLyricsController {
     private func layoutLyricStatusItemContents() {
         guard let button = lyricStatusItem?.button else { return }
 
-        let lyricsWidth = MenuBarLyricsController.lyricsWidth
-        let buttonSize = MenuBarLyricsController.controlButtonSize
-        let gap = MenuBarLyricsController.lyricsToControlsGap
-
-        let totalWidth: CGFloat
-        if controlsVisible {
-            totalWidth = lyricsWidth + gap + buttonSize * 3
-        } else {
-            totalWidth = lyricsWidth
+        if contentStackView.superview !== button {
+            button.addSubview(contentStackView)
+            contentStackView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
         }
 
-        button.frame = CGRect(x: 0, y: 0, width: totalWidth, height: buttonSize)
-        marqueeLabel.frame = CGRect(x: 0, y: 0, width: lyricsWidth, height: buttonSize)
+        let hidden = !controlsVisible
+        previousButton.isHidden = hidden
+        playPauseButton.isHidden = hidden
+        nextButton.isHidden = hidden
 
-        if controlsVisible {
-            let firstButtonX = lyricsWidth + gap
-            previousButton.frame  = CGRect(x: firstButtonX, y: 0, width: buttonSize, height: buttonSize)
-            playPauseButton.frame = CGRect(x: firstButtonX + buttonSize, y: 0, width: buttonSize, height: buttonSize)
-            nextButton.frame      = CGRect(x: firstButtonX + buttonSize * 2, y: 0, width: buttonSize, height: buttonSize)
-            if previousButton.superview !== button { button.addSubview(previousButton) }
-            if playPauseButton.superview !== button { button.addSubview(playPauseButton) }
-            if nextButton.superview !== button { button.addSubview(nextButton) }
-        } else {
-            previousButton.removeFromSuperview()
-            playPauseButton.removeFromSuperview()
-            nextButton.removeFromSuperview()
-        }
+        contentStackView.layoutSubtreeIfNeeded()
+        button.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: contentStackView.fittingSize.width,
+            height: NSStatusBar.system.thickness
+        )
     }
 
     // MARK: - State Update Helpers
@@ -236,7 +247,7 @@ class MenuBarLyricsController {
 
     @objc private func updateStatusItems() {
         guard !defaults[.hideMenuBarItems] else {
-            marqueeLabel.removeFromSuperview()
+            contentStackView.removeFromSuperview()
             iconStatusItem = nil
             lyricStatusItem = nil
             lastDisplayMode = nil
@@ -244,7 +255,7 @@ class MenuBarLyricsController {
         }
 
         guard defaults[.menuBarLyricsEnabled] else {
-            marqueeLabel.removeFromSuperview()
+            contentStackView.removeFromSuperview()
             if iconStatusItem == nil {
                 setupIconStatusItem()
             }
@@ -281,15 +292,11 @@ class MenuBarLyricsController {
     }
 
     private func setupLyricStatusItem() {
-        marqueeLabel.removeFromSuperview()
-        previousButton.removeFromSuperview()
-        playPauseButton.removeFromSuperview()
-        nextButton.removeFromSuperview()
+        contentStackView.removeFromSuperview()
         lyricStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         lyricStatusItem?.button?.title = ""
         lyricStatusItem?.button?.image = nil
         lyricStatusItem?.length = NSStatusItem.variableLength
-        lyricStatusItem?.button?.addSubview(marqueeLabel)
         layoutLyricStatusItemContents()
         setupStatusItemMenu()
     }

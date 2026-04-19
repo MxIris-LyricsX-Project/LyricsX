@@ -326,7 +326,7 @@
       }
     },
     "Next Track" : {
-
+      "comment" : "Menu bar playback next button"
     },
     "No Lyrics" : {
 
@@ -438,11 +438,17 @@
         }
       }
     },
+    "Pause" : {
+      "comment" : "Menu bar playback pause button"
+    },
+    "Play" : {
+      "comment" : "Menu bar playback play button"
+    },
     "Play/Pause" : {
 
     },
     "Previous Track" : {
-
+      "comment" : "Menu bar playback previous button"
     },
     "Search Lyrics" : {
       "comment" : "window title",
