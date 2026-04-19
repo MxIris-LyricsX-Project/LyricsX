@@ -83,12 +83,12 @@ class MenuBarLyricsController {
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
+            .receive(on: DispatchQueue.main)
             .invoke(MenuBarLyricsController.updatePlayPauseIcon, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.currentTrackWillChange
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
+            .receive(on: DispatchQueue.main)
             .invoke(MenuBarLyricsController.updateButtonsEnabledState, weaklyOn: self)
             .store(in: &cancelBag)
     }
