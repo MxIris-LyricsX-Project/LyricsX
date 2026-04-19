@@ -74,7 +74,12 @@ class MenuBarLyricsController {
             .signal()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
-        defaults.publisher(for: [.menuBarLyricsEnabled, .combinedMenubarLyrics, .hideMenuBarItems])
+        defaults.publisher(for: [
+            .menuBarLyricsEnabled,
+            .combinedMenubarLyrics,
+            .hideMenuBarItems,
+            .menuBarPlaybackControlsEnabled,
+        ])
             .prepend()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
@@ -242,7 +247,7 @@ class MenuBarLyricsController {
             setupIconStatusItem()
             setupLyricStatusItem()
         }
-
+        layoutLyricStatusItemContents()
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
     }
 
@@ -251,7 +256,7 @@ class MenuBarLyricsController {
             iconStatusItem = nil
             setupLyricStatusItem()
         }
-
+        layoutLyricStatusItemContents()
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
     }
 
