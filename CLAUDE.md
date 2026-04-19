@@ -12,11 +12,16 @@ LyricsX is a macOS menu-bar application (`LSUIElement`) that automatically searc
 
 ## Build Commands
 
+**Prefer workspace build when available.** If `../MxIris-LyricsX-Project.xcworkspace` exists (the umbrella workspace that aggregates `LyricsKit`, `MusicPlayer`, `mediaremote-adapter`, and this project), build via `-workspace ../MxIris-LyricsX-Project.xcworkspace` instead of `-project LyricsX.xcodeproj`. This resolves all sibling packages as local checkouts. Fall back to the project-only commands below when the workspace is absent.
+
 ```bash
-# Build (Debug)
+# Workspace build (preferred when ../MxIris-LyricsX-Project.xcworkspace exists)
+xcodebuild -workspace ../MxIris-LyricsX-Project.xcworkspace -scheme LyricsX -configuration Debug build 2>&1 | xcsift
+
+# Project-only build (fallback — Debug)
 xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Debug build 2>&1 | xcsift
 
-# Build (Release)
+# Project-only build (fallback — Release)
 xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Release build 2>&1 | xcsift
 
 # Archive (triggers post-archive export + notarization script)
