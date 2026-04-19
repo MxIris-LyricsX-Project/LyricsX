@@ -101,26 +101,29 @@ class MenuBarLyricsController {
         configureControlButton(
             previousButton,
             symbolName: "backward.fill",
+            accessibilityDescription: NSLocalizedString("Previous Track", comment: "Menu bar playback previous button"),
             action: #selector(previousAction)
         )
         configureControlButton(
             playPauseButton,
             symbolName: "play.fill",
+            accessibilityDescription: NSLocalizedString("Play", comment: "Menu bar playback play button"),
             action: #selector(playPauseAction)
         )
         configureControlButton(
             nextButton,
             symbolName: "forward.fill",
+            accessibilityDescription: NSLocalizedString("Next Track", comment: "Menu bar playback next button"),
             action: #selector(nextAction)
         )
     }
 
-    private func configureControlButton(_ button: NSButton, symbolName: String, action: Selector) {
+    private func configureControlButton(_ button: NSButton, symbolName: String, accessibilityDescription: String, action: Selector) {
         button.isBordered = false
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
         button.bezelStyle = .regularSquare
-        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDescription)
         button.target = self
         button.action = action
     }
@@ -178,7 +181,10 @@ class MenuBarLyricsController {
     private func updatePlayPauseIcon() {
         let isPlaying = selectedPlayer.playbackState.isPlaying
         let symbolName = isPlaying ? "pause.fill" : "play.fill"
-        playPauseButton.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+        let description = isPlaying
+            ? NSLocalizedString("Pause", comment: "Menu bar playback pause button")
+            : NSLocalizedString("Play", comment: "Menu bar playback play button")
+        playPauseButton.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: description)
     }
 
     private func updateButtonsEnabledState() {
@@ -292,30 +298,6 @@ class MenuBarLyricsController {
         } else {
             iconStatusItem?.menu = statusBarMenu
         }
-    }
-}
-
-// MARK: - Status Item Visibility
-
-extension NSStatusItem {
-    fileprivate var isVisibe: Bool {
-        guard let buttonFrame = button?.frame,
-              let frame = button?.window?.convertToScreen(buttonFrame) else {
-            return false
-        }
-
-        let point = CGPoint(x: frame.midX, y: frame.midY)
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) else {
-            return false
-        }
-        let carbonPoint = CGPoint(x: point.x, y: screen.frame.height - point.y - 1)
-
-        guard let element = try? AXUIElement.systemWide().element(at: carbonPoint),
-              let pid = try? element.pid() else {
-            return false
-        }
-
-        return getpid() == pid
     }
 }
 
