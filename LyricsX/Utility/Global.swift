@@ -162,6 +162,7 @@ extension UserDefaults.DefaultsKeys {
 
     static let isShowLyricsHUD = Key<Bool>("isShowLyricsHUD")
 
+    static let useAppleMusicLyricsWindow = Key<Bool>("UseAppleMusicLyricsWindow")
     static let appleMusicLyricsBackgroundMode = Key<Int>("AppleMusicLyricsBackgroundMode")
     static let appleMusicLyricsWindowPinned = Key<Bool>("AppleMusicLyricsWindowPinned")
 
