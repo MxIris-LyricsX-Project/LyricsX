@@ -780,6 +780,30 @@
           }
         }
       }
+    },
+    "Requires macOS 15 or later" : {
+      "comment" : "Tooltip on the Apple Music-style lyrics window toggle when the OS is too old.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires macOS 15 or later"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 15 或更高版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 15 或更新版本"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

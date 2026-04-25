@@ -9055,6 +9055,30 @@
         }
       }
     },
+    "AML-Cl-001.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Use Apple Music-style lyrics window\"; ObjectID = \"AML-Cl-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use Apple Music-style lyrics window"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Apple Music 风格的歌词窗口"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Apple Music 風格的歌詞視窗"
+          }
+        }
+      }
+    },
     "MBP-Cl-001.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Show playback controls in menu bar\"; ObjectID = \"MBP-Cl-001\";",
       "extractionState" : "extracted_with_value",
