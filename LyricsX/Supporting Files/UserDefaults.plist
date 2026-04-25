@@ -76,6 +76,8 @@
 		<string>QQMusic</string>
 		<string>Spotify</string>
 	</array>
+	<key>UseAppleMusicLyricsWindow</key>
+	<false/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>
