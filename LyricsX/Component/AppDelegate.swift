@@ -28,6 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     private var appleMusicLyricsWindowControllerStorage: Any?
 
+    private var activeLyricsHUD: NSWindowController?
+
     @available(macOS 15, *)
     private var appleMusicLyricsWindowController: AppleMusicLyrics.WindowController {
         if let existing = appleMusicLyricsWindowControllerStorage as? AppleMusicLyrics.WindowController {
@@ -36,6 +38,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         let controller = AppleMusicLyrics.WindowController()
         appleMusicLyricsWindowControllerStorage = controller
         return controller
+    }
+
+    private func openLyricsHUD() {
+        let hud: NSWindowController
+        if #available(macOS 15, *), defaults[.useAppleMusicLyricsWindow] {
+            hud = appleMusicLyricsWindowController
+        } else {
+            hud = lyricsHUD
+        }
+        hud.showWindow(nil)
+        activeLyricsHUD = hud
     }
 
     lazy var preferencesWindowController: PreferenceWindowController = .create()
@@ -100,11 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         if defaults[.isShowLyricsHUD] {
-            if #available(macOS 15, *) {
-                appleMusicLyricsWindowController.showWindow(nil)
-            } else {
-                lyricsHUD.showWindow(nil)
-            }
+            openLyricsHUD()
         }
     }
 
@@ -180,18 +189,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     @IBAction func showLyricsHUD(_ sender: Any?) {
         if defaults[.isShowLyricsHUD] {
-            if #available(macOS 15, *) {
-                appleMusicLyricsWindowController.close()
-            } else {
-                lyricsHUD.close()
-            }
+            activeLyricsHUD?.close()
+            activeLyricsHUD = nil
             defaults[.isShowLyricsHUD] = false
         } else {
-            if #available(macOS 15, *) {
-                appleMusicLyricsWindowController.showWindow(nil)
-            } else {
-                lyricsHUD.showWindow(nil)
-            }
+            openLyricsHUD()
             defaults[.isShowLyricsHUD] = true
         }
 
