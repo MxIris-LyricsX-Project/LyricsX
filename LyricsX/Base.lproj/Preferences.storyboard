@@ -1475,6 +1475,7 @@
                                     <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="center" height="30" id="MBP-Ro-W01"/>
+                                    <gridRow yPlacement="center" height="30" id="AML-Ro-W01"/>
                                     <gridRow height="30" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
@@ -1652,6 +1653,19 @@
                                             </connections>
                                         </button>
                                     </gridCell>
+                                    <gridCell row="AML-Ro-W01" column="8ba-lF-U7s" id="AML-Ce-L01"/>
+                                    <gridCell row="AML-Ro-W01" column="4uA-B7-Dvh" id="AML-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AML-Bt-N01">
+                                            <rect key="frame" x="170" y="12" width="320" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Use Apple Music-style lyrics window" bezelStyle="regularSquare" imagePosition="left" inset="2" id="AML-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.UseAppleMusicLyricsWindow" id="AML-Bn-D01"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
                                     <gridCell row="lp0-JX-wTa" column="8ba-lF-U7s" yPlacement="center" id="YZh-w9-vzD">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g7i-g1-pzs">
                                             <rect key="frame" x="32" y="7" width="120" height="16"/>
@@ -1688,6 +1702,7 @@
                     <connections>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
+                        <outlet property="useAppleMusicLyricsWindowButton" destination="AML-Bt-N01" id="AML-Ot-U01"/>
                     </connections>
                 </viewController>
                 <customObject id="WFr-RK-Q1o" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
