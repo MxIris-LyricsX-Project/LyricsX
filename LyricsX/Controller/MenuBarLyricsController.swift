@@ -7,10 +7,11 @@ import MusicPlayer
 import OpenCC
 import SwiftCF
 import AccessibilityExt
+import OSLog
 import MarqueeLabel
 import UIFoundation
 
-class MenuBarLyricsController {
+final class MenuBarLyricsController {
     static let shared = MenuBarLyricsController()
 
     var statusBarMenu: NSMenu? {
