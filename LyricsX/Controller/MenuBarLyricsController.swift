@@ -11,9 +11,7 @@ import OSLog
 import MarqueeLabel
 import UIFoundation
 
-class MenuBarLyricsController {
-//    let logger = Logger(subsystem: "com.JH.LyricsX", category: "MenuBarLyricsController")
-
+final class MenuBarLyricsController {
     static let shared = MenuBarLyricsController()
 
     var statusBarMenu: NSMenu? {
