@@ -45,14 +45,19 @@ class KaraokeLyricsWindowController: NSWindowController {
                 .receive(on: DispatchQueue.lyricsDisplay)
                 .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
                 .store(in: &self.cancelBag)
-            selectedPlayer.playbackStateWillChange
+            AppController.shared.publisher(for: \.lyricsOffset)
                 .signal()
                 .receive(on: DispatchQueue.lyricsDisplay)
-                .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
+                .invoke(KaraokeLyricsWindowController.lyricsOffsetChanged, weaklyOn: self)
                 .store(in: &self.cancelBag)
-            defaults.publisher(for: [.preferBilingualLyrics, .desktopLyricsOneLineMode])
+            selectedPlayer.playbackStateWillChange
+                .receive(on: DispatchQueue.lyricsDisplay)
+                .invoke(KaraokeLyricsWindowController.playbackStateChanged, weaklyOn: self)
+                .store(in: &self.cancelBag)
+            defaults.publisher(for: Self.displayRefreshPreferenceKeys)
                 .prepend()
-                .invoke(KaraokeLyricsWindowController.handleLyricsDisplay, weaklyOn: self)
+                .receive(on: DispatchQueue.lyricsDisplay)
+                .invoke(KaraokeLyricsWindowController.displayPreferencesChanged, weaklyOn: self)
                 .store(in: &self.cancelBag)
         }
     }
@@ -107,16 +112,162 @@ class KaraokeLyricsWindowController: NSWindowController {
         window?.saveFrame(usingName: KaraokeLyricsWindowController.windowFrame)
     }
 
+    // Mirrors the Cocoa bindings / observeDefaults set above. Those
+    // main-thread invalidations can tear down `inlineProgress`, so these
+    // preference publishes re-install it after the bindings settle.
+    private static let displayRefreshPreferenceKeys: [UserDefaults.DefaultsKeys] = [
+        .desktopLyricsEnabled,
+        .disableLyricsWhenPaused,
+        .preferBilingualLyrics,
+        .desktopLyricsOneLineMode,
+        .chineseConversionIndex,
+        .globalLyricsOffset,
+        .desktopLyricsVerticalMode,
+        .desktopLyricsEnableFurigana,
+        .desktopLyricsEnableRomajin,
+        .desktopLyricsFontName,
+        .desktopLyricsFontSize,
+        .desktopLyricsFontNameFallback,
+        .desktopLyricsColor,
+        .desktopLyricsProgressColor,
+        .desktopLyricsShadowColor,
+        .desktopLyricsBackgroundColor,
+    ]
+
+    // Captures playback/content state for the current render. Repeated
+    // `playbackStateWillChange` publishes for the same line otherwise tear
+    // down and re-add the karaoke `inlineProgress` animation each call,
+    // which restarts it from `values[0]` (the current playback offset).
+    // When the publisher fires faster than the animation can advance, the
+    // progress stays pinned near zero — visible as the "stuck at 0s"
+    // first-line flicker reported in single-song repeat.
+    private struct DisplayKey: Equatable {
+        let lyricsId: ObjectIdentifier
+        let lineIndex: Int
+        let isPlaying: Bool
+        let preferBilingual: Bool
+        let oneLineMode: Bool
+        let chineseConversionIndex: Int
+        // Quantized to ms so floating-point equality is stable. The
+        // progress animation below interpolates each timetag against
+        // `adjustedTimeDelay`, so a change here (user adjusts global
+        // or per-track lyric offset) must invalidate the cached
+        // render even when staying on the same line.
+        let timeDelayMs: Int
+    }
+
+    private var lastShowingKey: DisplayKey?
+    private var lastRenderedPlaybackState: PlaybackState?
+    private var lastRenderedWallclock: Date?
+    private var hasDisplayedLyrics = false
+    private var pendingDisplayPreferenceRefresh = false
+
+    private func playbackStateChanged(_ playbackState: PlaybackState) {
+        handleLyricsDisplay(playbackState: playbackState)
+    }
+
+    private func lyricsOffsetChanged() {
+        invalidateDisplayedLine()
+        handleLyricsDisplay()
+    }
+
+    private func displayPreferencesChanged() {
+        invalidateDisplayedLine()
+
+        guard !pendingDisplayPreferenceRefresh else { return }
+        pendingDisplayPreferenceRefresh = true
+
+        // KVO for UserDefaults and Cocoa bindings can be delivered in the same
+        // turn. Refresh after the main-thread bindings have invalidated
+        // KaraokeLabel caches so the newly installed progress animation is not
+        // immediately removed by font/color/layout updates.
+        DispatchQueue.main.async {
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                guard let self = self else { return }
+                self.pendingDisplayPreferenceRefresh = false
+                self.invalidateDisplayedLine()
+                self.handleLyricsDisplay()
+            }
+        }
+    }
+
+    private func invalidateDisplayedLine() {
+        lastShowingKey = nil
+        lastRenderedPlaybackState = nil
+        lastRenderedWallclock = nil
+    }
+
+    private func clearDisplayedLyricsIfNeeded() {
+        lastShowingKey = nil
+        guard hasDisplayedLyrics else { return }
+        hasDisplayedLyrics = false
+        DispatchQueue.main.async {
+            self.lyricsView.displayLrc("", secondLine: "")
+        }
+    }
+
     @objc private func handleLyricsDisplay() {
+        handleLyricsDisplay(playbackState: selectedPlayer.playbackState)
+    }
+
+    private func handleLyricsDisplay(playbackState: PlaybackState) {
+        let isPlaying = playbackState.isPlaying
         guard defaults[.desktopLyricsEnabled],
-              !defaults[.disableLyricsWhenPaused] || selectedPlayer.playbackState.isPlaying,
+              !defaults[.disableLyricsWhenPaused] || isPlaying,
               let lyrics = AppController.shared.currentLyrics,
               let index = AppController.shared.currentLineIndex else {
-            DispatchQueue.main.async {
-                self.lyricsView.displayLrc("", secondLine: "")
-            }
+            lastRenderedPlaybackState = nil
+            lastRenderedWallclock = nil
+            clearDisplayedLyricsIfNeeded()
             return
         }
+
+        // Re-anchor the progress animation only when playback actually
+        // jumps. We extrapolate the previous state forward by wallclock
+        // (linear when playing, frozen when paused) and treat any drift
+        // beyond ~80ms as a real seek/buffer/wrap-around — which is when
+        // the animation needs to be re-installed against a fresh anchor.
+        // Linear playback inside a single line stays anchored, so the
+        // running keyframe animation continues uninterrupted, and the
+        // highlight tracks playback to within the jump threshold (vs.
+        // up to 0.5s of drift previously).
+        let didJump: Bool
+        if let lastState = lastRenderedPlaybackState, let lastWall = lastRenderedWallclock {
+            let elapsed = Date().timeIntervalSince(lastWall)
+            let predicted: TimeInterval
+            switch lastState {
+            case .playing:
+                predicted = lastState.time
+            case .fastForwarding(let time):
+                predicted = time + elapsed
+            case .rewinding(let time):
+                predicted = time - elapsed
+            case .paused(let time):
+                predicted = time
+            case .stopped:
+                predicted = 0
+            }
+            didJump = abs(playbackState.time - predicted) > 0.08
+        } else {
+            didJump = true
+        }
+        let trackDuration = selectedPlayer.currentTrack?.duration
+        let key = DisplayKey(
+            lyricsId: ObjectIdentifier(lyrics),
+            lineIndex: index,
+            isPlaying: isPlaying,
+            preferBilingual: defaults[.preferBilingualLyrics],
+            oneLineMode: defaults[.desktopLyricsOneLineMode],
+            chineseConversionIndex: defaults[.chineseConversionIndex],
+            timeDelayMs: Int((lyrics.adjustedTimeDelay * 1000).rounded())
+        )
+        if lastShowingKey == key && !didJump {
+            return
+        }
+        lastShowingKey = key
+        lastRenderedPlaybackState = playbackState
+        lastRenderedWallclock = Date()
+        hasDisplayedLyrics = true
 
         let lrc = lyrics.lines[index]
         let next = lyrics.lines[(index + 1)...].first { $0.enabled }
@@ -148,15 +299,23 @@ class KaraokeLyricsWindowController: NSWindowController {
             }
         }
 
+        // Capture the offset on `lyricsDisplay` so the progress animation
+        // below is computed against the same lyrics that produced `lrc`
+        // and `index`. Re-reading `AppController.shared.currentLyrics`
+        // inside the `main.async` block would race with track switching
+        // and could mix the old line with the new song's offset.
+        let timeDelay = lyrics.adjustedTimeDelay
         DispatchQueue.main.async {
             self.lyricsView.displayLrc(firstLine, secondLine: secondLine)
             if let upperTextField = self.lyricsView.displayLine1,
                let timetag = lrc.attachments.timetag {
-                let position = selectedPlayer.playbackTime
-                let timeDelay = AppController.shared.currentLyrics?.adjustedTimeDelay ?? 0
+                // Anchor on the PlaybackState that triggered this render so the
+                // animation is not seeded from a stale `selectedPlayer.playbackTime`
+                // around repeat-one wrap or track-change boundaries.
+                let position = playbackState.lyricsDisplayTime(trackDuration: trackDuration)
                 let progress = timetag.tags.map { ($0.time + lrc.position - timeDelay - position, $0.index) }
                 upperTextField.setProgressAnimation(color: self.lyricsView.progressColor, progress: progress)
-                if !selectedPlayer.playbackState.isPlaying {
+                if !isPlaying {
                     upperTextField.pauseProgressAnimation()
                 }
             }
