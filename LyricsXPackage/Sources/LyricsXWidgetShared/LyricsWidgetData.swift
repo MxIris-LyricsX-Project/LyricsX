@@ -1,4 +1,5 @@
 import Foundation
+@_exported import FoundationToolbox
 
 /// Data snapshot written by the main app for the widget extension to consume.
 public struct LyricsWidgetData: Codable, Sendable {

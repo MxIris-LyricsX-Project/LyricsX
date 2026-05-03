@@ -88,6 +88,10 @@ let package = Package(
                 from: "1.8.0"
             )
         ),
+        .package(
+            url: "https://github.com/Mx-Iris/FrameworkToolbox",
+            from: "0.5.2"
+        ),
     ],
     targets: [
         .target(
@@ -95,11 +99,14 @@ let package = Package(
             dependencies: [
                 .product(name: "LyricsKit", package: "LyricsKit"),
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
             ]
         ),
         .target(
             name: "LyricsXWidgetShared",
-            dependencies: []
+            dependencies: [
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
         ),
         .testTarget(
             name: "LyricsXFoundationTests",

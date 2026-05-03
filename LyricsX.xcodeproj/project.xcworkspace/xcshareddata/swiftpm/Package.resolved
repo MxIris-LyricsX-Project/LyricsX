@@ -1,5 +1,5 @@
 {
-  "originHash" : "69f6cfc645d236e84efcb2b857e40f4c78419ce7fe7d6b0009d714057b6943ae",
+  "originHash" : "6d705562c08f9296de488e3078713c034ff2b9ae4cdaec20c441364b03c20095",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "11ffdd076d4dbf14d619692acb9b44d547893480",
-        "version" : "0.4.2"
+        "revision" : "22f92afb2520417e60a464a6a5abb88621c2b43d",
+        "version" : "0.5.3"
       }
     },
     {
