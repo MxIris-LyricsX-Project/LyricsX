@@ -78,8 +78,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/mediaremote-adapter",
       "state" : {
-        "revision" : "cfa4d37e9ebd4adf7e2d0909f99ecf25e3ccd507",
-        "version" : "0.1.1"
+        "revision" : "f69ff3b1efca9d419f8fea2d845478a7f8852768",
+        "version" : "0.1.2"
+      }
+    },
+    {
+      "identity" : "opensoftlinking",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-Reverse-Engineering/OpenSoftLinking",
+      "state" : {
+        "revision" : "bdc30a77b63b4209acdb4fe777b57a9c83cabc7a",
+        "version" : "0.1.0"
       }
     },
     {
