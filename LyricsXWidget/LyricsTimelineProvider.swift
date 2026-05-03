@@ -1,6 +1,7 @@
 import WidgetKit
 import LyricsXWidgetShared
 
+@Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "LyricsTimelineProvider")
 struct LyricsTimelineProvider: AppIntentTimelineProvider {
     #if DEBUG
     private static let groupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
@@ -55,13 +56,19 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: LyricsWidgetConfigurationIntent, in context: Context) async -> LyricsTimelineEntry {
-        buildCurrentEntry(for: configuration, at: Date())
+        let entry = buildCurrentEntry(for: configuration, at: Date())
+        #log(.info, "[LXWG][Provider] snapshot returned (isEmpty=\(entry.isEmpty, privacy: .public), isPlaying=\(entry.isPlaying, privacy: .public), highlight=\(entry.highlightedLineIndex, privacy: .public))")
+        return entry
     }
 
     func timeline(for configuration: LyricsWidgetConfigurationIntent, in context: Context) async -> Timeline<LyricsTimelineEntry> {
-        guard let widgetData = dataStore.read(), widgetData.isPlaying else {
+        let snapshot = dataStore.read()
+        #log(.info, "[LXWG][Provider] timeline(for:) called (hasData=\(snapshot != nil, privacy: .public), isPlaying=\(snapshot?.isPlaying ?? false, privacy: .public), playbackPosition=\(snapshot?.playbackPosition ?? -1, privacy: .public), lineIndex=\(snapshot?.currentLineIndex ?? -1, privacy: .public), lines=\(snapshot?.lyricsLines.count ?? 0, privacy: .public))")
+
+        guard let widgetData = snapshot, widgetData.isPlaying else {
             // Not playing or no data: single static entry
             let entry = buildCurrentEntry(for: configuration, at: Date())
+            #log(.info, "[LXWG][Provider] static branch → 1 entry (reason=\(snapshot == nil ? "noData" : "paused", privacy: .public))")
             return Timeline(entries: [entry], policy: .never)
         }
 
@@ -74,6 +81,18 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         var entries: [LyricsTimelineEntry] = []
         let now = Date()
 
+        // Only generate entries that fall inside a rolling window. With
+        // `policy: .after(windowEnd)` below, WidgetKit re-asks for a
+        // fresh timeline at the window's end — that keeps the widget's
+        // displayed line continuously re-anchored to the current
+        // (timestamp, playbackPosition), so accumulated drift between
+        // WidgetKit's scheduler clock and actual playback can't grow
+        // past the window length. Empirically a 60s window keeps the
+        // visible line within a frame of the live track without
+        // spending excessive WidgetKit refresh budget.
+        let timelineWindow: TimeInterval = 60
+        let windowEnd = now.addingTimeInterval(timelineWindow)
+
         for (lineIndex, line) in widgetData.lyricsLines.enumerated() {
             // Calculate when this line should be displayed.
             // Subtract schedulingCompensation so WidgetKit fires the
@@ -81,6 +100,13 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             // update lands near `timestamp + lineOffset`.
             let lineOffset = line.startTime - widgetData.playbackPosition
             let entryDate = widgetData.timestamp.addingTimeInterval(lineOffset - schedulingCompensation)
+
+            // Stop once we leave the rolling window — anything further
+            // out will be regenerated from a more accurate baseline at
+            // the next refetch.
+            if entryDate > windowEnd {
+                break
+            }
 
             // Skip entries in the past (except the most recent one)
             if entryDate < now && lineIndex < widgetData.lyricsLines.count - 1 {
@@ -110,10 +136,42 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
 
         if entries.isEmpty {
             let entry = buildCurrentEntry(for: configuration, at: now)
-            return Timeline(entries: [entry], policy: .never)
+            #log(.info, "[LXWG][Provider] dynamic branch produced 0 entries → fallback static (1 entry, refresh after window)")
+            return Timeline(entries: [entry], policy: .after(windowEnd))
         }
 
-        return Timeline(entries: entries, policy: .never)
+        // Drop entries whose visible window would be too short to render.
+        // LRC files frequently contain adjacent lines with near-identical
+        // startTimes (chorus repeats, dual-language tracks split into two
+        // lines, or just timestamp typos) — observed gaps as small as
+        // 20ms. WidgetKit's scheduler + the SwiftUI rendering pipeline
+        // can't honor sub-frame transitions, so the line ends up
+        // appearing "skipped" to the user. We keep the later of any two
+        // entries within `minDisplayDuration` so the visible line is the
+        // one that actually has time to display.
+        let minDisplayDuration: TimeInterval = 0.4
+        let originalCount = entries.count
+        var filtered: [LyricsTimelineEntry] = []
+        filtered.reserveCapacity(entries.count)
+        for index in 0..<entries.count {
+            if index + 1 < entries.count {
+                let gap = entries[index + 1].date.timeIntervalSince(entries[index].date)
+                if gap < minDisplayDuration {
+                    continue
+                }
+            }
+            filtered.append(entries[index])
+        }
+        let droppedCount = originalCount - filtered.count
+        entries = filtered
+
+        let firstDate = entries.first?.date.timeIntervalSince(now) ?? 0
+        let lastDate = entries.last?.date.timeIntervalSince(now) ?? 0
+        let preview = entries.prefix(8).map { entry in
+            String(format: "@+%.2fs#%d", entry.date.timeIntervalSince(now), entry.highlightedLineIndex)
+        }.joined(separator: " ")
+        #log(.info, "[LXWG][Provider] dynamic branch → \(entries.count, privacy: .public) entries (dropped=\(droppedCount, privacy: .public) sub-\(minDisplayDuration, privacy: .public)s, window=\(timelineWindow, privacy: .public)s), first=+\(firstDate, privacy: .public)s last=+\(lastDate, privacy: .public)s, compensation=\(schedulingCompensation, privacy: .public)s, preview=\(preview, privacy: .public)")
+        return Timeline(entries: entries, policy: .after(windowEnd))
     }
 
     private func buildCurrentEntry(for configuration: LyricsWidgetConfigurationIntent, at date: Date) -> LyricsTimelineEntry {
