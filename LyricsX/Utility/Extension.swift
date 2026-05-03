@@ -26,6 +26,23 @@ extension MusicPlayerName {
     }
 }
 
+extension PlaybackState {
+    static var lyricsRepeatWrapGracePeriod: TimeInterval { 0.5 }
+
+    func lyricsDisplayTime(trackDuration: TimeInterval?) -> TimeInterval {
+        let playbackTime = time
+        guard isPlaying,
+              playbackTime.isFinite,
+              let trackDuration = trackDuration,
+              trackDuration.isFinite,
+              trackDuration > 0,
+              playbackTime >= trackDuration + Self.lyricsRepeatWrapGracePeriod else {
+            return playbackTime
+        }
+        return playbackTime.truncatingRemainder(dividingBy: trackDuration)
+    }
+}
+
 extension MusicTrack {
     var lyrics: String? {
         guard let originalTrack = originalTrack,
