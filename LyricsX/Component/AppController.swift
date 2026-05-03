@@ -53,9 +53,18 @@ class AppController: NSObject {
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .invoke(AppController.playbackStateChanged, weaklyOn: self)
+            .store(in: &cancelBag)
+        // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` dynamically, so a
+        // change must reschedule `currentLineIndex`. Per-track offset is handled
+        // by the `lyricsOffset` setter; the global key has no setter path here.
+        defaults.publisher(for: [.globalLyricsOffset])
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
-            .invoke(AppController.scheduleCurrentLineCheck, weaklyOn: self)
+            .sink { [weak self] in
+                self?.scheduleCurrentLineCheck()
+            }
             .store(in: &cancelBag)
 
         workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
@@ -160,24 +169,76 @@ class AppController: NSObject {
 
     var currentLineCheckSchedule: Cancellable?
 
-    func scheduleCurrentLineCheck() {
+    // Reschedule on every publish. The schedule path is cheap (timer
+    // cancel + binary search + new timer, ~10µs per call) and any form
+    // of dedup here would let the previously scheduled timer keep
+    // firing on a stale wallclock anchor, lagging or leading the real
+    // playback boundary. Passing the anchor-derived `PlaybackState`
+    // from the publish through to the schedule, instead of re-reading
+    // the cached `selectedPlayer` value, is preserved by routing every
+    // event through here.
+    private func playbackStateChanged(_ playbackState: PlaybackState) {
+        scheduleCurrentLineCheck(playbackState: playbackState)
+    }
+
+    func scheduleCurrentLineCheck(playbackState: PlaybackState? = nil) {
         currentLineCheckSchedule?.cancel()
         guard let lyrics = currentLyrics else {
             return
         }
-        let playbackState = MusicPlayers.Selected.shared.playbackState
-        let playbackTime = playbackState.time
+        // Use the anchor-derived `PlaybackState.time` rather than the
+        // delegate-cached `selectedPlayer.playbackTime`. The latter can lag
+        // around repeat-one wrap and track-change boundaries, leaving the
+        // lyric index stalled while playback has actually moved on.
+        let resolvedPlaybackState = playbackState ?? MusicPlayers.Selected.shared.playbackState
+        let trackDuration = selectedPlayer.currentTrack?.duration
+        let playbackTime = resolvedPlaybackState.lyricsDisplayTime(trackDuration: trackDuration)
         let (index, next) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
         if currentLineIndex != index {
             currentLineIndex = index
         }
-        if let next = next, playbackState.isPlaying {
-            let dt = lyrics.lines[next].position - playbackTime - lyrics.adjustedTimeDelay
-            let q = DispatchQueue.lyricsDisplay
-            currentLineCheckSchedule = q.schedule(after: q.now.advanced(by: .seconds(dt)), interval: .seconds(42), tolerance: .milliseconds(20)) { [unowned self] in
+        let q = DispatchQueue.lyricsDisplay
+        if let next = next, resolvedPlaybackState.isPlaying {
+            let dt = max(0, lyrics.lines[next].position - playbackTime - lyrics.adjustedTimeDelay)
+            currentLineCheckSchedule = q.schedule(
+                after: q.now.advanced(by: .seconds(dt)),
+                interval: .seconds(42),
+                tolerance: .milliseconds(20)
+            ) { [unowned self] in
+                self.scheduleCurrentLineCheck()
+            }
+        } else if resolvedPlaybackState.isPlaying {
+            // Past the last lyric line but still playing: keep a recovery edge
+            // for missed state publishes, and snap the next check to the track
+            // duration plus a short confirmation window when it is closer than
+            // the regular polling interval.
+            // Combined with `lyricsDisplayTime(trackDuration:)`, this lets
+            // repeat-one wrap back to the opening lyric without waiting for the
+            // next one-second poll when the player keeps the old playback anchor.
+            let nextCheckDelay = Self.lastLineCheckDelay(playbackTime: playbackTime, trackDuration: trackDuration)
+            let tolerance: DispatchQueue.SchedulerTimeType.Stride = nextCheckDelay < 1 ? .milliseconds(20) : .milliseconds(100)
+            currentLineCheckSchedule = q.schedule(
+                after: q.now.advanced(by: .seconds(nextCheckDelay)),
+                interval: .seconds(1),
+                tolerance: tolerance
+            ) { [unowned self] in
                 self.scheduleCurrentLineCheck()
             }
         }
+    }
+
+    private static func lastLineCheckDelay(playbackTime: TimeInterval, trackDuration: TimeInterval?) -> TimeInterval {
+        guard playbackTime.isFinite,
+              let trackDuration = trackDuration,
+              trackDuration.isFinite,
+              trackDuration > 0 else {
+            return 1
+        }
+        let wrapCheckTime = trackDuration + PlaybackState.lyricsRepeatWrapGracePeriod
+        guard wrapCheckTime > playbackTime else {
+            return 1
+        }
+        return min(1, wrapCheckTime - playbackTime)
     }
 
     func writeToiTunes(overwrite: Bool) {
