@@ -66,20 +66,37 @@ class AppController: NSObject {
                 }
             }.store(in: &cancelBag)
 
-        // Widget data bridge: update widget on lyrics or line changes
+        // Widget data bridge.
+        //
+        // Lyrics/track change and playback state change (play/pause/seek)
+        // alter the timeline structure, so they rebuild the timeline.
+        //
+        // Line index change is handled separately and only refreshes the
+        // dataStore — the timeline already contains future entries that
+        // drive the next line transition autonomously, so a reload here
+        // would only add WidgetKit scheduling latency (~hundreds of ms,
+        // the visible "widget lyrics lag" before this change).
         $currentLyrics
-            .combineLatest($currentLineIndex)
-            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] _, _ in
-                self?.updateWidgetData()
+            .signal()
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] in
+                self?.reloadWidgetTimeline()
             }
             .store(in: &cancelBag)
 
         selectedPlayer.playbackStateWillChange
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] _ in
-                self?.updateWidgetData()
+            .sink { [weak self] in
+                self?.reloadWidgetTimeline()
+            }
+            .store(in: &cancelBag)
+
+        $currentLineIndex
+            .signal()
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] in
+                self?.updateWidgetSnapshot()
             }
             .store(in: &cancelBag)
 
@@ -326,9 +343,25 @@ class AppController: NSObject {
 
     // MARK: Widget Data Bridge
 
-    func updateWidgetData() {
+    /// Persist the current snapshot and ask WidgetKit to rebuild the timeline.
+    /// Use when the timeline structure must change: track switch, lyrics
+    /// (re)load, play/pause toggle, or seek.
+    func reloadWidgetTimeline() {
         guard #available(macOS 14, *) else { return }
+        writeWidgetSnapshot(reloadOnSuccess: true)
+    }
 
+    /// Persist the current snapshot without rebuilding the timeline.
+    /// Use on lyric-line transitions: pre-generated future entries already
+    /// drive the line change in the widget process, so a reload would only
+    /// add WidgetKit scheduling latency. We still refresh the dataStore so
+    /// on-demand reads (placeholder, configuration UI) stay accurate.
+    func updateWidgetSnapshot() {
+        guard #available(macOS 14, *) else { return }
+        writeWidgetSnapshot(reloadOnSuccess: false)
+    }
+
+    private func writeWidgetSnapshot(reloadOnSuccess: Bool) {
         guard let track = selectedPlayer.currentTrack else {
             widgetDataStore.clear()
             WidgetCenter.shared.reloadAllTimelines()
@@ -394,6 +427,16 @@ class AppController: NSObject {
             widgetDataStore.clearCover()
         }
 
+        // Align widget's time axis with the main app's lyrics time axis.
+        // The main app uses `playbackTime + adjustedTimeDelay` everywhere
+        // (currentLineIndex computation, karaoke progress, HUD), where
+        // adjustedTimeDelay folds in the lyrics file's [offset:] tag plus
+        // the user's global offset preference. The widget's
+        // LyricsLineEntry.startTime is the raw LRC position, so we have to
+        // offset playbackPosition the same way — otherwise the widget
+        // permanently lags the main app by adjustedTimeDelay seconds (up
+        // to ~1s for files that ship a non-zero offset tag).
+        let lyricsTimeDelay = currentLyrics?.adjustedTimeDelay ?? 0
         let widgetData = LyricsWidgetData(
             trackTitle: track.title ?? "Unknown",
             artist: track.artist ?? "Unknown",
@@ -403,12 +446,14 @@ class AppController: NSObject {
             currentLineIndex: widgetCurrentLineIndex,
             isPlaying: playbackState.isPlaying,
             timestamp: Date(),
-            playbackPosition: playbackTime,
+            playbackPosition: playbackTime + lyricsTimeDelay,
             availableTranslationLanguages: availableTranslationLanguages
         )
 
         try? widgetDataStore.write(widgetData)
-        WidgetCenter.shared.reloadAllTimelines()
+        if reloadOnSuccess {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 

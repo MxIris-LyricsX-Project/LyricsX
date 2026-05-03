@@ -2,15 +2,37 @@ import WidgetKit
 import LyricsXWidgetShared
 
 struct LyricsTimelineProvider: AppIntentTimelineProvider {
+    #if DEBUG
+    private static let groupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
+    #else
+    private static let groupIdentifier = "D5Q73692VW.group.com.JH.LyricsX"
+    #endif
+
+    /// Empirical compensation for the latency between WidgetKit's
+    /// `entry.date` firing and the desktop actually picking up the new
+    /// rendered snapshot. We pull every future entry forward by this
+    /// much so the visible line transition lands close to the actual
+    /// lyric timing instead of trailing it.
+    ///
+    /// Override at runtime without recompiling:
+    ///   defaults write D5Q73692VW.group.com.JH.LyricsX \
+    ///       WidgetSchedulingCompensationMs -int 800
+    /// (use the `dev.JH.LyricsX` suite for Debug builds)
+    /// then nudge the widget (re-add it, or toggle Apple Music) so
+    /// WidgetKit pulls a fresh timeline.
+    private static let defaultWidgetSchedulingCompensationMs = 600
+    private static let compensationOverrideKey = "WidgetSchedulingCompensationMs"
+
+    private static var widgetSchedulingCompensation: TimeInterval {
+        let overrideMs = UserDefaults(suiteName: groupIdentifier)?
+            .object(forKey: compensationOverrideKey) as? Int
+        return TimeInterval(overrideMs ?? defaultWidgetSchedulingCompensationMs) / 1000
+    }
+
     private let dataStore: WidgetDataStore
 
     init() {
-        #if DEBUG
-        let groupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
-        #else
-        let groupIdentifier = "D5Q73692VW.group.com.JH.LyricsX"
-        #endif
-        self.dataStore = WidgetDataStore(groupIdentifier: groupIdentifier)
+        self.dataStore = WidgetDataStore(groupIdentifier: Self.groupIdentifier)
     }
 
     func placeholder(in context: Context) -> LyricsTimelineEntry {
@@ -47,19 +69,23 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         let coverURL = dataStore.coverURL
         let showTranslation = configuration.showTranslation
         let translationLanguage = configuration.translationLanguage?.id
+        let schedulingCompensation = Self.widgetSchedulingCompensation
 
         var entries: [LyricsTimelineEntry] = []
         let now = Date()
 
         for (lineIndex, line) in widgetData.lyricsLines.enumerated() {
-            // Calculate when this line should be displayed
+            // Calculate when this line should be displayed.
+            // Subtract schedulingCompensation so WidgetKit fires the
+            // entry transition early enough that the actual on-screen
+            // update lands near `timestamp + lineOffset`.
             let lineOffset = line.startTime - widgetData.playbackPosition
-            let entryDate = widgetData.timestamp.addingTimeInterval(lineOffset)
+            let entryDate = widgetData.timestamp.addingTimeInterval(lineOffset - schedulingCompensation)
 
             // Skip entries in the past (except the most recent one)
             if entryDate < now && lineIndex < widgetData.lyricsLines.count - 1 {
                 let nextLineOffset = widgetData.lyricsLines[lineIndex + 1].startTime - widgetData.playbackPosition
-                let nextEntryDate = widgetData.timestamp.addingTimeInterval(nextLineOffset)
+                let nextEntryDate = widgetData.timestamp.addingTimeInterval(nextLineOffset - schedulingCompensation)
                 if nextEntryDate < now {
                     continue
                 }
