@@ -7,6 +7,7 @@ import LyricsXFoundation
 import WidgetKit
 import LyricsXWidgetShared
 
+@Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "AppController")
 class AppController: NSObject {
     static let shared = AppController()
 
@@ -80,15 +81,44 @@ class AppController: NSObject {
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
-                self?.reloadWidgetTimeline()
+                guard let self = self else { return }
+                let trackTitle = selectedPlayer.currentTrack?.title ?? "nil"
+                let hasLyrics = self.currentLyrics != nil
+                #log(.info, "[LXWG][Sink] currentLyrics changed → reloadWidgetTimeline (track=\(trackTitle, privacy: .public), hasLyrics=\(hasLyrics, privacy: .public))")
+                self.reloadWidgetTimeline()
+            }
+            .store(in: &cancelBag)
+
+        // Pause is observed as a single, clean willChange event — react
+        // immediately. Resume from MusicPlayer's SystemMedia/mediaremote-
+        // adapter backend, in contrast, fires two willChange events
+        // 160ms–900ms apart: the first carries a stale `time` (off by
+        // several seconds), the second carries the real position. Naively
+        // reloading on the first event makes the widget fetch a timeline
+        // built from the wrong `time`, and WidgetKit's reload throttle
+        // can push the corrective fetch out by several seconds. So we
+        // route the two cases separately: the resume path is debounced
+        // long enough to absorb the longest jitter window we've measured,
+        // while the pause path stays on the fast `receive(on:)` route.
+        selectedPlayer.playbackStateWillChange
+            .filter { !$0.isPlaying }
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                let storageState = selectedPlayer.playbackState
+                #log(.info, "[LXWG][Sink] playbackStateWillChange (pause) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
+                self.reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
 
         selectedPlayer.playbackStateWillChange
-            .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] in
-                self?.reloadWidgetTimeline()
+            .filter { $0.isPlaying }
+            .debounce(for: .milliseconds(1000), scheduler: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                let storageState = selectedPlayer.playbackState
+                #log(.info, "[LXWG][Sink] playbackStateWillChange (resume, debounced) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
+                self.reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
 
@@ -96,7 +126,10 @@ class AppController: NSObject {
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
-                self?.updateWidgetSnapshot()
+                guard let self = self else { return }
+                let index = self.currentLineIndex ?? -1
+                #log(.info, "[LXWG][Sink] currentLineIndex changed → updateWidgetSnapshot (index=\(index, privacy: .public))")
+                self.updateWidgetSnapshot()
             }
             .store(in: &cancelBag)
 
@@ -346,9 +379,14 @@ class AppController: NSObject {
     /// Persist the current snapshot and ask WidgetKit to rebuild the timeline.
     /// Use when the timeline structure must change: track switch, lyrics
     /// (re)load, play/pause toggle, or seek.
-    func reloadWidgetTimeline() {
+    ///
+    /// Pass `playbackState` when responding to a `playbackStateWillChange`
+    /// emission so the snapshot uses the new value directly, instead of
+    /// re-reading `selectedPlayer.playbackState` (which can still hold the
+    /// pre-change value during the willSet phase).
+    func reloadWidgetTimeline(playbackState: PlaybackState? = nil) {
         guard #available(macOS 14, *) else { return }
-        writeWidgetSnapshot(reloadOnSuccess: true)
+        writeWidgetSnapshot(playbackState: playbackState, reloadOnSuccess: true)
     }
 
     /// Persist the current snapshot without rebuilding the timeline.
@@ -358,18 +396,21 @@ class AppController: NSObject {
     /// on-demand reads (placeholder, configuration UI) stay accurate.
     func updateWidgetSnapshot() {
         guard #available(macOS 14, *) else { return }
-        writeWidgetSnapshot(reloadOnSuccess: false)
+        writeWidgetSnapshot(playbackState: nil, reloadOnSuccess: false)
     }
 
-    private func writeWidgetSnapshot(reloadOnSuccess: Bool) {
+    private func writeWidgetSnapshot(playbackState explicitPlaybackState: PlaybackState?, reloadOnSuccess: Bool) {
+        let usedExplicit = explicitPlaybackState != nil
         guard let track = selectedPlayer.currentTrack else {
+            #log(.info, "[LXWG][Write] no current track → clearing dataStore + reloading timelines (reloadOnSuccess=\(reloadOnSuccess, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public))")
             widgetDataStore.clear()
             WidgetCenter.shared.reloadAllTimelines()
             return
         }
 
-        let playbackState = selectedPlayer.playbackState
+        let playbackState = explicitPlaybackState ?? selectedPlayer.playbackState
         let playbackTime = playbackState.time
+        #log(.info, "[LXWG][Write] enter (track=\(track.title ?? "nil", privacy: .public), isPlaying=\(playbackState.isPlaying, privacy: .public), time=\(playbackTime, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
 
         // Build lyrics lines with context window
         var lyricsLines: [LyricsLineEntry] = []
@@ -450,8 +491,14 @@ class AppController: NSObject {
             availableTranslationLanguages: availableTranslationLanguages
         )
 
-        try? widgetDataStore.write(widgetData)
+        do {
+            try widgetDataStore.write(widgetData)
+            #log(.info, "[LXWG][Write] wrote snapshot (isPlaying=\(widgetData.isPlaying, privacy: .public), playbackPosition=\(widgetData.playbackPosition, privacy: .public), lineIndex=\(widgetData.currentLineIndex, privacy: .public), lyricsLines=\(widgetData.lyricsLines.count, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
+        } catch {
+            #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
+        }
         if reloadOnSuccess {
+            #log(.info, "[LXWG][Write] reloadAllTimelines()")
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
