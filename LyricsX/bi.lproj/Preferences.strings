@@ -55,8 +55,8 @@
 /* Class = "NSTextFieldCell"; title = "Decrease lyrics offset:"; ObjectID = "bmk-rW-Uot"; */
 "bmk-rW-Uot.title" = "Decrease lyrics offset:";
 
-/* Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "cBB-zn-Hdh"; */
-"cBB-zn-Hdh.title" = "Prefer bilingual lyrics";
+/* Class = "NSButtonCell"; title = "Show translation"; ObjectID = "cBB-zn-Hdh"; */
+"cBB-zn-Hdh.title" = "Show translation";
 
 /* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "Cmt-it-PXW"; */
 "Cmt-it-PXW.title" = "Font:";
@@ -238,8 +238,8 @@
 /* Class = "NSTextFieldCell"; title = "Decrease lyrics offset:"; ObjectID = "K3n-xg-phu"; */
 "K3n-xg-phu.title" = "Decrease lyrics offset:";
 
-/* Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "KJ9-qG-viC"; */
-"KJ9-qG-viC.title" = "Prefer bilingual lyrics";
+/* Class = "NSButtonCell"; title = "Show translation"; ObjectID = "KJ9-qG-viC"; */
+"KJ9-qG-viC.title" = "Show translation";
 
 /* Class = "NSMenuItem"; title = "No Conversion"; ObjectID = "KR4-Qt-DFi"; */
 "KR4-Qt-DFi.title" = "No Conversion";

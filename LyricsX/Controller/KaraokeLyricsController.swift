@@ -118,7 +118,7 @@ class KaraokeLyricsWindowController: NSWindowController {
     private static let displayRefreshPreferenceKeys: [UserDefaults.DefaultsKeys] = [
         .desktopLyricsEnabled,
         .disableLyricsWhenPaused,
-        .preferBilingualLyrics,
+        .showTranslation,
         .desktopLyricsOneLineMode,
         .chineseConversionIndex,
         .globalLyricsOffset,
@@ -145,7 +145,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         let lyricsId: ObjectIdentifier
         let lineIndex: Int
         let isPlaying: Bool
-        let preferBilingual: Bool
+        let showTranslation: Bool
         let oneLineMode: Bool
         let chineseConversionIndex: Int
         // Quantized to ms so floating-point equality is stable. The
@@ -256,7 +256,7 @@ class KaraokeLyricsWindowController: NSWindowController {
             lyricsId: ObjectIdentifier(lyrics),
             lineIndex: index,
             isPlaying: isPlaying,
-            preferBilingual: defaults[.preferBilingualLyrics],
+            showTranslation: defaults[.showTranslation],
             oneLineMode: defaults[.desktopLyricsOneLineMode],
             chineseConversionIndex: defaults[.chineseConversionIndex],
             timeDelayMs: Int((lyrics.adjustedTimeDelay * 1000).rounded())
@@ -279,7 +279,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         var secondLineIsTranslation = false
         if defaults[.desktopLyricsOneLineMode] {
             secondLine = ""
-        } else if defaults[.preferBilingualLyrics],
+        } else if defaults[.showTranslation],
                   let translation = lrc.attachments[.translation(languageCode: languageCode)] {
             secondLine = translation
             secondLineIsTranslation = true
