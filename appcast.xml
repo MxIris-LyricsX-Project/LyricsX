@@ -5,6 +5,18 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.8.2</title>
+            <description><![CDATA[<ul>
+  <li>Fix NowPlaying whitelist not working.</li>
+</ul>
+]]></description>
+            <pubDate>Mon, 04 May 2026 17:29:46 +0800</pubDate>
+            <sparkle:version>2910</sparkle:version>
+            <sparkle:shortVersionString>1.8.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.2/LyricsX_1.8.2+2910.zip" length="8623492" type="application/octet-stream" sparkle:edSignature="r6BZXiwxQfiJXMbCnUxQh/0Qo7S25/pEFNOnXG1unK2mZmbrNgHS36//vsPaPclCJVq/I5PRyGIbNyNssYLnDg=="/>
+        </item>
+        <item>
             <title>1.7.3</title>
             <pubDate>Sun, 02 Feb 2025 13:36:47 +0800</pubDate>
             <sparkle:version>2501</sparkle:version>
