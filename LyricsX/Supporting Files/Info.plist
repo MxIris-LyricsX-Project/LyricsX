@@ -34,7 +34,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.9.0</string>
 	<key>CFBundleVersion</key>
-	<string>2925</string>
+	<string>2926</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
@@ -44,7 +44,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>LX_BUILD_TIME</key>
-	<integer>1777781660</integer>
+	<integer>1777981413</integer>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
