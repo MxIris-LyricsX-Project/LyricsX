@@ -788,11 +788,9 @@ DEST_DIR="Scripts/release/bin"
 DEST="${DEST_DIR}/sign_update"
 mkdir -p "$DEST_DIR"
 
-if [ -x "$DEST" ]; then
-    if INSTALLED_VER="$("$DEST" --version 2>&1 | head -1)"; then
-        log_info "sign_update already installed: ${INSTALLED_VER}"
-        exit 0
-    fi
+if [ -x "$DEST" ] && "$DEST" --help >/dev/null 2>&1; then
+    log_info "sign_update already installed at $DEST"
+    exit 0
 fi
 
 WORKDIR="$(mktemp -d -t sparkle-tools)"
@@ -812,7 +810,8 @@ cp "$SRC" "$DEST"
 chmod +x "$DEST"
 
 log_info "Verifying:"
-"$DEST" --version || die "sign_update failed --version probe"
+"$DEST" --help >/dev/null || die "sign_update failed --help probe"
+log_info "Installed sign_update at ${DEST}"
 ```
 
 - [ ] **Step 2: Make it executable**
@@ -826,11 +825,11 @@ chmod +x Scripts/release/install-sparkle-tools.sh
 ```bash
 SPARKLE_VERSION=2.6.4 bash Scripts/release/install-sparkle-tools.sh
 ls -la Scripts/release/bin/sign_update
-Scripts/release/bin/sign_update --version
+Scripts/release/bin/sign_update --help >/dev/null && echo "OK: sign_update runnable"
 echo OK
 ```
 
-Expected: `Scripts/release/bin/sign_update` exists; `--version` prints a version string; final line is `OK`.
+Expected: `Scripts/release/bin/sign_update` exists; `--help` exits 0; final line is `OK`.
 
 - [ ] **Step 4: Commit**
 
