@@ -167,7 +167,7 @@
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://mxiris-lyricsx-project.github.io/appcast.xml</string>
+	<string>https://mxiris-lyricsx-project.github.io/LyricsX/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>jlL11Arlrn0YtrQn66hxwUZeBI6dFxP2Wluq6eEYzss=</string>
 	<key>UTExportedTypeDeclarations</key>

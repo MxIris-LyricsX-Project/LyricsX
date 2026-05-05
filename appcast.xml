@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>LyricsX</title>
         <description>Most recent changes with links to updates.</description>
@@ -14,7 +14,31 @@
             <sparkle:version>2910</sparkle:version>
             <sparkle:shortVersionString>1.8.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.2/LyricsX_1.8.2+2910.zip" length="8623492" type="application/octet-stream" sparkle:edSignature="r6BZXiwxQfiJXMbCnUxQh/0Qo7S25/pEFNOnXG1unK2mZmbrNgHS36//vsPaPclCJVq/I5PRyGIbNyNssYLnDg=="/>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.2/LyricsX_1.8.2+2910.zip" length="8623492" type="application/octet-stream" sparkle:edSignature="r6BZXiwxQfiJXMbCnUxQh/0Qo7S25/pEFNOnXG1unK2mZmbrNgHS36//vsPaPclCJVq/I5PRyGIbNyNssYLnDg==" />
+        </item>
+        <item>
+            <title>1.8.1</title>
+            <pubDate>Fri, 03 Apr 2026 23:16:51 +0800</pubDate>
+            <sparkle:version>2908</sparkle:version>
+            <sparkle:shortVersionString>1.8.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.1/LyricsX_1.8.1+2908.zip" length="8579366" type="application/octet-stream" sparkle:edSignature="ZdvCjlTS1I0REh548mkjWiOkHELP9vBHi8d2H5iecpYwtutoLlNh40M85zk8rQpHBRmG1ThToTizt7cf4zvuBA==" />
+        </item>
+        <item>
+            <title>1.8.0</title>
+            <pubDate>Sat, 21 Mar 2026 14:33:49 +0800</pubDate>
+            <sparkle:version>2908</sparkle:version>
+            <sparkle:shortVersionString>1.8.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.0/LyricsX.2026-03-21.12-32-44.zip" length="8586110" type="application/octet-stream" sparkle:edSignature="zd2DSKl3XQ4SyPpdHwtb3S3lZfDyUJdZfl3VB9SLCEano6EfEbZgkWqEwRTavxWZtLgw4NIg9IJHAYJlwb6tDw==" />
+        </item>
+        <item>
+            <title>1.7.4</title>
+            <pubDate>Thu, 13 Feb 2025 22:24:13 +0800</pubDate>
+            <sparkle:version>2563</sparkle:version>
+            <sparkle:shortVersionString>1.7.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.4/LyricsX_1.7.4+2563.zip" length="5746309" type="application/octet-stream" sparkle:edSignature="kNa/cGLbEHQ0inweVBNbI5yCOVIqSD+wb3mC9lOHn2cO1hYBSv7n8vk1QhrYJUoVldl8LXM1GukTX4QCGAf3AA==" />
         </item>
         <item>
             <title>1.7.3</title>
@@ -22,7 +46,7 @@
             <sparkle:version>2501</sparkle:version>
             <sparkle:shortVersionString>1.7.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.3/LyricsX_1.7.3+2501.zip" length="5745458" type="application/octet-stream" sparkle:edSignature="HghcAIJQOkgz6nIH1ld2+uygKOG+pA4P0JBGA3tAf1uLrSaxrXCjv2AxGvnwHgRDztORrbOAs6VLg4gANrK6Aw=="/>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.3/LyricsX_1.7.3+2501.zip" length="5745458" type="application/octet-stream" sparkle:edSignature="HghcAIJQOkgz6nIH1ld2+uygKOG+pA4P0JBGA3tAf1uLrSaxrXCjv2AxGvnwHgRDztORrbOAs6VLg4gANrK6Aw==" />
         </item>
         <item>
             <title>1.7.2</title>
@@ -30,7 +54,7 @@
             <sparkle:version>2501</sparkle:version>
             <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.2/LyricsX-1.7.2.zip" length="5762001" type="application/octet-stream" sparkle:edSignature="HHNRsmWIMi8LAduU+1J8rH/oBvjc9YcDkYUBLHijXctloymRvO0jXJkl9zRy233C1U2kkZWndFYkGqf/yu2RAg=="/>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.2/LyricsX-1.7.2.zip" length="5762001" type="application/octet-stream" sparkle:edSignature="HHNRsmWIMi8LAduU+1J8rH/oBvjc9YcDkYUBLHijXctloymRvO0jXJkl9zRy233C1U2kkZWndFYkGqf/yu2RAg==" />
         </item>
         <item>
             <title>1.7.1</title>
@@ -38,7 +62,7 @@
             <sparkle:version>2468</sparkle:version>
             <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.1/LyricsX_1.7.1+2468.zip" sparkle:version="2468" sparkle:shortVersionString="1.7.1" length="5897679" type="application/octet-stream"/>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.7.1/LyricsX_1.7.1+2468.zip" sparkle:version="2468" sparkle:shortVersionString="1.7.1" length="5897679" type="application/octet-stream" />
         </item>
         <item>
             <title>1.6.3</title>
@@ -47,7 +71,7 @@
 </ul>
 ]]></description>
             <pubDate>Fri, 29 Apr 2022 11:27:18 +0000</pubDate>
-            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.3/LyricsX_1.6.3%2B2351.zip" sparkle:version="2351" sparkle:shortVersionString="1.6.3" length="15169874" type="application/octet-stream"/>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.3/LyricsX_1.6.3%2B2351.zip" sparkle:version="2351" sparkle:shortVersionString="1.6.3" length="15169874" type="application/octet-stream" />
         </item>
         <item>
             <title>1.6.1</title>
@@ -59,7 +83,7 @@
 </ul>
 ]]></description>
             <pubDate>Mon, 31 May 2021 10:52:44 +0000</pubDate>
-            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.1/LyricsX_1.6.1%2B2341.zip" sparkle:version="2341" sparkle:shortVersionString="1.6.1" length="15279607" type="application/octet-stream"/>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.1/LyricsX_1.6.1%2B2341.zip" sparkle:version="2341" sparkle:shortVersionString="1.6.1" length="15279607" type="application/octet-stream" />
         </item>
         <item>
             <title>1.6.0</title>
@@ -69,7 +93,7 @@
 </ul>
 ]]></description>
             <pubDate>Thu, 14 Jan 2021 05:54:26 +0000</pubDate>
-            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.0/LyricsX_1.6.0%2B2334.zip" sparkle:version="2334" sparkle:shortVersionString="1.6.0" length="19151991" type="application/octet-stream"/>
+            <enclosure url="https://github.com/ddddxxx/LyricsX/releases/download/v1.6.0/LyricsX_1.6.0%2B2334.zip" sparkle:version="2334" sparkle:shortVersionString="1.6.0" length="19151991" type="application/octet-stream" />
         </item>
     </channel>
 </rss>
