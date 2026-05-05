@@ -619,7 +619,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "buildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\")\nbuildNumber=$(($buildNumber + 1))\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n";
+			shellScript = "if [ \"${LYRICSX_SKIP_BUILD_BUMP:-0}\" = \"1\" ]; then\n    echo \"Skipping CFBundleVersion bump (LYRICSX_SKIP_BUILD_BUMP=1)\"\n    exit 0\nfi\nbuildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\")\nbuildNumber=$(($buildNumber + 1))\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n# Sync widget extension build number\nWIDGET_PLIST=\"${PROJECT_DIR}/LyricsXWidget/Info.plist\"\nif [ -f \"$WIDGET_PLIST\" ]; then\n    /usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"$WIDGET_PLIST\"\nfi\n";
 		};
 		E967A20D2D2AD6F800982E06 /* Copy “Launch at Login Helper” */ = {
 			isa = PBXShellScriptBuildPhase;
