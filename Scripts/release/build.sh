@@ -74,7 +74,8 @@ xcodebuild \
     -exportArchive \
     -archivePath "$ARCHIVE_PATH" \
     -exportOptionsPlist ExportOptions.plist \
-    -exportPath "$EXPORT_PATH"
+    -exportPath "$EXPORT_PATH" \
+    "${AUTH_ARGS[@]}"
 
 if [ ! -d "${EXPORT_PATH}/LyricsX.app" ]; then
     die "Export did not produce ${EXPORT_PATH}/LyricsX.app"
