@@ -1,4 +1,6 @@
 Product
+build/
+Scripts/release/bin/
 .DS_Store
 xcuserdata
 project.xcworkspace/**
