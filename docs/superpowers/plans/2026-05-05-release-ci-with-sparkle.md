@@ -56,17 +56,99 @@
 **Context:** The canonical Sparkle feed currently lives at
 `https://mxiris-lyricsx-project.github.io/appcast.xml` (organization Pages repo).
 We are migrating it to `https://mxiris-lyricsx-project.github.io/LyricsX/appcast.xml`
-(LyricsX repo Pages, already enabled). The repo-root `appcast.xml` is stale at
-1.7.3; we replace it with the live organization Pages content (which has 1.7.3,
-1.7.4, 1.8.0, 1.8.1) so the new canonical feed has a complete baseline.
+(LyricsX repo Pages, already enabled). The repo-root `appcast.xml` and the
+organization Pages `appcast.xml` have diverged historically: the repo-root file
+has `1.8.2` (and older 1.7.x/1.6.x) but is missing `1.7.4`, `1.8.0`, `1.8.1`,
+which exist only on the legacy Pages feed. This step merges the two so the new
+canonical baseline is complete.
 
-- [ ] **Step 1: Pull the live organization Pages appcast into the repo root**
+- [ ] **Step 1: Merge legacy Pages items into repo-root appcast.xml**
+
+Run the following one-shot merge script. It downloads the legacy feed,
+unions its `<item>`s into the local `appcast.xml`, deduplicates by
+`<sparkle:shortVersionString>` (or `<title>` as fallback), and re-sorts
+all items in descending version order. The repo-root file wins on conflict.
 
 ```bash
-curl -fsSL -o appcast.xml https://mxiris-lyricsx-project.github.io/appcast.xml
+/usr/bin/python3 - <<'PYEOF'
+import urllib.request
+from pathlib import Path
+from xml.etree import ElementTree as ET
+
+SPARKLE_NS = "http://www.andymatuschak.org/xml-namespaces/sparkle"
+DC_NS = "http://purl.org/dc/elements/1.1/"
+ET.register_namespace("sparkle", SPARKLE_NS)
+ET.register_namespace("dc", DC_NS)
+
+LEGACY_URL = "https://mxiris-lyricsx-project.github.io/appcast.xml"
+LOCAL_PATH = Path("appcast.xml")
+
+with urllib.request.urlopen(LEGACY_URL) as response:
+    legacy_bytes = response.read()
+legacy_root = ET.fromstring(legacy_bytes)
+
+local_tree = ET.parse(LOCAL_PATH)
+local_root = local_tree.getroot()
+
+local_channel = local_root.find("channel")
+legacy_channel = legacy_root.find("channel")
+assert local_channel is not None and legacy_channel is not None
+
+short_tag = f"{{{SPARKLE_NS}}}shortVersionString"
+
+
+def item_key(item):
+    return item.findtext(short_tag) or item.findtext("title") or ""
+
+
+def parse_version(version_string):
+    if not version_string:
+        return (0, 0, 0, -2)
+    base, _, pre = version_string.partition("-")
+    parts = []
+    for token in base.split("."):
+        try:
+            parts.append(int(token))
+        except ValueError:
+            parts.append(0)
+    while len(parts) < 3:
+        parts.append(0)
+    pre_rank = 0 if not pre else -1
+    return tuple(parts[:3]) + (pre_rank,)
+
+
+existing_items = list(local_channel.findall("item"))
+existing_keys = {item_key(item) for item in existing_items}
+
+merged_items = list(existing_items)
+for legacy_item in legacy_channel.findall("item"):
+    legacy_key = item_key(legacy_item)
+    if legacy_key and legacy_key not in existing_keys:
+        merged_items.append(legacy_item)
+        existing_keys.add(legacy_key)
+
+merged_items.sort(key=lambda item: parse_version(item_key(item)), reverse=True)
+
+for item in existing_items:
+    local_channel.remove(item)
+for item in merged_items:
+    local_channel.append(item)
+
+ET.indent(local_tree, space="    ")
+local_tree.write(LOCAL_PATH, encoding="utf-8", xml_declaration=True)
+
+raw = LOCAL_PATH.read_text(encoding="utf-8")
+expected_decl = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
+if not raw.startswith(expected_decl):
+    first_newline = raw.index("\n")
+    raw = expected_decl + raw[first_newline:]
+    LOCAL_PATH.write_text(raw, encoding="utf-8")
+
+print("Merged appcast versions:", [item_key(item) for item in merged_items])
+PYEOF
 ```
 
-- [ ] **Step 2: Verify it parses and has the expected items**
+- [ ] **Step 2: Verify the merged file parses and contains the expected union**
 
 ```bash
 /usr/bin/python3 -c '
@@ -76,12 +158,14 @@ ns = {"sparkle": "http://www.andymatuschak.org/xml-namespaces/sparkle"}
 items = tree.findall(".//item")
 versions = [i.findtext("sparkle:shortVersionString", default=i.findtext("title"), namespaces=ns) for i in items]
 print("Items:", versions)
-assert "1.8.1" in versions, "Expected 1.8.1 in baseline appcast"
+for v in ["1.8.2", "1.8.1", "1.8.0", "1.7.4", "1.7.3"]:
+    assert v in versions, f"Expected {v} in merged appcast"
+assert versions[0] == "1.8.2", f"Expected 1.8.2 first, got {versions[0]}"
 print("OK")
 '
 ```
 
-Expected last line: `OK`. The print should show a list ending with `1.8.1` (newest first).
+Expected last line: `OK`. The print shows the merged list with 1.8.2 first.
 
 - [ ] **Step 3: Switch `SUFeedURL` in `Info.plist` to the LyricsX repo Pages URL**
 
