@@ -71,6 +71,7 @@ all items in descending version order. The repo-root file wins on conflict.
 
 ```bash
 /usr/bin/python3 - <<'PYEOF'
+import re
 import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -138,11 +139,30 @@ ET.indent(local_tree, space="    ")
 local_tree.write(LOCAL_PATH, encoding="utf-8", xml_declaration=True)
 
 raw = LOCAL_PATH.read_text(encoding="utf-8")
+
+# 1. Restore the original XML declaration with standalone="yes".
 expected_decl = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
 if not raw.startswith(expected_decl):
     first_newline = raw.index("\n")
     raw = expected_decl + raw[first_newline:]
-    LOCAL_PATH.write_text(raw, encoding="utf-8")
+
+# 2. Re-wrap any <description> whose body contains escaped HTML in CDATA.
+#    ElementTree cannot natively emit CDATA, so it escapes &lt;/&gt;/&amp; on
+#    serialization. Convert those back so Sparkle clients render markup as HTML.
+desc_pattern = re.compile(r"<description>(.*?)</description>", re.DOTALL)
+
+
+def restore_cdata(match):
+    body = match.group(1)
+    if "&lt;" not in body and "&gt;" not in body and "&amp;" not in body:
+        return match.group(0)
+    unescaped = body.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+    return f"<description><![CDATA[{unescaped}]]></description>"
+
+
+raw = desc_pattern.sub(restore_cdata, raw)
+
+LOCAL_PATH.write_text(raw, encoding="utf-8")
 
 print("Merged appcast versions:", [item_key(item) for item in merged_items])
 PYEOF
