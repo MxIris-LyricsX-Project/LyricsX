@@ -53,6 +53,10 @@ jobs:
         run: bash Scripts/release/install-sparkle-tools.sh
 
       - name: Build
+        env:
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ISSUER_ID }}
         run: bash Scripts/release/build.sh
 
       - name: Upload xcresult on failure
