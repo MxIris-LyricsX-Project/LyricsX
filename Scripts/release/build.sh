@@ -50,6 +50,11 @@ else
 fi
 
 log_info "Archiving LyricsX (team=${TEAM_ID})"
+# Use Automatic signing in archive: combined with -allowProvisioningUpdates
+# and an App Store Connect API key, xcodebuild downloads (or with App Manager
+# role, creates) the matching Developer ID provisioning profile for every
+# target. ExportOptions.plist (method=developer-id) re-signs the export with
+# the correct distribution identity.
 xcodebuild \
     -project LyricsX.xcodeproj \
     -scheme LyricsX \
@@ -59,8 +64,7 @@ xcodebuild \
     -skipMacroValidation \
     -skipPackagePluginValidation \
     "${AUTH_ARGS[@]}" \
-    CODE_SIGN_STYLE=Manual \
-    CODE_SIGN_IDENTITY="Developer ID Application" \
+    CODE_SIGN_STYLE=Automatic \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     OTHER_CODE_SIGN_FLAGS="--timestamp" \
     archive
