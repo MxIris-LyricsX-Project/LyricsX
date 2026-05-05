@@ -1792,11 +1792,13 @@ jobs:
 
 - [ ] **Step 2: Lint the workflow syntactically**
 
+macOS-shipped `python3` has no PyYAML, so use the macOS-shipped Ruby instead:
+
 ```bash
-/usr/bin/python3 -c 'import yaml,sys; yaml.safe_load(open(".github/workflows/release.yml"))' && echo OK
+/usr/bin/ruby -ryaml -e 'YAML.load_file(".github/workflows/release.yml")' && echo OK
 ```
 
-Expected: `OK`.
+Expected last line: `OK`. Any "extensions are not built" gem warnings on stderr are harmless (unrelated to YAML parsing).
 
 - [ ] **Step 3: Commit**
 

@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.9.0 or 1.9.0-beta.1)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Stop after build (no notarize, no release, no appcast)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    env:
+      LYRICSX_SKIP_BUILD_BUMP: "1"
+      LYRICSX_USE_LOCAL_DEPENDENCY: "0"
+      SPARKLE_VERSION: "2.6.4"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: bash Scripts/release/resolve-version.sh
+
+      - name: Validate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Scripts/release/validate.sh
+
+      - name: Setup keychain
+        env:
+          APPLE_DEV_ID_CERT_P12_BASE64: ${{ secrets.APPLE_DEV_ID_CERT_P12_BASE64 }}
+          APPLE_DEV_ID_CERT_PASSWORD: ${{ secrets.APPLE_DEV_ID_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: bash Scripts/release/setup-keychain.sh
+
+      - name: Install Sparkle tools
+        run: bash Scripts/release/install-sparkle-tools.sh
+
+      - name: Build
+        run: bash Scripts/release/build.sh
+
+      - name: Upload xcresult on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult
+          path: |
+            build/LyricsX.xcarchive
+            ~/Library/Developer/Xcode/DerivedData/**/Logs/Build/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Notarize
+        if: ${{ !inputs.dry_run }}
+        env:
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ISSUER_ID }}
+        run: bash Scripts/release/notarize.sh
+
+      - name: Package
+        if: ${{ !inputs.dry_run }}
+        run: bash Scripts/release/package.sh
+
+      - name: Sparkle sign
+        if: ${{ !inputs.dry_run }}
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: bash Scripts/release/sign-sparkle.sh
+
+      - name: Compose release notes
+        if: ${{ !inputs.dry_run }}
+        run: bash Scripts/release/compose-notes.sh
+
+      - name: Create published release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Scripts/release/create-release.sh
+
+      - name: Update canonical appcast
+        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Scripts/release/publish-appcast.sh canonical
+
+      - name: Mirror to legacy Pages repo
+        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        env:
+          PAGES_MIRROR_TOKEN: ${{ secrets.PAGES_MIRROR_TOKEN }}
+        run: bash Scripts/release/publish-appcast.sh mirror
+
+      - name: Upload body.md artifact
+        if: ${{ !inputs.dry_run && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-body
+          path: build/body.md
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Cleanup keychain
+        if: always()
+        run: bash Scripts/release/setup-keychain.sh cleanup
