@@ -403,7 +403,8 @@ source Scripts/release/lib.sh
 log_info "hello"
 validate_version_format 1.9.0
 validate_version_format 1.9.0-beta.1
-if validate_version_format "bad-value" 2>/dev/null; then echo "FAIL: should have rejected bad-value"; exit 1; fi
+# die() exits the shell, so wrap in a sub-shell so exit-1 is observable as a non-zero status.
+if ( validate_version_format "bad-value" ) 2>/dev/null; then echo "FAIL: should have rejected bad-value"; exit 1; fi
 if is_prerelease_version 1.9.0; then echo "FAIL: 1.9.0 should not be prerelease"; exit 1; fi
 if ! is_prerelease_version 1.9.0-beta.1; then echo "FAIL: 1.9.0-beta.1 should be prerelease"; exit 1; fi
 echo OK
