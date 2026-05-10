@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     lazy var preferencesWindowController: PreferenceWindowController = .create()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        UserDefaultsMigrator.shared.migrateFromSandboxIfNeeded()
         registerUserDefaults()
 
         let controller = AppController.shared

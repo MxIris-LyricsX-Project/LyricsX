@@ -15,7 +15,7 @@
 		<string>$(LX_ICLOUD_CONTAINER)</string>
 	</array>
 	<key>com.apple.security.app-sandbox</key>
-	<true/>
+	<false/>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>$(TeamIdentifierPrefix)group.$(PRODUCT_BUNDLE_IDENTIFIER)</string>

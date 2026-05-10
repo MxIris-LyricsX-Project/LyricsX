@@ -53,6 +53,7 @@
 		BB89089E21ED69410078F522 /* Lyrics+Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB89089D21ED69410078F522 /* Lyrics+Language.swift */; };
 		BB947DFB23B4C60000C43BF2 /* SelectedPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB947DFA23B4C60000C43BF2 /* SelectedPlayer.swift */; };
 		BB9BCEBA1E843157001BC54B /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9BCEB91E843157001BC54B /* Extension.swift */; };
+		BBA1B2C3D4E5F6A7B8C9D0E1 /* UserDefaultsMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA1B2C3D4E5F6A7B8C9D0E2 /* UserDefaultsMigrator.swift */; };
 		BBA82F0A256AB8620076831F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = BBA82F09256AB8620076831F /* Sparkle */; };
 		BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */ = {isa = PBXBuildFile; productRef = BBB03F2C232FB3AF00A3879E /* GenericID */; };
 		BBB03F30232FB40400A3879E /* Semver in Frameworks */ = {isa = PBXBuildFile; productRef = BBB03F2F232FB40400A3879E /* Semver */; };
@@ -147,6 +148,7 @@
 		BB947DFA23B4C60000C43BF2 /* SelectedPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPlayer.swift; sourceTree = "<group>"; };
 		BB9BCEB81E84120D001BC54B /* LyricsX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LyricsX.entitlements; sourceTree = "<group>"; };
 		BB9BCEB91E843157001BC54B /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
+		BBA1B2C3D4E5F6A7B8C9D0E2 /* UserDefaultsMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsMigrator.swift; sourceTree = "<group>"; };
 		BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLyricsViewController.swift; sourceTree = "<group>"; };
 		BBC1D35A1E485BA7002538A2 /* AppController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppController.swift; sourceTree = "<group>"; };
 		BBC1D35E1E499A6D002538A2 /* Global.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 				BB4141AD1E458BA800A51775 /* AppDelegate.swift */,
 				BBC1D35A1E485BA7002538A2 /* AppController.swift */,
 				BB947DFA23B4C60000C43BF2 /* SelectedPlayer.swift */,
+				BBA1B2C3D4E5F6A7B8C9D0E2 /* UserDefaultsMigrator.swift */,
 				BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */,
 				BB458C62201C5F4500740C3B /* LyricsMetadata+Extension.swift */,
 				BB89089D21ED69410078F522 /* Lyrics+Language.swift */,
@@ -681,6 +684,7 @@
 				BBC1D35F1E499A6D002538A2 /* Global.swift in Sources */,
 				BB1B300320E878AE002F1AF8 /* StdExtension.swift in Sources */,
 				BB947DFB23B4C60000C43BF2 /* SelectedPlayer.swift in Sources */,
+				BBA1B2C3D4E5F6A7B8C9D0E1 /* UserDefaultsMigrator.swift in Sources */,
 				BB58B07F1E82901800598D4F /* AutoActivateWindowController.swift in Sources */,
 				BB4919361F00CD800054EA09 /* PreferenceShortcutViewController.swift in Sources */,
 				BB63C24F22774B47008CFFBB /* TouchBarPlaybackControlViewController.swift in Sources */,
