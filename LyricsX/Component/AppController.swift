@@ -8,7 +8,7 @@ import WidgetKit
 import LyricsXWidgetShared
 
 @Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "AppController")
-class AppController: NSObject {
+final class AppController: NSObject {
     static let shared = AppController()
 
     var lyricsManager: LyricsProvider
@@ -91,9 +91,9 @@ class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 guard let self = self else { return }
-                let trackTitle = selectedPlayer.currentTrack?.title ?? "nil"
-                let hasLyrics = self.currentLyrics != nil
-                #log(.info, "[LXWG][Sink] currentLyrics changed → reloadWidgetTimeline (track=\(trackTitle, privacy: .public), hasLyrics=\(hasLyrics, privacy: .public))")
+                // let trackTitle = selectedPlayer.currentTrack?.title ?? "nil"
+                // let hasLyrics = self.currentLyrics != nil
+                // #log(.info, "[LXWG][Sink] currentLyrics changed → reloadWidgetTimeline (track=\(trackTitle, privacy: .public), hasLyrics=\(hasLyrics, privacy: .public))")
                 self.reloadWidgetTimeline()
             }
             .store(in: &cancelBag)
@@ -114,8 +114,8 @@ class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] state in
                 guard let self = self else { return }
-                let storageState = selectedPlayer.playbackState
-                #log(.info, "[LXWG][Sink] playbackStateWillChange (pause) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
+                // let storageState = selectedPlayer.playbackState
+                // #log(.info, "[LXWG][Sink] playbackStateWillChange (pause) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
                 self.reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
@@ -125,8 +125,8 @@ class AppController: NSObject {
             .debounce(for: .milliseconds(1000), scheduler: DispatchQueue.lyricsDisplay)
             .sink { [weak self] state in
                 guard let self = self else { return }
-                let storageState = selectedPlayer.playbackState
-                #log(.info, "[LXWG][Sink] playbackStateWillChange (resume, debounced) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
+                // let storageState = selectedPlayer.playbackState
+                // #log(.info, "[LXWG][Sink] playbackStateWillChange (resume, debounced) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
                 self.reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
@@ -136,8 +136,8 @@ class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 guard let self = self else { return }
-                let index = self.currentLineIndex ?? -1
-                #log(.info, "[LXWG][Sink] currentLineIndex changed → updateWidgetSnapshot (index=\(index, privacy: .public))")
+                // let index = self.currentLineIndex ?? -1
+                // #log(.info, "[LXWG][Sink] currentLineIndex changed → updateWidgetSnapshot (index=\(index, privacy: .public))")
                 self.updateWidgetSnapshot()
             }
             .store(in: &cancelBag)
@@ -461,9 +461,9 @@ class AppController: NSObject {
     }
 
     private func writeWidgetSnapshot(playbackState explicitPlaybackState: PlaybackState?, reloadOnSuccess: Bool) {
-        let usedExplicit = explicitPlaybackState != nil
+        // let usedExplicit = explicitPlaybackState != nil
         guard let track = selectedPlayer.currentTrack else {
-            #log(.info, "[LXWG][Write] no current track → clearing dataStore + reloading timelines (reloadOnSuccess=\(reloadOnSuccess, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public))")
+            // #log(.info, "[LXWG][Write] no current track → clearing dataStore + reloading timelines (reloadOnSuccess=\(reloadOnSuccess, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public))")
             widgetDataStore.clear()
             WidgetCenter.shared.reloadAllTimelines()
             return
@@ -471,7 +471,7 @@ class AppController: NSObject {
 
         let playbackState = explicitPlaybackState ?? selectedPlayer.playbackState
         let playbackTime = playbackState.time
-        #log(.info, "[LXWG][Write] enter (track=\(track.title ?? "nil", privacy: .public), isPlaying=\(playbackState.isPlaying, privacy: .public), time=\(playbackTime, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
+        // #log(.info, "[LXWG][Write] enter (track=\(track.title ?? "nil", privacy: .public), isPlaying=\(playbackState.isPlaying, privacy: .public), time=\(playbackTime, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
 
         // Build lyrics lines with context window
         var lyricsLines: [LyricsLineEntry] = []
@@ -554,12 +554,12 @@ class AppController: NSObject {
 
         do {
             try widgetDataStore.write(widgetData)
-            #log(.info, "[LXWG][Write] wrote snapshot (isPlaying=\(widgetData.isPlaying, privacy: .public), playbackPosition=\(widgetData.playbackPosition, privacy: .public), lineIndex=\(widgetData.currentLineIndex, privacy: .public), lyricsLines=\(widgetData.lyricsLines.count, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
+            // #log(.info, "[LXWG][Write] wrote snapshot (isPlaying=\(widgetData.isPlaying, privacy: .public), playbackPosition=\(widgetData.playbackPosition, privacy: .public), lineIndex=\(widgetData.currentLineIndex, privacy: .public), lyricsLines=\(widgetData.lyricsLines.count, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
         } catch {
-            #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
+            // #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
         }
         if reloadOnSuccess {
-            #log(.info, "[LXWG][Write] reloadAllTimelines()")
+            // #log(.info, "[LXWG][Write] reloadAllTimelines()")
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
