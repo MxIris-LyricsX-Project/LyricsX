@@ -47,7 +47,11 @@ final class AppController: NSObject {
     private override init() {
         self.lyricsManager = LyricsProviders.Group()
         super.init()
+        // Dedup by track id (MusicTrack.Equatable compares ids) so that
+        // SystemMedia's artwork-only updates within the same song do not
+        // re-trigger lyrics search.
         selectedPlayer.currentTrackWillChange
+            .removeDuplicates()
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
