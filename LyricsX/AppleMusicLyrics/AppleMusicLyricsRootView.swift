@@ -94,12 +94,13 @@ extension AppleMusicLyrics {
 
         @ViewBuilder
         private func wideLayout(windowSize: CGSize) -> some View {
-            let coverAreaWidth = windowSize.width * 0.35
-            let coverSize = max(150, min(coverAreaWidth * 0.75, windowSize.height - 260))
+            let leadingInset = max(40, windowSize.width * 0.065)
+            let columnSpacing = max(40, windowSize.width * 0.05)
+            let coverSize = max(150, min(windowSize.width * 0.285, windowSize.height - 260))
             let mainFont = adaptiveMainFontSize(for: windowSize.width)
             let translationFont = adaptiveTranslationFontSize(for: windowSize.width)
 
-            HStack(spacing: 0) {
+            HStack(spacing: columnSpacing) {
                 // Left: Album cover + track info + controls
                 VStack(spacing: 0) {
                     Spacer(minLength: 40)
@@ -124,7 +125,8 @@ extension AppleMusicLyrics {
 
                     Spacer(minLength: 40)
                 }
-                .frame(width: coverAreaWidth)
+                .frame(width: coverSize)
+                .padding(.leading, leadingInset)
 
                 // Right: Lyrics — fills remaining space
                 if let lyrics = currentLyrics {
@@ -195,33 +197,49 @@ extension AppleMusicLyrics {
 
         private var playbackControlsView: some View {
             HStack(spacing: 32) {
-                Button {
+                ControlButton(systemImage: "backward.fill", iconSize: 20) {
                     if selectedPlayer.playbackTime > 5 {
                         selectedPlayer.playbackTime = 0
                     } else {
                         selectedPlayer.skipToPreviousItem()
                     }
-                } label: {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 20))
                 }
 
-                Button {
+                ControlButton(systemImage: isPlaying ? "pause.fill" : "play.fill", iconSize: 28) {
                     selectedPlayer.playPause()
-                } label: {
-                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 28))
                 }
 
-                Button {
+                ControlButton(systemImage: "forward.fill", iconSize: 20) {
                     selectedPlayer.skipToNextItem()
-                } label: {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 20))
                 }
             }
-            .buttonStyle(.plain)
             .foregroundStyle(Color.white)
+        }
+
+        private struct ControlButton: View {
+            var systemImage: String
+            var iconSize: CGFloat
+            var action: () -> Void
+
+            @State private var isHovering: Bool = false
+
+            var body: some View {
+                Button(action: action) {
+                    Image(systemName: systemImage)
+                        .font(.system(size: iconSize))
+                        .frame(width: iconSize * 2, height: iconSize * 2)
+                        .background {
+                            Circle()
+                                .fill(Color.white.opacity(isHovering ? 0.15 : 0))
+                        }
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .onHover { hovering in
+                    isHovering = hovering
+                }
+                .animation(.smooth(duration: 0.18), value: isHovering)
+            }
         }
 
         // MARK: - Lyrics Content
