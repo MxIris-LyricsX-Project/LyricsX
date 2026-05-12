@@ -75,6 +75,18 @@ extension AppleMusicLyrics {
                 let isRapid = timeSinceLast < Self.rapidThreshold && !isJump
                 scrollToHighlighted(index: newValue, jumped: isJump, rapid: isRapid, enabledIndices: enabledIndices)
             }
+            .onChange(of: containerSize) { oldSize, newSize in
+                // Window resize / font change reflows the content and shifts the
+                // highlighted line off-center. Re-align without animation so the
+                // current line snaps back into place immediately, instead of waiting
+                // for the next highlightedLineIndex change.
+                guard oldSize != .zero, newSize != .zero, oldSize != newSize else { return }
+                guard interactionState.isFollowing, let highlightedLineIndex else { return }
+                withAnimation(nil) {
+                    contentOffset.removeAll()
+                    scrollPosition.scrollTo(id: highlightedLineIndex, anchor: .center)
+                }
+            }
         }
 
         // MARK: - Line Content
