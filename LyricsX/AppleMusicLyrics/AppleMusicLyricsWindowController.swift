@@ -25,7 +25,8 @@ extension AppleMusicLyrics {
             let hostingController = NSHostingController(rootView: rootView)
 
             let window = NSWindow(contentViewController: hostingController)
-            window.styleMask = [.titled, .closable, .resizable, .fullSizeContentView]
+            window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+            window.collectionBehavior.insert(.fullScreenPrimary)
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.backgroundColor = .black
