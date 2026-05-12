@@ -46,35 +46,55 @@ extension AppleMusicLyrics {
             let filledFraction = computeFilledFraction(layout: layout)
             guard filledFraction > 0 else { return }
 
-            for line in layout {
-                let lineRect = line.typographicBounds.rect
-                guard lineRect.width > 0 else { continue }
+            // Distribute the per-line progress across visual lines so a wrapped
+            // lyric line fills sequentially (top line first) instead of every
+            // visual line filling in parallel.
+            let visualLines = Array(layout)
+            let totalWidth = visualLines.reduce(0) { $0 + $1.typographicBounds.rect.width }
+            guard totalWidth > 0 else { return }
 
-                let filledWidth = lineRect.width * filledFraction
+            let totalFilledWidth = totalWidth * filledFraction
+            var consumedWidth: CGFloat = 0
+
+            for line in visualLines {
+                let lineRect = line.typographicBounds.rect
+                let lineWidth = lineRect.width
+                guard lineWidth > 0 else { continue }
+
+                let remainingFill = totalFilledWidth - consumedWidth
+                consumedWidth += lineWidth
+
+                guard remainingFill > 0 else { continue }
 
                 var highlightContext = context
-                highlightContext.clipToLayer { clipContext in
-                    // Create a gradient mask: fully opaque up to the filled point,
-                    // then a smooth blend region of `blendRadius` to transparent
-                    let gradientStart = CGPoint(
-                        x: lineRect.minX + filledWidth - blendRadius / 2,
-                        y: lineRect.midY
-                    )
-                    let gradientEnd = CGPoint(
-                        x: lineRect.minX + filledWidth + blendRadius / 2,
-                        y: lineRect.midY
-                    )
-                    clipContext.fill(
-                        Path(lineRect),
-                        with: .linearGradient(
-                            Gradient(colors: [.white, .clear]),
-                            startPoint: gradientStart,
-                            endPoint: gradientEnd
+
+                if remainingFill >= lineWidth {
+                    // Whole visual line is past the fill edge — draw it fully highlighted.
+                    highlightContext.addFilter(.brightness(highlightBrightness))
+                    highlightContext.draw(line)
+                } else {
+                    // Fill edge falls inside this visual line — apply the gradient clip.
+                    highlightContext.clipToLayer { clipContext in
+                        let gradientStart = CGPoint(
+                            x: lineRect.minX + remainingFill - blendRadius / 2,
+                            y: lineRect.midY
                         )
-                    )
+                        let gradientEnd = CGPoint(
+                            x: lineRect.minX + remainingFill + blendRadius / 2,
+                            y: lineRect.midY
+                        )
+                        clipContext.fill(
+                            Path(lineRect),
+                            with: .linearGradient(
+                                Gradient(colors: [.white, .clear]),
+                                startPoint: gradientStart,
+                                endPoint: gradientEnd
+                            )
+                        )
+                    }
+                    highlightContext.addFilter(.brightness(highlightBrightness))
+                    highlightContext.draw(line)
                 }
-                highlightContext.addFilter(.brightness(highlightBrightness))
-                highlightContext.draw(line)
             }
         }
 
