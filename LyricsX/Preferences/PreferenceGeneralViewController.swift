@@ -39,7 +39,6 @@ class PreferenceGeneralViewController: PreferenceViewController {
             preferSwinsian.state = .on
         default:
             preferAuto.state = .on
-            autoLaunchButton.isEnabled = false
         }
 
         if let url = defaults.lyricsCustomSavingPath {
@@ -67,8 +66,21 @@ class PreferenceGeneralViewController: PreferenceViewController {
 
     @IBAction func toggleAutoLaunchAction(_ sender: NSButton) {
         let enabled = sender.state == .on
-        if !SMLoginItemSetEnabled(lyricsXHelperIdentifier as CFString, enabled) {
-            log("Failed to set login item enabled")
+        if #available(macOS 13, *) {
+            let service = SMAppService.loginItem(identifier: lyricsXHelperIdentifier)
+            do {
+                if enabled {
+                    try service.register()
+                } else {
+                    try service.unregister()
+                }
+            } catch {
+                log("SMAppService \(enabled ? "register" : "unregister") failed: \(error)")
+            }
+        } else {
+            if !SMLoginItemSetEnabled(lyricsXHelperIdentifier as CFString, enabled) {
+                log("Failed to set login item enabled")
+            }
         }
     }
 
@@ -113,14 +125,6 @@ class PreferenceGeneralViewController: PreferenceViewController {
 
     @IBAction func preferredPlayerAction(_ sender: NSButton) {
         defaults[.preferredPlayerIndex] = sender.tag
-
-        if sender.tag < 0 {
-            autoLaunchButton.isEnabled = false
-            autoLaunchButton.state = .off
-            defaults[.launchAndQuitWithPlayer] = false
-        } else {
-            autoLaunchButton.isEnabled = true
-        }
 
         if sender.tag == 1 || sender.tag == 3 || sender.tag == 4 {
             loadHomonymLrcButton.isEnabled = false

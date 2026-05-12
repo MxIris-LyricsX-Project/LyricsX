@@ -17,6 +17,7 @@ final class UserDefaultsMigrator {
     static let shared = UserDefaultsMigrator()
 
     private static let migrationCompletionKey = "Migration.SandboxToNonSandbox.v1"
+    private static let groupMigrationCompletionKey = "Migration.SandboxGroupContainerToNonSandbox.v1"
 
     private let logger = Logger(subsystem: "com.JH.LyricsX.diagnostics", category: "UserDefaultsMigrator")
     private let bundleIdentifier: String
@@ -71,6 +72,46 @@ final class UserDefaultsMigrator {
     private var sandboxContainerPlistURL: URL {
         URL(fileURLWithPath: NSHomeDirectory())
             .appendingPathComponent("Library/Containers/\(bundleIdentifier)/Data/Library/Preferences/\(bundleIdentifier).plist")
+    }
+
+    /// Idempotent. Migrates legacy group-container plist into the non-sandbox
+    /// preferences domain so the now-non-sandbox helper (and main app) read
+    /// the same file. `cfprefsd` routes `UserDefaults(suiteName:)` to
+    /// `~/Library/Group Containers/<suite>/.../Preferences/<suite>.plist` for
+    /// sandbox callers and `~/Library/Preferences/<suite>.plist` for
+    /// non-sandbox callers; without this copy, values written by the sandbox
+    /// era stay invisible after the entitlement flips.
+    func migrateGroupDefaultsIfNeeded(groupIdentifier: String, groupDefaults: UserDefaults) {
+        guard !groupDefaults.bool(forKey: Self.groupMigrationCompletionKey) else { return }
+
+        let sourceURL = URL(fileURLWithPath: NSHomeDirectory())
+            .appendingPathComponent("Library/Group Containers/\(groupIdentifier)/Library/Preferences/\(groupIdentifier).plist")
+        guard fileManager.fileExists(atPath: sourceURL.path) else {
+            groupDefaults.set(true, forKey: Self.groupMigrationCompletionKey)
+            logger.info("No group container plist found at \(sourceURL.path, privacy: .public); nothing to migrate")
+            return
+        }
+
+        do {
+            let data = try Data(contentsOf: sourceURL)
+            guard let dictionary = try PropertyListSerialization
+                .propertyList(from: data, options: [], format: nil) as? [String: Any]
+            else {
+                logger.error("Group plist is not a top-level dictionary at \(sourceURL.path, privacy: .public)")
+                return
+            }
+
+            var migratedKeyCount = 0
+            for (key, value) in dictionary where !isSystemKey(key) {
+                groupDefaults.set(value, forKey: key)
+                migratedKeyCount += 1
+            }
+
+            groupDefaults.set(true, forKey: Self.groupMigrationCompletionKey)
+            logger.info("Migrated \(migratedKeyCount, privacy: .public) group keys from \(sourceURL.path, privacy: .public)")
+        } catch {
+            logger.error("Group migration failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     /// Skip framework-internal namespaces. `AppleLanguages` is intentionally

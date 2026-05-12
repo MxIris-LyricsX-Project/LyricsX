@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.app-sandbox</key>
-	<true/>
+	<false/>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>$(TeamIdentifierPrefix)group.$(LX_BUNDLE_ID_PREFIX).LyricsX</string>

@@ -30,6 +30,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         UserDefaultsMigrator.shared.migrateFromSandboxIfNeeded()
+        UserDefaultsMigrator.shared.migrateGroupDefaultsIfNeeded(
+            groupIdentifier: lyricsXGroupIdentifier,
+            groupDefaults: groupDefaults
+        )
         registerUserDefaults()
 
         let controller = AppController.shared
@@ -64,6 +68,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         ]
         for sharedKey in sharedKeys {
             groupDefaults.bind(NSBindingName(sharedKey.key), withDefaultName: sharedKey)
+            // Cocoa Bindings to a bare UserDefaults instance doesn't push the
+            // current value at bind time, so LyricsXHelper would otherwise
+            // read a stale/absent value from groupDefaults until the user
+            // toggles the UI. Mirror the current value explicitly.
+            if let currentValue = defaults.object(forKey: sharedKey.key) {
+                groupDefaults.set(currentValue, forKey: sharedKey.key)
+            }
         }
 
         updateController.updater.checkForUpdatesInBackground()
@@ -98,14 +109,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             let url = Bundle.main.bundleURL
                 .appendingPathComponent("Contents/Library/LoginItems/LyricsXHelper.app")
             groupDefaults[.launchHelperTime] = Date()
+            // Force-flush the timestamp so helper can read it during its
+            // `isLaunchedByMain` check; without this, cfprefsd may still be
+            // batching writes when this process dies.
+            groupDefaults.synchronize()
 
+            // `openApplication` is asynchronous and we're seconds away from
+            // process death — block briefly so the LaunchServices request
+            // actually leaves this process before NSApp.terminate proceeds.
+            let semaphore = DispatchSemaphore(value: 0)
             NSWorkspace.shared.openApplication(at: url, configuration: .init()) { application, error in
                 if let error = error {
                     log("launch LyricsX Helper failed. reason: \(error)")
                 } else {
                     log("launch LyricsX Helper succeed.")
                 }
+                semaphore.signal()
             }
+            _ = semaphore.wait(timeout: .now() + .milliseconds(500))
         }
     }
 

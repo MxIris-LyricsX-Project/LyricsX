@@ -22,8 +22,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let index = groupDefaults.integer(forKey: preferredPlayerIndex)
-        let ident = playerBundleIdentifiers[index]
-        musicPlayers = ident.compactMap(SBApplication.init)
+        let identifiers: [String]
+        if playerBundleIdentifiers.indices.contains(index) {
+            identifiers = playerBundleIdentifiers[index]
+        } else {
+            // Auto mode (index = -1) or stale value: listen to every known player.
+            identifiers = playerBundleIdentifiers.flatMap { $0 }
+        }
+        musicPlayers = identifiers.compactMap(SBApplication.init)
 
         let event = NSAppleEventManager.shared().currentAppleEvent
         let isLaunchedAsLoginItem = event?.eventID == kAEOpenApplication &&
