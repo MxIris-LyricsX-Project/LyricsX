@@ -9,3 +9,4 @@ project.xcworkspace/**
 !project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 .claude
 .omc
+swift-syntax/.swiftpm
