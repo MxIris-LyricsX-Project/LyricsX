@@ -8,3 +8,4 @@ project.xcworkspace/**
 !project.xcworkspace/xcshareddata/swiftpm/
 !project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 .claude
+.omc
