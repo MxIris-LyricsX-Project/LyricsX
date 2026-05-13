@@ -64,10 +64,6 @@ struct NowPlayingApplication: Hashable {
 }
 
 final class NowPlayingApplicationListViewController: NSViewController {
-    enum Section {
-        case main
-    }
-
     class TableCellView: NSTableCellView {
         let iconView = NSImageView()
 
@@ -96,10 +92,6 @@ final class NowPlayingApplicationListViewController: NSViewController {
         }
     }
 
-    typealias DataSource = NSTableViewDiffableDataSource<Section, NowPlayingApplication>
-
-    typealias Snapshot = NSDiffableDataSourceSnapshot<Section, NowPlayingApplication>
-
     let titleLabel = NSTextField(labelWithString: "Now Playing Applications")
 
     let scrollView = NSScrollView()
@@ -116,11 +108,9 @@ final class NowPlayingApplicationListViewController: NSViewController {
 
     lazy var closeButton = NSButton(title: "Close", target: self, action: #selector(closeButtonAction(_:)))
 
-    lazy var dataSource = makeDataSource()
-
     var applications: [NowPlayingApplication] = [] {
         didSet {
-            reloadData()
+            tableView.reloadData()
         }
     }
 
@@ -196,7 +186,7 @@ final class NowPlayingApplicationListViewController: NSViewController {
         tableView.do {
             $0.headerView = nil
             $0.backgroundColor = .clear
-            $0.dataSource = dataSource
+            $0.dataSource = self
             $0.delegate = self
             $0.addTableColumn(.init(identifier: .init(rawValue: "Main")))
             $0.rowHeight = 35
@@ -206,7 +196,10 @@ final class NowPlayingApplicationListViewController: NSViewController {
             $0.titlePosition = .noTitle
         }
 
-        applications = defaults[.systemWideNowPlayingAppList].map { .init(bundleIdentifier: $0) }
+        var seenBundleIdentifiers = Set<String>()
+        applications = defaults[.systemWideNowPlayingAppList]
+            .filter { seenBundleIdentifiers.insert($0).inserted }
+            .map { .init(bundleIdentifier: $0) }
     }
 
     @objc func addButtonAction(_ sender: NSButton) {
@@ -218,7 +211,11 @@ final class NowPlayingApplicationListViewController: NSViewController {
         panel.allowedContentTypes = [.application]
         panel.beginSheetModal(for: window) { [weak panel, weak self] response in
             guard let self, let panel, response == .OK else { return }
-            applications.append(contentsOf: panel.urls.compactMap(NowPlayingApplication.init))
+            let existingBundleIdentifiers = Set(applications.map(\.bundleIdentifier))
+            let newApplications = panel.urls
+                .compactMap(NowPlayingApplication.init)
+                .filter { !existingBundleIdentifiers.contains($0.bundleIdentifier) }
+            applications.append(contentsOf: newApplications)
         }
     }
 
@@ -274,39 +271,24 @@ final class NowPlayingApplicationListViewController: NSViewController {
         defaults[.systemWideNowPlayingAppList] = applications.map(\.bundleIdentifier)
         dismiss(nil)
     }
+}
 
-    func makeDataSource() -> DataSource {
-        DataSource(tableView: tableView) { tableView, column, row, application in
-            let cellView = tableView.makeView(ofClass: TableCellView.self)
-            cellView.iconView.image = application.icon
-            cellView.nameLabel.stringValue = application.name
-            return cellView
-        }
-    }
-
-    func reloadData() {
-        var snapshot = Snapshot()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(applications, toSection: .main)
-        dataSource.apply(snapshot, animatingDifferences: true)
+extension NowPlayingApplicationListViewController: NSTableViewDataSource {
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return applications.count
     }
 }
 
 extension NowPlayingApplicationListViewController: NSTableViewDelegate {
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let cellView = tableView.box.makeView(ofClass: TableCellView.self)
+        let application = applications[row]
+        cellView.iconView.image = application.icon
+        cellView.nameLabel.stringValue = application.name
+        return cellView
+    }
+
     func tableViewSelectionDidChange(_ notification: Notification) {
         removeButton.isEnabled = !tableView.selectedRowIndexes.isEmpty
-    }
-}
-
-extension NSTableView {
-    func makeView<View: NSView>(ofClass cls: View.Type, owner: Any? = nil) -> View {
-        if let view = makeView(withIdentifier: .init(String(describing: cls)), owner: owner) as? View {
-            return view
-        } else {
-            let view = cls.init()
-            let identifier = NSUserInterfaceItemIdentifier(String(describing: cls))
-            view.identifier = identifier
-            return view
-        }
     }
 }
