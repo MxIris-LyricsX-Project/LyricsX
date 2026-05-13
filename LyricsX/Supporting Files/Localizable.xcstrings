@@ -750,6 +750,15 @@
         }
       },
       "comment" : "window title"
+    },
+    "Add Current Playing" : {
+      "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote."
+    },
+    "No active NowPlaying source" : {
+      "comment" : "Title for the alert shown when LyricsX cannot find a currently playing app while resolving its bundle id."
+    },
+    "Start playback in the app you want to add, then try again." : {
+      "comment" : "Body for the no-active-NowPlaying-source alert."
     }
   },
   "version" : "1.0"

@@ -1,4 +1,5 @@
 import AppKit
+import MediaRemoteAdapter
 import SnapKit
 import UniformTypeIdentifiers
 
@@ -14,9 +15,43 @@ struct NowPlayingApplication: Hashable {
         self.bundleIdentifier = bundleIdentifier
     }
 
-    init?(bundleIdentifier: String) {
-        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) else { return nil }
-        self.init(url: url)
+    init(bundleIdentifier: String) {
+        self.bundleIdentifier = bundleIdentifier
+        let resolvedURL = NowPlayingApplication.resolveApplicationURL(for: bundleIdentifier)
+        if let resolvedURL {
+            self.name = FileManager.default.displayName(atPath: resolvedURL.path)
+            self.icon = NSWorkspace.shared.icon(forFile: resolvedURL.path)
+        } else {
+            self.name = bundleIdentifier
+            self.icon = NSWorkspace.shared.icon(for: .applicationBundle)
+        }
+    }
+
+    // MediaRemote reports the source app's bundle id as `<iOS-bid>.<TeamID>`
+    // for iOS-on-Mac / iOS-embedded clients (10-char uppercase alphanumeric
+    // suffix). Those identifiers never resolve via NSWorkspace, so we strip
+    // the suffix to surface the wrapper macOS app's icon and display name —
+    // purely a cosmetic fallback; the canonical bundleIdentifier stored on
+    // the struct keeps the original value used by MediaRemote filtering.
+    private static func resolveApplicationURL(for bundleIdentifier: String) -> URL? {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
+            return url
+        }
+        if let stripped = stripTeamIdentifierSuffix(from: bundleIdentifier),
+           let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: stripped) {
+            return url
+        }
+        return nil
+    }
+
+    private static func stripTeamIdentifierSuffix(from bundleIdentifier: String) -> String? {
+        guard let dotIndex = bundleIdentifier.lastIndex(of: ".") else { return nil }
+        let suffix = bundleIdentifier[bundleIdentifier.index(after: dotIndex)...]
+        guard suffix.count == 10,
+              suffix.allSatisfy({ $0.isASCII && ($0.isUppercase || $0.isNumber) }) else {
+            return nil
+        }
+        return String(bundleIdentifier[..<dotIndex])
     }
 
     func hash(into hasher: inout Hasher) {
@@ -77,6 +112,8 @@ final class NowPlayingApplicationListViewController: NSViewController {
 
     lazy var removeButton = NSButton(image: .init(named: NSImage.removeTemplateName)!, target: self, action: #selector(removeButtonAction(_:)))
 
+    lazy var addCurrentPlayingButton = NSButton(title: NSLocalizedString("Add Current Playing", comment: "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote."), target: self, action: #selector(addCurrentPlayingButtonAction(_:)))
+
     lazy var closeButton = NSButton(title: "Close", target: self, action: #selector(closeButtonAction(_:)))
 
     lazy var dataSource = makeDataSource()
@@ -95,6 +132,7 @@ final class NowPlayingApplicationListViewController: NSViewController {
         borderView.addSubview(scrollView)
         borderView.addSubview(addButton)
         borderView.addSubview(removeButton)
+        borderView.addSubview(addCurrentPlayingButton)
         view.addSubview(closeButton)
 
         titleLabel.snp.makeConstraints { make in
@@ -117,6 +155,11 @@ final class NowPlayingApplicationListViewController: NSViewController {
             make.left.equalTo(addButton.snp.right)
             make.bottom.equalToSuperview()
             make.size.equalTo(30)
+        }
+
+        addCurrentPlayingButton.snp.makeConstraints { make in
+            make.left.equalTo(removeButton.snp.right).offset(10)
+            make.centerY.equalTo(addButton)
         }
 
         scrollView.snp.makeConstraints { make in
@@ -163,7 +206,7 @@ final class NowPlayingApplicationListViewController: NSViewController {
             $0.titlePosition = .noTitle
         }
 
-        applications = defaults[.systemWideNowPlayingAppList].compactMap { .init(bundleIdentifier: $0) }
+        applications = defaults[.systemWideNowPlayingAppList].map { .init(bundleIdentifier: $0) }
     }
 
     @objc func addButtonAction(_ sender: NSButton) {
@@ -182,6 +225,49 @@ final class NowPlayingApplicationListViewController: NSViewController {
     @objc func removeButtonAction(_ sender: NSButton) {
         guard !tableView.selectedRowIndexes.isEmpty else { return }
         applications.remove(atOffsets: tableView.selectedRowIndexes)
+    }
+
+    // Captures the bundle identifier MediaRemote actually reports for the
+    // current NowPlaying client. Required for sources whose MediaRemote-side
+    // identity diverges from the on-disk `.app`'s bundle identifier — most
+    // notably iOS-on-Mac / iOS-embedded subprocesses, which report
+    // `<iOS-bid>.<TeamID>` (e.g. `com.tencent.QQMusic.D5Q73692VW` from
+    // QQMusic's embedded iOS process) while NSOpenPanel only sees the
+    // wrapper macOS app's bundle id (`com.tencent.QQMusicMac`). The probe
+    // uses a one-shot MediaController with no `--id` filter so it observes
+    // every client, regardless of the host LyricsX whitelist.
+    private var currentPlayingProbe: MediaController?
+
+    @objc func addCurrentPlayingButtonAction(_ sender: NSButton) {
+        sender.isEnabled = false
+        let probe = MediaController(bundleIdentifiers: [])
+        currentPlayingProbe = probe
+        var didFinish = false
+        probe.onTrackInfoReceived = { [weak self, weak sender] trackInfo, _ in
+            DispatchQueue.main.async {
+                guard !didFinish else { return }
+                didFinish = true
+                sender?.isEnabled = true
+                guard let self else { return }
+                self.currentPlayingProbe = nil
+                if let bundleIdentifier = trackInfo?.bundleIdentifier, !bundleIdentifier.isEmpty {
+                    let application = NowPlayingApplication(bundleIdentifier: bundleIdentifier)
+                    if !self.applications.contains(application) {
+                        self.applications.append(application)
+                    }
+                } else {
+                    self.presentNoCurrentPlayingAlert()
+                }
+            }
+        }
+        probe.updatePlayerState()
+    }
+
+    private func presentNoCurrentPlayingAlert() {
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("No active NowPlaying source", comment: "Title for the alert shown when LyricsX cannot find a currently playing app while resolving its bundle id.")
+        alert.informativeText = NSLocalizedString("Start playback in the app you want to add, then try again.", comment: "Body for the no-active-NowPlaying-source alert.")
+        alert.runModal()
     }
 
     @objc func closeButtonAction(_ sender: NSButton) {
