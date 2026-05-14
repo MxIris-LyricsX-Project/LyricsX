@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Insert a new <item> into a Sparkle appcast.xml file.
 
-Idempotent: if an <item> with the same <sparkle:shortVersionString> already
-exists, the file is left untouched and the script exits 0.
+Append-only and idempotent: the new <item> is spliced in as plain text
+in front of the first existing <item>; every other byte of the file —
+including the CDATA blocks of older items — is left untouched. If an
+item for the same version is already present, the file is not modified.
 
 Inputs (env):
     APPCAST_PATH            path to the appcast.xml file to modify
@@ -10,7 +12,7 @@ Inputs (env):
     BUILD                   e.g. "2925"
     ED_SIGNATURE            value for sparkle:edSignature attribute
     ZIP_LENGTH              value for length attribute (string of integer)
-    MIN_SYSTEM_VERSION      (optional) defaults to "11.0"
+    MIN_SYSTEM_VERSION      minimumSystemVersion, e.g. "10.15"
     RELEASE_NOTES_PATH      (optional) defaults to ReleaseNotes/<VERSION>_en.md
 """
 from __future__ import annotations
@@ -19,13 +21,6 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from xml.etree import ElementTree as ET
-
-SPARKLE_NS = "http://www.andymatuschak.org/xml-namespaces/sparkle"
-DC_NS = "http://purl.org/dc/elements/1.1/"
-
-ET.register_namespace("sparkle", SPARKLE_NS)
-ET.register_namespace("dc", DC_NS)
 
 
 def require(name: str) -> str:
@@ -45,7 +40,7 @@ def main() -> int:
     build = require("BUILD")
     ed_signature = require("ED_SIGNATURE")
     zip_length = require("ZIP_LENGTH")
-    min_system_version = os.environ.get("MIN_SYSTEM_VERSION", "11.0")
+    min_system_version = require("MIN_SYSTEM_VERSION")
     release_notes_path = Path(
         os.environ.get("RELEASE_NOTES_PATH", f"ReleaseNotes/{version}_en.md")
     )
@@ -55,61 +50,52 @@ def main() -> int:
     if not release_notes_path.exists():
         sys.exit(f"[ERROR] RELEASE_NOTES_PATH does not exist: {release_notes_path}")
 
-    tree = ET.parse(appcast_path)
-    root = tree.getroot()
-    channel = root.find("channel")
-    if channel is None:
-        sys.exit(f"[ERROR] No <channel> element in {appcast_path}")
+    raw = appcast_path.read_text(encoding="utf-8")
 
-    short_tag = f"{{{SPARKLE_NS}}}shortVersionString"
-    for existing in channel.findall("item"):
-        existing_short = existing.findtext(short_tag)
-        if existing_short == version:
-            print(f"[INFO] {appcast_path}: item {version} already present, no change.")
-            return 0
+    short_version_tag = (
+        f"<sparkle:shortVersionString>{version}</sparkle:shortVersionString>"
+    )
+    if short_version_tag in raw:
+        print(f"[INFO] {appcast_path}: item {version} already present, no change.")
+        return 0
 
     enclosure_url = (
         "https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/"
         f"v{version}/LyricsX_{version}+{build}.zip"
     )
     description = release_notes_path.read_text(encoding="utf-8").strip()
+    if "]]>" in description:
+        sys.exit("[ERROR] Release notes contain ']]>', which would break the CDATA block.")
 
-    item = ET.Element("item")
-    ET.SubElement(item, "title").text = version
-    ET.SubElement(item, "pubDate").text = rfc822_now()
-    ET.SubElement(item, f"{{{SPARKLE_NS}}}version").text = build
-    ET.SubElement(item, short_tag).text = version
-    ET.SubElement(item, f"{{{SPARKLE_NS}}}minimumSystemVersion").text = min_system_version
+    new_item = (
+        "        <item>\n"
+        f"            <title>{version}</title>\n"
+        f"            <pubDate>{rfc822_now()}</pubDate>\n"
+        f"            <sparkle:version>{build}</sparkle:version>\n"
+        f"            {short_version_tag}\n"
+        f"            <sparkle:minimumSystemVersion>{min_system_version}</sparkle:minimumSystemVersion>\n"
+        f"            <description><![CDATA[{description}]]></description>\n"
+        f'            <enclosure url="{enclosure_url}" length="{zip_length}"'
+        f' type="application/octet-stream" sparkle:edSignature="{ed_signature}" />\n'
+        "        </item>\n"
+    )
 
-    desc = ET.SubElement(item, "description")
-    DESC_PLACEHOLDER = "@@LYRICSX_DESC_CDATA_PLACEHOLDER@@"
-    desc.text = DESC_PLACEHOLDER
+    channel_pos = raw.find("<channel>")
+    if channel_pos == -1:
+        sys.exit(f"[ERROR] No <channel> element in {appcast_path}")
 
-    enclosure = ET.SubElement(item, "enclosure")
-    enclosure.set("url", enclosure_url)
-    enclosure.set("length", zip_length)
-    enclosure.set("type", "application/octet-stream")
-    enclosure.set(f"{{{SPARKLE_NS}}}edSignature", ed_signature)
+    # Splice in front of the first existing <item>; if the channel has no
+    # items yet, splice just before </channel>.
+    item_pos = raw.find("        <item>", channel_pos)
+    if item_pos != -1:
+        updated = raw[:item_pos] + new_item + raw[item_pos:]
+    else:
+        close_pos = raw.find("    </channel>", channel_pos)
+        if close_pos == -1:
+            sys.exit(f"[ERROR] No </channel> element in {appcast_path}")
+        updated = raw[:close_pos] + new_item + raw[close_pos:]
 
-    insert_index = 0
-    for index, child in enumerate(list(channel)):
-        if child.tag == "item":
-            insert_index = index
-            break
-        insert_index = index + 1
-    channel.insert(insert_index, item)
-
-    ET.indent(tree, space="    ")
-    tree.write(appcast_path, encoding="utf-8", xml_declaration=True)
-
-    raw = appcast_path.read_text(encoding="utf-8")
-    expected_decl = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
-    if not raw.startswith(expected_decl):
-        first_newline = raw.index("\n")
-        raw = expected_decl + raw[first_newline:]
-    raw = raw.replace(DESC_PLACEHOLDER, f"<![CDATA[{description}]]>")
-    appcast_path.write_text(raw, encoding="utf-8")
-
+    appcast_path.write_text(updated, encoding="utf-8")
     print(f"[INFO] {appcast_path}: inserted item for v{version} (build {build}).")
     return 0
 

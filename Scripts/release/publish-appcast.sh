@@ -25,6 +25,17 @@ if [ "$IS_PRERELEASE" = "true" ]; then
     exit 0
 fi
 
+# minimumSystemVersion mirrors the app's deployment target. project.pbxproj
+# carries a low project-level baseline plus per-target overrides; the app's
+# effective floor is the highest MACOSX_DEPLOYMENT_TARGET among them.
+MIN_SYSTEM_VERSION="$(
+    grep -E 'MACOSX_DEPLOYMENT_TARGET = ' LyricsX.xcodeproj/project.pbxproj \
+        | sed -E 's/.*= *//; s/;.*//' \
+        | sort -V | tail -1
+)"
+[ -n "$MIN_SYSTEM_VERSION" ] || die "Could not read MACOSX_DEPLOYMENT_TARGET from project.pbxproj"
+log_info "minimumSystemVersion=${MIN_SYSTEM_VERSION}"
+
 git_id() {
     git config user.name  "github-actions[bot]"
     git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -36,6 +47,7 @@ case "$MODE" in
         APPCAST_PATH="appcast.xml" \
         VERSION="$VERSION" BUILD="$BUILD" \
         ED_SIGNATURE="$ED_SIGNATURE" ZIP_LENGTH="$ZIP_LENGTH" \
+        MIN_SYSTEM_VERSION="$MIN_SYSTEM_VERSION" \
             python3 Scripts/release/update-appcast.py
 
         if git diff --quiet -- appcast.xml; then
@@ -46,7 +58,10 @@ case "$MODE" in
         git_id
         git add appcast.xml
         git commit -m "release: update appcast.xml for v${VERSION}"
-        git pull --rebase origin master
+        # --autostash: the archive step leaves unrelated working-tree churn
+        # (e.g. a re-resolved Package.resolved); only appcast.xml is staged
+        # into the commit, so carry the rest across the rebase untouched.
+        git pull --rebase --autostash origin master
         git push origin HEAD:master
         ;;
 
@@ -66,6 +81,7 @@ case "$MODE" in
         APPCAST_PATH="${MIRROR_DIR}/appcast.xml" \
         VERSION="$VERSION" BUILD="$BUILD" \
         ED_SIGNATURE="$ED_SIGNATURE" ZIP_LENGTH="$ZIP_LENGTH" \
+        MIN_SYSTEM_VERSION="$MIN_SYSTEM_VERSION" \
             python3 Scripts/release/update-appcast.py
 
         if (cd "$MIRROR_DIR" && git diff --quiet -- appcast.xml); then
