@@ -1,5 +1,5 @@
 {
-  "originHash" : "6d705562c08f9296de488e3078713c034ff2b9ae4cdaec20c441364b03c20095",
+  "originHash" : "37ade79e9ebb289010f1381ce188f344d2dd2eaf4e1670aeeeabdda28202770d",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "22f92afb2520417e60a464a6a5abb88621c2b43d",
-        "version" : "0.5.3"
+        "revision" : "4288ebae7324ddef8cb084f25c84ca7941a1e276",
+        "version" : "0.5.4"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/mediaremote-adapter",
       "state" : {
-        "revision" : "f69ff3b1efca9d419f8fea2d845478a7f8852768",
-        "version" : "0.1.2"
+        "revision" : "a8445bf3947fa8f812e9384e7c40bb88a34801da",
+        "version" : "0.1.3"
       }
     },
     {
