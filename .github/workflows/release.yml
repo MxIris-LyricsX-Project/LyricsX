@@ -23,6 +23,7 @@ jobs:
   release:
     runs-on: macos-26
     env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
       LYRICSX_SKIP_BUILD_BUMP: "1"
       LYRICSX_USE_LOCAL_DEPENDENCY: "0"
       SPARKLE_VERSION: "2.6.4"
