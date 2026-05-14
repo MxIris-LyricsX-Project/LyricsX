@@ -54,7 +54,7 @@ extension Package.Dependency {
 
 let package = Package(
     name: "LyricsXPackage",
-    platforms: [.macOS(.v11)],
+    platforms: [.macOS(.v10_15)],
     products: [
         .library(
             name: "LyricsXFoundation",
@@ -84,6 +84,10 @@ let package = Package(
                 from: "1.8.0"
             )
         ),
+        .package(
+            url: "https://github.com/Mx-Iris/FrameworkToolbox",
+            branch: "main"
+        ),
     ],
     targets: [
         .target(
@@ -91,6 +95,7 @@ let package = Package(
             dependencies: [
                 .product(name: "LyricsKit", package: "LyricsKit"),
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
             ]
         ),
         .testTarget(

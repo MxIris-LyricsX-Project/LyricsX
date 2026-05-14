@@ -1,5 +1,5 @@
 {
-  "originHash" : "de718d4157fb7cf49777d3e26e9a0ca61cd38f04d31eb790f7c8c6524a215e19",
+  "originHash" : "a17b62c97a76e7802322139dc6ec97e6cdc243abb0174a6351610fa70a5ccdcb",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "4288ebae7324ddef8cb084f25c84ca7941a1e276",
-        "version" : "0.5.4"
+        "branch" : "main",
+        "revision" : "4288ebae7324ddef8cb084f25c84ca7941a1e276"
       }
     },
     {
@@ -53,6 +53,15 @@
       "state" : {
         "revision" : "9a894d799269cb591037f9f9cb0961510d4dca81",
         "version" : "5.0.2"
+      }
+    },
+    {
+      "identity" : "lyricskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-LyricsX-Project/LyricsKit",
+      "state" : {
+        "revision" : "6f071990d0c9c6f48d29284db805990bffb912ed",
+        "version" : "1.8.3"
       }
     },
     {
@@ -80,6 +89,15 @@
       "state" : {
         "revision" : "a8445bf3947fa8f812e9384e7c40bb88a34801da",
         "version" : "0.1.3"
+      }
+    },
+    {
+      "identity" : "musicplayer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
+      "state" : {
+        "revision" : "ea886b39d5222ab439d51890992c15a8b729fc0f",
+        "version" : "1.8.3"
       }
     },
     {
