@@ -29,10 +29,15 @@ ZH_NOTES="ReleaseNotes/${VERSION}_zh.md"
 [ -f "$EN_NOTES" ] || die "Missing release notes: ${EN_NOTES}. Write it before releasing."
 [ -f "$ZH_NOTES" ] || die "Missing release notes: ${ZH_NOTES}. Write it before releasing."
 
-# 4. Info.plist shortVersion matches VERSION
+# 4. Info.plist shortVersion matches VERSION (or its pre-release-stripped base)
+# Apple convention keeps CFBundleShortVersionString as a numeric semver
+# (e.g. "1.9.0") even when the release is a pre-release tagged
+# "1.9.0-beta.6"; the suffix is conveyed by the GitHub Release prerelease
+# flag instead. Accept both shapes.
 PLIST_VERSION=$(plist_buddy -c 'Print CFBundleShortVersionString' "$INFO_PLIST_PATH")
-if [ "$PLIST_VERSION" != "$VERSION" ]; then
-    die "Info.plist CFBundleShortVersionString ('${PLIST_VERSION}') doesn't match version ('${VERSION}'). Bump Info.plist and commit first."
+VERSION_BASE="${VERSION%%-*}"
+if [ "$PLIST_VERSION" != "$VERSION" ] && [ "$PLIST_VERSION" != "$VERSION_BASE" ]; then
+    die "Info.plist CFBundleShortVersionString ('${PLIST_VERSION}') doesn't match version ('${VERSION}') or its base ('${VERSION_BASE}'). Bump Info.plist and commit first."
 fi
 
 # 5. CFBundleVersion is a positive integer
