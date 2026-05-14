@@ -1,6 +1,5 @@
 import AppKit
 import SnapKit
-import OSLog
 
 class KaraokeLyricsView: NSView {
     private let backgroundView: NSView

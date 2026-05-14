@@ -1,5 +1,6 @@
 import Foundation
 import os
+import LyricsXFoundation
 
 /// One-shot migration of UserDefaults from the sandbox container into the
 /// non-sandbox preferences domain after the app drops `com.apple.security.app-sandbox`.
@@ -13,13 +14,13 @@ import os
 /// the running process's sandbox state, so flipping the entitlement makes the
 /// container plist invisible. This class copies the values across and records
 /// completion in the destination domain so it never runs twice.
+@Loggable(subsystem: "com.JH.LyricsX.diagnostics")
 final class UserDefaultsMigrator {
     static let shared = UserDefaultsMigrator()
 
     private static let migrationCompletionKey = "Migration.SandboxToNonSandbox.v1"
     private static let groupMigrationCompletionKey = "Migration.SandboxGroupContainerToNonSandbox.v1"
 
-    private let logger = Logger(subsystem: "com.JH.LyricsX.diagnostics", category: "UserDefaultsMigrator")
     private let bundleIdentifier: String
     private let userDefaults: UserDefaults
     private let fileManager: FileManager
@@ -43,7 +44,7 @@ final class UserDefaultsMigrator {
         let sourceURL = sandboxContainerPlistURL
         guard fileManager.fileExists(atPath: sourceURL.path) else {
             markCompleted()
-            logger.info("No sandbox container plist found at \(sourceURL.path, privacy: .public); nothing to migrate")
+            #log(.info, "No sandbox container plist found at \(sourceURL.path, privacy: .public); nothing to migrate")
             return
         }
 
@@ -52,7 +53,7 @@ final class UserDefaultsMigrator {
             guard let dictionary = try PropertyListSerialization
                 .propertyList(from: data, options: [], format: nil) as? [String: Any]
             else {
-                logger.error("Sandbox plist is not a top-level dictionary at \(sourceURL.path, privacy: .public)")
+                #log(.error, "Sandbox plist is not a top-level dictionary at \(sourceURL.path, privacy: .public)")
                 return
             }
 
@@ -63,9 +64,9 @@ final class UserDefaultsMigrator {
             }
 
             markCompleted()
-            logger.info("Migrated \(migratedKeyCount, privacy: .public) keys from sandbox container at \(sourceURL.path, privacy: .public)")
+            #log(.info, "Migrated \(migratedKeyCount, privacy: .public) keys from sandbox container at \(sourceURL.path, privacy: .public)")
         } catch {
-            logger.error("Migration failed: \(error.localizedDescription, privacy: .public)")
+            #log(.error, "Migration failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -88,7 +89,7 @@ final class UserDefaultsMigrator {
             .appendingPathComponent("Library/Group Containers/\(groupIdentifier)/Library/Preferences/\(groupIdentifier).plist")
         guard fileManager.fileExists(atPath: sourceURL.path) else {
             groupDefaults.set(true, forKey: Self.groupMigrationCompletionKey)
-            logger.info("No group container plist found at \(sourceURL.path, privacy: .public); nothing to migrate")
+            #log(.info, "No group container plist found at \(sourceURL.path, privacy: .public); nothing to migrate")
             return
         }
 
@@ -97,7 +98,7 @@ final class UserDefaultsMigrator {
             guard let dictionary = try PropertyListSerialization
                 .propertyList(from: data, options: [], format: nil) as? [String: Any]
             else {
-                logger.error("Group plist is not a top-level dictionary at \(sourceURL.path, privacy: .public)")
+                #log(.error, "Group plist is not a top-level dictionary at \(sourceURL.path, privacy: .public)")
                 return
             }
 
@@ -108,9 +109,9 @@ final class UserDefaultsMigrator {
             }
 
             groupDefaults.set(true, forKey: Self.groupMigrationCompletionKey)
-            logger.info("Migrated \(migratedKeyCount, privacy: .public) group keys from \(sourceURL.path, privacy: .public)")
+            #log(.info, "Migrated \(migratedKeyCount, privacy: .public) group keys from \(sourceURL.path, privacy: .public)")
         } catch {
-            logger.error("Group migration failed: \(error.localizedDescription, privacy: .public)")
+            #log(.error, "Group migration failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 

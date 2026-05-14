@@ -1,7 +1,10 @@
 import AppKit
+import CoreServices
 import MediaRemoteAdapter
 import SnapKit
+#if canImport(UniformTypeIdentifiers)
 import UniformTypeIdentifiers
+#endif
 
 struct NowPlayingApplication: Hashable {
     let name: String
@@ -23,7 +26,11 @@ struct NowPlayingApplication: Hashable {
             self.icon = NSWorkspace.shared.icon(forFile: resolvedURL.path)
         } else {
             self.name = bundleIdentifier
-            self.icon = NSWorkspace.shared.icon(for: .applicationBundle)
+            if #available(macOS 11.0, *) {
+                self.icon = NSWorkspace.shared.icon(for: .applicationBundle)
+            } else {
+                self.icon = NSWorkspace.shared.icon(forFileType: kUTTypeApplicationBundle as String)
+            }
         }
     }
 
@@ -208,7 +215,11 @@ final class NowPlayingApplicationListViewController: NSViewController {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = true
-        panel.allowedContentTypes = [.application]
+        if #available(macOS 11.0, *) {
+            panel.allowedContentTypes = [.application]
+        } else {
+            panel.allowedFileTypes = ["app"]
+        }
         panel.beginSheetModal(for: window) { [weak panel, weak self] response in
             guard let self, let panel, response == .OK else { return }
             let existingBundleIdentifiers = Set(applications.map(\.bundleIdentifier))

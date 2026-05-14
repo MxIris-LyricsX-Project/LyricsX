@@ -6,12 +6,9 @@ import MusicPlayer
 import OpenCC
 import SwiftCF
 import AccessibilityExt
-import OSLog
 import MarqueeLabel
 
 class MenuBarLyricsController {
-//    let logger = Logger(subsystem: "com.JH.LyricsX", category: "MenuBarLyricsController")
-
     static let shared = MenuBarLyricsController()
 
     var statusBarMenu: NSMenu? {
