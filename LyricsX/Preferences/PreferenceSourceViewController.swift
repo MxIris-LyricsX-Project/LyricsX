@@ -11,7 +11,7 @@ class PreferenceSourceViewController: PreferenceViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        availableSources = LyricsProviders.Service.allCases.map(\.displayName)
+        availableSources = LyricsProviders.ServiceID.allCases.map(\.displayName)
 
         enableSourcePriorityButton.state = defaults[.lyricsSourcePriorityEnabled] ? .on : .off
         sourcePriorityOrder = defaults[.lyricsSourcePriorityOrder] ?? availableSources

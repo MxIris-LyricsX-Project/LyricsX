@@ -146,19 +146,14 @@ final class AppController: NSObject {
 
     @MainActor
     func updateLyricsManager() async throws {
-        let services: [LyricsProviders.Service] = LyricsProviders.Service.noAuthenticationRequiredServices
-
-        var providers: [LyricsProvider] = []
-        for service in services {
-            providers.append(service.create())
-        }
-
-        // Add Musixmatch provider with saved token if available
-        if let token = defaults[.musixmatchToken], !token.isEmpty {
-            let musixmatchProvider = LyricsProviders.Musixmatch(usertoken: token)
-            providers.append(musixmatchProvider)
-        }
-
+        let musixmatchToken = defaults[.musixmatchToken].flatMap { $0.isEmpty ? nil : $0 }
+        let providers: [LyricsProvider] = [
+            LyricsProviders.Service.netease.create(),
+            LyricsProviders.Service.qq.create(),
+            LyricsProviders.Service.kugou.create(),
+            LyricsProviders.Service.lrclib.create(),
+            LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)),
+        ]
         lyricsManager = LyricsProviders.Group(providers: providers)
     }
 
