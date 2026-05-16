@@ -45,18 +45,13 @@ class TouchBarLyricsItem: NSCustomTouchBarItem {
            lyrics.metadata.language?.hasPrefix("zh") == true {
             lyricsContent = converter.convert(lyricsContent)
         }
-        let playbackState = selectedPlayer.playbackState
-        let trackDuration = selectedPlayer.currentTrack?.duration
-        let timeDelay = lyrics.adjustedTimeDelay
-        let position = playbackState.lyricsDisplayTime(trackDuration: trackDuration)
         DispatchQueue.main.async {
             self.lyricsTextField.stringValue = lyricsContent
             if let timetag = line.attachments.timetag {
+                let position = selectedPlayer.playbackTime
+                let timeDelay = line.lyrics?.adjustedTimeDelay ?? 0
                 let progress = timetag.tags.map { ($0.time + line.position - timeDelay - position, $0.index) }
                 self.lyricsTextField.setProgressAnimation(color: self.progressColor, progress: progress)
-                if !playbackState.isPlaying {
-                    self.lyricsTextField.pauseProgressAnimation()
-                }
             }
         }
     }
