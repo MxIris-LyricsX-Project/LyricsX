@@ -95,7 +95,7 @@ extension AppleMusicLyrics {
         @ViewBuilder
         private func wideLayout(windowSize: CGSize) -> some View {
             let leadingInset = max(40, windowSize.width * 0.065)
-            let columnSpacing = max(40, windowSize.width * 0.05)
+            let columnSpacing = max(40, windowSize.width * 0.1)
             let coverSize = max(150, min(windowSize.width * 0.285, windowSize.height - 260))
             let mainFont = adaptiveMainFontSize(for: windowSize.width)
             let translationFont = adaptiveTranslationFontSize(for: windowSize.width)
