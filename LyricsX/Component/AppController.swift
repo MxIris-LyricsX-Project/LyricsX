@@ -309,7 +309,12 @@ final class AppController: NSObject {
         }
 
         let duration = track.duration ?? 0
-        let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
+        // Strip bracketed suffixes ("(feat. X)", "[Explicit]", "(Remix)", "【现场版】" …)
+        // from the search title when the preference is on; providers usually return
+        // zero matches for the bracketed form. The full title still drives local
+        // cache lookup above and the lyrics metadata association below.
+        let searchTitle = defaults[.stripSearchTitleBracketsEnabled] ? title.strippingBrackets : title
+        let request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: artist), duration: duration, limit: 5)
         searchRequest = request
         searchTask = Task { @MainActor in
             do {

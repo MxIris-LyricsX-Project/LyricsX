@@ -78,6 +78,8 @@
 	</array>
 	<key>UseAppleMusicLyricsWindow</key>
 	<false/>
+	<key>StripSearchTitleBracketsEnabled</key>
+	<true/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>

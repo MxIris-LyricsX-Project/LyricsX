@@ -314,6 +314,8 @@
                                     <gridRow yPlacement="center" height="20" id="ApI-Zi-AYg"/>
                                     <gridRow yPlacement="center" height="20" id="b3M-VO-u37"/>
                                     <gridRow yPlacement="top" height="20" id="ubP-tx-cL1"/>
+                                    <gridRow yPlacement="center" height="20" id="Sbr-cb-rOw"/>
+                                    <gridRow yPlacement="top" height="36" id="Sbr-ex-rOw"/>
                                     <gridRow yPlacement="center" height="30" id="7Wx-n7-f04"/>
                                     <gridRow yPlacement="center" height="30" id="8If-Ei-6qA"/>
                                     <gridRow yPlacement="center" height="20" id="6xB-DX-5FD"/>
@@ -525,6 +527,30 @@
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
                                             <rect key="frame" x="215" y="174" width="261" height="16"/>
                                             <textFieldCell key="cell" title="Search result match the exact search term" id="SGe-4J-kW6">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="Sbr-cb-rOw" column="3Hg-Ka-QrM" id="Sbr-cb-cLh"/>
+                                    <gridCell row="Sbr-cb-rOw" column="IfN-lq-biT" id="Sbr-cb-cRh">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Sbr-cb-Btn">
+                                            <rect key="frame" x="217" y="148" width="232" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Strip brackets from search title" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Sbr-cb-bCl">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.StripSearchTitleBracketsEnabled" id="Sbr-cb-bnd"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="Sbr-ex-rOw" column="3Hg-Ka-QrM" id="Sbr-ex-cLh"/>
+                                    <gridCell row="Sbr-ex-rOw" column="IfN-lq-biT" id="Sbr-ex-cRh">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Sbr-ex-tFd">
+                                            <rect key="frame" x="215" y="116" width="350" height="32"/>
+                                            <textFieldCell key="cell" lineBreakMode="wordWrapping" title="Strip brackets from the title before searching. Strict Search then matches the stripped title." usesSingleLineMode="NO" id="Sbr-ex-tCl">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

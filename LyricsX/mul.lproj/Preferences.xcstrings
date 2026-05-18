@@ -2617,6 +2617,30 @@
         }
       }
     },
+    "AML-Cl-001.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Use Apple Music-style lyrics window\"; ObjectID = \"AML-Cl-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use Apple Music-style lyrics window"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Apple Music 风格的歌词窗口"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Apple Music 風格的歌詞視窗"
+          }
+        }
+      }
+    },
     "As7-rZ-u6c.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Strict Search\"; ObjectID = \"As7-rZ-u6c\";",
       "extractionState" : "extracted_with_value",
@@ -9055,30 +9079,6 @@
         }
       }
     },
-    "AML-Cl-001.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Use Apple Music-style lyrics window\"; ObjectID = \"AML-Cl-001\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use Apple Music-style lyrics window"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用 Apple Music 风格的歌词窗口"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用 Apple Music 風格的歌詞視窗"
-          }
-        }
-      }
-    },
     "MBP-Cl-001.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Show playback controls in menu bar\"; ObjectID = \"MBP-Cl-001\";",
       "extractionState" : "extracted_with_value",
@@ -10827,6 +10827,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將選單列圖示與歌詞顯示合併"
+          }
+        }
+      }
+    },
+    "Sbr-cb-bCl.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Strip brackets from search title\"; ObjectID = \"Sbr-cb-bCl\";",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip brackets from search title"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip brackets from search title"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索时去掉标题中的括号"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋時去掉標題中的括號"
+          }
+        }
+      }
+    },
+    "Sbr-ex-tCl.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Strip brackets from the title before searching. Strict Search then matches the stripped title.\"; ObjectID = \"Sbr-ex-tCl\";",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip brackets from the title before searching. Strict Search then matches the stripped title."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip brackets from the title before searching. Strict Search then matches the stripped title."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索前去掉标题中的括号（()、[]、（）、【】）；与「精确搜索」一起开启时，按去掉括号后的标题进行匹配。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋前去掉標題中的括號（()、[]、（）、【】）；與「精確搜尋」一起開啟時，按去掉括號後的標題進行比對。"
           }
         }
       }
