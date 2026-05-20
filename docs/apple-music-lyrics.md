@@ -1,6 +1,8 @@
 # Apple Music 官方歌词 — 实现计划
 
 > 分支:`feature/apple-music-lyrics`。本文件是冷启动可执行的完整计划;实现前先读「已确认事实」与「关键代码事实」两节。
+>
+> **进展(2026-05-21):** §3.5 的私有 `SystemMusicPlayer` 歌曲识别方案经 PoC **证伪**(详见 §3.5 与 `AppleMusicLyricsPoC/FINDINGS.md`);歌曲识别改走 MediaRemote 方向(§3.6,待 PoC)。Route A/B 的歌词获取机制(WKWebView/amp-api)不受影响。
 
 ## 0. 背景与目标
 
@@ -55,9 +57,14 @@
 - Route A 与 Route B 都实现,候选合流。
 - 登录:持久化 WKWebView 会话,用户登录一次;登录入口放 LyricsX 的 Source 偏好面板。
 
-## 3.5 歌曲识别 —— 私有 `SystemMusicPlayer` 直取 adamID/ISRC(2026-05-20,dump 确认)
+## 3.5 歌曲识别尝试 —— 私有 `SystemMusicPlayer`(❌ PoC 已证伪,2026-05-21)
 
-**核心:不靠本地化名模糊搜索,直接从正在播放的歌拿到精确 adamID + ISRC**,A/B 共用,从根上免疫 #17。
+> **❌ PoC 实证结论(2026-05-21,macOS 26.5):此方案不可行。**
+> 私有符号桥接技术本身完全成功(`@_silgen_name` 绑定 `SystemMusicPlayer.shared`/`.queue` 的 mangled 符号,链接 + 运行均通过),但 `SystemMusicPlayer` 在 macOS 上功能残缺:`queue.currentEntry` 永远 `nil`,底层 `MPMusicPlayerController.nowPlayingItem` 永远 `nil`,`state` 只是陈旧快照。**拿不到 `Song` → 拿不到 adamID/ISRC。** 这正是 Apple 标 `@available(macOS, unavailable)` 的实质原因 —— 不是藏 API,是它在 macOS 真不工作。
+> 歌曲识别改走 §3.6。PoC:`AppleMusicLyricsPoC/`(与 LyricsX 仓库同级),完整结论见其 `FINDINGS.md`。
+> 以下原始设想与逆向分析**保留作记录** —— 符号桥接技术可复用;教训:静态 dump 显示调用链符号存在 ≠ 运行时功能完整。
+
+**原始设想:不靠本地化名模糊搜索,直接从正在播放的歌拿到精确 adamID + ISRC**,A/B 共用,从根上免疫 #17。
 
 dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认:
 - `MusicKit.SystemMusicPlayer.shared` → `.queue.currentEntry?.item` → `enum Item` 的 `case .song(MusicKit.Song)` → `Song.id`(`MusicItemID`,目录歌即 adamID)、`Song.isrc`、`Song.playParameters`。
@@ -75,7 +82,21 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 
 **附带发现(暂不采用):** `MusicKitInternal.MusicLyricsRequest(for: Song).response()` → `CatalogLyrics.ttml`(逐字 TTML,`displayKind: .syllableSynced`)是「原生取官方歌词」的完整 API。但 `MusicKitInternal` 是私有 framework、`response()` 为 `async`(dlsym 调 async Swift 极难)→ 歌词仍用已验证的 WKWebView/amp-api,只是改成按精确 adamID 直取 `syllable-lyrics`。
 
-**待 PoC 验证:** ① 访问 `SystemMusicPlayer` 是否需 `NSAppleMusicUsageDescription` / `MusicAuthorization` / MusicKit 能力;② 队列里的 `Song.isrc` 是否已填充(未填则需补一次 detail 请求);③ library 歌的 `Song.id` 是 library id 非 adamID(catalog 回放占绝大多数,library/catalog 区分在此处理);④ 换歌时 `currentEntry` 是否已刷新;⑤ 精确 mangled 符号(`nm`/IDA)。
+**PoC 实测结果(2026-05-21,macOS 26.5,见 `AppleMusicLyricsPoC/FINDINGS.md`):**
+- ⑤ 精确 mangled 符号已提取:`shared` getter = `$s8MusicKit06SystemA6PlayerC6sharedACvgZ`(无参 `swift_once` 单例,不读 metatype);`queue` getter = `$s8MusicKit06SystemA6PlayerC5queueAA0aD0C5QueueCvgTj`(method dispatch thunk);`_queue` 字段偏移 `0x30`。用 `@_silgen_name` 绑定即可,连 `objc_getClass` 都不需要;`SystemMusicPlayer` 经 Swift word-substitution mangled 为 `06SystemA6Player`。
+- ① 访问需 `MusicAuthorization` 授权,授权链路要求:`.app` bundle + `Info.plist` 带 `NSAppleMusicUsageDescription` + 经 `open`/LaunchServices 启动(命令行裸进程会被 TCC `abort()`)。LyricsX 本身是签名 .app,天然满足。
+- ②③④ **全部无法验证 —— `currentEntry` 恒为 `nil`**:`SystemMusicPlayer.queue` 在 macOS 不被填充,底层 `MPMusicPlayerController.nowPlayingItem` 同样恒 `nil`;授权前后、playing/paused、catalog 歌均如此。`state`(playbackStatus/playbackTime)能连上 Music.app 但只是陈旧快照、不实时刷新。
+- **结论:整条 `SystemMusicPlayer.shared.queue.currentEntry.item.song` 链在 macOS 拿不到数据,§3.5 作废。**
+
+## 3.6 歌曲识别(修订方向)—— MediaRemote(待 PoC 验证)
+
+§3.5 证伪后,「从正在播放的歌直接拿精确 adamID/ISRC」改走 **MediaRemote**:
+
+- LyricsX 的 `MusicPlayer` 库**已经在用** `mediaremote-adapter` 读取 Music.app 的 now-playing 信息 —— 基础设施现成。
+- **待验证(下一个 PoC):** `MRMediaRemoteGetNowPlayingInfo` 返回的 dictionary 是否含 adamID / iTunes Store ID。候选键:`kMRMediaRemoteNowPlayingInfoContentItemIdentifier`、`kMRMediaRemoteNowPlayingInfoiTunesStoreIdentifier`、`kMRMediaRemoteNowPlayingInfoiTunesStoreSubscriptionAdamIdentifier`。
+- **若任一键存在** → 精确识别就地解决,无需任何新私有符号桥接;LyricsX 侧把 `(adamID, isrc?)` 写进 `LyricsSearchRequest.userInfo`,接线与原 §3.5 设想一致。
+- **若都不存在** → 退路:① WKWebView amp-api 的「最近播放」类 endpoint(如 `/v1/me/recent/played/tracks`,登录态实测是否含 adamID);② 接受按歌名搜索 + duration 容差(保留 #17 的本地化局限)。
+- 这一步是 Route A/B「精确识别」优化的前置;**即使识别拿不到 adamID,Route A/B 仍能按歌名工作**,只是回退到 #17 的局限。
 
 ## 4. 关键代码事实(冷启动参考)
 
@@ -140,7 +161,7 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 - `struct AppleMusicLyricsProvider: LyricsProvider`。
 - `lyrics(for:)` → `AsyncThrowingStream`:
   1. 未授权 → 直接 `finish()`。
-  2. **`userInfo` 带 adamID(§3.5)→ 直取该 id,跳过搜索**;否则回退:storefront → `searchSongs(request.searchTerm 描述)` → 按 `request.duration` 与 song 时长容差(±3s)过滤/排序,取前若干。
+  2. **`userInfo` 带 adamID(§3.6 识别成功时)→ 直取该 id,跳过搜索**;否则(§3.6 未落地或识别失败)回退:storefront → `searchSongs(request.searchTerm 描述)` → 按 `request.duration` 与 song 时长容差(±3s)过滤/排序,取前若干。
   3. 并发对候选取 `/songs/{id}/syllable-lyrics` → TTML → `AppleMusicTTMLParser` → `Lyrics`;设 `metadata.service`、`metadata.request`;404/无歌词跳过。
   4. 逐个 `yield`。
 
@@ -157,7 +178,7 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 - `struct AppleMusicNameRecoveryProvider: LyricsProvider`,持 `session` 与 `wrapped: [LyricsProvider]`(网易/QQ/Kugou/LRCLIB/Musixmatch)。
 - `lyrics(for:)` → `AsyncThrowingStream`:
   1. 未授权 → `finish()`。
-  2. 取 `isrc`:**优先 `userInfo`(§3.5,直接来自 `SystemMusicPlayer`)**;没有则回退 `resolver.identity(for: request)`(storefront X search → `adamID_X` + `isrc`)。无 `isrc` → `finish()`(降级,无回归)。
+  2. 取 `isrc`:**优先 `userInfo`(§3.6 识别成功时)**;没有则回退 `resolver.identity(for: request)`(storefront X search → `adamID_X` + `isrc`)。无 `isrc` → `finish()`(降级,无回归)。
   3. 选目标本土 storefront:① Route A 已取 TTML → 用其 `xml:lang`(`ja→jp`、`zh-Hant→tw,hk`、`zh-Hans→cn`、`ko→kr`);② 否则用 ISRC 国家前缀(`JP→jp`/`TW→tw`/`HK→hk`/`CN→cn`/`KR→kr`);③ 都没有 → fan-out 整个 CJK 集 `{jp,cn,tw,hk,kr}`。
   4. 对每个目标 storefront S 并发 `songsByISRC(isrc, storefront: S)` → 收 `(name, artistName)`。ISRC 精确匹配,无需时长容差。
   5. 去重;**只保留「含 汉字/假名/谚文、且与原始本地化名不同」的变体** —— 纯拉丁的、与原名相同的全部丢弃(避免与直连 provider 重复搜索;用户本就在本土区时变体==原名→自动跳过)。
@@ -191,20 +212,24 @@ lyricsManager = LyricsProviders.Group(providers: providers)
 - 登录态变化 / 开关变化 → 重新 `updateLyricsManager()`。
 
 ### 6.4 Info.plist / entitlement
-- WKWebView 传输本身不需要权限;但 §3.5 用到 MusicKit(`SystemMusicPlayer`)→ **可能需 `NSAppleMusicUsageDescription`**、`MusicAuthorization.request()`、甚至 MusicKit 能力(App ID service)—— 全部待 PoC 确认。
+- WKWebView 传输本身不需要权限。
+- §3.6 走 MediaRemote(`mediaremote-adapter`):权限按其自身要求 —— LyricsX 现有 `MusicPlayer` 集成已覆盖,预计无新增。
+- 若 §3.6 退而调用 `MusicAuthorization` 相关 API:需 `Info.plist` 带 `NSAppleMusicUsageDescription`(PoC 已确认);LyricsX 是签名 .app,满足 TCC 的 bundle 要求。
 
-### 6.5 歌曲识别(§3.5)
-- 新文件(LyricsX 侧,如 `Component/AppleMusicNowPlayingIdentifier.swift`):链接 `MusicKit.framework`,用 `objc_getClass`+`dlsym` 取 `SystemMusicPlayer.shared` → 当前 `Song` 的 `id`/`isrc`。
+### 6.5 歌曲识别(§3.6)
+- ⚠️ 原计划经私有 `SystemMusicPlayer`(§3.5)实现已证伪。改走 §3.6 的 MediaRemote 方向 —— **先做 §3.6 PoC** 再定此处实现。
+- 若 MediaRemote 能给出 adamID/ISRC:新文件(LyricsX 侧,如 `Component/AppleMusicNowPlayingIdentifier.swift`)从 `mediaremote-adapter` 的 now-playing 信息取 `(adamID, isrc)`。
 - LyricsX 在换歌、发起 Apple Music 搜索前调用,把结果写进 `LyricsSearchRequest.userInfo`;仅 `SelectedPlayer` 为 Apple Music 时调用。
+- 若 MediaRemote 也拿不到 adamID:此节作废,Route A/B 全部退回按歌名搜索(保留 #17 局限)。
 
 ## 7. 分阶段执行
 
-0. **歌曲识别 PoC**:独立小程序验证 §3.5 的 `objc_getClass`+`dlsym` 链 —— 真机读出正在播放歌的 adamID/ISRC;确认授权/Info.plist 需求。
+0. **歌曲识别 PoC**:① §3.5 的 `SystemMusicPlayer` 路径 ✅ 已验证 —— 结论**证伪**(PoC `AppleMusicLyricsPoC/`,详见 §3.5 / `FINDINGS.md`)。② 转 §3.6:做 MediaRemote PoC,验证 `MRMediaRemoteGetNowPlayingInfo` 的 now-playing dict 是否含 adamID/ISRC。此 PoC 不阻塞阶段 1-2。
 1. **LyricsKit:Package.swift + `AppleMusicTTMLParser`** —— 可独立 `swift build` + 单测(「晴天」TTML fixture)。
 2. **LyricsKit:`AppleMusicWebSession` + `AppleMusicCatalog` + `AppleMusicLyricsProvider`(A)** —— `swift build` 过。
-3. **LyricsX 接入 A**:登录 UI + §3.5 识别 → `userInfo` 接线 + `updateLyricsManager` + 偏好开关;workspace 构建;真机验证「晴天」出官方逐字歌词。
+3. **LyricsX 接入 A**:登录 UI + `updateLyricsManager` + 偏好开关;若 §3.6/阶段 0 的 MediaRemote 识别成功,接 `userInfo` 识别;workspace 构建;真机验证「晴天」出官方逐字歌词。
 4. **Route B**:先用 PoC 实测 §9 的 amp-api 未验证项 → 再写 `AppleMusicNameRecoveryProvider`(ISRC 跨区桥接)+ `AppleMusicResolver` 共享缓存 + 接线。
-5. **联调打磨**:时长匹配、TTML 边角(对唱 `ttm:agent`、背景人声 `<span ttm:role>`、多语言翻译)、登录态失效检测与重连、无订阅/非目录歌曲降级、`SystemMusicPlayer` 跨 macOS 版本符号/布局复核。
+5. **联调打磨**:时长匹配、TTML 边角(对唱 `ttm:agent`、背景人声 `<span ttm:role>`、多语言翻译)、登录态失效检测与重连、无订阅/非目录歌曲降级。
 
 ## 8. 构建/验证
 
@@ -220,10 +245,12 @@ lyricsManager = LyricsProviders.Group(providers: providers)
 - `api.music()` 方法名/amp-api 若变需适配;`callAsyncJavaScript` 需 `contentWorld: .page`。
 - 不能上 MAS。
 - **Route B 关键未验证项**(需登录态 PoC 实测,公开 API 无法验证):① amp-api 是否支持 `GET /v1/catalog/{sf}/songs?filter[isrc]=`;② 账号在 storefront X 能否查 `/v1/catalog/{他区}/...` 目录;③ 按区拆分的歌(如「晴天」cn=535824738 / us=1721464906)cn/us 两个 entry 是否共用同一 ISRC —— 不共用则该歌无法 B 桥接(仅降级,Route A 不受影响);④ amp-api `?l=` 对 `name` 是否有效(iTunes Search API 的 `lang` 实测无效,预期 amp-api `l` 同样无效)。
-- **`SystemMusicPlayer` 私有路径(§3.5)**:`@available(macOS, unavailable)` 私有 API,与 WKWebView 路一样不可上 MAS;`shared`/`queue` 的 mangled 符号可能随 macOS 版本变 → 按 dump 复核;访问可能需 `NSAppleMusicUsageDescription` + `MusicAuthorization`(待 PoC 确认)。
+- **`SystemMusicPlayer` 私有路径(§3.5)已证伪** —— PoC 证明 `queue.currentEntry` / `MPMusicPlayerController.nowPlayingItem` 在 macOS 恒 `nil`,不再采用;歌曲识别改走 §3.6 MediaRemote。
+- **§3.6 MediaRemote 路径(待 PoC)**:`mediaremote-adapter` 用私有 API,同样不可上 MAS(LyricsX 独立分发可接受);now-playing dict 的键随 macOS 版本可能变动。
 
 ## 10. 相关链接
 
 - Issue:https://github.com/MxIris-LyricsX-Project/LyricsX/issues/17
 - 触发本调研的 Teages 试验提交(iTunes Search API 方案,已评估为不够好):`Teages/LyricsX@c52c5cd`
 - 记忆:`route_a_apple_music_lyrics.md`(调研结论)、`research_ios_nowplaying.md`(相关 RE)
+- PoC(§3.5 验证):`AppleMusicLyricsPoC/`(与 LyricsX 仓库同级)—— 见其 `FINDINGS.md`(可行性结论)与 `README.md`
