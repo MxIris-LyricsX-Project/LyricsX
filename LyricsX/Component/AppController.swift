@@ -118,10 +118,7 @@ final class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 guard let self = self else { return }
-                // let trackTitle = selectedPlayer.currentTrack?.title ?? "nil"
-                // let hasLyrics = self.currentLyrics != nil
-                // #log(.info, "[LXWG][Sink] currentLyrics changed → reloadWidgetTimeline (track=\(trackTitle, privacy: .public), hasLyrics=\(hasLyrics, privacy: .public))")
-                self.reloadWidgetTimeline()
+                reloadWidgetTimeline()
             }
             .store(in: &cancelBag)
 
@@ -141,9 +138,7 @@ final class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] state in
                 guard let self = self else { return }
-                // let storageState = selectedPlayer.playbackState
-                // #log(.info, "[LXWG][Sink] playbackStateWillChange (pause) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
-                self.reloadWidgetTimeline(playbackState: state)
+                reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
 
@@ -152,9 +147,7 @@ final class AppController: NSObject {
             .debounce(for: .milliseconds(1000), scheduler: DispatchQueue.lyricsDisplay)
             .sink { [weak self] state in
                 guard let self = self else { return }
-                // let storageState = selectedPlayer.playbackState
-                // #log(.info, "[LXWG][Sink] playbackStateWillChange (resume, debounced) → published=(isPlaying=\(state.isPlaying, privacy: .public), time=\(state.time, privacy: .public)) storage=(isPlaying=\(storageState.isPlaying, privacy: .public), time=\(storageState.time, privacy: .public))")
-                self.reloadWidgetTimeline(playbackState: state)
+                reloadWidgetTimeline(playbackState: state)
             }
             .store(in: &cancelBag)
 
@@ -163,9 +156,7 @@ final class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 guard let self = self else { return }
-                // let index = self.currentLineIndex ?? -1
-                // #log(.info, "[LXWG][Sink] currentLineIndex changed → updateWidgetSnapshot (index=\(index, privacy: .public))")
-                self.updateWidgetSnapshot()
+                updateWidgetSnapshot()
             }
             .store(in: &cancelBag)
 
@@ -406,12 +397,7 @@ final class AppController: NSObject {
         // zero matches for the bracketed form. The full title still drives local
         // cache lookup above and the lyrics metadata association below.
         let searchTitle = defaults[.stripSearchTitleBracketsEnabled] ? title.strippingBrackets : title
-        // Tag Apple Music tracks so the Route B name-recovery plugin runs.
-        var searchUserInfo: [String: String] = [:]
-//        if #available(macOS 12.0, *), selectedPlayer.name == .appleMusic {
-//            searchUserInfo[AppleMusicNameRecoveryPlugin.appleMusicTrackUserInfoKey] = "1"
-//        }
-        let request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: artist), duration: duration, limit: 5, userInfo: searchUserInfo)
+        let request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: artist), duration: duration, limit: 5, userInfo: [:])
         searchRequest = request
         searchTask = Task { @MainActor in
             do {
