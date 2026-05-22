@@ -1,5 +1,5 @@
 {
-  "originHash" : "37ade79e9ebb289010f1381ce188f344d2dd2eaf4e1670aeeeabdda28202770d",
+  "originHash" : "dbbacbf3db5ae31d57c8ca2765ac5b40730647d43fb2cd7f92eb634c282478fe",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -71,6 +71,15 @@
       "state" : {
         "branch" : "master",
         "revision" : "6f2603c6b6cc18f64a799e5d2c9d3bbc467c413a"
+      }
+    },
+    {
+      "identity" : "mediaremote-adapter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-LyricsX-Project/mediaremote-adapter",
+      "state" : {
+        "revision" : "a8445bf3947fa8f812e9384e7c40bb88a34801da",
+        "version" : "0.1.3"
       }
     },
     {
