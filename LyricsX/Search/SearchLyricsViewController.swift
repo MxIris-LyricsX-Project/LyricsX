@@ -51,8 +51,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             tableView.reloadData()
             return
         }
-        let artist = track.artist ?? ""
-        let title = track.title ?? ""
+        var artist = track.artist ?? ""
+        var title = track.title ?? ""
+        // Prefer the native-script name a search plugin recovered for this
+        // track over the localized title/artist the player reports.
+        if case let .info(recoveredTitle, recoveredArtist)? = AppController.shared.currentLyrics?.searchPluginTerm {
+            title = recoveredTitle
+            artist = recoveredArtist
+        }
         if (searchArtist, searchTitle) != (artist, title) {
             (searchArtist, searchTitle) = (artist, title)
             searchAction(nil)
@@ -112,7 +118,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     // MARK: - LyricsSourceDelegate
 
     func lyricsReceived(lyrics: Lyrics) {
-        guard lyrics.metadata.request == searchRequest else {
+        // Match by session id so plugin-expanded requests still belong.
+        guard lyrics.metadata.request?.id == searchRequest?.id else {
             return
         }
         lyrics.filtrate()

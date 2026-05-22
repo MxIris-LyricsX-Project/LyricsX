@@ -7,7 +7,7 @@ import LyricsXFoundation
 import WidgetKit
 import LyricsXWidgetShared
 
-@Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "AppController")
+@Loggable(subsystem: "com.JH.LyricsX.AppController", category: "AppController")
 final class AppController: NSObject {
     static let shared = AppController()
 
@@ -70,6 +70,29 @@ final class AppController: NSObject {
                 self?.scheduleCurrentLineCheck()
             }
             .store(in: &cancelBag)
+
+        // Rebuild the provider group when something that gates the Apple Music
+        // name-recovery plugin changes. The plugin is mounted only when the
+        // user toggle is on AND the active player is Apple Music, so we have
+        // to react to both the preference and any change in the active player:
+        //
+        // - the recovery toggle itself;
+        // - preferred-player switch in General settings;
+        // - NowPlaying / SystemMedia routing to a different app's track
+        //   (e.g. user starts playing in Apple Music while another player
+        //   was previously the active source).
+        Publishers.MergeMany(
+            defaults.publisher(for: [.appleMusicNameRecoveryEnabled]).signal().eraseToAnyPublisher(),
+            defaults.publisher(for: [.preferredPlayerIndex, .useSystemWideNowPlaying, .systemWideNowPlayingAppList]).signal().eraseToAnyPublisher(),
+            selectedPlayer.currentTrackWillChange.signal().eraseToAnyPublisher()
+        )
+        .receive(on: DispatchQueue.main)
+        .map { (defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name) }
+        .removeDuplicates(by: ==)
+        .sink { [weak self] _ in
+            Task { @MainActor in self?.updateLyricsManager() }
+        }
+        .store(in: &cancelBag)
 
         workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
             .sink { notification in
@@ -148,13 +171,13 @@ final class AppController: NSObject {
 
         currentTrackChanged()
 
-        Task {
-            try await updateLyricsManager()
+        Task { @MainActor in
+            updateLyricsManager()
         }
     }
 
     @MainActor
-    func updateLyricsManager() async throws {
+    func updateLyricsManager() {
         let musixmatchToken = defaults[.musixmatchToken].flatMap { $0.isEmpty ? nil : $0 }
         let providers: [LyricsProvider] = [
             LyricsProviders.Service.netease.create(),
@@ -163,7 +186,15 @@ final class AppController: NSObject {
             LyricsProviders.Service.lrclib.create(),
             LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)),
         ]
-        lyricsManager = LyricsProviders.Group(providers: providers)
+        // Route B: for Apple Music tracks, a search plugin recovers the
+        // native-script name via the Apple Music catalog so the providers
+        // can match it. The plugin runs upstream of the providers — it
+        // widens the search, it is not a lyrics source itself.
+        var plugins: [LyricsSearchRequestPlugin] = []
+        if #available(macOS 12.0, *), defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name == .appleMusic {
+            plugins.append(AppleMusicNameRecoveryPlugin())
+        }
+        lyricsManager = LyricsProviders.Group(providers: providers, plugins: plugins)
     }
 
     var currentLineCheckSchedule: Cancellable?
@@ -375,7 +406,12 @@ final class AppController: NSObject {
         // zero matches for the bracketed form. The full title still drives local
         // cache lookup above and the lyrics metadata association below.
         let searchTitle = defaults[.stripSearchTitleBracketsEnabled] ? title.strippingBrackets : title
-        let request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: artist), duration: duration, limit: 5)
+        // Tag Apple Music tracks so the Route B name-recovery plugin runs.
+        var searchUserInfo: [String: String] = [:]
+//        if #available(macOS 12.0, *), selectedPlayer.name == .appleMusic {
+//            searchUserInfo[AppleMusicNameRecoveryPlugin.appleMusicTrackUserInfoKey] = "1"
+//        }
+        let request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: artist), duration: duration, limit: 5, userInfo: searchUserInfo)
         searchRequest = request
         searchTask = Task { @MainActor in
             do {
@@ -396,14 +432,19 @@ final class AppController: NSObject {
                         continue
                     }
 
-                    if let start = collectionStart,
-                       Date().timeIntervalSince(start) <= window {
+                    // Route B name-recovery results are slower than the direct
+                    // providers by design, so they are exempt from the priority
+                    // window — otherwise they would always arrive too late.
+                    let lyricsIsRecovered = lyrics.isFromSearchPlugin
+                    let withinWindow = collectionStart.map { Date().timeIntervalSince($0) <= window } ?? false
+
+                    if withinWindow || lyricsIsRecovered {
                         lyricsReceived(lyrics: lyrics)
-                        continue
-                    } else {
-                        // window expired
-                        break
                     }
+                    // Past the window and not a recovery result: drop it (no
+                    // late swap from the direct providers), but keep draining
+                    // the stream so the Route B plugin runs to completion
+                    // instead of being torn down — and cancelled — mid-request.
                 }
 
                 if defaults[.writeToiTunesAutomatically] {
@@ -420,16 +461,31 @@ final class AppController: NSObject {
     // MARK: LyricsSourceDelegate
 
     func lyricsReceived(lyrics: Lyrics) {
+        // Match by session id, not request equality: Route B's plugin
+        // expands one search into several requests with different search
+        // terms but the same session id, and all of them belong here.
         guard let req = searchRequest,
-              lyrics.metadata.request == req,
+              lyrics.metadata.request?.id == req.id,
               let track = selectedPlayer.currentTrack else {
             return
         }
         if defaults[.strictSearchEnabled], !lyrics.isMatched() {
             return
         }
-        if let current = currentLyrics, !lyricsHasHigherPriority(lyrics, over: current) {
-            return
+        // Route B re-searches with the recovered native-script name; those
+        // results supersede the original localized-name search outright. A
+        // recovered lyric always replaces a localized one, and a localized
+        // lyric is never allowed to replace a recovered one — within the
+        // same tier the usual quality/source priority decides.
+        let lyricsIsRecovered = lyrics.isFromSearchPlugin
+        if let current = currentLyrics {
+            if lyricsIsRecovered != current.isFromSearchPlugin {
+                guard lyricsIsRecovered else {
+                    return
+                }
+            } else if !lyricsHasHigherPriority(lyrics, over: current) {
+                return
+            }
         }
 
         lyrics.associateWithTrack(track)
@@ -495,10 +551,10 @@ final class AppController: NSObject {
             let endPosition = min(enabledLines.count - 1, enabledCurrentPosition + contextRadius)
 
             if startPosition <= endPosition {
-                let windowSlice = enabledLines[startPosition...endPosition]
+                let windowSlice = enabledLines[startPosition ... endPosition]
                 lyricsLines = windowSlice.enumerated().map { windowIndex, indexedLine in
                     let line = indexedLine.element
-                    let nextPosition = line.position  // startTime
+                    let nextPosition = line.position // startTime
                     // Calculate endTime from the next enabled line
                     let sliceArray = Array(windowSlice)
                     let endTime: TimeInterval? = (windowIndex + 1 < sliceArray.count)

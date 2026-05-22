@@ -193,7 +193,7 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 ## 6. 实现 —— LyricsX
 
 ### 6.1 偏好
-- `Global.swift` 加 `static let appleMusicLyricsEnabled = Key<Bool>("AppleMusicLyricsEnabled")`(默认 false)。
+- `Global.swift` 加 `static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")`(默认 false)。开关展示在「偏好设置 → 实验室」中,标题 `Recover original track names via Apple Music`;`AppController.updateLyricsManager()` 据此决定是否挂载 `AppleMusicNameRecoveryPlugin`。
 
 ### 6.2 登录 UI
 - `PreferenceSourceViewController` 加:「连接 Apple Music」按钮、连接状态标签、Apple Music 歌词开关。
@@ -203,7 +203,7 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 ### 6.3 接线 `updateLyricsManager()`
 ```swift
 var providers: [LyricsProvider] = [ netease, qq, kugou, lrclib, musixmatch ]
-if defaults[.appleMusicLyricsEnabled], AppleMusicWebSession.shared.isAuthorized {
+if defaults[.appleMusicNameRecoveryEnabled], AppleMusicWebSession.shared.isAuthorized {
     providers.insert(AppleMusicLyricsProvider(session: .shared), at: 0)              // A
     providers.append(AppleMusicNameRecoveryProvider(session: .shared, wrapped: <上面5个>)) // B
 }

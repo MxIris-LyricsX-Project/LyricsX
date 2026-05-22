@@ -98,6 +98,7 @@ let package = Package(
             name: "LyricsXFoundation",
             dependencies: [
                 .product(name: "LyricsKit", package: "LyricsKit"),
+                .product(name: "LyricsKitAppleMusic", package: "LyricsKit"),
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
                 .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
             ]

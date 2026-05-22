@@ -2641,6 +2641,18 @@
         }
       }
     },
+    "ANR-Cl-001.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Recover original track names via Apple Music\"; ObjectID = \"ANR-Cl-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recover original track names via Apple Music"
+          }
+        }
+      }
+    },
     "As7-rZ-u6c.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Strict Search\"; ObjectID = \"As7-rZ-u6c\";",
       "extractionState" : "extracted_with_value",

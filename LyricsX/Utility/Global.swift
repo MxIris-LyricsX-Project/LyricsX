@@ -171,6 +171,10 @@ extension UserDefaults.DefaultsKeys {
     static let lyricsSourcePriorityEnabled = Key<Bool>("LyricsSourcePriorityEnabled")
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
     static let lyricsPriorityWindow = Key<Double>("LyricsPriorityWindow")
+
+    // Apple Music Route B — recover a track's native-script name via the
+    // Apple Music catalog so the third-party providers can match it.
+    static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")
 }
 
 // MARK: - Lyrics Priority

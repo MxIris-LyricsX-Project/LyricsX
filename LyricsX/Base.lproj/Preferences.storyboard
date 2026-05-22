@@ -67,11 +67,11 @@
             <objects>
                 <viewController title="General" id="GaA-xG-8SL" userLabel="General" customClass="PreferenceGeneralViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="Bzr-sv-FuP">
-                        <rect key="frame" x="0.0" y="0.0" width="611" height="572"/>
+                        <rect key="frame" x="0.0" y="0.0" width="611" height="640"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <box title="Preferred music player" translatesAutoresizingMaskIntoConstraints="NO" id="FxG-RK-g7y">
-                                <rect key="frame" x="20" y="442" width="571" height="106"/>
+                                <rect key="frame" x="20" y="510" width="571" height="106"/>
                                 <view key="contentView" id="Mdd-yA-dBT">
                                     <rect key="frame" x="0.0" y="0.0" width="571" height="94"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -304,7 +304,7 @@
                                 </view>
                             </box>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" translatesAutoresizingMaskIntoConstraints="NO" id="hBJ-hq-S4u">
-                                <rect key="frame" x="20" y="20" width="571" height="412"/>
+                                <rect key="frame" x="20" y="20" width="571" height="480"/>
                                 <rows>
                                     <gridRow yPlacement="center" height="30" id="5do-X5-xgX"/>
                                     <gridRow yPlacement="center" height="30" id="Nkw-LC-Lbi"/>
@@ -330,7 +330,7 @@
                                     <gridCell row="5do-X5-xgX" column="3Hg-Ka-QrM" id="vUV-9r-hs4"/>
                                     <gridCell row="5do-X5-xgX" column="IfN-lq-biT" id="Qf5-qY-K1u">
                                         <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="KCS-6F-vyn">
-                                            <rect key="frame" x="217" y="389" width="242" height="16"/>
+                                            <rect key="frame" x="217" y="457" width="242" height="16"/>
                                             <buttonCell key="cell" type="check" title="Auto launch &amp; quit with music player" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Z0u-vP-mn0">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -347,7 +347,7 @@
                                     </gridCell>
                                     <gridCell row="Nkw-LC-Lbi" column="3Hg-Ka-QrM" id="GVk-Na-9Qx">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mMr-cH-jAi">
-                                            <rect key="frame" x="85" y="353" width="117" height="16"/>
+                                            <rect key="frame" x="85" y="421" width="117" height="16"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="toz-Mz-SHW">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -357,7 +357,7 @@
                                     </gridCell>
                                     <gridCell row="Nkw-LC-Lbi" column="IfN-lq-biT" id="8wo-Aw-Cbv">
                                         <stackView key="contentView" distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IBT-ZS-FAA">
-                                            <rect key="frame" x="217" y="349" width="189" height="24"/>
+                                            <rect key="frame" x="217" y="417" width="189" height="24"/>
                                             <subviews>
                                                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c8h-bP-qfB">
                                                     <rect key="frame" x="0.0" y="0.0" width="160" height="24"/>
@@ -421,7 +421,7 @@
                                     <gridCell row="bYQ-nJ-Ce7" column="3Hg-Ka-QrM" id="9RI-Dt-f9i"/>
                                     <gridCell row="bYQ-nJ-Ce7" column="IfN-lq-biT" id="s58-Z9-B82">
                                         <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="kmo-rQ-MLa">
-                                            <rect key="frame" x="217" y="324" width="354" height="16"/>
+                                            <rect key="frame" x="217" y="392" width="354" height="16"/>
                                             <buttonCell key="cell" type="check" title="Load lyrics from music file (order: embedded &gt; beside)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="vUt-b5-jlE">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -437,7 +437,7 @@
                                     </gridCell>
                                     <gridCell row="1nK-QJ-9q8" column="3Hg-Ka-QrM" id="LHl-h8-VCa">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ddw-d3-Onc">
-                                            <rect key="frame" x="21" y="291" width="181" height="16"/>
+                                            <rect key="frame" x="21" y="359" width="181" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="0gT-Nz-7Jw">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -447,7 +447,7 @@
                                     </gridCell>
                                     <gridCell row="1nK-QJ-9q8" column="IfN-lq-biT" id="W1D-9B-Ubo">
                                         <popUpButton key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GuZ-fJ-k5o">
-                                            <rect key="frame" x="217" y="287" width="120" height="24"/>
+                                            <rect key="frame" x="217" y="355" width="120" height="24"/>
                                             <popUpButtonCell key="cell" type="push" title="Auto" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qp6-bh-hGr" id="yvD-mA-Sdd">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="message"/>
@@ -470,7 +470,7 @@
                                     </gridCell>
                                     <gridCell row="x5a-Q5-Acb" column="3Hg-Ka-QrM" id="RAA-sw-0vE">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fsT-Mz-djW">
-                                            <rect key="frame" x="85" y="255" width="117" height="16"/>
+                                            <rect key="frame" x="85" y="323" width="117" height="16"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="zS6-oP-7aR">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -480,7 +480,7 @@
                                     </gridCell>
                                     <gridCell row="x5a-Q5-Acb" column="IfN-lq-biT" id="5Cd-Db-5aS">
                                         <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a5h-Km-d1s">
-                                            <rect key="frame" x="217" y="251" width="100" height="24"/>
+                                            <rect key="frame" x="217" y="319" width="100" height="24"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="100" id="aSq-t4-UP4"/>
                                             </constraints>
@@ -501,14 +501,14 @@
                                     </gridCell>
                                     <gridCell row="ApI-Zi-AYg" column="3Hg-Ka-QrM" headOfMergedCell="MXo-5n-3rJ" xPlacement="fill" id="MXo-5n-3rJ">
                                         <box key="contentView" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="tDa-uO-sv5">
-                                            <rect key="frame" x="0.0" y="230" width="571" height="5"/>
+                                            <rect key="frame" x="0.0" y="298" width="571" height="5"/>
                                         </box>
                                     </gridCell>
                                     <gridCell row="ApI-Zi-AYg" column="IfN-lq-biT" headOfMergedCell="MXo-5n-3rJ" id="XTR-ou-VYt"/>
                                     <gridCell row="b3M-VO-u37" column="3Hg-Ka-QrM" id="Ivi-dw-RPJ"/>
                                     <gridCell row="b3M-VO-u37" column="IfN-lq-biT" id="QeW-hO-6bA">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5bK-Rl-HvO">
-                                            <rect key="frame" x="217" y="198" width="101" height="16"/>
+                                            <rect key="frame" x="217" y="266" width="101" height="16"/>
                                             <buttonCell key="cell" type="check" title="Strict Search" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="kN1-5j-3tW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -525,7 +525,7 @@
                                     <gridCell row="ubP-tx-cL1" column="3Hg-Ka-QrM" id="vTr-0g-EfT"/>
                                     <gridCell row="ubP-tx-cL1" column="IfN-lq-biT" id="IMv-38-Xeu">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2iE-C1-iCF">
-                                            <rect key="frame" x="215" y="174" width="261" height="16"/>
+                                            <rect key="frame" x="215" y="242" width="261" height="16"/>
                                             <textFieldCell key="cell" title="Search result match the exact search term" id="SGe-4J-kW6">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -536,7 +536,7 @@
                                     <gridCell row="Sbr-cb-rOw" column="3Hg-Ka-QrM" id="Sbr-cb-cLh"/>
                                     <gridCell row="Sbr-cb-rOw" column="IfN-lq-biT" id="Sbr-cb-cRh">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Sbr-cb-Btn">
-                                            <rect key="frame" x="217" y="148" width="232" height="16"/>
+                                            <rect key="frame" x="217" y="214" width="210" height="16"/>
                                             <buttonCell key="cell" type="check" title="Strip brackets from search title" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Sbr-cb-bCl">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -549,8 +549,8 @@
                                     <gridCell row="Sbr-ex-rOw" column="3Hg-Ka-QrM" id="Sbr-ex-cLh"/>
                                     <gridCell row="Sbr-ex-rOw" column="IfN-lq-biT" id="Sbr-ex-cRh">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Sbr-ex-tFd">
-                                            <rect key="frame" x="215" y="116" width="350" height="32"/>
-                                            <textFieldCell key="cell" lineBreakMode="wordWrapping" title="Strip brackets from the title before searching. Strict Search then matches the stripped title." usesSingleLineMode="NO" id="Sbr-ex-tCl">
+                                            <rect key="frame" x="215" y="174" width="358" height="32"/>
+                                            <textFieldCell key="cell" title="Strip brackets from the title before searching. Strict Search then matches the stripped title." id="Sbr-ex-tCl">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1483,11 +1483,11 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="416"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="524"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="376"/>
+                                <rect key="frame" x="75" y="20" width="520" height="484"/>
                                 <rows>
                                     <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
                                     <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
@@ -1502,6 +1502,7 @@
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="center" height="30" id="MBP-Ro-W01"/>
                                     <gridRow yPlacement="center" height="30" id="AML-Ro-W01"/>
+                                    <gridRow yPlacement="center" height="30" id="ANR-Ro-W01"/>
                                     <gridRow height="30" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
@@ -1511,7 +1512,7 @@
                                 <gridCells>
                                     <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
-                                            <rect key="frame" x="-2" y="335" width="524" height="32"/>
+                                            <rect key="frame" x="-2" y="443" width="524" height="32"/>
                                             <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1523,7 +1524,7 @@
                                     <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
                                     <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
-                                            <rect key="frame" x="170" y="302" width="270" height="16"/>
+                                            <rect key="frame" x="170" y="410" width="270" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1536,7 +1537,7 @@
                                     <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
                                     <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
-                                            <rect key="frame" x="170" y="274" width="206" height="20"/>
+                                            <rect key="frame" x="170" y="382" width="206" height="20"/>
                                             <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1550,7 +1551,7 @@
                                     <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
                                     <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
-                                            <rect key="frame" x="170" y="248" width="333" height="16"/>
+                                            <rect key="frame" x="170" y="356" width="333" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1563,7 +1564,7 @@
                                     <gridCell row="new-Romajin-Row" column="8ba-lF-U7s" id="new-Romajin-Left"/>
                                     <gridCell row="new-Romajin-Row" column="4uA-B7-Dvh" id="new-Romajin-Right">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="new-Romajin-Button">
-                                            <rect key="frame" x="170" y="217" width="327" height="16"/>
+                                            <rect key="frame" x="170" y="325" width="327" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate romajin for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="new-Romajin-Cell">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1576,7 +1577,7 @@
                                     <gridCell row="es4-R9-etL" column="8ba-lF-U7s" id="hk3-2P-FTU"/>
                                     <gridCell row="es4-R9-etL" column="4uA-B7-Dvh" id="dui-8P-7d0">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D7U-qs-Keb">
-                                            <rect key="frame" x="170" y="188" width="163" height="16"/>
+                                            <rect key="frame" x="170" y="296" width="163" height="16"/>
                                             <buttonCell key="cell" type="check" title="Enable Touch Bar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wnV-53-Dlj">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1586,7 +1587,7 @@
                                     <gridCell row="6GV-2W-Qb0" column="8ba-lF-U7s" id="OEP-pE-Pg8"/>
                                     <gridCell row="6GV-2W-Qb0" column="4uA-B7-Dvh" id="UZK-20-qw8">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jsm-Ub-qMX">
-                                            <rect key="frame" x="170" y="160" width="149" height="20"/>
+                                            <rect key="frame" x="170" y="268" width="149" height="20"/>
                                             <buttonCell key="cell" type="push" title="Customize TouchBar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7pm-7c-xyY">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1607,7 +1608,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="8ba-lF-U7s" id="nOn-Ex-4vI">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="89S-CL-lsy">
-                                            <rect key="frame" x="17" y="126" width="135" height="16"/>
+                                            <rect key="frame" x="17" y="234" width="135" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Write lyrics to iTunes:" id="kAi-t8-g5K">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1617,7 +1618,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="4uA-B7-Dvh" id="Kbf-0T-apV">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GZZ-x3-lIt">
-                                            <rect key="frame" x="170" y="126" width="118" height="16"/>
+                                            <rect key="frame" x="170" y="234" width="118" height="16"/>
                                             <buttonCell key="cell" type="check" title="With translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="uXK-tg-wwl">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1630,7 +1631,7 @@
                                     <gridCell row="convertLRC-row" column="8ba-lF-U7s" id="convertLRC-labelCell"/>
                                     <gridCell row="convertLRC-row" column="4uA-B7-Dvh" id="convertLRC-buttonCell">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="convertLRC-button">
-                                            <rect key="frame" x="170" y="100" width="226" height="16"/>
+                                            <rect key="frame" x="170" y="208" width="226" height="16"/>
                                             <buttonCell key="cell" type="check" title="Convert to plain LRC (no karaoke)" bezelStyle="regularSquare" imagePosition="left" inset="2" id="convertLRC-buttonCell-inner">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1643,7 +1644,7 @@
                                     <gridCell row="Wah-Ax-79z" column="8ba-lF-U7s" id="ubI-WM-7fC"/>
                                     <gridCell row="Wah-Ax-79z" column="4uA-B7-Dvh" id="GRv-Th-Hm9">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="veZ-Dt-Ga7">
-                                            <rect key="frame" x="170" y="74" width="104" height="16"/>
+                                            <rect key="frame" x="170" y="182" width="104" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oEV-Ku-uLM">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1656,7 +1657,7 @@
                                     <gridCell row="lhU-ZY-jGn" column="8ba-lF-U7s" id="T3Q-4J-uOx"/>
                                     <gridCell row="lhU-ZY-jGn" column="4uA-B7-Dvh" id="YIm-rp-ZKR">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fmv-dB-BeO">
-                                            <rect key="frame" x="170" y="43" width="284" height="16"/>
+                                            <rect key="frame" x="170" y="151" width="284" height="16"/>
                                             <buttonCell key="cell" type="check" title="Combine menubar icon with menubar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rtU-Go-wwF">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1669,7 +1670,7 @@
                                     <gridCell row="MBP-Ro-W01" column="8ba-lF-U7s" id="MBP-Ce-L01"/>
                                     <gridCell row="MBP-Ro-W01" column="4uA-B7-Dvh" id="MBP-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MBP-Bt-N01">
-                                            <rect key="frame" x="170" y="12" width="284" height="16"/>
+                                            <rect key="frame" x="170" y="115" width="241" height="16"/>
                                             <buttonCell key="cell" type="check" title="Show playback controls in menu bar" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="MBP-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1682,13 +1683,26 @@
                                     <gridCell row="AML-Ro-W01" column="8ba-lF-U7s" id="AML-Ce-L01"/>
                                     <gridCell row="AML-Ro-W01" column="4uA-B7-Dvh" id="AML-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AML-Bt-N01">
-                                            <rect key="frame" x="170" y="12" width="320" height="16"/>
+                                            <rect key="frame" x="170" y="79" width="244" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use Apple Music-style lyrics window" bezelStyle="regularSquare" imagePosition="left" inset="2" id="AML-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.UseAppleMusicLyricsWindow" id="AML-Bn-D01"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="ANR-Ro-W01" column="8ba-lF-U7s" id="ANR-Ce-L01"/>
+                                    <gridCell row="ANR-Ro-W01" column="4uA-B7-Dvh" id="ANR-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ANR-Bt-N01">
+                                            <rect key="frame" x="170" y="43" width="296" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Recover original track names via Apple Music" bezelStyle="regularSquare" imagePosition="left" inset="2" id="ANR-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="appleMusicNameRecoveryButtonAction:" target="JPs-hn-m7d" id="ANR-Ac-D01"/>
                                             </connections>
                                         </button>
                                     </gridCell>
@@ -1726,6 +1740,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="appleMusicNameRecoveryButton" destination="ANR-Bt-N01" id="ANR-Ot-U01"/>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
                         <outlet property="useAppleMusicLyricsWindowButton" destination="AML-Bt-N01" id="AML-Ot-U01"/>
@@ -1741,7 +1756,7 @@
             <objects>
                 <viewController title="Source" id="KTZ-mJ-lpY" customClass="PreferenceSourceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" misplaced="YES" id="Bkt-jy-GD5">
-                        <rect key="frame" x="0.0" y="0.0" width="580" height="248"/>
+                        <rect key="frame" x="0.0" y="0.0" width="560" height="248"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
@@ -1753,13 +1768,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="540" height="150"/>
+                                <rect key="frame" x="20" y="24" width="520" height="150"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="538" height="148"/>
+                                    <rect key="frame" x="1" y="1" width="518" height="148"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="538" height="120"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="518" height="120"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1801,7 +1816,7 @@
                                                         </tableCellView>
                                                     </prototypeCellViews>
                                                 </tableColumn>
-                                                <tableColumn identifier="source" width="459" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
+                                                <tableColumn identifier="source" width="439" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Source">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1814,11 +1829,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="VGV-SG-dwt">
-                                                            <rect key="frame" x="73" y="0.0" width="456" height="24"/>
+                                                            <rect key="frame" x="73" y="0.0" width="436" height="24"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="KUU-qx-NSS">
-                                                                    <rect key="frame" x="0.0" y="4" width="456" height="16"/>
+                                                                    <rect key="frame" x="0.0" y="4" width="436" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" id="ow1-De-Qmh">
                                                                         <font key="font" usesAppearanceFont="YES"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1851,7 +1866,7 @@
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="150" id="z0H-bo-IFm"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Cq9-fY-Mad">
-                                    <rect key="frame" x="1" y="132" width="558" height="17"/>
+                                    <rect key="frame" x="1" y="132" width="538" height="17"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-hy-YBN">
@@ -1859,7 +1874,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="Kzd-3h-xxb">
-                                    <rect key="frame" x="0.0" y="0.0" width="538" height="28"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="518" height="28"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>

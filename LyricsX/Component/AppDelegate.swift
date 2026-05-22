@@ -1,9 +1,11 @@
 import AppKit
 import GenericID
 import MASShortcut
+import MusicKit
 import MusicPlayer
 import Sparkle
 import Semver
+import FoundationToolbox
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
@@ -26,19 +28,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
-    private var appleMusicLyricsWindowControllerStorage: Any?
-
     private var activeLyricsHUD: NSWindowController?
 
     @available(macOS 15, *)
-    private var appleMusicLyricsWindowController: AppleMusicLyrics.WindowController {
-        if let existing = appleMusicLyricsWindowControllerStorage as? AppleMusicLyrics.WindowController {
-            return existing
-        }
-        let controller = AppleMusicLyrics.WindowController()
-        appleMusicLyricsWindowControllerStorage = controller
-        return controller
-    }
+    @AvailableNonMutating
+    private var appleMusicLyricsWindowController: AppleMusicLyrics.WindowController = .init()
 
     private func openLyricsHUD() {
         let hud: NSWindowController
