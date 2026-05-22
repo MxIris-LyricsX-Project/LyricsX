@@ -1502,7 +1502,7 @@
                                     <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="center" height="30" id="MBP-Ro-W01"/>
                                     <gridRow yPlacement="center" height="30" id="AML-Ro-W01"/>
-                                    <gridRow yPlacement="center" height="30" id="ANR-Ro-W01"/>
+                                    <gridRow yPlacement="center" height="46" id="ANR-Ro-W01"/>
                                     <gridRow height="30" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
@@ -1696,8 +1696,8 @@
                                     <gridCell row="ANR-Ro-W01" column="8ba-lF-U7s" id="ANR-Ce-L01"/>
                                     <gridCell row="ANR-Ro-W01" column="4uA-B7-Dvh" id="ANR-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ANR-Bt-N01">
-                                            <rect key="frame" x="170" y="43" width="296" height="16"/>
-                                            <buttonCell key="cell" type="check" title="Recover original track names via Apple Music" bezelStyle="regularSquare" imagePosition="left" inset="2" id="ANR-Cl-001">
+                                            <rect key="frame" x="170" y="36" width="296" height="32"/>
+                                            <buttonCell key="cell" type="check" title="Recover original song and artist names via MusicKit (Apple Music only)" bezelStyle="regularSquare" imagePosition="left" alignment="left" lineBreakMode="wordWrap" inset="2" id="ANR-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>

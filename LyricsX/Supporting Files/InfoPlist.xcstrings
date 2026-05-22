@@ -10,11 +10,36 @@
             "state" : "new",
             "value" : "LyricsX"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX"
+          }
         }
       }
     },
     "Lyrics File" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞檔案"
+          }
+        }
+      }
     },
     "NSAppleEventsUsageDescription" : {
       "comment" : "Privacy - AppleEvents Sending Usage Description",
@@ -133,6 +158,18 @@
             "state" : "new",
             "value" : "LyricsX uses Apple Music to look up the original title and artist of a track so it can find lyrics for localized names."
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX 使用 Apple Music 查询曲目的原始标题和艺人，以便为本地化名称查找歌词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX 使用 Apple Music 查詢曲目的原始標題和藝人，以便為本地化名稱搜尋歌詞。"
+          }
         }
       }
     },
@@ -144,6 +181,18 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Copyright © 2017-2020 Xander Deng. All rights reserved."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版权所有 © 2017-2020 Xander Deng。保留所有权利。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版權所有 © 2017-2020 Xander Deng。保留一切權利。"
           }
         }
       }

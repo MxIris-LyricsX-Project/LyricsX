@@ -115,8 +115,8 @@ class PreferenceLabViewController: PreferenceViewController {
     private func presentAppleMusicAccessDeniedAlert() {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
-            "Apple Music access is required to recover original track names.",
-            comment: "Alert title when MusicAuthorization is denied or restricted for the name recovery toggle."
+            "Apple Music access is required to recover original song and artist names.",
+            comment: "Alert title when MusicAuthorization is denied or restricted for the MusicKit name recovery toggle."
         )
         alert.informativeText = NSLocalizedString(
             "Grant access in System Settings > Privacy & Security > Media & Apple Music, then try again.",

@@ -2,13 +2,54 @@
   "sourceLanguage" : "en",
   "strings" : {
     "-%@" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-%@"
+          }
+        }
+      }
     },
     "Add Current Playing" : {
-      "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote."
+      "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加当前播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增目前播放"
+          }
+        }
+      }
     },
-    "Apple Music access is required to recover original track names." : {
-      "comment" : "Alert title when MusicAuthorization is denied or restricted for the name recovery toggle."
+    "Apple Music access is required to recover original song and artist names." : {
+      "comment" : "Alert title when MusicAuthorization is denied or restricted for the MusicKit name recovery toggle.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 Apple Music 访问权限才能恢复原始的歌曲和艺人名称。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 Apple Music 取用權限才能還原原始的歌曲與藝人名稱。"
+          }
+        }
+      }
     },
     "Download" : {
       "comment" : "title of download button on the update alert. Download new version of the app.",
@@ -225,7 +266,21 @@
       }
     },
     "Grant access in System Settings > Privacy & Security > Media & Apple Music, then try again." : {
-      "comment" : "Alert body directing the user to System Settings to grant Apple Music access."
+      "comment" : "Alert body directing the user to System Settings to grant Apple Music access.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在「系统设置 > 隐私与安全性 > 媒体与 Apple Music」中授予权限，然后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請在「系統設定 > 隱私權與安全性 > 媒體與 Apple Music」中授予權限，然後再試一次。"
+          }
+        }
+      }
     },
     "Lyrics Window" : {
       "extractionState" : "manual",
@@ -335,13 +390,54 @@
       }
     },
     "Next Track" : {
-      "comment" : "Menu bar playback next button"
-    },
-    "No active NowPlaying source" : {
-      "comment" : "Title for the alert shown when LyricsX cannot find a currently playing app while resolving its bundle id."
+      "comment" : "Menu bar playback next button",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一曲"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一曲"
+          }
+        }
+      }
     },
     "No Lyrics" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有歌詞"
+          }
+        }
+      }
+    },
+    "No active NowPlaying source" : {
+      "comment" : "Title for the alert shown when LyricsX cannot find a currently playing app while resolving its bundle id.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有正在播放的应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有正在播放的應用程式"
+          }
+        }
+      }
     },
     "OK" : {
       "extractionState" : "manual",
@@ -451,19 +547,88 @@
       }
     },
     "Pause" : {
-      "comment" : "Menu bar playback pause button"
+      "comment" : "Menu bar playback pause button",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停"
+          }
+        }
+      }
     },
     "Play" : {
-      "comment" : "Menu bar playback play button"
+      "comment" : "Menu bar playback play button",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
+          }
+        }
+      }
     },
     "Play/Pause" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放/暂停"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放/暫停"
+          }
+        }
+      }
     },
     "Previous Track" : {
-      "comment" : "Menu bar playback previous button"
+      "comment" : "Menu bar playback previous button",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一曲"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一曲"
+          }
+        }
+      }
     },
     "Requires macOS 12 or later" : {
-      "comment" : "Tooltip on the Apple Music name recovery toggle when the OS is too old."
+      "comment" : "Tooltip on the Apple Music name recovery toggle when the OS is too old.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 12 或更高版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 12 或更新版本"
+          }
+        }
+      }
     },
     "Requires macOS 15 or later" : {
       "comment" : "Tooltip on the Apple Music-style lyrics window toggle when the OS is too old.",
@@ -597,16 +762,69 @@
       }
     },
     "Skip to next track" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳到下一曲"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳到下一曲"
+          }
+        }
+      }
     },
     "Skip to previous track" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳到上一曲"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳到上一曲"
+          }
+        }
+      }
     },
     "Start playback in the app you want to add, then try again." : {
-      "comment" : "Body for the no-active-NowPlaying-source alert."
+      "comment" : "Body for the no-active-NowPlaying-source alert.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先在要添加的应用中开始播放，然后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先在要新增的應用程式中開始播放，然後再試一次。"
+          }
+        }
+      }
     },
     "Toggle music playback" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换音乐播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換音樂播放"
+          }
+        }
+      }
     },
     "Touch Bar lyrics is not supported in Mac App Store Version. Please download on GitHub." : {
       "extractionState" : "manual",
