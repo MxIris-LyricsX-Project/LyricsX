@@ -40,6 +40,56 @@ swiftlint
 swiftformat .
 ```
 
+## Release Workflow
+
+A LyricsX release is triggered by pushing a `v*` tag (e.g. `v1.9.0-beta.7`),
+which fires `.github/workflows/release.yml`. CI sets
+`LYRICSX_USE_LOCAL_DEPENDENCY=0`, so it resolves SPM dependencies from
+their **remote tags** (not local checkouts). If a dependency's tag is
+stale relative to its `main`/`master` HEAD, CI will pull an outdated
+version that may be missing products LyricsX needs.
+
+**Before every LyricsX release, audit these three sibling repos and
+tag any that have unreleased commits — in this order, because
+MusicPlayer depends on mediaremote-adapter, and LyricsX depends on
+both LyricsKit and MusicPlayer:**
+
+1. **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`)
+   — check `master`/`main` vs latest `v*` tag.
+2. **LyricsKit** (`MxIris-LyricsX-Project/LyricsKit`, branch `main`)
+   — check `main` vs latest `v*` tag.
+3. **MusicPlayer** (`MxIris-LyricsX-Project/MusicPlayer`, branch `master`)
+   — check `master` vs latest `v*` tag.
+
+For each repo that has unreleased commits:
+
+1. Decide the next version (minor bump for additive product/API, patch
+   for bug fix only, major for breaking changes).
+2. `git tag -a vX.Y.Z -m "X.Y.Z"` and `git push origin vX.Y.Z` in that
+   repo.
+
+Then in **this** repo:
+
+3. Bump the SPM `from:` requirement in `LyricsXPackage/Package.swift`
+   if needed (only when the new tag is below the existing floor, or to
+   pin a known-good major).
+4. Run `xcodebuild -resolvePackageDependencies` (or
+   *Update to Latest Package Versions* in Xcode) to refresh
+   `LyricsX.xcodeproj/.../Package.resolved`.
+5. Commit the updated `Package.resolved` and (if changed)
+   `Package.swift`.
+6. Bump `CFBundleVersion` in `LyricsX/Supporting Files/Info.plist` and
+   `LyricsXWidget/Info.plist` together.
+7. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`.
+8. Push the branch, then tag and push `v<version>` to trigger the
+   release workflow.
+
+If you skip step 1-2 and a dependency is missing a needed product, CI
+fails fast in `Build` with
+`product 'X' required by package 'lyricsxpackage' target 'LyricsXFoundation' not found in package 'Y'`
+— treat that as the signal to go back and tag the dependency, not as a
+LyricsX-side bug.
+
 ## Architecture
 
 ### Build System
@@ -58,6 +108,7 @@ Hybrid Xcode project + Swift Package Manager. The Xcode project (`LyricsX.xcodep
 
 - **LyricsKit** (`MxIris-LyricsX-Project/LyricsKit`, branch: main) — lyrics search/parsing engine
 - **MusicPlayer** (`MxIris-LyricsX-Project/MusicPlayer`, branch: master) — music player abstraction layer
+- **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`) — transitive dependency of MusicPlayer; provides the `MediaRemoteAdapter` product used by `SystemMedia` to bridge the private MediaRemote APIs
 - **LyricsXFoundation** (local package in `LyricsXPackage/`) — thin re-export wrapper: `@_exported import LyricsKit`
 
 ### App Internal Structure (`LyricsX/`)
