@@ -80,9 +80,33 @@ Then in **this** repo:
    `Package.swift`.
 6. Bump `CFBundleVersion` in `LyricsX/Supporting Files/Info.plist` and
    `LyricsXWidget/Info.plist` together.
-7. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`.
+7. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`,
+   following the conventions below.
 8. Push the branch, then tag and push `v<version>` to trigger the
    release workflow.
+
+### Release notes conventions
+
+- The GitHub Release **title** is the version string with a `v` prefix
+  (e.g. `v1.9.0-beta.7`). The `Scripts/release/create-release.sh`
+  script passes `--title "v${VERSION}"` to `gh release create`.
+- The version is shown **only** in the title — neither the English
+  nor the Chinese notes file should repeat the version number or
+  the project name "LyricsX" anywhere. Refer to the app implicitly
+  ("a new switch", "the toggle"), not by name.
+- Top-level H1 in each notes file is the language-neutral section
+  label only:
+  - `ReleaseNotes/<version>_en.md` → `# What's New`
+  - `ReleaseNotes/<version>_zh.md` → `# 更新内容`
+- Use H2 for grouping inside each file (`## New`, `## 新增`,
+  `## Fixes`, `## 修复`, etc.).
+- **Do not hard-wrap paragraph text.** Each bullet's body should be
+  a single long line — let the renderer (GitHub Releases, the
+  Sparkle update window) wrap visually. Only insert a line break
+  between separate list items.
+- The two notes files are concatenated by
+  `Scripts/release/compose-notes.sh` with a `---` separator, so the
+  English file goes first.
 
 If you skip step 1-2 and a dependency is missing a needed product, CI
 fails fast in `Build` with

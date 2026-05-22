@@ -33,7 +33,7 @@ fi
 log_info "Creating published release v${VERSION} (prerelease=${IS_PRERELEASE})"
 gh release create "v${VERSION}" \
     "${FLAGS[@]}" \
-    --title "LyricsX ${VERSION}" \
+    --title "v${VERSION}" \
     --notes-file "$BODY" \
     "$APP_ZIP" \
     "$DSYMS_ZIP"
