@@ -17,6 +17,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
     var searchResult: [Lyrics] = []
+    var artworkScoringTasks: [Task<Void, Never>] = []
     var progressObservation: NSKeyValueObservation?
 
     @IBOutlet var artworkView: NSImageView!
@@ -67,6 +68,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     @IBAction func searchAction(_ sender: Any?) {
         searchTask?.cancel()
+        artworkScoringTasks.forEach { $0.cancel() }
+        artworkScoringTasks.removeAll()
         progressObservation?.invalidate()
         searchResult = []
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
@@ -78,7 +81,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         searchRequest = req
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
-        searchTask = Task {
+        searchTask = Task { @MainActor in
             do {
                 for try await lyrics in lyricsManager.lyrics(for: req) {
                     lyricsReceived(lyrics: lyrics)
@@ -117,6 +120,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     // MARK: - LyricsSourceDelegate
 
+    @MainActor
     func lyricsReceived(lyrics: Lyrics) {
         // Match by session id so plugin-expanded requests still belong.
         guard lyrics.metadata.request?.id == searchRequest?.id else {
@@ -130,8 +134,58 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         } else {
             searchResult.append(lyrics)
         }
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
+        scheduleArtworkScoring(for: lyrics)
+        tableView.reloadData()
+    }
+
+    private func scheduleArtworkScoring(for lyrics: Lyrics) {
+        guard defaults[.artworkSimilarityBoostEnabled],
+              let url = lyrics.metadata.artworkURL else { return }
+        let task = Task.detached { [weak self] in
+            let matched = await ArtworkSimilarityScorer.shared.matches(artworkURL: url)
+            guard matched, !Task.isCancelled else { return }
+            await MainActor.run {
+                guard let self else { return }
+                self.applyArtworkBonus(to: lyrics)
+            }
+        }
+        artworkScoringTasks.append(task)
+    }
+
+    @MainActor
+    private func applyArtworkBonus(to lyrics: Lyrics) {
+        // The lyrics object may belong to a previous search whose results
+        // have already been cleared; identity-check before mutating.
+        guard searchResult.contains(where: { $0 === lyrics }) else { return }
+        lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        resortAfterArtworkScoring()
+    }
+
+    @MainActor
+    private func resortAfterArtworkScoring() {
+        let selectedLyrics: Lyrics?
+        let selectedRow = tableView.selectedRow
+        if selectedRow >= 0, selectedRow < searchResult.count {
+            selectedLyrics = searchResult[selectedRow]
+        } else {
+            selectedLyrics = nil
+        }
+
+        // Replay the insertion-order semantics of `lyricsReceived` so that
+        // results with equal effective quality keep their relative order.
+        var reordered: [Lyrics] = []
+        for lyrics in searchResult {
+            if let idx = reordered.firstIndex(where: { lyricsHasHigherPriority(lyrics, over: $0) }) {
+                reordered.insert(lyrics, at: idx)
+            } else {
+                reordered.append(lyrics)
+            }
+        }
+        searchResult = reordered
+        tableView.reloadData()
+
+        if let selectedLyrics, let newIndex = searchResult.firstIndex(where: { $0 === selectedLyrics }) {
+            tableView.selectRowIndexes(IndexSet(integer: newIndex), byExtendingSelection: false)
         }
     }
 

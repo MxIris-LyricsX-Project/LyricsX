@@ -172,12 +172,26 @@ extension UserDefaults.DefaultsKeys {
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
     static let lyricsPriorityWindow = Key<Double>("LyricsPriorityWindow")
 
+    // Artwork-similarity reranking: when on, candidates whose cover art looks
+    // like the currently playing track's artwork get a quality bonus, so the
+    // right version surfaces above same-title peers from other artists.
+    static let artworkSimilarityBoostEnabled = Key<Bool>("ArtworkSimilarityBoostEnabled")
+
     // Apple Music Route B — recover a track's native-script name via the
     // Apple Music catalog so the third-party providers can match it.
     static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")
 }
 
 // MARK: - Lyrics Priority
+
+private let artworkMatchBonusKey = Lyrics.Metadata.Key("LyricsX.ArtworkMatchBonus")
+
+extension Lyrics {
+    var artworkMatchBonus: Double {
+        get { (metadata.data[artworkMatchBonusKey] as? Double) ?? 0 }
+        set { metadata.data[artworkMatchBonusKey] = newValue }
+    }
+}
 
 func lyricsHasHigherPriority(_ new: Lyrics, over existing: Lyrics) -> Bool {
     if defaults[.lyricsSourcePriorityEnabled] {
@@ -195,7 +209,18 @@ func lyricsHasHigherPriority(_ new: Lyrics, over existing: Lyrics) -> Bool {
         }
     }
 
-    return new.quality > existing.quality
+    // NaN compares false against everything, which used to make the insertion
+    // search in `firstIndex(where:)` always fall through and append — defeating
+    // any quality-based ordering. Treat NaN as zero so a stray bug in the
+    // upstream scorer can never silently reduce sorting to arrival order.
+    let newQuality = (new.quality.isFinite ? new.quality : 0) + effectiveArtworkBonus(new)
+    let existingQuality = (existing.quality.isFinite ? existing.quality : 0) + effectiveArtworkBonus(existing)
+    return newQuality > existingQuality
+}
+
+private func effectiveArtworkBonus(_ lyrics: Lyrics) -> Double {
+    guard defaults[.artworkSimilarityBoostEnabled] else { return 0 }
+    return lyrics.artworkMatchBonus
 }
 
 extension CGFloat: @retroactive DefaultConstructible {}

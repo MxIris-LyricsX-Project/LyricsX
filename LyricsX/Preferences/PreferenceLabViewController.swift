@@ -11,10 +11,13 @@ class PreferenceLabViewController: PreferenceViewController {
 
     @IBOutlet var appleMusicNameRecoveryButton: NSButton!
 
+    @IBOutlet var artworkSimilarityBoostButton: NSButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
+        artworkSimilarityBoostButton.bind(.value, withDefaultName: .artworkSimilarityBoostEnabled)
 
         useAppleMusicLyricsWindowButton.bind(.value, withDefaultName: .useAppleMusicLyricsWindow)
         if #available(macOS 15, *) {

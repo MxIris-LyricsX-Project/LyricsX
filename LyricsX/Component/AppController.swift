@@ -315,8 +315,12 @@ final class AppController: NSObject {
         currentLineIndex = nil
         searchTask?.cancel()
         guard let track = selectedPlayer.currentTrack else {
+            Task { await ArtworkSimilarityScorer.shared.updateNowPlaying(image: nil, trackId: nil) }
             return
         }
+        let nowPlayingImage = track.artwork
+        let nowPlayingId = track.id
+        Task { await ArtworkSimilarityScorer.shared.updateNowPlaying(image: nowPlayingImage, trackId: nowPlayingId) }
         // FIXME: deal with optional value
         let title = track.title ?? ""
         let artist = track.artist ?? ""
@@ -479,6 +483,33 @@ final class AppController: NSObject {
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
         currentLyrics = lyrics
+        scheduleArtworkScoring(for: lyrics, against: track)
+    }
+
+    private func scheduleArtworkScoring(for lyrics: Lyrics, against track: MusicTrack) {
+        guard defaults[.artworkSimilarityBoostEnabled],
+              let url = lyrics.metadata.artworkURL else { return }
+        let scoredTrackId = track.id
+        Task { [weak self] in
+            let matched = await ArtworkSimilarityScorer.shared.matches(artworkURL: url)
+            guard matched, let self else { return }
+            await self.applyArtworkBonus(to: lyrics, scoredTrackId: scoredTrackId)
+        }
+    }
+
+    @MainActor
+    private func applyArtworkBonus(to lyrics: Lyrics, scoredTrackId: String) {
+        // Drop the bonus if the user has already moved on to another song —
+        // the score was computed against a now-stale artwork.
+        guard selectedPlayer.currentTrack?.id == scoredTrackId else { return }
+        lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        // The lyrics may now outrank the current selection. Re-run the swap
+        // check; lyricsReceived's own guards (request id, recovered/non-
+        // recovered tier, strict match) still apply.
+        if let current = currentLyrics, current !== lyrics,
+           lyricsHasHigherPriority(lyrics, over: current) {
+            currentLyrics = lyrics
+        }
     }
 
     // MARK: Widget Data Bridge
