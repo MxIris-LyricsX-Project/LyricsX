@@ -1360,8 +1360,10 @@
 			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.3.1;
+				minimumVersion = 0.9.0;
 			};
+			traits = (
+			);
 		};
 /* End XCRemoteSwiftPackageReference section */
 
