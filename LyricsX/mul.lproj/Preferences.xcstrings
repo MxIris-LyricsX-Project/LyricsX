@@ -117,7 +117,7 @@
     },
     "0M7-ao-0jb.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Lyrics saving path:\"; ObjectID = \"0M7-ao-0jb\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -231,7 +231,7 @@
     },
     "0VO-JB-ubq.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Auto\"; ObjectID = \"0VO-JB-ubq\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1023,7 +1023,7 @@
     },
     "6FU-j0-FTV.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Traditional Chinese\"; ObjectID = \"6FU-j0-FTV\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1137,7 +1137,7 @@
     },
     "6FU-ju-FTV.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Traditional Chinese(Hong Kong)\"; ObjectID = \"6FU-ju-FTV\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1251,7 +1251,7 @@
     },
     "6FU-jx-FTV.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Traditional Chinese(Taiwan)\"; ObjectID = \"6FU-jx-FTV\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1365,7 +1365,7 @@
     },
     "6We-TB-Wfc.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Write lyrics to iTunes:\"; ObjectID = \"6We-TB-Wfc\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1479,7 +1479,7 @@
     },
     "7Ax-7T-26K.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically\"; ObjectID = \"7Ax-7T-26K\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1935,7 +1935,7 @@
     },
     "8Sx-vb-5pB.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Write lyrics to iTunes:\"; ObjectID = \"8Sx-vb-5pB\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2277,7 +2277,7 @@
     },
     "AiM-vg-FvQ.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Simplified Chinese\"; ObjectID = \"AiM-vg-FvQ\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2565,7 +2565,7 @@
     },
     "As7-rZ-u6c.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Strict Search\"; ObjectID = \"As7-rZ-u6c\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2907,7 +2907,7 @@
     },
     "bbd-ra-rSF.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Combine menubar icon with menubar lyrics\"; ObjectID = \"bbd-ra-rSF\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3135,7 +3135,7 @@
     },
     "bFk-1g-XeL.title" : {
       "comment" : "Class = \"NSViewController\"; title = \"Lab\"; ObjectID = \"bFk-1g-XeL\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3249,7 +3249,7 @@
     },
     "bmk-rW-Uot.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Decrease lyrics offset:\"; ObjectID = \"bmk-rW-Uot\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3477,7 +3477,7 @@
     },
     "cBB-zn-Hdh.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Prefer bilingual lyrics\"; ObjectID = \"cBB-zn-Hdh\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3735,7 +3735,7 @@
     },
     "convertLRC-cell-scene1.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-cell-scene1\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "base" : {
           "stringUnit" : {
@@ -3765,7 +3765,7 @@
     },
     "cRD-iF-2qo.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"iTunes\"; ObjectID = \"cRD-iF-2qo\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3993,7 +3993,7 @@
     },
     "d5d-dC-DK4.title" : {
       "comment" : "Class = \"NSViewController\"; title = \"General (Deprecated)\"; ObjectID = \"d5d-dC-DK4\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4329,7 +4329,7 @@
     },
     "EDv-ax-0hI.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Load lyrics from music file (order: embedded > beside)\"; ObjectID = \"EDv-ax-0hI\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4671,7 +4671,7 @@
     },
     "g2u-8D-dln.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Here are some experimental features that may not be stable enough, and may be removed in the future.\"; ObjectID = \"g2u-8D-dln\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5013,7 +5013,7 @@
     },
     "gGL-LB-TXI.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Enable Touch Bar lyrics\"; ObjectID = \"gGL-LB-TXI\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5127,7 +5127,7 @@
     },
     "gin-P2-gb5.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Use system wide now playing application\"; ObjectID = \"gin-P2-gb5\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5811,7 +5811,7 @@
     },
     "HvN-Ou-h1t.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Other...\"; ObjectID = \"HvN-Ou-h1t\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5925,7 +5925,7 @@
     },
     "hXE-OF-DFz.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"User Path\"; ObjectID = \"hXE-OF-DFz\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6153,7 +6153,7 @@
     },
     "IE7-IT-oPk.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"LyricsX (Default)\"; ObjectID = \"IE7-IT-oPk\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6381,7 +6381,7 @@
     },
     "jFb-kX-VbY.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"With translation\"; ObjectID = \"jFb-kX-VbY\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6495,7 +6495,7 @@
     },
     "jhm-dK-4Y3.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Spotify\"; ObjectID = \"jhm-dK-4Y3\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6609,7 +6609,7 @@
     },
     "JPB-ag-MN7.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Auto Chinese conversion:\"; ObjectID = \"JPB-ag-MN7\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6951,7 +6951,7 @@
     },
     "JYR-Ed-Tax.title" : {
       "comment" : "Class = \"NSBox\"; title = \"Preferred music player\"; ObjectID = \"JYR-Ed-Tax\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7977,7 +7977,7 @@
     },
     "kP4-4q-ed9.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Search lyrics:\"; ObjectID = \"kP4-4q-ed9\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8775,7 +8775,7 @@
     },
     "lOc-OP-AcU.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Show / Hide karaoke lyrics:\"; ObjectID = \"lOc-OP-AcU\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8889,7 +8889,7 @@
     },
     "m2S-vK-wBN.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Audirvana\"; ObjectID = \"m2S-vK-wBN\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9141,7 +9141,7 @@
     },
     "mo2-3C-gLY.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Increase lyrics offset:\"; ObjectID = \"mo2-3C-gLY\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9255,7 +9255,7 @@
     },
     "N08-TS-lqw.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"Auto\"; ObjectID = \"N08-TS-lqw\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9741,7 +9741,7 @@
     },
     "oiH-T7-agJ.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Help translate LyricsX\"; ObjectID = \"oiH-T7-agJ\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9855,7 +9855,7 @@
     },
     "oTS-3z-Tz7.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Vox\"; ObjectID = \"oTS-3z-Tz7\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10197,7 +10197,7 @@
     },
     "ppx-ob-WJc.title" : {
       "comment" : "Class = \"NSViewController\"; title = \"Shortcut\"; ObjectID = \"ppx-ob-WJc\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10539,7 +10539,7 @@
     },
     "rSD-qR-EXA.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Search result match the exact search term\"; ObjectID = \"rSD-qR-EXA\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11053,7 +11053,7 @@
     },
     "slB-q7-1dB.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Global offset (ms):\"; ObjectID = \"slB-q7-1dB\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11281,7 +11281,7 @@
     },
     "TB9-Fk-WAX.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Show lyrics window:\"; ObjectID = \"TB9-Fk-WAX\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11395,7 +11395,7 @@
     },
     "ThQ-vA-Krb.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate furigana for Japanese lyrics\"; ObjectID = \"ThQ-vA-Krb\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11851,7 +11851,7 @@
     },
     "uEb-Q5-cda.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Mark as wrong lyrics:\"; ObjectID = \"uEb-Q5-cda\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12421,7 +12421,7 @@
     },
     "v63-4a-fPw.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Auto launch & quit with music player\"; ObjectID = \"v63-4a-fPw\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12763,7 +12763,7 @@
     },
     "Vyb-yN-EFY.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Swinsian\"; ObjectID = \"Vyb-yN-EFY\"; Note = \"#bc-ignore!\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12991,7 +12991,7 @@
     },
     "WfA-pe-S5D.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Language (Requires Restart):\"; ObjectID = \"WfA-pe-S5D\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13446,7 +13446,7 @@
     },
     "XHQ-gX-urF.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Show / Hide menu bar lyrics:\"; ObjectID = \"XHQ-gX-urF\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14586,7 +14586,7 @@
     },
     "zhB-kd-WWG.title" : {
       "comment" : "Class = \"NSMenuItem\"; title = \"No Conversion\"; ObjectID = \"zhB-kd-WWG\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14700,7 +14700,7 @@
     },
     "zQK-i2-2Nc.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Customize TouchBar\"; ObjectID = \"zQK-i2-2Nc\";",
-      "extractionState" : "extracted_with_value",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
