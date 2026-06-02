@@ -216,7 +216,7 @@
 		C2C9350426EBEEED023E39EF /* LyricsTimelineEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTimelineEntry.swift; sourceTree = "<group>"; };
 		C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicLyricsWindowController.swift; sourceTree = "<group>"; };
 		D172338FB311CE693629763C /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
-		E0123E6D8878307BB8019435 /* ArtworkSimilarityScorer.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = ArtworkSimilarityScorer.swift; path = ArtworkSimilarityScorer.swift; sourceTree = "<group>"; };
+		E0123E6D8878307BB8019435 /* ArtworkSimilarityScorer.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ArtworkSimilarityScorer.swift; sourceTree = "<group>"; };
 		E04092A9C2373AD4A7D7F2B7 /* LyricsTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTimelineProvider.swift; sourceTree = "<group>"; };
 		E3FAB8D321F2CB80B39BF146 /* LyricsLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsLineView.swift; sourceTree = "<group>"; };
 		E91F76EA21211B8D00755698 /* PreferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceViewController.swift; sourceTree = "<group>"; };
