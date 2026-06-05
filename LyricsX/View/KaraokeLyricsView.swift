@@ -1,4 +1,5 @@
 import AppKit
+import LyricsXFoundation
 import SnapKit
 
 class KaraokeLyricsView: NSView {
@@ -14,6 +15,7 @@ class KaraokeLyricsView: NSView {
     }
 
     @objc dynamic var drawFurigana = false
+    @objc dynamic var useSourceFurigana = true
     @objc dynamic var drawRomajin = false
 
     @objc dynamic var font = NSFont.labelFont(ofSize: 24) { didSet { updateFontSize() } }
@@ -67,10 +69,11 @@ class KaraokeLyricsView: NSView {
         backgroundView.layer?.cornerRadius = font.pointSize / 2
     }
 
-    private func lyricsLabel(_ content: String) -> KaraokeLabel {
+    private func lyricsLabel(_ content: String, sourceFurigana: LyricsLine.Attachments.RangeAttribute?) -> KaraokeLabel {
         if let view = stackView.subviews.lazy.compactMap({ $0 as? KaraokeLabel }).first(where: { !stackView.arrangedSubviews.contains($0) }) {
             view.alphaValue = 0
             view.stringValue = content
+            view.sourceFurigana = sourceFurigana
             view.removeProgressAnimation()
             view.removeFromSuperview()
             return view
@@ -82,12 +85,19 @@ class KaraokeLyricsView: NSView {
             $0.bind(\._shadowColor, to: self, withKeyPath: \.shadowColor)
             $0.bind(\.isVertical, to: self, withKeyPath: \.isVertical)
             $0.bind(\.drawFurigana, to: self, withKeyPath: \.drawFurigana)
+            $0.bind(\.useSourceFurigana, to: self, withKeyPath: \.useSourceFurigana)
             $0.bind(\.drawRomajin, to: self, withKeyPath: \.drawRomajin)
+            $0.sourceFurigana = sourceFurigana
             $0.alphaValue = 0
         }
     }
 
-    func displayLrc(_ firstLine: String, secondLine: String = "") {
+    func displayLrc(
+        _ firstLine: String,
+        secondLine: String = "",
+        firstLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil,
+        secondLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil
+    ) {
         var toBeHide = stackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
         var toBeShow: [NSTextField] = []
         var shouldHideAll = false
@@ -98,15 +108,16 @@ class KaraokeLyricsView: NSView {
             shouldHideAll = true
         } else if toBeHide.count == 2, toBeHide[index].stringValue == firstLine {
             displayLine1 = toBeHide[index]
+            displayLine1?.sourceFurigana = firstLineFurigana
             toBeHide.remove(at: index)
         } else {
-            let label = lyricsLabel(firstLine)
+            let label = lyricsLabel(firstLine, sourceFurigana: firstLineFurigana)
             displayLine1 = label
             toBeShow.append(label)
         }
 
         if !secondLine.trimmingCharacters(in: .whitespaces).isEmpty {
-            let label = lyricsLabel(secondLine)
+            let label = lyricsLabel(secondLine, sourceFurigana: secondLineFurigana)
             displayLine2 = label
             toBeShow.append(label)
         } else {

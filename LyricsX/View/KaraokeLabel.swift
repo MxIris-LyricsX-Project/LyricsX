@@ -1,5 +1,6 @@
 import Cocoa
 import SwiftCF
+import LyricsXFoundation
 import CoreGraphicsExt
 import CoreTextExt
 
@@ -18,7 +19,21 @@ class KaraokeLabel: NSTextField {
         }
     }
 
+    @objc dynamic var useSourceFurigana = true {
+        didSet {
+            clearCache()
+            invalidateIntrinsicContentSize()
+        }
+    }
+
     @objc dynamic var drawRomajin = false {
+        didSet {
+            clearCache()
+            invalidateIntrinsicContentSize()
+        }
+    }
+
+    var sourceFurigana: LyricsLine.Attachments.RangeAttribute? {
         didSet {
             clearCache()
             invalidateIntrinsicContentSize()
@@ -65,9 +80,13 @@ class KaraokeLabel: NSTextField {
             return attrString
         }
         let attrString = NSMutableAttributedString(attributedString: attributedStringValue)
+        let content = attrString.string
         let string = attrString.string as NSString
         let shouldDrawFurigana = drawFurigana && string.dominantLanguage == "ja"
         let shouldDrawRomajin = drawRomajin && string.dominantLanguage == "ja"
+        let didApplySourceFurigana = shouldDrawFurigana
+            && useSourceFurigana
+            && sourceFurigana.map { addSourceFurigana($0, to: attrString, content: content) } == true
         let tokenizer = CFStringTokenizer.create(string: .from(string))
         romajinAnnotations = []
         for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
@@ -79,8 +98,8 @@ class KaraokeLabel: NSTextField {
                 ]
                 attrString.addAttributes(attr, range: tokenRange.asNS)
             }
-            guard shouldDrawFurigana else { continue }
-            if let (furigana, range) = tokenizer.currentFuriganaAnnotation(in: string) {
+            if shouldDrawFurigana && !didApplySourceFurigana,
+               let (furigana, range) = tokenizer.currentFuriganaAnnotation(in: string) {
                 var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
                 attr[.ctForegroundColor] = textColor
                 let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
@@ -93,6 +112,25 @@ class KaraokeLabel: NSTextField {
         textColor?.do { attrString.addAttributes([.foregroundColor: $0], range: attrString.fullRange) }
         _attrString = attrString
         return attrString
+    }
+
+    private func addSourceFurigana(
+        _ sourceFurigana: LyricsLine.Attachments.RangeAttribute,
+        to attrString: NSMutableAttributedString,
+        content: String
+    ) -> Bool {
+        var didApply = false
+        for attribute in sourceFurigana.attributes {
+            guard let range = content.nsRange(fromCharacterRange: attribute.range) else {
+                continue
+            }
+            var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
+            attr[.ctForegroundColor] = textColor
+            let annotation = CTRubyAnnotation.create(attribute.content as CFString, attributes: attr)
+            attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
+            didApply = true
+        }
+        return didApply
     }
 
     private var _ctFrame: CTFrame?
@@ -371,5 +409,17 @@ class KaraokeLabel: NSTextField {
             }
             annotationIndex += 1
         }
+    }
+}
+
+private extension String {
+    func nsRange(fromCharacterRange range: Range<Int>) -> NSRange? {
+        guard range.lowerBound >= 0,
+              range.upperBound <= count else {
+            return nil
+        }
+        let lowerBound = index(startIndex, offsetBy: range.lowerBound)
+        let upperBound = index(startIndex, offsetBy: range.upperBound)
+        return NSRange(lowerBound ..< upperBound, in: self)
     }
 }

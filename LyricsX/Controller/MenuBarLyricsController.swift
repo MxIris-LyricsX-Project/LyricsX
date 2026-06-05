@@ -38,7 +38,7 @@ final class MenuBarLyricsController {
 
     private lazy var contentStackView = HStackView(
         distribution: .fill,
-        alignment: .centerY,
+        alignment: .center,
         spacing: 4
     ) {
         marqueeLabel

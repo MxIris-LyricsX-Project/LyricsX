@@ -340,6 +340,7 @@ final class AppController: NSObject {
                     if lyrics.metadata.artist == nil || lyrics.metadata.artist?.isEmpty == true {
                         lyrics.metadata.artist = artist
                     }
+                    lyrics.applyQQMusicKanaFurigana()
                     lyrics.filtrate()
                     lyrics.recognizeLanguage()
                     currentLyrics = lyrics
@@ -380,6 +381,7 @@ final class AppController: NSObject {
                 lyrics.metadata.localURL = url
                 lyrics.metadata.title = title
                 lyrics.metadata.artist = artist
+                lyrics.applyQQMusicKanaFurigana()
                 lyrics.filtrate()
                 lyrics.recognizeLanguage()
                 currentLyrics = lyrics
@@ -479,6 +481,7 @@ final class AppController: NSObject {
         }
 
         lyrics.associateWithTrack(track)
+        lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
@@ -662,6 +665,7 @@ extension AppController {
         }
         lrc.metadata.title = track.title
         lrc.metadata.artist = track.artist
+        lrc.applyQQMusicKanaFurigana()
         lrc.filtrate()
         lrc.recognizeLanguage()
         lrc.metadata.needsPersist = true

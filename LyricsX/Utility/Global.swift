@@ -108,6 +108,7 @@ extension UserDefaults.DefaultsKeys {
     static let desktopLyricsYPositionFactor = Key<CGFloat>("DesktopLyricsYPositionFactor")
 
     static let desktopLyricsEnableFurigana = Key<Bool>("DesktopLyricsEnableFurigana")
+    static let desktopLyricsUseSourceKana = Key<Bool>("DesktopLyricsUseSourceKana")
     static let desktopLyricsEnableRomajin = Key<Bool>("DesktopLyricsEnableRomajin")
 
     static let desktopLyricsFontName = Key<String>("DesktopLyricsFontName")
