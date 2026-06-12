@@ -9367,6 +9367,36 @@
         }
       }
     },
+    "source-Kana-Cell.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Use source-provided kana when available\"; ObjectID = \"source-Kana-Cell\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use source-provided kana when available"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use source-provided kana when available"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优先使用歌词源提供的假名"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先使用歌詞源提供的假名"
+          }
+        }
+      }
+    },
     "new-Romajin-Cell.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romajin for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
       "extractionState" : "extracted_with_value",

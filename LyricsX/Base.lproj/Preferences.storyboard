@@ -1493,6 +1493,7 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="HwQ-Go-InK"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="aXA-4O-lyR"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="qxK-7k-u6w"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="source-Kana-Row"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="new-Romajin-Row"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="es4-R9-etL"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="6GV-2W-Qb0"/>
@@ -1559,6 +1560,20 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.DesktopLyricsEnableFurigana" id="eep-JT-q3f"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="source-Kana-Row" column="8ba-lF-U7s" id="source-Kana-Left"/>
+                                    <gridCell row="source-Kana-Row" column="4uA-B7-Dvh" id="source-Kana-Right">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="source-Kana-Button">
+                                            <rect key="frame" x="170" y="372" width="259" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Use source-provided kana when available" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="source-Kana-Cell">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.DesktopLyricsUseSourceKana" id="source-Kana-Binding"/>
+                                                <binding destination="DdU-cn-wN1" name="enabled" keyPath="values.DesktopLyricsEnableFurigana" id="source-Kana-Enabled"/>
                                             </connections>
                                         </button>
                                     </gridCell>

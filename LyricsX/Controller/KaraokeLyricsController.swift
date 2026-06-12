@@ -74,6 +74,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         lyricsView.bind(\.backgroundColor, withDefaultName: .desktopLyricsBackgroundColor)
         lyricsView.bind(\.isVertical, withDefaultName: .desktopLyricsVerticalMode, options: [.nullPlaceholder: false])
         lyricsView.bind(\.drawFurigana, withDefaultName: .desktopLyricsEnableFurigana, options: [.nullPlaceholder: false])
+        lyricsView.bind(\.useSourceFurigana, withDefaultName: .desktopLyricsUseSourceKana, options: [.nullPlaceholder: true])
         lyricsView.bind(\.drawRomajin, withDefaultName: .desktopLyricsEnableRomajin, options: [.nullPlaceholder: false])
 
         let negateOption = [NSBindingOption.valueTransformerName: NSValueTransformerName.negateBooleanTransformerName]
@@ -124,6 +125,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         .globalLyricsOffset,
         .desktopLyricsVerticalMode,
         .desktopLyricsEnableFurigana,
+        .desktopLyricsUseSourceKana,
         .desktopLyricsEnableRomajin,
         .desktopLyricsFontName,
         .desktopLyricsFontSize,
@@ -271,11 +273,13 @@ class KaraokeLyricsWindowController: NSWindowController {
 
         let lrc = lyrics.lines[index]
         let next = lyrics.lines[(index + 1)...].first { $0.enabled }
+        let firstLineFurigana = lrc.attachments.furigana
 
         let languageCode = lyrics.metadata.translationLanguages.first
 
         var firstLine = lrc.content
         var secondLine: String
+        var secondLineFurigana: LyricsLine.Attachments.RangeAttribute?
         var secondLineIsTranslation = false
         if defaults[.desktopLyricsOneLineMode] {
             secondLine = ""
@@ -285,6 +289,7 @@ class KaraokeLyricsWindowController: NSWindowController {
             secondLineIsTranslation = true
         } else {
             secondLine = next?.content ?? ""
+            secondLineFurigana = next?.attachments.furigana
         }
 
         if let converter = ChineseConverter.shared {
@@ -306,7 +311,12 @@ class KaraokeLyricsWindowController: NSWindowController {
         // and could mix the old line with the new song's offset.
         let timeDelay = lyrics.adjustedTimeDelay
         DispatchQueue.main.async {
-            self.lyricsView.displayLrc(firstLine, secondLine: secondLine)
+            self.lyricsView.displayLrc(
+                firstLine,
+                secondLine: secondLine,
+                firstLineFurigana: firstLineFurigana,
+                secondLineFurigana: secondLineFurigana
+            )
             if let upperTextField = self.lyricsView.displayLine1,
                let timetag = lrc.attachments.timetag {
                 // Anchor on the PlaybackState that triggered this render so the

@@ -18,6 +18,8 @@
 	<integer>20</integer>
 	<key>DesktopLyricsEnableFurigana</key>
 	<false/>
+	<key>DesktopLyricsUseSourceKana</key>
+	<true/>
 	<key>DesktopLyricsFontName</key>
 	<string>Optima-Regular</string>
 	<key>DesktopLyricsFontSize</key>
