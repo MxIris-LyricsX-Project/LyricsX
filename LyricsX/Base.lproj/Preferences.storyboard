@@ -1483,28 +1483,28 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="566"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="582"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <gridView xPlacement="leading" yPlacement="bottom" rowAlignment="none" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="526"/>
+                            <gridView xPlacement="leading" yPlacement="fill" rowAlignment="none" rowSpacing="8" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
+                                <rect key="frame" x="75" y="20" width="520" height="542"/>
                                 <rows>
-                                    <gridRow yPlacement="center" height="50" id="6bF-ha-C1x"/>
-                                    <gridRow yPlacement="center" height="20" id="HwQ-Go-InK"/>
-                                    <gridRow yPlacement="center" height="20" id="aXA-4O-lyR"/>
-                                    <gridRow yPlacement="center" height="25" id="qxK-7k-u6w"/>
-                                    <gridRow yPlacement="center" height="25" id="new-Romajin-Row"/>
-                                    <gridRow yPlacement="center" height="20" id="es4-R9-etL"/>
-                                    <gridRow yPlacement="center" height="20" id="6GV-2W-Qb0"/>
-                                    <gridRow yPlacement="center" height="20" topPadding="10" id="5Sc-jD-UJ4"/>
-                                    <gridRow yPlacement="center" height="20" id="convertLRC-row"/>
-                                    <gridRow yPlacement="center" height="20" id="Wah-Ax-79z"/>
-                                    <gridRow yPlacement="center" height="30" id="lhU-ZY-jGn"/>
-                                    <gridRow yPlacement="center" height="30" id="MBP-Ro-W01"/>
-                                    <gridRow yPlacement="center" height="30" id="AML-Ro-W01"/>
-                                    <gridRow yPlacement="center" height="46" id="ANR-Ro-W01"/>
-                                    <gridRow yPlacement="center" height="20" id="ART-Ro-W01"/>
-                                    <gridRow height="30" id="lp0-JX-wTa"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="6bF-ha-C1x"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="HwQ-Go-InK"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="aXA-4O-lyR"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="qxK-7k-u6w"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="new-Romajin-Row"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="es4-R9-etL"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="6GV-2W-Qb0"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="5Sc-jD-UJ4"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="convertLRC-row"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="Wah-Ax-79z"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="lhU-ZY-jGn"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="MBP-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="AML-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="ANR-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
+                                    <gridRow yPlacement="fill" height="30" topPadding="5" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
                                     <gridColumn xPlacement="trailing" width="150" id="8ba-lF-U7s"/>
@@ -1513,7 +1513,7 @@
                                 <gridCells>
                                     <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
-                                            <rect key="frame" x="-2" y="485" width="524" height="32"/>
+                                            <rect key="frame" x="-2" y="501" width="524" height="32"/>
                                             <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1525,7 +1525,7 @@
                                     <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
                                     <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
-                                            <rect key="frame" x="170" y="452" width="270" height="16"/>
+                                            <rect key="frame" x="170" y="468" width="270" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1538,7 +1538,7 @@
                                     <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
                                     <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
-                                            <rect key="frame" x="170" y="424" width="206" height="20"/>
+                                            <rect key="frame" x="170" y="431" width="206" height="24"/>
                                             <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1552,7 +1552,7 @@
                                     <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
                                     <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
-                                            <rect key="frame" x="170" y="398" width="333" height="16"/>
+                                            <rect key="frame" x="170" y="402" width="333" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1565,7 +1565,7 @@
                                     <gridCell row="new-Romajin-Row" column="8ba-lF-U7s" id="new-Romajin-Left"/>
                                     <gridCell row="new-Romajin-Row" column="4uA-B7-Dvh" id="new-Romajin-Right">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="new-Romajin-Button">
-                                            <rect key="frame" x="170" y="367" width="327" height="16"/>
+                                            <rect key="frame" x="170" y="373" width="327" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate romajin for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="new-Romajin-Cell">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1578,7 +1578,7 @@
                                     <gridCell row="es4-R9-etL" column="8ba-lF-U7s" id="hk3-2P-FTU"/>
                                     <gridCell row="es4-R9-etL" column="4uA-B7-Dvh" id="dui-8P-7d0">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D7U-qs-Keb">
-                                            <rect key="frame" x="170" y="338" width="163" height="16"/>
+                                            <rect key="frame" x="170" y="344" width="163" height="16"/>
                                             <buttonCell key="cell" type="check" title="Enable Touch Bar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wnV-53-Dlj">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1588,7 +1588,7 @@
                                     <gridCell row="6GV-2W-Qb0" column="8ba-lF-U7s" id="OEP-pE-Pg8"/>
                                     <gridCell row="6GV-2W-Qb0" column="4uA-B7-Dvh" id="UZK-20-qw8">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jsm-Ub-qMX">
-                                            <rect key="frame" x="170" y="310" width="149" height="20"/>
+                                            <rect key="frame" x="170" y="307" width="149" height="24"/>
                                             <buttonCell key="cell" type="push" title="Customize TouchBar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7pm-7c-xyY">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1609,7 +1609,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="8ba-lF-U7s" id="nOn-Ex-4vI">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="89S-CL-lsy">
-                                            <rect key="frame" x="17" y="276" width="135" height="16"/>
+                                            <rect key="frame" x="17" y="278" width="135" height="16"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" title="Write lyrics to iTunes:" id="kAi-t8-g5K">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1619,7 +1619,7 @@
                                     </gridCell>
                                     <gridCell row="5Sc-jD-UJ4" column="4uA-B7-Dvh" id="Kbf-0T-apV">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GZZ-x3-lIt">
-                                            <rect key="frame" x="170" y="276" width="118" height="16"/>
+                                            <rect key="frame" x="170" y="278" width="118" height="16"/>
                                             <buttonCell key="cell" type="check" title="With translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="uXK-tg-wwl">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1632,7 +1632,7 @@
                                     <gridCell row="convertLRC-row" column="8ba-lF-U7s" id="convertLRC-labelCell"/>
                                     <gridCell row="convertLRC-row" column="4uA-B7-Dvh" id="convertLRC-buttonCell">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="convertLRC-button">
-                                            <rect key="frame" x="170" y="250" width="226" height="16"/>
+                                            <rect key="frame" x="170" y="249" width="226" height="16"/>
                                             <buttonCell key="cell" type="check" title="Convert to plain LRC (no karaoke)" bezelStyle="regularSquare" imagePosition="left" inset="2" id="convertLRC-buttonCell-inner">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1645,7 +1645,7 @@
                                     <gridCell row="Wah-Ax-79z" column="8ba-lF-U7s" id="ubI-WM-7fC"/>
                                     <gridCell row="Wah-Ax-79z" column="4uA-B7-Dvh" id="GRv-Th-Hm9">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="veZ-Dt-Ga7">
-                                            <rect key="frame" x="170" y="224" width="104" height="16"/>
+                                            <rect key="frame" x="170" y="220" width="104" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oEV-Ku-uLM">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1658,7 +1658,7 @@
                                     <gridCell row="lhU-ZY-jGn" column="8ba-lF-U7s" id="T3Q-4J-uOx"/>
                                     <gridCell row="lhU-ZY-jGn" column="4uA-B7-Dvh" id="YIm-rp-ZKR">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fmv-dB-BeO">
-                                            <rect key="frame" x="170" y="193" width="284" height="16"/>
+                                            <rect key="frame" x="170" y="191" width="284" height="16"/>
                                             <buttonCell key="cell" type="check" title="Combine menubar icon with menubar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rtU-Go-wwF">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1671,7 +1671,7 @@
                                     <gridCell row="MBP-Ro-W01" column="8ba-lF-U7s" id="MBP-Ce-L01"/>
                                     <gridCell row="MBP-Ro-W01" column="4uA-B7-Dvh" id="MBP-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MBP-Bt-N01">
-                                            <rect key="frame" x="170" y="157" width="241" height="16"/>
+                                            <rect key="frame" x="170" y="162" width="241" height="16"/>
                                             <buttonCell key="cell" type="check" title="Show playback controls in menu bar" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="MBP-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1684,7 +1684,7 @@
                                     <gridCell row="AML-Ro-W01" column="8ba-lF-U7s" id="AML-Ce-L01"/>
                                     <gridCell row="AML-Ro-W01" column="4uA-B7-Dvh" id="AML-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AML-Bt-N01">
-                                            <rect key="frame" x="170" y="121" width="244" height="16"/>
+                                            <rect key="frame" x="170" y="133" width="244" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use Apple Music-style lyrics window" bezelStyle="regularSquare" imagePosition="left" inset="2" id="AML-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1697,7 +1697,7 @@
                                     <gridCell row="ANR-Ro-W01" column="8ba-lF-U7s" id="ANR-Ce-L01"/>
                                     <gridCell row="ANR-Ro-W01" column="4uA-B7-Dvh" id="ANR-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ANR-Bt-N01">
-                                            <rect key="frame" x="170" y="69" width="350" height="32"/>
+                                            <rect key="frame" x="170" y="88" width="350" height="32"/>
                                             <buttonCell key="cell" type="check" title="Recover original song and artist names via MusicKit (Apple Music only)" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="ANR-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1710,7 +1710,7 @@
                                     <gridCell row="ART-Ro-W01" column="8ba-lF-U7s" id="ART-Ce-L01"/>
                                     <gridCell row="ART-Ro-W01" column="4uA-B7-Dvh" id="ART-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ART-Bt-N01">
-                                            <rect key="frame" x="170" y="36" width="350" height="20"/>
+                                            <rect key="frame" x="170" y="43" width="350" height="32"/>
                                             <buttonCell key="cell" type="check" title="Boost lyrics whose cover art matches the playing track" bezelStyle="regularSquare" imagePosition="left" inset="2" id="ART-Cl-001">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1761,14 +1761,14 @@
                 <customObject id="WFr-RK-Q1o" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="DdU-cn-wN1"/>
             </objects>
-            <point key="canvasLocation" x="1970" y="1450"/>
+            <point key="canvasLocation" x="1969.5" y="1450"/>
         </scene>
         <!--Source-->
         <scene sceneID="CzA-mO-0w8">
             <objects>
                 <viewController title="Source" id="KTZ-mJ-lpY" customClass="PreferenceSourceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" misplaced="YES" id="Bkt-jy-GD5">
-                        <rect key="frame" x="0.0" y="0.0" width="540" height="248"/>
+                        <rect key="frame" x="0.0" y="0.0" width="440" height="248"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
@@ -1780,13 +1780,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="500" height="150"/>
+                                <rect key="frame" x="20" y="24" width="400" height="150"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="498" height="148"/>
+                                    <rect key="frame" x="1" y="1" width="398" height="148"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="498" height="120"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="398" height="120"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1828,7 +1828,7 @@
                                                         </tableCellView>
                                                     </prototypeCellViews>
                                                 </tableColumn>
-                                                <tableColumn identifier="source" width="419" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
+                                                <tableColumn identifier="source" width="319" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Source">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1841,11 +1841,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="VGV-SG-dwt">
-                                                            <rect key="frame" x="73" y="0.0" width="416" height="24"/>
+                                                            <rect key="frame" x="73" y="0.0" width="316" height="24"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="KUU-qx-NSS">
-                                                                    <rect key="frame" x="0.0" y="4" width="416" height="16"/>
+                                                                    <rect key="frame" x="0.0" y="4" width="316" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" id="ow1-De-Qmh">
                                                                         <font key="font" usesAppearanceFont="YES"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1878,7 +1878,7 @@
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="150" id="z0H-bo-IFm"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Cq9-fY-Mad">
-                                    <rect key="frame" x="1" y="132" width="518" height="17"/>
+                                    <rect key="frame" x="1" y="132" width="418" height="17"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-hy-YBN">
@@ -1886,7 +1886,7 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="Kzd-3h-xxb">
-                                    <rect key="frame" x="0.0" y="0.0" width="498" height="28"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="398" height="28"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>
@@ -1924,900 +1924,7 @@
                 </viewController>
                 <customObject id="JkS-yT-8ul" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1969" y="1868"/>
-        </scene>
-        <!--General-->
-        <scene sceneID="mkJ-2y-SA4">
-            <objects>
-                <customObject id="Mto-FK-DPA" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <userDefaultsController id="hHn-Lo-CwP"/>
-                <viewController title="General (Deprecated)" id="d5d-dC-DK4" userLabel="General" customClass="PreferenceGeneralViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="Ium-Ya-ZzT">
-                        <rect key="frame" x="0.0" y="0.0" width="620" height="491"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <box title="Preferred music player" translatesAutoresizingMaskIntoConstraints="NO" id="JYR-Ed-Tax">
-                                <rect key="frame" x="20" y="361" width="580" height="106"/>
-                                <view key="contentView" id="r1e-Ln-LSb">
-                                    <rect key="frame" x="0.0" y="0.0" width="580" height="94"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="5xx-Ht-pau">
-                                            <rect key="frame" x="48" y="0.0" width="484" height="94"/>
-                                            <subviews>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="f2X-id-RV9" userLabel="Auto icon">
-                                                    <rect key="frame" x="16" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="now_playing_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="c0h-zb-1Qx">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="width" constant="52" id="CHQ-ub-bmZ"/>
-                                                        <constraint firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="height" multiplier="1:1" id="c2J-iB-22m"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="performClick:" target="GAh-L4-fgK" id="Wis-Sf-xOC"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="-1" translatesAutoresizingMaskIntoConstraints="NO" id="GAh-L4-fgK">
-                                                    <rect key="frame" x="17" y="9" width="50" height="16"/>
-                                                    <buttonCell key="cell" type="radio" title="Auto" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="0VO-JB-ubq">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="16" id="qpD-Cy-Yj0"/>
-                                                    </constraints>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="gg2-JV-oqS"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="iIP-cu-YIV" userLabel="iTunes icon">
-                                                    <rect key="frame" x="96" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="iTunes_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="hRk-Cd-2ek">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="6Bj-Lj-AqF" id="g5E-6j-bIo"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="6Bj-Lj-AqF" userLabel="Prefer iTunes">
-                                                    <rect key="frame" x="91" y="9" width="62" height="16"/>
-                                                    <buttonCell key="cell" type="radio" title="iTunes" bezelStyle="regularSquare" imagePosition="left" inset="2" id="cRD-iF-2qo">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="QHf-PU-hBB"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="LQF-xP-dc8" userLabel="Spotify icon">
-                                                    <rect key="frame" x="176" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="spotify_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="APa-El-ZCg">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="Wb5-Rf-75m" id="IBZ-3w-o6k"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="Wb5-Rf-75m">
-                                                    <rect key="frame" x="169" y="9" width="66" height="16"/>
-                                                    <buttonCell key="cell" type="radio" title="Spotify" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="jhm-dK-4Y3">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="uP4-D4-sN6"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="lc1-kb-SxJ" userLabel="Vox icon">
-                                                    <rect key="frame" x="256" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="vox_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="JCN-jv-3J0">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="RSg-dR-tCT" id="i3G-mI-qXK"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="RSg-dR-tCT">
-                                                    <rect key="frame" x="260" y="1" width="44" height="32"/>
-                                                    <buttonCell key="cell" type="radio" title="Vox" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="oTS-3z-Tz7">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="iyh-YZ-fsB"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="kO5-RO-5MT" userLabel="Audirvana icon">
-                                                    <rect key="frame" x="336" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="audirvana_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="QyC-DM-NOI">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="9Pq-VD-9xN" id="mMX-1e-Y2p"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="9Pq-VD-9xN" userLabel="Prefer Audirvana">
-                                                    <rect key="frame" x="321" y="1" width="82" height="32"/>
-                                                    <buttonCell key="cell" type="radio" title="Audirvana" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="m2S-vK-wBN">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="mlJ-LH-hpi"/>
-                                                    </connections>
-                                                </button>
-                                                <button translatesAutoresizingMaskIntoConstraints="NO" id="cbk-Ic-gb7" userLabel="Swinsian icon">
-                                                    <rect key="frame" x="416" y="34" width="52" height="52"/>
-                                                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="swinsian_icon" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="uEk-IM-Voy">
-                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="performClick:" target="VwG-Ue-ZKi" id="l59-tq-Bee"/>
-                                                    </connections>
-                                                </button>
-                                                <button tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="VwG-Ue-ZKi" userLabel="Prefer Swinsian">
-                                                    <rect key="frame" x="404" y="9" width="76" height="16"/>
-                                                    <buttonCell key="cell" type="radio" title="Swinsian" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Vyb-yN-EFY">
-                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                        <font key="font" metaFont="system"/>
-                                                        <attributedString key="userComments">
-                                                            <fragment content="#bc-ignore!">
-                                                                <attributes>
-                                                                    <font key="NSFont" metaFont="message" size="11"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                    </buttonCell>
-                                                    <connections>
-                                                        <action selector="preferredPlayerAction:" target="d5d-dC-DK4" id="HZ0-1g-8dn"/>
-                                                    </connections>
-                                                </button>
-                                            </subviews>
-                                            <constraints>
-                                                <constraint firstItem="VwG-Ue-ZKi" firstAttribute="centerY" secondItem="GAh-L4-fgK" secondAttribute="centerY" id="1eh-Sa-hS2"/>
-                                                <constraint firstItem="cbk-Ic-gb7" firstAttribute="height" secondItem="f2X-id-RV9" secondAttribute="height" id="27K-Vg-jdc"/>
-                                                <constraint firstItem="6Bj-Lj-AqF" firstAttribute="centerX" secondItem="iIP-cu-YIV" secondAttribute="centerX" id="4ZW-2E-Hsq"/>
-                                                <constraint firstItem="RSg-dR-tCT" firstAttribute="centerX" secondItem="lc1-kb-SxJ" secondAttribute="centerX" id="5uV-y5-vTo"/>
-                                                <constraint firstItem="cbk-Ic-gb7" firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="width" id="6DU-W1-VCx"/>
-                                                <constraint firstItem="Wb5-Rf-75m" firstAttribute="centerX" secondItem="LQF-xP-dc8" secondAttribute="centerX" id="6NR-Ft-jyN"/>
-                                                <constraint firstItem="VwG-Ue-ZKi" firstAttribute="centerX" secondItem="cbk-Ic-gb7" secondAttribute="centerX" id="6cD-9t-ZoM"/>
-                                                <constraint firstItem="cbk-Ic-gb7" firstAttribute="centerY" secondItem="f2X-id-RV9" secondAttribute="centerY" id="6mx-OH-oAC"/>
-                                                <constraint firstAttribute="bottom" secondItem="GAh-L4-fgK" secondAttribute="bottom" constant="9" id="CrB-UI-mud"/>
-                                                <constraint firstItem="lc1-kb-SxJ" firstAttribute="leading" secondItem="LQF-xP-dc8" secondAttribute="trailing" constant="28" id="E0p-Fq-yoN"/>
-                                                <constraint firstItem="9Pq-VD-9xN" firstAttribute="centerX" secondItem="kO5-RO-5MT" secondAttribute="centerX" id="GjR-9l-nDO"/>
-                                                <constraint firstItem="6Bj-Lj-AqF" firstAttribute="centerY" secondItem="GAh-L4-fgK" secondAttribute="centerY" id="Ijw-0s-TlZ"/>
-                                                <constraint firstItem="LQF-xP-dc8" firstAttribute="centerY" secondItem="f2X-id-RV9" secondAttribute="centerY" id="JmM-g4-L7d"/>
-                                                <constraint firstItem="lc1-kb-SxJ" firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="width" id="KBe-B9-yeg"/>
-                                                <constraint firstAttribute="trailing" secondItem="cbk-Ic-gb7" secondAttribute="trailing" constant="16" id="KyG-2L-Nth"/>
-                                                <constraint firstItem="lc1-kb-SxJ" firstAttribute="centerY" secondItem="f2X-id-RV9" secondAttribute="centerY" id="MfJ-Dg-dMe"/>
-                                                <constraint firstItem="kO5-RO-5MT" firstAttribute="centerY" secondItem="f2X-id-RV9" secondAttribute="centerY" id="QZB-hw-65c"/>
-                                                <constraint firstItem="kO5-RO-5MT" firstAttribute="leading" secondItem="lc1-kb-SxJ" secondAttribute="trailing" constant="28" id="Tcx-Jy-bFH"/>
-                                                <constraint firstItem="LQF-xP-dc8" firstAttribute="height" secondItem="f2X-id-RV9" secondAttribute="height" id="Tvi-aU-FRh"/>
-                                                <constraint firstItem="f2X-id-RV9" firstAttribute="leading" secondItem="5xx-Ht-pau" secondAttribute="leading" constant="16" id="a7Y-tG-khm"/>
-                                                <constraint firstItem="iIP-cu-YIV" firstAttribute="centerY" secondItem="f2X-id-RV9" secondAttribute="centerY" id="agI-KF-Ye4"/>
-                                                <constraint firstItem="LQF-xP-dc8" firstAttribute="leading" secondItem="iIP-cu-YIV" secondAttribute="trailing" constant="28" id="b26-um-lf3"/>
-                                                <constraint firstItem="GAh-L4-fgK" firstAttribute="centerX" secondItem="f2X-id-RV9" secondAttribute="centerX" id="bWa-9g-Gqu"/>
-                                                <constraint firstItem="iIP-cu-YIV" firstAttribute="leading" secondItem="f2X-id-RV9" secondAttribute="trailing" constant="28" id="bzs-Yr-Emy"/>
-                                                <constraint firstItem="kO5-RO-5MT" firstAttribute="height" secondItem="f2X-id-RV9" secondAttribute="height" id="cid-Qu-Xhs"/>
-                                                <constraint firstItem="f2X-id-RV9" firstAttribute="top" secondItem="5xx-Ht-pau" secondAttribute="top" constant="8" id="ehJ-ES-htd"/>
-                                                <constraint firstItem="kO5-RO-5MT" firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="width" id="ey3-5d-czP"/>
-                                                <constraint firstItem="RSg-dR-tCT" firstAttribute="centerY" secondItem="GAh-L4-fgK" secondAttribute="centerY" id="jPb-Vb-aDO"/>
-                                                <constraint firstItem="iIP-cu-YIV" firstAttribute="height" secondItem="f2X-id-RV9" secondAttribute="height" id="nyZ-eK-P7Y"/>
-                                                <constraint firstItem="lc1-kb-SxJ" firstAttribute="height" secondItem="f2X-id-RV9" secondAttribute="height" id="pZs-e1-fnQ"/>
-                                                <constraint firstItem="cbk-Ic-gb7" firstAttribute="leading" secondItem="kO5-RO-5MT" secondAttribute="trailing" constant="28" id="qXc-kL-6zM"/>
-                                                <constraint firstItem="9Pq-VD-9xN" firstAttribute="centerY" secondItem="GAh-L4-fgK" secondAttribute="centerY" id="s2G-s2-w1j"/>
-                                                <constraint firstItem="Wb5-Rf-75m" firstAttribute="centerY" secondItem="GAh-L4-fgK" secondAttribute="centerY" id="tFU-tB-tQG"/>
-                                                <constraint firstItem="iIP-cu-YIV" firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="width" id="tgc-ia-oA4"/>
-                                                <constraint firstItem="LQF-xP-dc8" firstAttribute="width" secondItem="f2X-id-RV9" secondAttribute="width" id="wAa-m1-pB1"/>
-                                                <constraint firstItem="GAh-L4-fgK" firstAttribute="top" secondItem="f2X-id-RV9" secondAttribute="bottom" constant="9" id="yig-kA-hN9"/>
-                                            </constraints>
-                                        </customView>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="5xx-Ht-pau" firstAttribute="top" secondItem="r1e-Ln-LSb" secondAttribute="top" id="0Fe-gL-MER"/>
-                                        <constraint firstItem="5xx-Ht-pau" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="r1e-Ln-LSb" secondAttribute="leading" constant="8" id="1Gi-OJ-Aoz"/>
-                                        <constraint firstAttribute="bottom" secondItem="5xx-Ht-pau" secondAttribute="bottom" id="MtA-FF-p49"/>
-                                        <constraint firstItem="5xx-Ht-pau" firstAttribute="centerX" secondItem="r1e-Ln-LSb" secondAttribute="centerX" id="PDG-4t-SNq"/>
-                                    </constraints>
-                                </view>
-                            </box>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="mfr-Al-Vu9">
-                                <rect key="frame" x="246" y="329" width="242" height="16"/>
-                                <buttonCell key="cell" type="check" title="Auto launch &amp; quit with music player" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="v63-4a-fPw">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="toggleAutoLaunchAction:" target="d5d-dC-DK4" id="XAp-ou-5FU"/>
-                                    <binding destination="hHn-Lo-CwP" name="value" keyPath="values.LaunchAndQuitWithPlayer" id="vpG-FV-TVD">
-                                        <dictionary key="options">
-                                            <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="you-yu-77c">
-                                <rect key="frame" x="115" y="293" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Lyrics saving path:" id="0M7-ao-0jb">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ydZ-SE-AM3">
-                                <rect key="frame" x="246" y="289" width="160" height="24"/>
-                                <popUpButtonCell key="cell" type="push" title="LyricsX (Default)" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="IE7-IT-oPk" id="hgC-hp-bE5">
-                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="message"/>
-                                    <menu key="menu" id="5gc-ov-0H5">
-                                        <items>
-                                            <menuItem title="LyricsX (Default)" state="on" id="IE7-IT-oPk"/>
-                                            <menuItem title="User Path" id="hXE-OF-DFz">
-                                                <attributedString key="userComments">
-                                                    <fragment content="#bc-ignore!">
-                                                        <attributes>
-                                                            <font key="NSFont" metaFont="message" size="11"/>
-                                                            <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                        </attributes>
-                                                    </fragment>
-                                                </attributedString>
-                                            </menuItem>
-                                            <menuItem isSeparatorItem="YES" id="iSc-zy-02K"/>
-                                            <menuItem title="Other..." id="HvN-Ou-h1t">
-                                                <connections>
-                                                    <action selector="chooseSavingPathAction:" target="d5d-dC-DK4" id="rqZ-OC-F8k"/>
-                                                </connections>
-                                            </menuItem>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="2c0-ba-y6d"/>
-                                </constraints>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="selectedIndex" keyPath="values.LyricsSavingPathPopUpIndex" id="gul-rl-ieA"/>
-                                </connections>
-                            </popUpButton>
-                            <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="UQR-mH-y4R">
-                                <rect key="frame" x="20" y="154" width="580" height="5"/>
-                            </box>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="wwb-0H-xk7">
-                                <rect key="frame" x="246" y="68" width="149" height="16"/>
-                                <buttonCell key="cell" type="check" title="Prefer bilingual lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="cBB-zn-Hdh">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="value" keyPath="values.PreferBilingualLyrics" id="z5d-4T-XY8"/>
-                                </connections>
-                            </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="wpE-cM-ds1">
-                                <rect key="frame" x="74" y="32" width="158" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Auto Chinese conversion:" id="JPB-ag-MN7">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uoA-YU-YZk" userLabel="Convert">
-                                <rect key="frame" x="246" y="28" width="241" height="24"/>
-                                <popUpButtonCell key="cell" type="push" title="No Conversion" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="zhB-kd-WWG" id="MrM-UH-h3N" userLabel="Convert">
-                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="message"/>
-                                    <menu key="menu" id="0ad-TI-hal">
-                                        <items>
-                                            <menuItem title="No Conversion" state="on" id="zhB-kd-WWG"/>
-                                            <menuItem title="Simplified Chinese" id="AiM-vg-FvQ"/>
-                                            <menuItem title="Traditional Chinese" id="6FU-j0-FTV"/>
-                                            <menuItem title="Traditional Chinese(Taiwan)" id="6FU-jx-FTV"/>
-                                            <menuItem title="Traditional Chinese(Hong Kong)" id="6FU-ju-FTV"/>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="160" id="Rhn-QL-XGy"/>
-                                </constraints>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="selectedIndex" keyPath="values.ChineseConversionIndex" id="9kA-t4-D3L"/>
-                                </connections>
-                            </popUpButton>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="uiE-OU-NWP">
-                                <rect key="frame" x="246" y="265" width="354" height="16"/>
-                                <buttonCell key="cell" type="check" title="Load lyrics from music file (order: embedded &gt; beside)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="EDv-ax-0hI">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="value" keyPath="values.LoadLyricsBesideTrack" id="ZXD-fu-9Il">
-                                        <dictionary key="options">
-                                            <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                            <button translatesAutoresizingMaskIntoConstraints="NO" id="HqA-iJ-lec">
-                                <rect key="frame" x="416" y="292" width="21" height="18"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="folder" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="MR7-io-bcZ">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="21" id="NcW-r5-bQr"/>
-                                    <constraint firstAttribute="height" constant="18" id="hHA-Y3-yS5"/>
-                                </constraints>
-                                <connections>
-                                    <action selector="showInFinderAction:" target="d5d-dC-DK4" id="sPX-8B-XxA"/>
-                                </connections>
-                            </button>
-                            <textField focusRingType="none" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xmp-V1-Dn6">
-                                <rect key="frame" x="246" y="173" width="100" height="24"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="100" id="hNM-LB-4P5"/>
-                                </constraints>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="center" drawsBackground="YES" id="KfC-qR-VOj">
-                                    <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="Maq-Ih-flH"/>
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.allowsFloats" value="NO"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="formatter.hasThousandSeparators" value="NO"/>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="value" keyPath="values.GlobalLyricsOffset" id="TTC-yw-vpl"/>
-                                </connections>
-                            </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g0L-A1-o0L">
-                                <rect key="frame" x="115" y="177" width="117" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Global offset (ms):" id="slB-q7-1dB">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tAC-g5-B2n">
-                                <rect key="frame" x="246" y="124" width="101" height="16"/>
-                                <buttonCell key="cell" type="check" title="Strict Search" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="As7-rZ-u6c">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="hHn-Lo-CwP" name="value" keyPath="values.StrictSearchEnabled" id="1DK-se-Yv1">
-                                        <dictionary key="options">
-                                            <integer key="NSNullPlaceholder" value="0"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2Yv-tb-pyE">
-                                <rect key="frame" x="262" y="100" width="261" height="16"/>
-                                <textFieldCell key="cell" title="Search result match the exact search term" id="rSD-qR-EXA">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="zpw-kR-OfG">
-                                <rect key="frame" x="246" y="225" width="120" height="24"/>
-                                <popUpButtonCell key="cell" type="push" title="Auto" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="N08-TS-lqw" id="KeB-VY-rPx">
-                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="message"/>
-                                    <menu key="menu" id="d8b-a5-Ghf">
-                                        <items>
-                                            <menuItem title="Auto" state="on" id="N08-TS-lqw">
-                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                            </menuItem>
-                                            <menuItem isSeparatorItem="YES" id="pjH-7q-Jvo"/>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                                <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="120" id="B0W-dB-GPu"/>
-                                </constraints>
-                                <connections>
-                                    <action selector="chooseLanguageAction:" target="d5d-dC-DK4" id="5kJ-ha-gD6"/>
-                                </connections>
-                            </popUpButton>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UXR-cB-aCr">
-                                <rect key="frame" x="51" y="229" width="181" height="16"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Language (Requires Restart):" id="WfA-pe-S5D">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5rg-ki-Dg5">
-                                <rect key="frame" x="246" y="205" width="137" height="16"/>
-                                <buttonCell key="cell" type="bevel" title="Help translate LyricsX" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="oiH-T7-agJ">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
-                                <connections>
-                                    <action selector="helpTranslateAction:" target="d5d-dC-DK4" id="cmZ-j9-Tn3"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <constraints>
-                            <constraint firstItem="uoA-YU-YZk" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="0XK-XW-bY2"/>
-                            <constraint firstItem="2Yv-tb-pyE" firstAttribute="leading" secondItem="tAC-g5-B2n" secondAttribute="leading" constant="18" id="2WD-V5-gCa"/>
-                            <constraint firstItem="UQR-mH-y4R" firstAttribute="top" secondItem="xmp-V1-Dn6" secondAttribute="bottom" constant="16" id="3bx-9G-RDz"/>
-                            <constraint firstItem="zpw-kR-OfG" firstAttribute="leading" secondItem="UXR-cB-aCr" secondAttribute="trailing" constant="16" id="5Pz-gx-8E2"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="ydZ-SE-AM3" secondAttribute="trailing" constant="40" id="5qc-4a-zut"/>
-                            <constraint firstItem="ydZ-SE-AM3" firstAttribute="leading" secondItem="mfr-Al-Vu9" secondAttribute="leading" id="6h0-9j-Gv7"/>
-                            <constraint firstAttribute="trailing" secondItem="UQR-mH-y4R" secondAttribute="trailing" constant="20" id="AqF-h8-heh"/>
-                            <constraint firstItem="5rg-ki-Dg5" firstAttribute="leading" secondItem="zpw-kR-OfG" secondAttribute="leading" id="D7N-hH-zSV"/>
-                            <constraint firstItem="uoA-YU-YZk" firstAttribute="centerY" secondItem="wpE-cM-ds1" secondAttribute="centerY" id="DAB-hw-Kr5"/>
-                            <constraint firstItem="uiE-OU-NWP" firstAttribute="top" secondItem="ydZ-SE-AM3" secondAttribute="bottom" constant="8" id="FC2-c7-SOn"/>
-                            <constraint firstItem="xmp-V1-Dn6" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="Fwu-8p-Lsf"/>
-                            <constraint firstItem="ydZ-SE-AM3" firstAttribute="leading" secondItem="you-yu-77c" secondAttribute="trailing" constant="16" id="Hmq-iV-ozM"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="wwb-0H-xk7" secondAttribute="trailing" constant="20" id="JWV-eT-IkY"/>
-                            <constraint firstItem="you-yu-77c" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ium-Ya-ZzT" secondAttribute="leading" constant="20" id="LoW-h0-G1D"/>
-                            <constraint firstItem="you-yu-77c" firstAttribute="trailing" secondItem="Ium-Ya-ZzT" secondAttribute="centerX" constant="-80" id="OMR-7Z-L5p"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mfr-Al-Vu9" secondAttribute="trailing" constant="20" id="PTZ-qa-6DK"/>
-                            <constraint firstItem="wpE-cM-ds1" firstAttribute="trailing" secondItem="you-yu-77c" secondAttribute="trailing" id="Rlx-Pc-urP"/>
-                            <constraint firstItem="uoA-YU-YZk" firstAttribute="top" secondItem="wwb-0H-xk7" secondAttribute="bottom" constant="16" id="T1x-UF-AbZ"/>
-                            <constraint firstItem="uiE-OU-NWP" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="Tq8-F5-8ZX"/>
-                            <constraint firstItem="2Yv-tb-pyE" firstAttribute="top" secondItem="tAC-g5-B2n" secondAttribute="bottom" constant="8" id="Y74-GG-e8t"/>
-                            <constraint firstAttribute="bottom" secondItem="uoA-YU-YZk" secondAttribute="bottom" constant="28" id="Zk7-jw-Cov"/>
-                            <constraint firstItem="JYR-Ed-Tax" firstAttribute="leading" secondItem="Ium-Ya-ZzT" secondAttribute="leading" constant="20" id="a77-8k-2YR"/>
-                            <constraint firstItem="xmp-V1-Dn6" firstAttribute="centerY" secondItem="g0L-A1-o0L" secondAttribute="centerY" id="aTz-f7-vjT"/>
-                            <constraint firstItem="HqA-iJ-lec" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="trailing" constant="10" id="aan-F0-PIg"/>
-                            <constraint firstItem="mfr-Al-Vu9" firstAttribute="top" secondItem="JYR-Ed-Tax" secondAttribute="bottom" constant="16" id="ahR-Ta-P3Z"/>
-                            <constraint firstItem="xmp-V1-Dn6" firstAttribute="top" secondItem="5rg-ki-Dg5" secondAttribute="bottom" constant="8" id="bDY-BS-EKC"/>
-                            <constraint firstItem="tAC-g5-B2n" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="bNO-xe-6OV"/>
-                            <constraint firstItem="zpw-kR-OfG" firstAttribute="top" secondItem="uiE-OU-NWP" secondAttribute="bottom" constant="16" id="cVF-bt-bkV"/>
-                            <constraint firstItem="zpw-kR-OfG" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="dft-fH-krO"/>
-                            <constraint firstItem="tAC-g5-B2n" firstAttribute="top" secondItem="UQR-mH-y4R" secondAttribute="bottom" constant="16" id="fAG-gP-mk9"/>
-                            <constraint firstItem="JYR-Ed-Tax" firstAttribute="top" secondItem="Ium-Ya-ZzT" secondAttribute="top" constant="24" id="h5j-IZ-Xgi"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="uoA-YU-YZk" secondAttribute="trailing" constant="20" id="hlA-Kz-PVC"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="uiE-OU-NWP" secondAttribute="trailing" constant="20" id="jN3-X8-xdL"/>
-                            <constraint firstItem="ydZ-SE-AM3" firstAttribute="centerY" secondItem="you-yu-77c" secondAttribute="centerY" id="lz5-X8-tZT"/>
-                            <constraint firstItem="UQR-mH-y4R" firstAttribute="leading" secondItem="Ium-Ya-ZzT" secondAttribute="leading" constant="20" id="mJn-RT-EXL"/>
-                            <constraint firstItem="HqA-iJ-lec" firstAttribute="centerY" secondItem="ydZ-SE-AM3" secondAttribute="centerY" id="q8t-Qe-yJh"/>
-                            <constraint firstItem="wwb-0H-xk7" firstAttribute="top" secondItem="2Yv-tb-pyE" secondAttribute="bottom" constant="16" id="t3Y-Bz-Iiy"/>
-                            <constraint firstItem="5rg-ki-Dg5" firstAttribute="top" secondItem="zpw-kR-OfG" secondAttribute="bottom" constant="4" id="thJ-ak-uGd"/>
-                            <constraint firstItem="wwb-0H-xk7" firstAttribute="leading" secondItem="ydZ-SE-AM3" secondAttribute="leading" id="u0h-UR-jmK"/>
-                            <constraint firstItem="xmp-V1-Dn6" firstAttribute="leading" secondItem="g0L-A1-o0L" secondAttribute="trailing" constant="16" id="uVx-oL-nu9"/>
-                            <constraint firstItem="wpE-cM-ds1" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ium-Ya-ZzT" secondAttribute="leading" constant="20" id="vED-yu-Qv5"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="2Yv-tb-pyE" secondAttribute="trailing" constant="20" id="vdO-Q4-Dp8"/>
-                            <constraint firstAttribute="trailing" secondItem="JYR-Ed-Tax" secondAttribute="trailing" constant="20" id="xXs-qV-Iz7"/>
-                            <constraint firstItem="UXR-cB-aCr" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Ium-Ya-ZzT" secondAttribute="leading" constant="24" id="yTz-22-2Qt"/>
-                            <constraint firstItem="ydZ-SE-AM3" firstAttribute="top" secondItem="mfr-Al-Vu9" secondAttribute="bottom" constant="16" id="z0E-ny-nlG"/>
-                            <constraint firstItem="zpw-kR-OfG" firstAttribute="centerY" secondItem="UXR-cB-aCr" secondAttribute="centerY" id="zp1-yQ-Pqk"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="autoLaunchButton" destination="mfr-Al-Vu9" id="Nwf-Mq-nSa"/>
-                        <outlet property="languagePopUp" destination="zpw-kR-OfG" id="8LA-gt-F35"/>
-                        <outlet property="loadHomonymLrcButton" destination="uiE-OU-NWP" id="7XP-6g-pVL"/>
-                        <outlet property="preferAudirvana" destination="9Pq-VD-9xN" id="Trl-UP-HaB"/>
-                        <outlet property="preferAuto" destination="GAh-L4-fgK" id="QSc-xP-6L7"/>
-                        <outlet property="preferSpotify" destination="Wb5-Rf-75m" id="fOa-Pt-HZD"/>
-                        <outlet property="preferSwinsian" destination="VwG-Ue-ZKi" id="WDG-hf-wMD"/>
-                        <outlet property="preferVox" destination="RSg-dR-tCT" id="0FN-E8-vpj"/>
-                        <outlet property="preferiTunes" destination="6Bj-Lj-AqF" id="ulb-Mw-FqJ"/>
-                        <outlet property="savingPathPopUp" destination="ydZ-SE-AM3" id="b3z-xP-9uw"/>
-                        <outlet property="userPathMenuItem" destination="hXE-OF-DFz" id="ioW-SC-5Kb"/>
-                    </connections>
-                </viewController>
-            </objects>
-            <point key="canvasLocation" x="1917" y="2918"/>
-        </scene>
-        <!--Shortcut-->
-        <scene sceneID="fM0-at-U1A">
-            <objects>
-                <viewController title="Shortcut" id="ppx-ob-WJc" userLabel="Shortcut" customClass="PreferenceShortcutViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="yOR-wI-2Wv">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="288"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fHF-oJ-2oH">
-                                <rect key="frame" x="125" y="248" width="177" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide menu bar lyrics:" id="XHQ-gX-urF">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="Wl2-0l-Mvk" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="247" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="160" id="aeH-Wb-3PE"/>
-                                    <constraint firstAttribute="height" constant="19" id="qpD-zO-7uX"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleMenuBarLyrics"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="XuJ-N7-23c">
-                                <rect key="frame" x="135" y="216" width="167" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show / Hide karaoke lyrics:" id="lOc-OP-AcU">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BAG-Gf-bbI">
-                                <rect key="frame" x="175" y="184" width="127" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show lyrics window:" id="TB9-Fk-WAX">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="r6F-LJ-R46" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="183" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="L2I-57-We6"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutShowLyricsWindow"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rZM-vL-ukW">
-                                <rect key="frame" x="168" y="152" width="134" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Increase lyrics offset:" id="mo2-3C-gLY">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="xRx-86-gVx" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="151" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="m70-Qr-7Hx"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetIncrease"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="8LH-Ws-6CC">
-                                <rect key="frame" x="162" y="120" width="140" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Decrease lyrics offset:" id="bmk-rW-Uot">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="92Q-NC-T3a" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="119" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="uTu-hP-tC1"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutOffsetDecrease"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Paz-vU-k0Z">
-                                <rect key="frame" x="167" y="88" width="135" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="6We-TB-Wfc">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="ZhS-BF-7UN" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="87" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="Zoc-wc-dp9"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWriteToiTunes"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Kmn-Mi-l4p">
-                                <rect key="frame" x="169" y="24" width="133" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Mark as wrong lyrics:" id="uEb-Q5-cda">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="l4G-ES-LlU" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="23" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="iDp-hN-IeG"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutWrongLyrics"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Uyz-8q-0bL">
-                                <rect key="frame" x="216" y="56" width="86" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Search lyrics:" id="kP4-4q-ed9">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="isRemovedDuringMASReview" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                            </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="Axy-WJ-CRv" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="55" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="o2Q-Sw-xx7"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutSearchLyrics"/>
-                                    <userDefinedRuntimeAttribute type="boolean" keyPath="isRemovedDuringMASReview" value="YES"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="TbU-as-K5K" customClass="MASShortcutView">
-                                <rect key="frame" x="308" y="215" width="160" height="19"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="19" id="Lcm-Zd-hA8"/>
-                                </constraints>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ShortcutToggleKaraokeLyrics"/>
-                                </userDefinedRuntimeAttributes>
-                            </customView>
-                        </subviews>
-                        <constraints>
-                            <constraint firstItem="TbU-as-K5K" firstAttribute="centerY" secondItem="XuJ-N7-23c" secondAttribute="centerY" id="1N8-Cw-LNX"/>
-                            <constraint firstItem="fHF-oJ-2oH" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="1xZ-ei-kj0"/>
-                            <constraint firstItem="Axy-WJ-CRv" firstAttribute="leading" secondItem="Uyz-8q-0bL" secondAttribute="trailing" constant="8" id="3ei-aa-KHZ"/>
-                            <constraint firstItem="l4G-ES-LlU" firstAttribute="centerY" secondItem="Kmn-Mi-l4p" secondAttribute="centerY" id="58G-dQ-WcG"/>
-                            <constraint firstItem="Kmn-Mi-l4p" firstAttribute="top" secondItem="Uyz-8q-0bL" secondAttribute="bottom" constant="16" id="6ig-NT-Lph"/>
-                            <constraint firstItem="Uyz-8q-0bL" firstAttribute="trailing" secondItem="rZM-vL-ukW" secondAttribute="trailing" id="74j-PQ-Xk4"/>
-                            <constraint firstItem="Paz-vU-k0Z" firstAttribute="trailing" secondItem="rZM-vL-ukW" secondAttribute="trailing" id="APM-uX-ZnS"/>
-                            <constraint firstItem="Uyz-8q-0bL" firstAttribute="top" secondItem="Paz-vU-k0Z" secondAttribute="bottom" constant="16" id="Aqf-Wy-FF7"/>
-                            <constraint firstItem="fHF-oJ-2oH" firstAttribute="top" secondItem="yOR-wI-2Wv" secondAttribute="top" constant="24" id="DLH-Mf-b9Q"/>
-                            <constraint firstItem="Uyz-8q-0bL" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="DkG-cQ-ByF"/>
-                            <constraint firstItem="Kmn-Mi-l4p" firstAttribute="trailing" secondItem="rZM-vL-ukW" secondAttribute="trailing" id="ESI-UF-K8H"/>
-                            <constraint firstItem="BAG-Gf-bbI" firstAttribute="top" secondItem="XuJ-N7-23c" secondAttribute="bottom" constant="16" id="EgB-iN-MH8"/>
-                            <constraint firstItem="Wl2-0l-Mvk" firstAttribute="leading" secondItem="fHF-oJ-2oH" secondAttribute="trailing" constant="8" id="Jhh-YJ-5KP"/>
-                            <constraint firstItem="Kmn-Mi-l4p" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="LNd-PI-lkt"/>
-                            <constraint firstItem="l4G-ES-LlU" firstAttribute="leading" secondItem="Kmn-Mi-l4p" secondAttribute="trailing" constant="8" id="LNf-No-i7b"/>
-                            <constraint firstItem="XuJ-N7-23c" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="LkM-XE-8Kh"/>
-                            <constraint firstItem="BAG-Gf-bbI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="MDO-BM-0nm"/>
-                            <constraint firstItem="ZhS-BF-7UN" firstAttribute="leading" secondItem="Paz-vU-k0Z" secondAttribute="trailing" constant="8" id="MnK-HN-lKs"/>
-                            <constraint firstItem="8LH-Ws-6CC" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="O46-kw-Kty"/>
-                            <constraint firstAttribute="bottom" secondItem="Kmn-Mi-l4p" secondAttribute="bottom" constant="24" id="PMl-xq-0wi"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="top" secondItem="BAG-Gf-bbI" secondAttribute="bottom" constant="16" id="QJT-Qv-Z7k"/>
-                            <constraint firstItem="l4G-ES-LlU" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="U5d-GT-25P"/>
-                            <constraint firstItem="r6F-LJ-R46" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="Zsd-Xv-K4u"/>
-                            <constraint firstItem="Axy-WJ-CRv" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="aQN-0f-Ly1"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="trailing" secondItem="XuJ-N7-23c" secondAttribute="trailing" id="bAM-be-Myv"/>
-                            <constraint firstItem="xRx-86-gVx" firstAttribute="centerY" secondItem="rZM-vL-ukW" secondAttribute="centerY" id="dzF-pI-dlc"/>
-                            <constraint firstItem="Wl2-0l-Mvk" firstAttribute="centerY" secondItem="fHF-oJ-2oH" secondAttribute="centerY" id="emF-hd-V2U"/>
-                            <constraint firstItem="xRx-86-gVx" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="ff9-Ur-ieI"/>
-                            <constraint firstItem="Paz-vU-k0Z" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="g56-W5-tJK"/>
-                            <constraint firstItem="Kmn-Mi-l4p" firstAttribute="top" secondItem="Paz-vU-k0Z" secondAttribute="bottom" priority="750" constant="16" id="gqg-Vu-mu0"/>
-                            <constraint firstItem="ZhS-BF-7UN" firstAttribute="centerY" secondItem="Paz-vU-k0Z" secondAttribute="centerY" id="hnp-DF-O2a"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="trailing" secondItem="BAG-Gf-bbI" secondAttribute="trailing" id="jqj-dm-Ul6"/>
-                            <constraint firstItem="92Q-NC-T3a" firstAttribute="centerY" secondItem="8LH-Ws-6CC" secondAttribute="centerY" id="js1-zR-2g2"/>
-                            <constraint firstItem="XuJ-N7-23c" firstAttribute="top" secondItem="fHF-oJ-2oH" secondAttribute="bottom" constant="16" id="k3S-oh-bMv"/>
-                            <constraint firstItem="r6F-LJ-R46" firstAttribute="centerY" secondItem="BAG-Gf-bbI" secondAttribute="centerY" id="lT1-kS-2zy"/>
-                            <constraint firstItem="92Q-NC-T3a" firstAttribute="leading" secondItem="8LH-Ws-6CC" secondAttribute="trailing" constant="8" id="mLE-HC-SDN"/>
-                            <constraint firstItem="8LH-Ws-6CC" firstAttribute="trailing" secondItem="rZM-vL-ukW" secondAttribute="trailing" id="nmc-gD-W7K"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="yOR-wI-2Wv" secondAttribute="leading" constant="20" id="o18-76-aw6"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="trailing" secondItem="fHF-oJ-2oH" secondAttribute="trailing" id="p9z-fR-3w3"/>
-                            <constraint firstItem="92Q-NC-T3a" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="pDa-RQ-CtR"/>
-                            <constraint firstItem="r6F-LJ-R46" firstAttribute="leading" secondItem="BAG-Gf-bbI" secondAttribute="trailing" constant="8" id="pRh-9u-zpr"/>
-                            <constraint firstItem="TbU-as-K5K" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="qmt-pR-hq1"/>
-                            <constraint firstItem="Paz-vU-k0Z" firstAttribute="top" secondItem="8LH-Ws-6CC" secondAttribute="bottom" constant="16" id="sVE-M2-NRt"/>
-                            <constraint firstItem="TbU-as-K5K" firstAttribute="leading" secondItem="XuJ-N7-23c" secondAttribute="trailing" constant="8" id="vEl-gs-1nc"/>
-                            <constraint firstItem="rZM-vL-ukW" firstAttribute="trailing" secondItem="yOR-wI-2Wv" secondAttribute="centerX" id="vop-eU-AJO"/>
-                            <constraint firstItem="Axy-WJ-CRv" firstAttribute="centerY" secondItem="Uyz-8q-0bL" secondAttribute="centerY" id="w6h-zl-0u2"/>
-                            <constraint firstItem="ZhS-BF-7UN" firstAttribute="width" secondItem="Wl2-0l-Mvk" secondAttribute="width" id="xSG-gp-COd"/>
-                            <constraint firstItem="xRx-86-gVx" firstAttribute="leading" secondItem="rZM-vL-ukW" secondAttribute="trailing" constant="8" id="zQi-Ou-E9R"/>
-                            <constraint firstItem="8LH-Ws-6CC" firstAttribute="top" secondItem="rZM-vL-ukW" secondAttribute="bottom" constant="16" id="za1-YD-BRY"/>
-                        </constraints>
-                    </view>
-                </viewController>
-                <customObject id="I0Z-pO-sVx" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1917" y="3379"/>
-        </scene>
-        <!--Lab-->
-        <scene sceneID="SoK-6E-AMw">
-            <objects>
-                <userDefaultsController id="MQW-nm-dXS"/>
-                <customObject id="hIA-Hp-BDR" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-                <viewController title="Lab" id="bFk-1g-XeL" userLabel="Lab" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" id="uY5-7S-zG1">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="324"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Tvk-yf-w4p">
-                                <rect key="frame" x="236" y="56" width="104" height="16"/>
-                                <buttonCell key="cell" type="check" title="Automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="7Ax-7T-26K">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteToiTunesAutomatically" id="s2M-GE-9K2"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="IKY-aR-ZdS">
-                                <rect key="frame" x="236" y="104" width="118" height="16"/>
-                                <buttonCell key="cell" type="check" title="With translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jFb-kX-VbY">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesWithTranslation" id="YcT-LV-fEn"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="convertLRC-btn-scene1">
-                                <rect key="frame" x="236" y="80" width="226" height="16"/>
-                                <buttonCell key="cell" type="check" title="Convert to plain LRC (no karaoke)" bezelStyle="regularSquare" imagePosition="left" inset="2" id="convertLRC-cell-scene1">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.WriteiTunesConvertToPlainLRC" id="convertLRC-bind-scene1"/>
-                                </connections>
-                            </button>
-                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Z5r-WZ-ZnL">
-                                <rect key="frame" x="87" y="104" width="135" height="16"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Write lyrics to iTunes:" id="8Sx-vb-5pB">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <textField focusRingType="none" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GqQ-7c-IhI">
-                                <rect key="frame" x="76" y="268" width="449" height="32"/>
-                                <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="g2u-8D-dln">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Dt8-Tg-5JV">
-                                <rect key="frame" x="236" y="24" width="284" height="16"/>
-                                <buttonCell key="cell" type="check" title="Combine menubar icon with menubar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bbd-ra-rSF">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.CombinedMenubarLyrics" id="P5p-VX-SXH"/>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="rkh-fs-CDd">
-                                <rect key="frame" x="236" y="200" width="333" height="16"/>
-                                <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ThQ-vA-Krb">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.DesktopLyricsEnableFurigana" id="xy3-gH-Q12">
-                                        <dictionary key="options">
-                                            <integer key="NSNullPlaceholder" value="0"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="QO9-t0-epx">
-                                <rect key="frame" x="236" y="168" width="163" height="16"/>
-                                <buttonCell key="cell" type="check" title="Enable Touch Bar lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="gGL-LB-TXI">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                            </button>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="O5b-RV-0T6">
-                                <rect key="frame" x="256" y="136" width="149" height="24"/>
-                                <buttonCell key="cell" type="push" title="Customize TouchBar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zQK-i2-2Nc">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="customizeTouchBarAction:" target="bFk-1g-XeL" id="KdX-Am-dpB"/>
-                                    <binding destination="MQW-nm-dXS" name="enabled" keyPath="values.TouchBarLyricsEnabled" id="mj8-ra-cil">
-                                        <dictionary key="options">
-                                            <integer key="NSMultipleValuesPlaceholder" value="0"/>
-                                            <integer key="NSNoSelectionPlaceholder" value="0"/>
-                                            <integer key="NSNotApplicablePlaceholder" value="0"/>
-                                            <integer key="NSNullPlaceholder" value="0"/>
-                                            <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                            <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="BIz-Ld-Wfi">
-                                <rect key="frame" x="236" y="232" width="270" height="16"/>
-                                <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="gin-P2-gb5">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <binding destination="MQW-nm-dXS" name="value" keyPath="values.UseSystemWideNowPlaying" id="5Fq-A8-Ybn">
-                                        <dictionary key="options">
-                                            <integer key="NSNullPlaceholder" value="0"/>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <constraints>
-                            <constraint firstItem="O5b-RV-0T6" firstAttribute="leading" secondItem="QO9-t0-epx" secondAttribute="leading" constant="20" id="44Y-Ha-UD3"/>
-                            <constraint firstItem="IKY-aR-ZdS" firstAttribute="top" secondItem="O5b-RV-0T6" secondAttribute="bottom" constant="16" id="4Cj-9f-fxU"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="IKY-aR-ZdS" secondAttribute="trailing" constant="20" id="5UF-sE-ts0"/>
-                            <constraint firstItem="IKY-aR-ZdS" firstAttribute="leading" secondItem="Tvk-yf-w4p" secondAttribute="leading" id="8Ip-8V-Nhx"/>
-                            <constraint firstItem="GqQ-7c-IhI" firstAttribute="centerX" secondItem="uY5-7S-zG1" secondAttribute="centerX" id="B45-c6-kKm"/>
-                            <constraint firstItem="Z5r-WZ-ZnL" firstAttribute="trailing" secondItem="uY5-7S-zG1" secondAttribute="centerX" constant="-80" id="Bvv-K0-o1n"/>
-                            <constraint firstItem="QO9-t0-epx" firstAttribute="leading" secondItem="rkh-fs-CDd" secondAttribute="leading" id="CWc-F4-Q7y"/>
-                            <constraint firstAttribute="bottom" secondItem="Dt8-Tg-5JV" secondAttribute="bottom" constant="24" id="FKR-Kz-0Dz"/>
-                            <constraint firstItem="Dt8-Tg-5JV" firstAttribute="leading" secondItem="IKY-aR-ZdS" secondAttribute="leading" id="H4F-3n-tYj"/>
-                            <constraint firstItem="O5b-RV-0T6" firstAttribute="top" secondItem="QO9-t0-epx" secondAttribute="bottom" constant="8" id="M2Q-my-aeu"/>
-                            <constraint firstItem="GqQ-7c-IhI" firstAttribute="top" secondItem="uY5-7S-zG1" secondAttribute="top" constant="24" id="OTp-XT-yZH"/>
-                            <constraint firstItem="IKY-aR-ZdS" firstAttribute="centerY" secondItem="Z5r-WZ-ZnL" secondAttribute="centerY" id="Pql-bZ-j9U"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Dt8-Tg-5JV" secondAttribute="trailing" constant="20" id="QIl-HG-7l1"/>
-                            <constraint firstItem="IKY-aR-ZdS" firstAttribute="leading" secondItem="rkh-fs-CDd" secondAttribute="leading" id="WjH-ZP-2wM"/>
-                            <constraint firstItem="Dt8-Tg-5JV" firstAttribute="top" secondItem="Tvk-yf-w4p" secondAttribute="bottom" constant="16" id="XeS-Xf-0Vl"/>
-                            <constraint firstItem="Z5r-WZ-ZnL" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uY5-7S-zG1" secondAttribute="leading" constant="20" id="Zjl-xt-6Q8"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="rkh-fs-CDd" secondAttribute="trailing" constant="20" id="bHs-aP-JHK"/>
-                            <constraint firstItem="convertLRC-btn-scene1" firstAttribute="leading" secondItem="IKY-aR-ZdS" secondAttribute="leading" id="convertLRC-leading-constraint"/>
-                            <constraint firstItem="convertLRC-btn-scene1" firstAttribute="top" secondItem="IKY-aR-ZdS" secondAttribute="bottom" constant="8" id="convertLRC-top-constraint"/>
-                            <constraint firstItem="rkh-fs-CDd" firstAttribute="leading" secondItem="BIz-Ld-Wfi" secondAttribute="leading" id="fEy-It-oM1"/>
-                            <constraint firstItem="rkh-fs-CDd" firstAttribute="top" secondItem="BIz-Ld-Wfi" secondAttribute="bottom" constant="16" id="fXk-DN-uKd"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Tvk-yf-w4p" secondAttribute="trailing" constant="20" id="nVW-K7-QKb"/>
-                            <constraint firstItem="BIz-Ld-Wfi" firstAttribute="top" secondItem="GqQ-7c-IhI" secondAttribute="bottom" constant="20" id="snG-fw-aST"/>
-                            <constraint firstItem="Tvk-yf-w4p" firstAttribute="top" secondItem="convertLRC-btn-scene1" secondAttribute="bottom" constant="8" id="tKi-Ka-ZTQ"/>
-                            <constraint firstItem="GqQ-7c-IhI" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="uY5-7S-zG1" secondAttribute="leading" constant="75" id="tiw-jZ-dmo"/>
-                            <constraint firstItem="QO9-t0-epx" firstAttribute="top" secondItem="rkh-fs-CDd" secondAttribute="bottom" constant="16" id="uQF-nl-tLo"/>
-                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="BIz-Ld-Wfi" secondAttribute="trailing" constant="20" id="wNF-TT-kUC"/>
-                            <constraint firstItem="IKY-aR-ZdS" firstAttribute="leading" secondItem="Z5r-WZ-ZnL" secondAttribute="trailing" constant="16" id="wee-My-TEI"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="enableTouchBarLyricsButton" destination="QO9-t0-epx" id="UH4-5g-s8L"/>
-                    </connections>
-                </viewController>
-            </objects>
-            <point key="canvasLocation" x="1917" y="3779"/>
+            <point key="canvasLocation" x="1973" y="1962"/>
         </scene>
     </scenes>
     <resources>
