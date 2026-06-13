@@ -153,10 +153,94 @@
       "comment" : "Privacy - Media Library Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم LyricsX خدمة Apple Music للبحث عن العنوان والفنان الأصليين للمقطع حتى يتمكن من العثور على كلمات الأغاني للأسماء المترجمة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX verwendet Apple Music, um den ursprünglichen Titel und Künstler eines Songs zu ermitteln und so Songtexte für lokalisierte Namen zu finden."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "LyricsX uses Apple Music to look up the original title and artist of a track so it can find lyrics for localized names."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX usa Apple Music para buscar el título y el artista originales de una pista y así encontrar la letra correspondiente a los nombres localizados."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX از Apple Music برای یافتن عنوان و هنرمند اصلی یک قطعه استفاده می‌کند تا بتواند متن ترانه را برای نام‌های بومی‌سازی‌شده پیدا کند."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX utilise Apple Music pour retrouver le titre et l’artiste d’origine d’un morceau afin de trouver les paroles correspondant aux noms localisés."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX menggunakan Apple Music untuk mencari judul dan artis asli sebuah lagu agar dapat menemukan lirik untuk nama yang dilokalkan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX usa Apple Music per individuare il titolo e l’artista originali di un brano, così da trovare i testi per i nomi localizzati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX は、ローカライズされた名称の歌詞を見つけられるように、Apple Music を使用して曲の元のタイトルとアーティストを調べます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX는 현지화된 이름의 가사를 찾을 수 있도록 Apple Music을 사용하여 트랙의 원래 제목과 아티스트를 조회합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX gebruikt Apple Music om de oorspronkelijke titel en artiest van een nummer op te zoeken, zodat songteksten voor gelokaliseerde namen kunnen worden gevonden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX korzysta z Apple Music, aby wyszukać oryginalny tytuł i wykonawcę utworu i dzięki temu znaleźć teksty dla zlokalizowanych nazw."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O LyricsX usa o Apple Music para procurar o título e o artista originais de uma faixa, de modo a encontrar a letra correspondente a nomes localizados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX использует Apple Music для поиска исходного названия и исполнителя трека, чтобы находить тексты песен по локализованным названиям."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LyricsX використовує Apple Music для пошуку оригінальної назви та виконавця треку, щоб знаходити тексти пісень за локалізованими назвами."
           }
         },
         "zh-Hans" : {

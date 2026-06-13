@@ -2507,10 +2507,94 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Use Apple Music-style lyrics window\"; ObjectID = \"AML-Cl-001\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدام نافذة كلمات بنمط Apple Music"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtextfenster im Apple Music-Stil verwenden"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Use Apple Music-style lyrics window"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar ventana de letras al estilo de Apple Music"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استفاده از پنجرهٔ متن ترانه به سبک Apple Music"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser une fenêtre de paroles façon Apple Music"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan jendela lirik bergaya Apple Music"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa finestra dei testi in stile Apple Music"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music スタイルの歌詞ウインドウを使用"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music 스타일 가사 윈도우 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtekstvenster in Apple Music-stijl gebruiken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj okna tekstów w stylu Apple Music"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar janela de letras no estilo do Apple Music"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать окно текста в стиле Apple Music"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Використовувати вікно тексту в стилі Apple Music"
           }
         },
         "zh-Hans" : {
@@ -2531,10 +2615,94 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Recover original song and artist names via MusicKit (Apple Music only)\"; ObjectID = \"ANR-Cl-001\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استرجاع أسماء الأغنية والفنان الأصلية عبر MusicKit (Apple Music فقط)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originale Titel- und Künstlernamen über MusicKit wiederherstellen (nur Apple Music)"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Recover original song and artist names via MusicKit (Apple Music only)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperar los nombres originales de canción y artista mediante MusicKit (solo Apple Music)"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بازیابی نام اصلی آهنگ و هنرمند از طریق MusicKit (فقط Apple Music)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérer les noms originaux du morceau et de l’artiste via MusicKit (Apple Music uniquement)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulihkan nama lagu dan artis asli melalui MusicKit (hanya Apple Music)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupera i nomi originali di brano e artista tramite MusicKit (solo Apple Music)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MusicKit で元の曲名とアーティスト名を復元する（Apple Music のみ）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MusicKit로 원래 곡 및 아티스트 이름 복원 (Apple Music 전용)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oorspronkelijke nummer- en artiestnamen herstellen via MusicKit (alleen Apple Music)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzyskuj oryginalne nazwy utworu i wykonawcy przez MusicKit (tylko Apple Music)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperar os nomes originais da música e do artista via MusicKit (apenas Apple Music)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Восстанавливать исходные названия песни и имя исполнителя через MusicKit (только Apple Music)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відновлювати оригінальні назви пісні та виконавця через MusicKit (лише Apple Music)"
           }
         },
         "zh-Hans" : {
@@ -2555,10 +2723,106 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Boost lyrics whose cover art matches the playing track\"; ObjectID = \"ART-Cl-001\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترجيح كلمات الأغاني التي تتطابق صورة غلافها مع المقطع المُشغَّل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtexte bevorzugen, deren Albumcover zum laufenden Titel passt"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Boost lyrics whose cover art matches the playing track"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorizar las letras cuya portada coincide con la pista en reproducción"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترجیح دادن متن ترانه‌هایی که تصویر جلدشان با قطعهٔ در حال پخش مطابقت دارد"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favoriser les paroles dont la pochette correspond au morceau en cours"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prioritaskan lirik yang sampul albumnya cocok dengan lagu yang diputar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dai priorità ai testi la cui copertina corrisponde al brano in riproduzione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アートワークが再生中の曲と一致する歌詞を優先する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앨범 아트가 재생 중인 곡과 일치하는 가사 우선"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songteksten met passende albumhoes voor het huidige nummer bevoordelen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferuj teksty, których okładka pasuje do odtwarzanego utworu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priorizar letras cuja capa corresponde à faixa em reprodução"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повышать приоритет текстов, обложка которых совпадает с воспроизводимым треком"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підвищувати пріоритет текстів, обкладинка яких збігається з відтворюваним треком"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优先采用封面与当前播放曲目匹配的歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先採用封面與目前播放曲目相符的歌詞"
           }
         }
       }
@@ -4197,6 +4461,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перетаскивайте строки, чтобы изменить приоритет источников. Если отключено, сортировка будет по качеству."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетягуйте рядки, щоб змінити пріоритет джерел. Якщо вимкнено, сортування відбуватиметься за якістю."
           }
         },
         "zh-Hans" : {
@@ -9005,10 +9275,94 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Show playback controls in menu bar\"; ObjectID = \"MBP-Cl-001\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار عناصر التحكم في التشغيل في شريط القوائم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiedergabesteuerung in der Menüleiste anzeigen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Show playback controls in menu bar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar los controles de reproducción en la barra de menús"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نمایش کنترل‌های پخش در نوار منو"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les commandes de lecture dans la barre des menus"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan kontrol pemutaran di bilah menu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra i controlli di riproduzione nella barra dei menu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メニューバーに再生コントロールを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 막대에 재생 제어기 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afspeelregelaars in menubalk tonen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż elementy sterujące odtwarzaniem na pasku menu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar os controles de reprodução na barra de menus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать элементы управления воспроизведением в строке меню"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати елементи керування відтворенням у рядку меню"
           }
         },
         "zh-Hans" : {
@@ -9371,16 +9725,100 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Use source-provided kana when available\"; ObjectID = \"source-Kana-Cell\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدام الكانا المقدَّمة من المصدر عند توفرها"
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Use source-provided kana when available"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vom Anbieter bereitgestellte Kana verwenden, sofern verfügbar"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Use source-provided kana when available"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar los kana proporcionados por la fuente cuando estén disponibles"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استفاده از کانای ارائه‌شده توسط منبع در صورت موجود بودن"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser les kana fournis par la source lorsqu’ils sont disponibles"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan kana yang disediakan sumber jika tersedia"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa i kana forniti dalla fonte quando disponibili"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取得元が提供するかなを優先的に使用する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처에서 제공하는 가나를 가능할 때 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Door bron aangeleverde kana gebruiken indien beschikbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używaj kana dostarczonych przez źródło, jeśli są dostępne"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar os kana fornecidos pela fonte quando disponíveis"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать кану из источника, если она доступна"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Використовувати кану з джерела, якщо доступна"
           }
         },
         "zh-Hans" : {
@@ -10798,16 +11236,100 @@
     "Sbr-cb-bCl.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Strip brackets from search title\"; ObjectID = \"Sbr-cb-bCl\";",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة الأقواس من عنوان البحث"
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strip brackets from search title"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klammern aus dem Suchtitel entfernen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strip brackets from search title"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar los paréntesis del título de búsqueda"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حذف پرانتزها از عنوان جست‌وجو"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les parenthèses du titre de recherche"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus tanda kurung dari judul pencarian"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi le parentesi dal titolo di ricerca"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索タイトルから括弧を除去する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색 제목에서 괄호 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haakjes uit de zoektitel verwijderen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń nawiasy z tytułu wyszukiwania"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover os parênteses do título de busca"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалять скобки из названия для поиска"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видаляти дужки з назви для пошуку"
           }
         },
         "zh-Hans" : {
@@ -10827,16 +11349,100 @@
     "Sbr-ex-tCl.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Strip brackets from the title before searching. Strict Search then matches the stripped title.\"; ObjectID = \"Sbr-ex-tCl\";",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة الأقواس من العنوان قبل البحث. عندئذٍ يطابق البحث الدقيق العنوان بعد إزالة الأقواس."
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strip brackets from the title before searching. Strict Search then matches the stripped title."
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klammern vor der Suche aus dem Titel entfernen. Die „Strikte Suche“ gleicht dann mit dem bereinigten Titel ab."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strip brackets from the title before searching. Strict Search then matches the stripped title."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar los paréntesis del título antes de buscar. La «Búsqueda estricta» usará entonces el título sin paréntesis."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قبل از جست‌وجو پرانتزها از عنوان حذف می‌شوند. سپس «جستجوی دقیق» با عنوان بدون پرانتز مطابقت داده می‌شود."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les parenthèses du titre avant la recherche. La « Recherche stricte » se base alors sur le titre nettoyé."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus tanda kurung dari judul sebelum mencari. «Pencarian Ketat» lalu mencocokkan judul yang sudah dibersihkan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi le parentesi dal titolo prima della ricerca. La «Ricerca esatta» userà quindi il titolo senza parentesi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索前にタイトルから括弧を除去します。「厳密な検索」では、括弧を除去したタイトルで照合します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색하기 전에 제목에서 괄호를 제거합니다. 그러면 ‘정확히 일치하는 검색’이 괄호를 제거한 제목과 일치시킵니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haakjes vóór het zoeken uit de titel verwijderen. „Strikt zoeken” vergelijkt dan met de opgeschoonde titel."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń nawiasy z tytułu przed wyszukiwaniem. „Dokładne wyszukiwanie” dopasuje wtedy tytuł bez nawiasów."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover os parênteses do título antes de buscar. A «Busca Estrita» usará então o título sem parênteses."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалять скобки из названия перед поиском. Тогда «Строгий поиск» сопоставляет название без скобок."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видаляти дужки з назви перед пошуком. Тоді «Строгий пошук» зіставляє назву без дужок."
           }
         },
         "zh-Hans" : {
