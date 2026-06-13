@@ -1483,11 +1483,11 @@
             <objects>
                 <viewController title="Lab" id="JPs-hn-m7d" customClass="PreferenceLabViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m1c-jC-l4b">
-                        <rect key="frame" x="0.0" y="0.0" width="615" height="582"/>
+                        <rect key="frame" x="0.0" y="0.0" width="615" height="611"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <gridView xPlacement="leading" yPlacement="fill" rowAlignment="none" rowSpacing="8" columnSpacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="jUN-mS-kOf">
-                                <rect key="frame" x="75" y="20" width="520" height="542"/>
+                                <rect key="frame" x="75" y="20" width="520" height="571"/>
                                 <rows>
                                     <gridRow yPlacement="fill" topPadding="5" id="6bF-ha-C1x"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="HwQ-Go-InK"/>
@@ -1514,7 +1514,7 @@
                                 <gridCells>
                                     <gridCell row="6bF-ha-C1x" column="8ba-lF-U7s" headOfMergedCell="e0l-BC-wdX" xPlacement="center" yPlacement="center" id="e0l-BC-wdX">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iPK-G7-6Pl">
-                                            <rect key="frame" x="-2" y="501" width="524" height="32"/>
+                                            <rect key="frame" x="-2" y="530" width="524" height="32"/>
                                             <textFieldCell key="cell" title="Here are some experimental features that may not be stable enough, and may be removed in the future." id="hyR-zL-eAx">
                                                 <font key="font" usesAppearanceFont="YES"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1526,7 +1526,7 @@
                                     <gridCell row="HwQ-Go-InK" column="8ba-lF-U7s" id="APY-SA-Gv3"/>
                                     <gridCell row="HwQ-Go-InK" column="4uA-B7-Dvh" id="42J-D1-SnB">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nS6-Qx-J9M">
-                                            <rect key="frame" x="170" y="468" width="270" height="16"/>
+                                            <rect key="frame" x="170" y="497" width="270" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use system wide now playing application" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="mnU-3V-ZCW">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1539,7 +1539,7 @@
                                     <gridCell row="aXA-4O-lyR" column="8ba-lF-U7s" id="sfu-Fg-fb2"/>
                                     <gridCell row="aXA-4O-lyR" column="4uA-B7-Dvh" id="8uC-hs-bWp">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="42f-FR-iUI">
-                                            <rect key="frame" x="170" y="431" width="206" height="24"/>
+                                            <rect key="frame" x="170" y="460" width="206" height="24"/>
                                             <buttonCell key="cell" type="push" title="Customize allows applications" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="g7q-Q0-nbQ">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1553,7 +1553,7 @@
                                     <gridCell row="qxK-7k-u6w" column="8ba-lF-U7s" id="vLh-2l-qtx"/>
                                     <gridCell row="qxK-7k-u6w" column="4uA-B7-Dvh" id="71r-UZ-3BQ">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KYE-2L-1wj">
-                                            <rect key="frame" x="170" y="402" width="333" height="16"/>
+                                            <rect key="frame" x="170" y="431" width="333" height="16"/>
                                             <buttonCell key="cell" type="check" title="Automatically generate furigana for Japanese lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="UXo-KY-CwG">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -1566,14 +1566,14 @@
                                     <gridCell row="source-Kana-Row" column="8ba-lF-U7s" id="source-Kana-Left"/>
                                     <gridCell row="source-Kana-Row" column="4uA-B7-Dvh" id="source-Kana-Right">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="source-Kana-Button">
-                                            <rect key="frame" x="170" y="372" width="259" height="16"/>
+                                            <rect key="frame" x="170" y="402" width="274" height="16"/>
                                             <buttonCell key="cell" type="check" title="Use source-provided kana when available" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="source-Kana-Cell">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
                                             <connections>
-                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.DesktopLyricsUseSourceKana" id="source-Kana-Binding"/>
                                                 <binding destination="DdU-cn-wN1" name="enabled" keyPath="values.DesktopLyricsEnableFurigana" id="source-Kana-Enabled"/>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.DesktopLyricsUseSourceKana" id="source-Kana-Binding"/>
                                             </connections>
                                         </button>
                                     </gridCell>
@@ -1783,11 +1783,21 @@
             <objects>
                 <viewController title="Source" id="KTZ-mJ-lpY" customClass="PreferenceSourceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" misplaced="YES" id="Bkt-jy-GD5">
-                        <rect key="frame" x="0.0" y="0.0" width="440" height="248"/>
+                        <rect key="frame" x="0.0" y="0.0" width="200" height="440"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rs6-hk-kzP">
+                                <rect key="frame" x="20" y="384" width="160" height="32"/>
+                                <buttonCell key="cell" type="check" title="Enable source priority ranking" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="au8-ou-Duf">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="toggleSourcePriority:" target="KTZ-mJ-lpY" id="3S7-On-Gfb"/>
+                                </connections>
+                            </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
-                                <rect key="frame" x="18" y="190" width="369" height="12"/>
+                                <rect key="frame" x="18" y="340" width="164" height="36"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Drag rows to reorder source priority. If disabled, it will be sorted by quality." id="e8O-oC-igZ">
                                     <font key="font" size="11" name="HelveticaNeue"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -1795,13 +1805,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="400" height="150"/>
+                                <rect key="frame" x="20" y="24" width="160" height="300"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="398" height="148"/>
+                                    <rect key="frame" x="1" y="1" width="158" height="298"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="398" height="120"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="158" height="270"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1843,7 +1853,7 @@
                                                         </tableCellView>
                                                     </prototypeCellViews>
                                                 </tableColumn>
-                                                <tableColumn identifier="source" width="319" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
+                                                <tableColumn identifier="source" width="79" minWidth="40" maxWidth="1000" id="xXN-7W-SKY">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Source">
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -1856,11 +1866,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView id="VGV-SG-dwt">
-                                                            <rect key="frame" x="73" y="0.0" width="316" height="24"/>
+                                                            <rect key="frame" x="73" y="0.0" width="76" height="24"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="KUU-qx-NSS">
-                                                                    <rect key="frame" x="0.0" y="4" width="316" height="16"/>
+                                                                    <rect key="frame" x="0.0" y="4" width="76" height="16"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" id="ow1-De-Qmh">
                                                                         <font key="font" usesAppearanceFont="YES"/>
                                                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1893,7 +1903,7 @@
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="150" id="z0H-bo-IFm"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Cq9-fY-Mad">
-                                    <rect key="frame" x="1" y="132" width="418" height="17"/>
+                                    <rect key="frame" x="1" y="132" width="398" height="17"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-hy-YBN">
@@ -1901,23 +1911,10 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="Kzd-3h-xxb">
-                                    <rect key="frame" x="0.0" y="0.0" width="398" height="28"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="158" height="28"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rs6-hk-kzP">
-                                <rect key="frame" x="20" y="210" width="203" height="14"/>
-                                <buttonCell key="cell" type="check" title="Enable source priority ranking" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="au8-ou-Duf">
-                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="14" id="bxP-rt-bwh"/>
-                                </constraints>
-                                <connections>
-                                    <action selector="toggleSourcePriority:" target="KTZ-mJ-lpY" id="3S7-On-Gfb"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="TcY-l7-0hN" firstAttribute="leading" secondItem="Bkt-jy-GD5" secondAttribute="leading" constant="20" id="0Sk-4v-jVW"/>
@@ -1939,7 +1936,7 @@
                 </viewController>
                 <customObject id="JkS-yT-8ul" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1973" y="1962"/>
+            <point key="canvasLocation" x="2221.5" y="2158"/>
         </scene>
     </scenes>
     <resources>
