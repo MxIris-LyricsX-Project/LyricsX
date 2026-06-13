@@ -3530,115 +3530,115 @@
       }
     },
     "cBB-zn-Hdh.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Prefer bilingual lyrics\"; ObjectID = \"cBB-zn-Hdh\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Show translation\"; ObjectID = \"cBB-zn-Hdh\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "تفضيل كلمات الأغاني ثنائية اللغة"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prefer bilingual lyrics"
+            "value" : "Show translation"
           }
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zweisprachige Songtexte bevorzugen"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Prefer bilingual lyrics"
+            "value" : "Show translation"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prefiero letras bilingües"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "نمایش متن ترانه دو زبانه (در صورت وجود)"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Préférer les paroles bilingues"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lebih suka lirik dwibahasa"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferisci testo bilingue"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "バイリンガルの歌詞を優先する"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "이중 언어 표시하기"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Liever tweetalige songteksten"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferuj dwu-języczne teksty"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferir letras bilíngues"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Предпочитать двуязычные тексты"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Віддавати перевагу двомовним текстам"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "优先使用双语歌词"
+            "value" : "显示译文"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "優先使用雙語歌詞"
+            "value" : "顯示譯文"
           }
         }
       }
@@ -7574,115 +7574,115 @@
       }
     },
     "KJ9-qG-viC.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Prefer bilingual lyrics\"; ObjectID = \"KJ9-qG-viC\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Show translation\"; ObjectID = \"KJ9-qG-viC\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "تفضيل كلمات الأغاني ثنائية اللغة"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prefer bilingual lyrics"
+            "value" : "Show translation"
           }
         },
         "de" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zweisprachige Songtexte bevorzugen"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Prefer bilingual lyrics"
+            "value" : "Show translation"
           }
         },
         "es" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prefiero letras bilingües"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "fa" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "نمایش متن ترانه دو زبانه (در صورت وجود)"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Préférer les paroles bilingues"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "id" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lebih suka lirik dwibahasa"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "it" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferisci testo bilingue"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "バイリンガルの歌詞を優先する"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "이중 언어 표시하기"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Liever tweetalige songteksten"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "pl" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferuj dwu-języczne teksty"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "pt" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferir letras bilíngues"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Предпочитать двуязычные тексты"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "Віддавати перевагу двомовним текстам"
+            "state" : "new",
+            "value" : "Show translation"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "优先使用双语歌词"
+            "value" : "显示译文"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "優先使用雙語歌詞"
+            "value" : "顯示譯文"
           }
         }
       }

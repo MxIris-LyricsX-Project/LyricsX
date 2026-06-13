@@ -88,8 +88,8 @@
 /* Class = "NSTextFieldCell"; title = "Decrease lyrics offset:"; ObjectID = "bmk-rW-Uot"; */
 "bmk-rW-Uot.title" = "Decrease lyrics offset:";
 
-/* Class = "NSButtonCell"; title = "Prefer bilingual lyrics"; ObjectID = "cBB-zn-Hdh"; */
-"cBB-zn-Hdh.title" = "Prefer bilingual lyrics";
+/* Class = "NSButtonCell"; title = "Show translation"; ObjectID = "cBB-zn-Hdh"; */
+"cBB-zn-Hdh.title" = "Show translation";
 
 /* Class = "NSViewController"; title = "General"; ObjectID = "d5d-dC-DK4"; */
 "d5d-dC-DK4.title" = "General";

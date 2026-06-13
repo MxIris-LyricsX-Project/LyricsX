@@ -535,7 +535,7 @@
                                     <gridCell row="7Wx-n7-f04" column="IfN-lq-biT" id="kFj-ie-KSt">
                                         <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="eXe-c6-bvj">
                                             <rect key="frame" x="217" y="141" width="149" height="16"/>
-                                            <buttonCell key="cell" type="check" title="Prefer bilingual lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KJ9-qG-viC">
+                                            <buttonCell key="cell" type="check" title="Show translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KJ9-qG-viC">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -2149,7 +2149,7 @@
                             </box>
                             <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="wwb-0H-xk7">
                                 <rect key="frame" x="246" y="68" width="149" height="16"/>
-                                <buttonCell key="cell" type="check" title="Prefer bilingual lyrics" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="cBB-zn-Hdh">
+                                <buttonCell key="cell" type="check" title="Show translation" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="cBB-zn-Hdh">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
