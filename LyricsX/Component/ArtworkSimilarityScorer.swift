@@ -3,23 +3,39 @@ import CoreGraphics
 import Foundation
 
 // Re-ranks lyrics candidates whose cover artwork visually matches the
-// currently playing track. Two artworks count as the same if both:
-//   1. Their 64-bit dHash (difference hash) is within Hamming distance 10 —
-//      i.e. the *shape/structure* of the image is the same up to scaling and
-//      compression. dHash alone is colour-blind because it works on
-//      luminance, which means template covers recoloured per release would
-//      collide.
-//   2. Their 24-bit average RGB (one byte per channel) is within ~45/255 on
-//      every channel — i.e. the overall *colour mood* is the same. This
-//      second gate rejects "same layout, different palette" false matches.
-// The two gates use *different* sampling resolutions:
-//   - dHash uses the classic 9×8 luminance grid (72 px, 64 bit hash).
-//   - The average colour samples a 32×32 grid (1024 px). At 9×8 a single
-//      pixel is ~1.4% of the mean, so noise from JPEG quantisation, padding
-//      or different CDN crops easily pushed the per-channel mean past 30/255
-//      between two visually-identical sources; 32×32 cuts that noise floor
-//      by an order of magnitude and lets us keep the colour gate strict
-//      enough to reject recoloured templates.
+// currently playing track. The decision is driven primarily by a 64-bit dHash
+// (difference hash) of the image *structure*, with a colour check that only
+// intervenes in an ambiguous band:
+//
+//   1. dHash within `strongHashDistanceThreshold` bits — the structures are,
+//      to a ~10^-14 false-match probability, the same image. Accept outright.
+//      dHash works on luminance and is therefore colour-blind, so a template
+//      cover recoloured per release could in principle land here; in practice
+//      that requires near-identical brightness structure, which is rare enough
+//      that the strong band is safe to wave through.
+//   2. dHash within `dHashDistanceThreshold` but past the strong threshold —
+//      the "ambiguous band". Here we additionally require the two artworks to
+//      share a *chrominance* (hue/saturation) signature, which rejects the
+//      "same layout, different palette" template collisions while still
+//      admitting the same cover re-encoded at a different brightness.
+//
+// Why chrominance and not absolute RGB? The now-playing image is decoded and
+// colour-managed by the system; the candidate is a CDN JPEG. The two routinely
+// differ in overall *brightness* (gamma, colour-profile conversion, JPEG
+// quality) while depicting the identical cover. The previous gate compared the
+// absolute average RGB on every channel with an L∞ threshold, so a uniform
+// brightness shift — which leaves the actual hue untouched — moved all three
+// channels together past the threshold and wrongly rejected real matches.
+// Comparing luma-independent chrominance (YCbCr Cb/Cr) cancels an additive
+// brightness offset by construction, because the colour-difference weights sum
+// to zero.
+//
+// Sampling resolutions:
+//   - dHash uses the classic 9×8 luminance grid (72 px, 64-bit hash).
+//   - The average colour samples a 32×32 grid (1024 px) so JPEG quantisation,
+//      padding and different CDN crops average out instead of skewing the
+//      chrominance — at 9×8 a single pixel is ~1.4% of the mean, an order of
+//      magnitude noisier.
 
 actor ArtworkSimilarityScorer {
     static let shared = ArtworkSimilarityScorer()
@@ -45,15 +61,22 @@ actor ArtworkSimilarityScorer {
     /// currently playing track.
     static let matchBonus = 0.15
 
-    // Matching thresholds. Tuned so:
-    //   - dHash slack admits the same image at different resolutions /
-    //     compression (~85% bits in common).
-    //   - colour slack admits typical CDN re-encoding & gentle remasters but
-    //     rejects "same template, recoloured" hits. 45/255 ≈ 18% — looser
-    //     than before, but paired with the 32×32 sampling grid the false-
-    //     positive risk is no worse than the old 30/255 at 9×8.
+    // Matching thresholds.
+    //   - dHashDistanceThreshold: the outer bound. Past this the structures
+    //     differ enough that we never call it a match (~85% of bits must
+    //     agree). Admits the same image at different resolutions / compression.
+    //   - strongHashDistanceThreshold: at or under this the structures are
+    //     essentially identical (random collision ~10^-14), so we accept
+    //     without the colour check — that is what stops a brightness/encoding
+    //     shift on a genuine match from being vetoed.
+    //   - chrominanceDistanceThreshold: Euclidean distance in the (Cb, Cr)
+    //     chrominance plane (each component spans roughly ±128). Only consulted
+    //     in the ambiguous band. Loose enough to tolerate re-encoding & gentle
+    //     remasters, tight enough to reject a recoloured template. Tune against
+    //     the chromaDist values logged below.
     private let dHashDistanceThreshold = 10
-    private let perChannelColorDelta = 45
+    private let strongHashDistanceThreshold = 4
+    private let chrominanceDistanceThreshold = 30.0
 
     private init() {}
 
@@ -103,18 +126,28 @@ actor ArtworkSimilarityScorer {
         }
 
         let hashDistance = Self.hammingDistance(target.dHash, candidate.dHash)
-        let deltaR = abs(Int(target.avgR) - Int(candidate.avgR))
-        let deltaG = abs(Int(target.avgG) - Int(candidate.avgG))
-        let deltaB = abs(Int(target.avgB) - Int(candidate.avgB))
-        let hashOK = hashDistance <= dHashDistanceThreshold
-        let colorOK = deltaR <= perChannelColorDelta
-            && deltaG <= perChannelColorDelta
-            && deltaB <= perChannelColorDelta
-        let matched = hashOK && colorOK
-        NSLog("[ArtworkMatch] url=%@ hashDist=%d (≤%d:%@) ΔR=%d ΔG=%d ΔB=%d (≤%d:%@) -> %@",
+        guard hashDistance <= dHashDistanceThreshold else {
+            NSLog("[ArtworkMatch] url=%@ hashDist=%d (>%d) -> NO-MATCH",
+                  artworkURL.absoluteString, hashDistance, dHashDistanceThreshold)
+            return false
+        }
+
+        // Strong structural match: accept without consulting colour, so a
+        // brightness/encoding shift on a genuine match cannot veto it.
+        if hashDistance <= strongHashDistanceThreshold {
+            NSLog("[ArtworkMatch] url=%@ hashDist=%d (≤%d strong) -> MATCH",
+                  artworkURL.absoluteString, hashDistance, strongHashDistanceThreshold)
+            return true
+        }
+
+        // Ambiguous band: require a matching chrominance signature to reject
+        // "same template, recoloured" collisions, ignoring overall brightness.
+        let chrominanceDistance = Self.chrominanceDistance(target, candidate)
+        let matched = chrominanceDistance <= chrominanceDistanceThreshold
+        NSLog("[ArtworkMatch] url=%@ hashDist=%d (≤%d) chromaDist=%.1f (≤%.0f:%@) -> %@",
               artworkURL.absoluteString,
-              hashDistance, dHashDistanceThreshold, hashOK ? "OK" : "FAIL",
-              deltaR, deltaG, deltaB, perChannelColorDelta, colorOK ? "OK" : "FAIL",
+              hashDistance, dHashDistanceThreshold,
+              chrominanceDistance, chrominanceDistanceThreshold, matched ? "OK" : "FAIL",
               matched ? "MATCH" : "NO-MATCH")
         return matched
     }
@@ -235,6 +268,27 @@ actor ArtworkSimilarityScorer {
 
     private static func hammingDistance(_ a: UInt64, _ b: UInt64) -> Int {
         return (a ^ b).nonzeroBitCount
+    }
+
+    /// Euclidean distance between the two fingerprints' average colours in the
+    /// luma-independent (Cb, Cr) chrominance plane. A brightness difference
+    /// between a system-decoded now-playing image and a CDN JPEG of the same
+    /// cover largely cancels here — Cb/Cr weights sum to zero, so a uniform
+    /// luma offset drops out — while a genuinely different palette does not.
+    private static func chrominanceDistance(_ first: ArtworkFingerprint, _ second: ArtworkFingerprint) -> Double {
+        func chrominance(_ fingerprint: ArtworkFingerprint) -> (cb: Double, cr: Double) {
+            let red = Double(fingerprint.avgR)
+            let green = Double(fingerprint.avgG)
+            let blue = Double(fingerprint.avgB)
+            // Rec. 601 luma; Cb/Cr are the colour-difference components.
+            let luma = 0.299 * red + 0.587 * green + 0.114 * blue
+            return (cb: blue - luma, cr: red - luma)
+        }
+        let firstChrominance = chrominance(first)
+        let secondChrominance = chrominance(second)
+        let deltaCb = firstChrominance.cb - secondChrominance.cb
+        let deltaCr = firstChrominance.cr - secondChrominance.cr
+        return (deltaCb * deltaCb + deltaCr * deltaCr).squareRoot()
     }
 }
 
