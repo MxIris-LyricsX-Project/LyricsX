@@ -29,20 +29,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
     private var activeLyricsHUD: NSWindowController?
-
-    @available(macOS 15, *)
-    @AvailableNonMutating
-    private var appleMusicLyricsWindowController: AppleMusicLyrics.WindowController = .init()
+    private var lyricsHUDCloseObserver: NSObjectProtocol?
 
     private func openLyricsHUD() {
+        // Create the Apple Music lyrics window lazily, only when actually
+        // opened, and release it again on close (see `releaseActiveLyricsHUD`).
+        // Users who never open it keep no SwiftUI hosting view or 30fps refresh
+        // timer alive in the background. `lyricsHUD` stays a cached lazy
+        // property (lightweight) and is reused across opens.
         let hud: NSWindowController
         if #available(macOS 15, *), defaults[.useAppleMusicLyricsWindow] {
-            hud = appleMusicLyricsWindowController
+            hud = AppleMusicLyrics.WindowController()
         } else {
             hud = lyricsHUD
         }
         hud.showWindow(nil)
         activeLyricsHUD = hud
+        observeLyricsHUDClose(hud)
+    }
+
+    /// Drop the strong reference to the HUD when its window closes (e.g. via the
+    /// window's own close button) so the Apple Music window's controller,
+    /// SwiftUI hosting view and 30fps timer are deallocated instead of lingering.
+    /// `lyricsHUD` has its own lazy owner and merely loses the `activeLyricsHUD`
+    /// pointer here.
+    private func observeLyricsHUDClose(_ hud: NSWindowController) {
+        if let observer = lyricsHUDCloseObserver {
+            NotificationCenter.default.removeObserver(observer)
+            lyricsHUDCloseObserver = nil
+        }
+        guard let window = hud.window else { return }
+        lyricsHUDCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            self?.releaseActiveLyricsHUD()
+        }
+    }
+
+    private func releaseActiveLyricsHUD() {
+        if let observer = lyricsHUDCloseObserver {
+            NotificationCenter.default.removeObserver(observer)
+            lyricsHUDCloseObserver = nil
+        }
+        activeLyricsHUD = nil
     }
 
     lazy var preferencesWindowController: PreferenceWindowController = .create()
