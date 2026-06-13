@@ -18,6 +18,10 @@ extension AppleMusicLyrics {
         @State private var isPlaying: Bool = false
         @State private var currentTrackID: String?
         @State private var lastArtworkFetchAttemptTime: Date = .distantPast
+        // Pre-rendered blurred backdrop, regenerated once per track instead of
+        // live-blurring the full-resolution artwork every animation frame.
+        @State private var blurredBackgroundImage: NSImage?
+        @State private var blurredBackgroundSourceTrackID: String?
 
         private let playbackTimerPublisher = Timer.publish(every: 1.0 / 30.0, on: .main, in: .common).autoconnect()
 
@@ -27,7 +31,7 @@ extension AppleMusicLyrics {
 
         var body: some View {
             ZStack {
-                BackgroundView(artwork: artwork, backgroundMode: backgroundMode)
+                BackgroundView(blurredArtwork: blurredBackgroundImage, backgroundMode: backgroundMode)
                     .ignoresSafeArea()
 
                 GeometryReader { geometry in
@@ -273,6 +277,7 @@ extension AppleMusicLyrics {
             // Fast path: struct's cached artwork (no IPC overhead)
             if let trackArtwork = selectedPlayer.currentTrack?.artwork {
                 artwork = trackArtwork
+                regenerateBlurredBackgroundIfNeeded(from: trackArtwork)
                 return
             }
             // Slow path: SBObject KVC fallback, throttled to at most once per second
@@ -281,7 +286,24 @@ extension AppleMusicLyrics {
             lastArtworkFetchAttemptTime = now
             if let trackArtwork = selectedPlayer.currentTrack?.resolvedArtwork {
                 artwork = trackArtwork
+                regenerateBlurredBackgroundIfNeeded(from: trackArtwork)
             }
+        }
+
+        /// Rebuild the blurred backdrop, but only when the source track has
+        /// actually changed (or none has been rendered yet). `refreshArtwork()`
+        /// runs on every lyrics/track event and on the 30 fps timer while
+        /// artwork is missing, so without this guard the same image would be
+        /// re-blurred repeatedly. The blur is cheap here because it runs on a
+        /// 240 px thumbnail, not the full-screen artwork.
+        private func regenerateBlurredBackgroundIfNeeded(from image: NSImage) {
+            guard backgroundMode == 0 else { return }
+            let trackID = currentTrackID
+            guard trackID != blurredBackgroundSourceTrackID || blurredBackgroundImage == nil else {
+                return
+            }
+            blurredBackgroundSourceTrackID = trackID
+            blurredBackgroundImage = ArtworkBlurRenderer.blurredBackground(from: image)
         }
 
         private func refreshTrackInfo() {
