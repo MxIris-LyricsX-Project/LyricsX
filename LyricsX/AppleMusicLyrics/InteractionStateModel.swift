@@ -1,14 +1,11 @@
-import SwiftUI
-import Combine
+import Foundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
-    @Observable
-    final class PlaybackTimeModel {
-        var playbackTime: TimeInterval = 0
-    }
-
-    @Observable
+    /// Tracks whether the lyrics view auto-follows playback or has been
+    /// "delegated" to the user (scrolled away), with a countdown back to
+    /// following. Plain AppKit-friendly class (no SwiftUI/@Observable); UI
+    /// refreshes via the `onChange` callback.
     final class InteractionStateModel {
         enum State: Equatable {
             case following
@@ -17,7 +14,16 @@ extension AppleMusicLyrics {
             case isolated
         }
 
-        private(set) var state: State = .following
+        private(set) var state: State = .following {
+            didSet { onChange?() }
+        }
+
+        var delegationProgress: Double = 0 {
+            didSet { onChange?() }
+        }
+
+        /// Fired on any state / progress change.
+        var onChange: (() -> Void)?
 
         var isFollowing: Bool {
             state == .following
@@ -26,8 +32,6 @@ extension AppleMusicLyrics {
         var isDelegated: Bool {
             state != .following
         }
-
-        var delegationProgress: Double = 0
 
         private var intermediateTask: Task<Void, Never>?
         private var countdownTask: Task<Void, Never>?
@@ -49,13 +53,8 @@ extension AppleMusicLyrics {
 
         func toggleIsolation() {
             cancelTimers()
-            if state == .isolated {
-                state = .following
-                delegationProgress = 0
-            } else {
-                state = .isolated
-                delegationProgress = 0
-            }
+            state = state == .isolated ? .following : .isolated
+            delegationProgress = 0
         }
 
         func returnToFollowing() {

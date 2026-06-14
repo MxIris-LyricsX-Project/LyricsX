@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 
 @available(macOS 15, *)
 enum AppleMusicLyrics {}
@@ -21,16 +20,18 @@ extension AppleMusicLyrics {
         }
 
         override func loadWindow() {
-            let rootView = RootView()
-            let hostingController = NSHostingController(rootView: rootView)
+            let viewController = LyricsPanelViewController()
 
-            let window = NSWindow(contentViewController: hostingController)
+            let window = NSWindow(contentViewController: viewController)
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
             window.collectionBehavior.insert(.fullScreenPrimary)
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.backgroundColor = .black
-            window.isMovableByWindowBackground = true
+            // Custom dragging is handled by `DraggablePanelView` so the run loop
+            // stays in default mode and the ColorfulX gradient keeps animating
+            // during the drag (see DraggablePanelView).
+            window.isMovableByWindowBackground = false
             window.appearance = NSAppearance(named: .darkAqua)
             if !window.setFrameAutosaveName("AppleMusicLyricsWindow") {
                 window.center()

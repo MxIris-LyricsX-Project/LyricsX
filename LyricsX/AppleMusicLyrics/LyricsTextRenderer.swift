@@ -1,4 +1,4 @@
-import SwiftUI
+import AppKit
 import LyricsXFoundation
 
 // MARK: - Word Timing Data
@@ -15,181 +15,60 @@ extension AppleMusicLyrics {
         case characterLevel
     }
 
-    // MARK: - LyricsTextRenderer
+    // MARK: - Karaoke Fill Fraction
 
-    struct LyricsTextRenderer: TextRenderer {
-        var elapsedTime: TimeInterval // seconds since line start
-        var lineDuration: TimeInterval // total line duration in seconds
-        var wordTimings: [WordTimingEntry]
-        var contentLength: Int // actual character count of the lyrics line content
-        var mode: KaraokeMode
-        var inactiveOpacity: Double = 0.35
-        var highlightBrightness: Double = 0.5
-        var blendRadius: CGFloat = 8
+    /// Computes the fraction (`0...1`) of a lyric line that should be lit up at
+    /// `elapsedTime`, from per-word timing.
+    ///
+    /// Ported verbatim (logic-wise) from the previous SwiftUI `LyricsTextRenderer`.
+    /// The CALayer engine feeds this fraction into the progress-mask position
+    /// instead of re-drawing the text every frame, which is the core of the
+    /// performance win over the SwiftUI `TextRenderer` implementation.
+    enum KaraokeFill {
+        static func fraction(
+            elapsedTime: TimeInterval,
+            lineDuration: TimeInterval,
+            wordTimings: [WordTimingEntry],
+            totalCharacterCount: Int,
+            mode: KaraokeMode
+        ) -> CGFloat {
+            guard lineDuration > 0 else { return 0 }
 
-        var animatableData: Double {
-            get { elapsedTime }
-            set { elapsedTime = newValue }
-        }
-
-        func draw(layout: Text.Layout, in context: inout GraphicsContext) {
-            // Pass 1: draw all text at inactive opacity
-            var inactiveContext = context
-            inactiveContext.opacity = inactiveOpacity
-            for line in layout {
-                inactiveContext.draw(line)
-            }
-
-            // Pass 2: draw highlighted portion with gradient clipping
-            guard lineDuration > 0 else { return }
-
-            let filledFraction = computeFilledFraction(layout: layout)
-            guard filledFraction > 0 else { return }
-
-            // Distribute the per-line progress across visual lines so a wrapped
-            // lyric line fills sequentially (top line first) instead of every
-            // visual line filling in parallel.
-            let visualLines = Array(layout)
-            let totalWidth = visualLines.reduce(0) { $0 + $1.typographicBounds.rect.width }
-            guard totalWidth > 0 else { return }
-
-            let totalFilledWidth = totalWidth * filledFraction
-            var consumedWidth: CGFloat = 0
-
-            for line in visualLines {
-                let lineRect = line.typographicBounds.rect
-                let lineWidth = lineRect.width
-                guard lineWidth > 0 else { continue }
-
-                let remainingFill = totalFilledWidth - consumedWidth
-                consumedWidth += lineWidth
-
-                guard remainingFill > 0 else { continue }
-
-                var highlightContext = context
-
-                if remainingFill >= lineWidth {
-                    // Whole visual line is past the fill edge — draw it fully highlighted.
-                    highlightContext.addFilter(.brightness(highlightBrightness))
-                    highlightContext.draw(line)
-                } else {
-                    // Fill edge falls inside this visual line — apply the gradient clip.
-                    highlightContext.clipToLayer { clipContext in
-                        let gradientStart = CGPoint(
-                            x: lineRect.minX + remainingFill - blendRadius / 2,
-                            y: lineRect.midY
-                        )
-                        let gradientEnd = CGPoint(
-                            x: lineRect.minX + remainingFill + blendRadius / 2,
-                            y: lineRect.midY
-                        )
-                        clipContext.fill(
-                            Path(lineRect),
-                            with: .linearGradient(
-                                Gradient(colors: [.white, .clear]),
-                                startPoint: gradientStart,
-                                endPoint: gradientEnd
-                            )
-                        )
-                    }
-                    highlightContext.addFilter(.brightness(highlightBrightness))
-                    highlightContext.draw(line)
-                }
-            }
-        }
-
-        // MARK: - Filled Fraction Computation
-
-        private func computeFilledFraction(layout: Text.Layout) -> CGFloat {
-            let totalCharacterCount = estimateTotalCharacterCount()
-
-            switch mode {
-            case .wordLevel:
-                return wordLevelProgress(totalCharacterCount: totalCharacterCount)
-            case .characterLevel:
-                return characterLevelProgress(totalCharacterCount: totalCharacterCount)
-            }
-        }
-
-        // MARK: - Word-Level Progress
-
-        private func wordLevelProgress(totalCharacterCount: Int) -> CGFloat {
             guard !wordTimings.isEmpty else {
-                // No timetag: use linear progress across the whole line
+                // No timetag: linear progress across the whole line.
                 return CGFloat(min(1, max(0, elapsedTime / lineDuration)))
             }
-
             guard totalCharacterCount > 0 else { return 0 }
 
-            // Find the active word and light up the entire word at once
-            for (timingIndex, timing) in wordTimings.enumerated() {
-                let nextTiming = timingIndex + 1 < wordTimings.count ? wordTimings[timingIndex + 1] : nil
-                let nextTimeOffset = nextTiming?.timeOffset ?? lineDuration
-
-                if elapsedTime < timing.timeOffset {
-                    // Before this word starts: show up to this word's start position
-                    return CGFloat(timing.characterIndex) / CGFloat(totalCharacterCount)
-                }
-
-                if elapsedTime >= timing.timeOffset && elapsedTime < nextTimeOffset {
-                    // Currently in this word: light up through the end of this word
-                    let endCharacterIndex = nextTiming?.characterIndex ?? totalCharacterCount
-                    return CGFloat(endCharacterIndex) / CGFloat(totalCharacterCount)
-                }
-            }
-
-            // Past all words
-            return 1.0
-        }
-
-        // MARK: - Character-Level Progress
-
-        private func characterLevelProgress(totalCharacterCount: Int) -> CGFloat {
-            guard !wordTimings.isEmpty else {
-                // No timetag: use linear progress across the whole line
-                return CGFloat(min(1, max(0, elapsedTime / lineDuration)))
-            }
-
-            guard totalCharacterCount > 0 else { return 0 }
-
-            // Find the active word and interpolate within it proportionally
             for (timingIndex, timing) in wordTimings.enumerated() {
                 let nextTiming = timingIndex + 1 < wordTimings.count ? wordTimings[timingIndex + 1] : nil
                 let nextTimeOffset = nextTiming?.timeOffset ?? lineDuration
                 let nextCharacterIndex = nextTiming?.characterIndex ?? totalCharacterCount
 
                 if elapsedTime < timing.timeOffset {
-                    // Before this word starts
+                    // Before this word starts: fill up to this word's start position.
                     return CGFloat(timing.characterIndex) / CGFloat(totalCharacterCount)
                 }
 
-                if elapsedTime >= timing.timeOffset && elapsedTime < nextTimeOffset {
-                    // Inside this word: interpolate character-level progress
-                    let wordDuration = nextTimeOffset - timing.timeOffset
-                    guard wordDuration > 0 else { continue }
-
-                    let progressInWord = (elapsedTime - timing.timeOffset) / wordDuration
-                    let startFraction = CGFloat(timing.characterIndex) / CGFloat(totalCharacterCount)
-                    let endFraction = CGFloat(nextCharacterIndex) / CGFloat(totalCharacterCount)
-                    return startFraction + CGFloat(progressInWord) * (endFraction - startFraction)
+                if elapsedTime >= timing.timeOffset, elapsedTime < nextTimeOffset {
+                    switch mode {
+                    case .wordLevel:
+                        // Light up the entire current word at once.
+                        return CGFloat(nextCharacterIndex) / CGFloat(totalCharacterCount)
+                    case .characterLevel:
+                        // Interpolate character-level progress within the word.
+                        let wordDuration = nextTimeOffset - timing.timeOffset
+                        guard wordDuration > 0 else { continue }
+                        let progressInWord = (elapsedTime - timing.timeOffset) / wordDuration
+                        let startFraction = CGFloat(timing.characterIndex) / CGFloat(totalCharacterCount)
+                        let endFraction = CGFloat(nextCharacterIndex) / CGFloat(totalCharacterCount)
+                        return startFraction + CGFloat(progressInWord) * (endFraction - startFraction)
+                    }
                 }
             }
 
-            // Past all words
+            // Past all words.
             return 1.0
-        }
-
-        // MARK: - Helpers
-
-        private func estimateTotalCharacterCount() -> Int {
-            // Use the actual content length if available, otherwise approximate
-            if contentLength > 0 {
-                return contentLength
-            }
-            if let lastTiming = wordTimings.last {
-                return max(lastTiming.characterIndex + 1, wordTimings.count)
-            }
-            return 1
         }
     }
 }
