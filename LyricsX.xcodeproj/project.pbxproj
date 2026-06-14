@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0847F51B09568CE31C071F17 /* LyricsTextRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */; };
+		0DB25079533538D85D98A968 /* ColorfulX in Frameworks */ = {isa = PBXBuildFile; productRef = E5E613E102B0FC5E5F71472F /* ColorfulX */; };
 		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
 		16278BBA54BB9D32F9D54614 /* LyricsTimelineEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C9350426EBEEED023E39EF /* LyricsTimelineEntry.swift */; };
 		1D23E309AC1D811BC7C7E456 /* LyricsXWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5132B5EA9DC44980A68C1DE8 /* LyricsXWidget.swift */; };
@@ -21,8 +22,8 @@
 		55C055E1C3DADADB54314AA2 /* LyricsWidgetConfigurationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D6BD5589D2AF12282AEAEA1 /* LyricsWidgetConfigurationIntent.swift */; };
 		5BA7F089FC81DD35832C5D87 /* LyricsTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04092A9C2373AD4A7D7F2B7 /* LyricsTimelineProvider.swift */; };
 		5C2D3B5C0D778AD19FF1C8FE /* MediumWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6876B106641531C50176C9 /* MediumWidgetView.swift */; };
-		5D3A7F2E8C41B09A6E2FD871 /* AppleMusicLyricsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8C4D1F3A72B5E60D9F14C3 /* AppleMusicLyricsRootView.swift */; };
-		67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D172338FB311CE693629763C /* ProgressDotsView.swift */; };
+		5D3A7F2E8C41B09A6E2FD871 /* LyricsPanelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8C4D1F3A72B5E60D9F14C3 /* LyricsPanelViewController.swift */; };
+		67716677E4C99A8D5C845F6E /* LyricsPanelControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D172338FB311CE693629763C /* LyricsPanelControls.swift */; };
 		7F0B4DB2DF3CD85C50D9E078 /* PlaybackControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8931B1832B5D2B6904035627 /* PlaybackControlView.swift */; };
 		9D6F5DD1F8746FE2A4076F81 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342F70DB71227C055D9AF4B2 /* EmptyStateView.swift */; };
 		A3F18B5D6E2C704982D5E1F0 /* AppleMusicLyricsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */; };
@@ -107,7 +108,7 @@
 		E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */; };
 		E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9EF0D542D6F70E400D45E0F /* SearchLyricsWindowController.swift */; };
 		EECDA7B9DBCEF1FA4CA05D9F /* ArtworkSimilarityScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0123E6D8878307BB8019435 /* ArtworkSimilarityScorer.swift */; };
-		F511D9CB8F68D9D9B0341314 /* BackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043BAE1603803A839C0CB52 /* BackgroundView.swift */; };
+		F511D9CB8F68D9D9B0341314 /* GradientBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A043BAE1603803A839C0CB52 /* GradientBackgroundView.swift */; };
 		FFA8E3190439FF70F63E5143 /* WidgetPlaybackIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FEBC0157A34EACB0616DCE0 /* WidgetPlaybackIntents.swift */; };
 /* End PBXBuildFile section */
 
@@ -166,8 +167,8 @@
 		8931B1832B5D2B6904035627 /* PlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlView.swift; sourceTree = "<group>"; };
 		8B6F3EA72D4C91A0F5E87B34 /* AppleMusicLyricsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicLyricsScrollView.swift; sourceTree = "<group>"; };
 		91D79DEE28FAE73594348345 /* LyricsXWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LyricsXWidget.entitlements; sourceTree = "<group>"; };
-		9E8C4D1F3A72B5E60D9F14C3 /* AppleMusicLyricsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicLyricsRootView.swift; sourceTree = "<group>"; };
-		A043BAE1603803A839C0CB52 /* BackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundView.swift; sourceTree = "<group>"; };
+		9E8C4D1F3A72B5E60D9F14C3 /* LyricsPanelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanelViewController.swift; sourceTree = "<group>"; };
+		A043BAE1603803A839C0CB52 /* GradientBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientBackgroundView.swift; sourceTree = "<group>"; };
 		BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChineseConverter+Singleton.swift"; sourceTree = "<group>"; };
 		BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KaraokeLyricsView.swift; sourceTree = "<group>"; };
 		BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceFilterViewController.swift; sourceTree = "<group>"; };
@@ -215,7 +216,7 @@
 		BBE8FC741F6BEA6200122AFA /* Then.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Then.swift; sourceTree = "<group>"; };
 		C2C9350426EBEEED023E39EF /* LyricsTimelineEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTimelineEntry.swift; sourceTree = "<group>"; };
 		C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicLyricsWindowController.swift; sourceTree = "<group>"; };
-		D172338FB311CE693629763C /* ProgressDotsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressDotsView.swift; sourceTree = "<group>"; };
+		D172338FB311CE693629763C /* LyricsPanelControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanelControls.swift; sourceTree = "<group>"; };
 		E0123E6D8878307BB8019435 /* ArtworkSimilarityScorer.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = ArtworkSimilarityScorer.swift; sourceTree = "<group>"; };
 		E04092A9C2373AD4A7D7F2B7 /* LyricsTimelineProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTimelineProvider.swift; sourceTree = "<group>"; };
 		E3FAB8D321F2CB80B39BF146 /* LyricsLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsLineView.swift; sourceTree = "<group>"; };
@@ -272,6 +273,7 @@
 				E9C5763F2DEDF539009107B5 /* LyricsXWidgetShared in Frameworks */,
 				BBB03F2D232FB3AF00A3879E /* GenericID in Frameworks */,
 				E9EF0D532D6F5ECD00D45E0F /* UIFoundationToolbox in Frameworks */,
+				0DB25079533538D85D98A968 /* ColorfulX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,13 +305,13 @@
 			isa = PBXGroup;
 			children = (
 				C7D4E92A1B5F83060E4A9D73 /* AppleMusicLyricsWindowController.swift */,
-				9E8C4D1F3A72B5E60D9F14C3 /* AppleMusicLyricsRootView.swift */,
+				9E8C4D1F3A72B5E60D9F14C3 /* LyricsPanelViewController.swift */,
 				8B6F3EA72D4C91A0F5E87B34 /* AppleMusicLyricsScrollView.swift */,
-				A043BAE1603803A839C0CB52 /* BackgroundView.swift */,
+				A043BAE1603803A839C0CB52 /* GradientBackgroundView.swift */,
 				67AF4BC12C99EA22F88238AE /* InteractionStateModel.swift */,
 				7A2F8E3D4B1C6A9058D7E2F1 /* LyricsLineRowView.swift */,
 				3C915F5690B55FDCD617D05A /* LyricsTextRenderer.swift */,
-				D172338FB311CE693629763C /* ProgressDotsView.swift */,
+				D172338FB311CE693629763C /* LyricsPanelControls.swift */,
 			);
 			path = AppleMusicLyrics;
 			sourceTree = "<group>";
@@ -602,6 +604,7 @@
 				E9EF0D522D6F5ECD00D45E0F /* UIFoundationToolbox */,
 				E9C5763C2DEDF539009107B5 /* LyricsXFoundation */,
 				E9C5763E2DEDF539009107B5 /* LyricsXWidgetShared */,
+				E5E613E102B0FC5E5F71472F /* ColorfulX */,
 			);
 			productName = LyricsX;
 			productReference = BB4141AA1E458BA800A51775 /* LyricsX-Debug.app */;
@@ -720,6 +723,7 @@
 				E983FA222C86302200170CF7 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				E967A20A2D2AD6DB00982E06 /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 				E9EF0D4F2D6F5ECD00D45E0F /* XCRemoteSwiftPackageReference "UIFoundation" */,
+				802D765F5C210DF8C3D1820E /* XCRemoteSwiftPackageReference "ColorfulX" */,
 			);
 			productRefGroup = BB4141AB1E458BA800A51775 /* Products */;
 			projectDirPath = "";
@@ -899,12 +903,12 @@
 				BB89089E21ED69410078F522 /* Lyrics+Language.swift in Sources */,
 				21E9D9F49FD8CB857FCBB1B9 /* WidgetPlaybackIntents.swift in Sources */,
 				1EA6872EFCA5373B4B3565C8 /* AlbumColorExtractor.swift in Sources */,
-				67716677E4C99A8D5C845F6E /* ProgressDotsView.swift in Sources */,
-				F511D9CB8F68D9D9B0341314 /* BackgroundView.swift in Sources */,
+				67716677E4C99A8D5C845F6E /* LyricsPanelControls.swift in Sources */,
+				F511D9CB8F68D9D9B0341314 /* GradientBackgroundView.swift in Sources */,
 				0847F51B09568CE31C071F17 /* LyricsTextRenderer.swift in Sources */,
 				B8E4D2A16F930C7523AB1E48 /* LyricsLineRowView.swift in Sources */,
 				4E2A91C3D7F08B6E5A3C19D2 /* AppleMusicLyricsScrollView.swift in Sources */,
-				5D3A7F2E8C41B09A6E2FD871 /* AppleMusicLyricsRootView.swift in Sources */,
+				5D3A7F2E8C41B09A6E2FD871 /* LyricsPanelViewController.swift in Sources */,
 				A3F18B5D6E2C704982D5E1F0 /* AppleMusicLyricsWindowController.swift in Sources */,
 				EECDA7B9DBCEF1FA4CA05D9F /* ArtworkSimilarityScorer.swift in Sources */,
 			);
@@ -1158,7 +1162,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.JH.LyricsX;
 				PRODUCT_NAME = "$(TARGET_NAME)-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1185,7 +1189,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.JH.LyricsX;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
@@ -1205,7 +1209,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.JH.LyricsXHelper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -1226,7 +1230,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.JH.LyricsXHelper;
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
@@ -1275,6 +1279,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		802D765F5C210DF8C3D1820E /* XCRemoteSwiftPackageReference "ColorfulX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Lakr233/ColorfulX";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.1.0;
+			};
+		};
 		BB6C75E6248B908500804AEB /* XCRemoteSwiftPackageReference "TouchBarHelper" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ddddxxx/TouchBarHelper";
@@ -1362,8 +1374,6 @@
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.9.0;
 			};
-			traits = (
-			);
 		};
 /* End XCRemoteSwiftPackageReference section */
 
@@ -1396,6 +1406,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BBB03F382331D8A800A3879E /* XCRemoteSwiftPackageReference "SwiftyOpenCC" */;
 			productName = OpenCC;
+		};
+		E5E613E102B0FC5E5F71472F /* ColorfulX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 802D765F5C210DF8C3D1820E /* XCRemoteSwiftPackageReference "ColorfulX" */;
+			productName = ColorfulX;
 		};
 		E967A20B2D2AD6DB00982E06 /* LaunchAtLogin */ = {
 			isa = XCSwiftPackageProductDependency;

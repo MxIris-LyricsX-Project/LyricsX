@@ -1,5 +1,5 @@
 {
-  "originHash" : "d2cacbec309d039072a94693ca1f873ec75d85c750e2e05f5ff7ad91d214a886",
+  "originHash" : "587003ae32ace5137d7a9af382ac6c173092e09c9fcd87f1c5fe8f6ba8e980c5",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -17,6 +17,24 @@
       "state" : {
         "revision" : "e07e00fa1fd435143a2dcf8b7eec9a7710b2fdfe",
         "version" : "5.7.0"
+      }
+    },
+    {
+      "identity" : "colorfulx",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/ColorfulX",
+      "state" : {
+        "revision" : "bdf19698a9fdd3d2cd3ade4a9434d443b4313b36",
+        "version" : "6.1.0"
+      }
+    },
+    {
+      "identity" : "colorvector",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/ColorVector.git",
+      "state" : {
+        "revision" : "0cd0169f1487d7371ee3fd7fe93f1e918fd93d00",
+        "version" : "1.0.5"
       }
     },
     {
@@ -56,15 +74,6 @@
       }
     },
     {
-      "identity" : "lyricskit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/MxIris-LyricsX-Project/LyricsKit",
-      "state" : {
-        "revision" : "bb255842eb8fe48880e15c23c0a7704599dd3504",
-        "version" : "1.10.0"
-      }
-    },
-    {
       "identity" : "marqueelabel",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/MarqueeLabel",
@@ -92,12 +101,12 @@
       }
     },
     {
-      "identity" : "musicplayer",
+      "identity" : "msdisplaylink",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
+      "location" : "https://github.com/Lakr233/MSDisplayLink.git",
       "state" : {
-        "revision" : "438758a4234c62fcdd52d2034ff9355bba77b67e",
-        "version" : "1.8.4"
+        "revision" : "1ba3e769b734e456317fa7e45321fa7f53eefb67",
+        "version" : "2.1.0"
       }
     },
     {
@@ -146,6 +155,15 @@
       }
     },
     {
+      "identity" : "springinterpolation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/SpringInterpolation.git",
+      "state" : {
+        "revision" : "cdb556516daa9b43c16aae9436dd39e19ff930fd",
+        "version" : "1.4.0"
+      }
+    },
+    {
       "identity" : "swift-async-algorithms",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-async-algorithms",
@@ -159,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-        "revision" : "fea17c02d767f46b23070fdfdacc28a03a39232a",
-        "version" : "1.5.1"
+        "revision" : "a0cb0954ecb21e4e31b0070e6ed5674e8556685a",
+        "version" : "1.6.0"
       }
     },
     {
