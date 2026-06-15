@@ -6,6 +6,8 @@ enum AppleMusicLyrics {}
 @available(macOS 15, *)
 extension AppleMusicLyrics {
     final class WindowController: NSWindowController, NSWindowDelegate {
+        private static let windowFrameName = NSWindow.FrameAutosaveName("AppleMusicLyricsWindow")
+
         init() {
             super.init(window: nil)
         }
@@ -27,15 +29,14 @@ extension AppleMusicLyrics {
             window.collectionBehavior.insert(.fullScreenPrimary)
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
-            window.backgroundColor = .black
-            // Custom dragging is handled by `DraggablePanelView` so the run loop
-            // stays in default mode and the ColorfulX gradient keeps animating
-            // during the drag (see DraggablePanelView).
+            window.backgroundColor = .clear
             window.isMovableByWindowBackground = false
-            window.appearance = NSAppearance(named: .darkAqua)
-            if !window.setFrameAutosaveName("AppleMusicLyricsWindow") {
+            if !window.setFrameUsingName(Self.windowFrameName, force: true) {
                 window.center()
             }
+            window.setFrameAutosaveName(Self.windowFrameName)
+            window.toolbar = NSToolbar()
+            window.toolbarStyle = .unified
             window.delegate = self
             self.window = window
         }
@@ -61,6 +62,10 @@ extension AppleMusicLyrics {
         }
 
         func windowWillClose(_ notification: Notification) {
+            // The window is released on close, so persist its final frame now to
+            // guarantee the next open restores it even if the session-time
+            // autosave never registered (e.g. a prior window still owned the name).
+            window?.saveFrame(usingName: Self.windowFrameName)
             defaults[.isShowLyricsHUD] = false
         }
 

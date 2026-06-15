@@ -137,8 +137,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
         }
 
-        if defaults[.isShowLyricsHUD] {
-            openLyricsHUD()
+        DispatchQueue.main.async { [self] in
+            if defaults[.isShowLyricsHUD] {
+                openLyricsHUD()
+            }
         }
     }
 
