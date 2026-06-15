@@ -1,9 +1,41 @@
 import AppKit
+import UIFoundation
 
 // Pure-AppKit chrome controls for the lyrics panel (playback scrubber + buttons).
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
+    /// An `NSImageView` with a fixed corner radius. Mirrors `UIFoundation.ImageView`:
+    /// an image-bearing `NSImageView` does not take the `updateLayer` fast path,
+    /// so the (unguarded) `cornerRadius` is re-applied in `layout()` — which runs
+    /// after every geometry/full property sync — while `clipsToBounds` drives
+    /// `masksToBounds` durably. This keeps the layer poking encapsulated here
+    /// instead of leaking into the view controller's `viewDidLayout`.
+    final class RoundedImageView: NSImageView {
+        var cornerRadius: CGFloat = 0 {
+            didSet {
+                guard cornerRadius != oldValue else { return }
+                needsLayout = true
+            }
+        }
+
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            wantsLayer = true
+            clipsToBounds = true
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func layout() {
+            super.layout()
+            layer?.cornerRadius = cornerRadius
+        }
+    }
+
     /// Playback scrubber: a thin track + fill with elapsed / remaining labels,
     /// drag anywhere on it to seek.
     final class PlaybackProgressView: NSView {
@@ -12,8 +44,8 @@ extension AppleMusicLyrics {
         private var duration: TimeInterval = 0
         private var currentTime: TimeInterval = 0
 
-        private let track = NSView()
-        private let fill = NSView()
+        private let track = LayerBackedView()
+        private let fill = LayerBackedView()
         private let elapsedLabel = NSTextField(labelWithString: "0:00")
         private let remainingLabel = NSTextField(labelWithString: "-0:00")
         private var fillWidthConstraint: NSLayoutConstraint!
@@ -32,13 +64,15 @@ extension AppleMusicLyrics {
         }
 
         private func setup() {
-            for view in [track, fill] {
-                view.wantsLayer = true
-                view.translatesAutoresizingMaskIntoConstraints = false
-                view.layer?.cornerRadius = barHeight / 2
+            for bar in [track, fill] {
+                bar.translatesAutoresizingMaskIntoConstraints = false
+                // Renderer-driven: `cornerRadius` / `backgroundColor` are applied
+                // in `LayerBackedView.updateLayer()`, the only sync-safe window.
+                bar.cornerRadius = barHeight / 2
+                bar.clipsToBounds = true
             }
-            track.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.3).cgColor
-            fill.layer?.backgroundColor = NSColor.white.cgColor
+            track.backgroundColor = NSColor.white.withAlphaComponent(0.3)
+            fill.backgroundColor = .white
             addSubview(track)
             track.addSubview(fill)
 
@@ -86,10 +120,6 @@ extension AppleMusicLyrics {
         override func layout() {
             super.layout()
             applyFill()
-            // `cornerRadius` is unguarded against the view→layer sync, so keep it
-            // applied to the track/fill on every layout pass.
-            track.layer?.cornerRadius = barHeight / 2
-            fill.layer?.cornerRadius = barHeight / 2
         }
 
         private func applyFill() {
@@ -118,28 +148,37 @@ extension AppleMusicLyrics {
         }
     }
 
-    /// Borderless SF Symbol button with a subtle hover background, for the
-    /// transport controls.
-    final class PanelControlButton: NSButton {
+    /// Borderless SF Symbol control with a subtle hover background, for the
+    /// transport controls. Built on `LayerBackedView` so the hover fill and
+    /// corner radius flow through the renderer's `updateLayer` (never poked onto
+    /// the layer against AppKit's sync); the glyph lives in a child `NSImageView`
+    /// and clicks are handled on `mouseUp` — mirroring `InteractionToggleButton`.
+    final class PanelControlButton: LayerBackedView {
         var onClick: (() -> Void)?
-        private var pointSize: CGFloat
+
+        private let pointSize: CGFloat
+        private let iconView = NSImageView()
         private var isHovering = false {
-            didSet { updateHoverAppearance() }
+            didSet {
+                guard isHovering != oldValue else { return }
+                backgroundColor = NSColor.white.withAlphaComponent(isHovering ? 0.15 : 0)
+            }
         }
 
         init(symbolName: String, pointSize: CGFloat, onClick: @escaping () -> Void) {
             self.pointSize = pointSize
             super.init(frame: .zero)
             self.onClick = onClick
-            isBordered = false
-            bezelStyle = .regularSquare
-            imagePosition = .imageOnly
-            contentTintColor = .white
-            wantsLayer = true
             translatesAutoresizingMaskIntoConstraints = false
+            iconView.contentTintColor = .white
+            iconView.imageScaling = .scaleProportionallyDown
+            iconView.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(iconView)
+            NSLayoutConstraint.activate([
+                iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
+                iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            ])
             setSymbol(symbolName)
-            target = self
-            action = #selector(handleClick)
         }
 
         @available(*, unavailable)
@@ -149,12 +188,19 @@ extension AppleMusicLyrics {
 
         func setSymbol(_ symbolName: String) {
             let config = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .regular)
-            image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
+            iconView.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
                 .withSymbolConfiguration(config)
+            invalidateIntrinsicContentSize()
         }
 
-        @objc private func handleClick() {
-            onClick?()
+        override var intrinsicContentSize: NSSize {
+            iconView.image?.size ?? NSSize(width: pointSize, height: pointSize)
+        }
+
+        override func layout() {
+            super.layout()
+            // Pill-shaped hover fill; `cornerRadius` flows through the renderer.
+            cornerRadius = bounds.height / 2
         }
 
         override func updateTrackingAreas() {
@@ -175,14 +221,19 @@ extension AppleMusicLyrics {
             isHovering = false
         }
 
-        private func updateHoverAppearance() {
-            layer?.cornerRadius = bounds.height / 2
-            layer?.backgroundColor = NSColor.white.withAlphaComponent(isHovering ? 0.15 : 0).cgColor
+        override func mouseDown(with event: NSEvent) {
+            // accept; act on mouseUp inside bounds
         }
 
-        override func layout() {
-            super.layout()
-            updateHoverAppearance()
+        override func mouseUp(with event: NSEvent) {
+            let point = convert(event.locationInWindow, from: nil)
+            if bounds.contains(point) {
+                onClick?()
+            }
+        }
+
+        override func resetCursorRects() {
+            addCursorRect(bounds, cursor: .pointingHand)
         }
     }
 }

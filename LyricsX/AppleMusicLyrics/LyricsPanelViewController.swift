@@ -3,6 +3,7 @@ import Combine
 import QuartzCore
 import LyricsXFoundation
 import MusicPlayer
+import UIFoundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
@@ -28,7 +29,7 @@ extension AppleMusicLyrics {
 
         private let backgroundView = GradientBackgroundView()
         private let lyricsContainer = SyncedLyricsContainerView()
-        private let coverImageView = NSImageView()
+        private let coverImageView = RoundedImageView()
         private let titleLabel = NSTextField(labelWithString: "")
         private let artistLabel = NSTextField(labelWithString: "")
         private let progressView = PlaybackProgressView()
@@ -47,9 +48,9 @@ extension AppleMusicLyrics {
         // MARK: Lifecycle
 
         override func loadView() {
+            // `DraggablePanelView` is a `LayerBackedView`; its black background is
+            // applied via the renderer in `updateLayer`, not poked onto the layer.
             view = DraggablePanelView()
-            view.wantsLayer = true
-            view.layer?.backgroundColor = NSColor.black.cgColor
         }
 
         override func viewDidLoad() {
@@ -87,12 +88,9 @@ extension AppleMusicLyrics {
             // Left column: cover + track info + scrubber + transport.
             coverImageView.translatesAutoresizingMaskIntoConstraints = false
             coverImageView.imageScaling = .scaleProportionallyUpOrDown
-            coverImageView.wantsLayer = true
-            // `clipsToBounds` drives `masksToBounds` durably (survives the
-            // view→layer property sync); `cornerRadius` is unguarded so it is
-            // re-applied in `viewDidLayout`.
-            coverImageView.clipsToBounds = true
-            coverImageView.layer?.cornerRadius = 12
+            // `RoundedImageView` owns its corner radius (applied in its own
+            // `layout()`), so the controller never pokes the cover's layer.
+            coverImageView.cornerRadius = 12
 
             titleLabel.font = .systemFont(ofSize: 14, weight: .semibold)
             titleLabel.textColor = .white
@@ -222,9 +220,6 @@ extension AppleMusicLyrics {
             // with the window instead of staying a cramped fixed value.
             contentLeadingConstraint.constant = isWide ? max(40, size.width * 0.065) : 24
             contentStack.spacing = isWide ? max(40, size.width * 0.1) : 0
-            // Re-apply the (unguarded) corner radius so a full layer sync can't
-            // leave the artwork with square corners.
-            coverImageView.layer?.cornerRadius = 12
 
             let mainFontSize = max(26, min(42, size.width * 0.03))
             let translationFontSize = max(14, mainFontSize * 0.55)
@@ -280,7 +275,13 @@ extension AppleMusicLyrics {
         private func applyLyrics(_ lyrics: Lyrics?) {
             currentLyrics = lyrics
             let hasLyrics = lyrics != nil
-            lyricsContainer.isHidden = !hasLyrics
+            // Fade, do NOT toggle `isHidden`: `lyricsContainer` is an arranged
+            // subview of `contentStack` (an NSStackView), so hiding it changes the
+            // stack's fitting size, which the window — created via
+            // `NSWindow(contentViewController:)` — adopts, snapping the user's
+            // resized window back to its initial (content-fitting) size on every
+            // track change. Alpha keeps the layout slot, so the window holds size.
+            lyricsContainer.alphaValue = hasLyrics ? 1 : 0
             messageLabel.isHidden = hasLyrics
             if let lyrics {
                 lyricsContainer.update(
@@ -387,9 +388,13 @@ extension AppleMusicLyrics {
     /// `NSEventTrackingRunLoopMode` loop). That lets ColorfulX's
     /// `DispatchQueue.main.async`-hopped frames keep draining, so the gradient
     /// animates during the drag instead of freezing.
-    final class DraggablePanelView: NSView {
+    final class DraggablePanelView: LayerBackedView {
         private var initialMouseScreen: NSPoint?
         private var initialWindowOrigin: NSPoint?
+
+        override func setup() {
+            backgroundColor = .black
+        }
 
         /// Route clicks on interactive controls (transport buttons, scrubber,
         /// interaction toggle, the lyrics scroll) to those views; everything else
@@ -400,6 +405,7 @@ extension AppleMusicLyrics {
             var node: NSView? = hit
             while let current = node, current !== self {
                 if current is NSButton
+                    || current is PanelControlButton
                     || current is PlaybackProgressView
                     || current is InteractionToggleButton
                     || current is SyncedLyricsContainerView {
@@ -435,17 +441,20 @@ extension AppleMusicLyrics {
 
     // MARK: - Interaction Toggle Button (lock / return-to-following + countdown ring)
 
-    final class InteractionToggleButton: NSView {
+    /// The background circle is renderer-driven (`backgroundColor` + a
+    /// half-height `cornerRadius` applied in `updateLayer`); only the animated
+    /// countdown ring remains a hosted `CAShapeLayer`, since a partial
+    /// `strokeEnd` progress arc isn't something the background renderer models.
+    final class InteractionToggleButton: NSView, LayerBackgroundProviding {
         var onClick: (() -> Void)?
 
         private let iconView = NSImageView()
         private let ringLayer = CAShapeLayer()
-        private let backgroundLayer = CAShapeLayer()
         private var lastIsolated: Bool?
 
         override init(frame frameRect: NSRect) {
             super.init(frame: frameRect)
-            wantsLayer = true
+            attachToSelfIfNeeded()
             setup()
         }
 
@@ -454,9 +463,15 @@ extension AppleMusicLyrics {
             fatalError("init(coder:) has not been implemented")
         }
 
+        override var wantsUpdateLayer: Bool { true }
+
+        override func updateLayer() {
+            super.updateLayer()
+            updateLayerBackgroundIfNeeded()
+        }
+
         private func setup() {
-            backgroundLayer.fillColor = NSColor.white.withAlphaComponent(0.15).cgColor
-            layer?.addSublayer(backgroundLayer)
+            backgroundColor = NSColor.white.withAlphaComponent(0.15)
 
             ringLayer.fillColor = NSColor.clear.cgColor
             ringLayer.strokeColor = NSColor.white.withAlphaComponent(0.6).cgColor
@@ -498,8 +513,9 @@ extension AppleMusicLyrics {
 
         override func layout() {
             super.layout()
-            let circle = CGPath(ellipseIn: bounds, transform: nil)
-            backgroundLayer.path = circle
+            layoutLayerBackgroundIfNeeded()
+            // Half-height radius makes the renderer's background fill a circle.
+            cornerRadius = bounds.height / 2
             // Ring inset slightly and drawn from the top, clockwise.
             let inset = bounds.insetBy(dx: 1, dy: 1)
             ringLayer.path = CGPath(ellipseIn: inset, transform: nil)

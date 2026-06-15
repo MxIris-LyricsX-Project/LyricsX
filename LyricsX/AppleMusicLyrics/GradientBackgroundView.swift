@@ -1,6 +1,7 @@
 import AppKit
 import CoreGraphics
 import ColorfulX
+import UIFoundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
@@ -8,7 +9,7 @@ extension AppleMusicLyrics {
     /// driven by the current artwork's dominant colors. Pure AppKit — no SwiftUI.
     final class GradientBackgroundView: NSView {
         private let gradientView = AnimatedMulticolorGradientView()
-        private let darkOverlay = NSView()
+        private let darkOverlay = LayerBackedView()
         /// Track identity the current palette was computed for, so colors are
         /// re-extracted only on track change.
         private var paletteTrackID: String?
@@ -42,8 +43,7 @@ extension AppleMusicLyrics {
             // Darken just enough for text contrast (lighter than before so the
             // vivid artwork palette stays rich).
             darkOverlay.translatesAutoresizingMaskIntoConstraints = false
-            darkOverlay.wantsLayer = true
-            darkOverlay.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.34).cgColor
+            darkOverlay.backgroundColor = NSColor.black.withAlphaComponent(0.34)
             addSubview(darkOverlay)
 
             NSLayoutConstraint.activate([
