@@ -39,8 +39,53 @@ extension AppleMusicLyrics {
         private var scrollTargetY: CGFloat?
         private var scrollVelocity: CGFloat = 0
         private var lastScrollTickTimestamp: CFTimeInterval = 0
-        private let scrollSpringDuration: CGFloat = 0.6
-        private let scrollSpringBounce: CGFloat = 0.275
+        // Apple Music's line-change spring (mass 1, damping ratio 0.9), applied to
+        // the whole scroll so all lines move together.
+        private let scrollSpringStiffness: CGFloat = 100
+        private let scrollSpringDamping: CGFloat = 18
+
+        // Per-line "cascade" on a normal line advance — the Apple Music signature:
+        // the scroll jumps instantly to center the new line while every nearby
+        // line is displaced so it appears stationary, then each line springs back
+        // to its laid-out position. Lines below the new line settle with a
+        // staggered bouncy spring (the visible cascade wave); lines above settle
+        // smoothly. A single rigid scroll spring (what the rewrite shipped) only
+        // overshoots ~4% and reads as a plain ease — the bounce lives in the
+        // staggered per-line springs. Ports the previous SwiftUI cascade.
+        private struct LineCascade {
+            let view: SyncedLyricsLineView
+            var displacement: CGFloat
+            var velocity: CGFloat
+            var delayRemaining: CFTimeInterval
+            let stiffness: CGFloat
+            let damping: CGFloat
+        }
+        private var lineCascades: [LineCascade] = []
+        private var lastCascadeTickTimestamp: CFTimeInterval = 0
+        private var lastHighlightedPosition: Int?
+        private var lastHighlightChangeTime: CFTimeInterval = 0
+        // Reverse-engineered from Apple Music 26.5.1 (`LyricsSpecs` in Music.i64):
+        // the line-change move is ONE spring (mass 1, stiffness 100, damping 18 →
+        // damping ratio 0.9, smooth, almost no overshoot), staggered per line by
+        // `lineDelay` × its distance from the active line. Critically the active
+        // line and its nearest neighbour start with ZERO delay; only lines further
+        // out wait. The previous values (a bouncier, slower hand-tuned spring with
+        // an inflated `delay = stagger × (order + 2)`) froze the active line ~0.16s
+        // before it moved and over-ran into the next line — that was the "reaches a
+        // point then snaps back" artifact.
+        private let cascadeSpringStiffness: CGFloat = 100   // lineChangeSpringTimingParametersValues.stiffness
+        private let cascadeSpringDamping: CGFloat = 18      // …damping (mass = 1)
+        private let lineDelay: CFTimeInterval = 0.05        // LyricsSpecs.lineDelay
+        private let cascadeWindow = 8                       // displace lines within this distance of the active line
+        private let cascadeJumpThreshold = 5
+        private let cascadeRapidThreshold: CFTimeInterval = 0.4
+        // Apple Music anchors the active line in the upper third (its `.top`-style
+        // selectedLinePosition) — NOT centered, so more upcoming lines show below
+        // it. Measured by tracking the active line's brightness centroid across
+        // three line changes in a 26.5.1 capture: it settles at ~0.343–0.359 of
+        // the viewport from the top (average ≈0.35), springing up monotonically
+        // from below over ~0.6s with no overshoot (the ζ≈0.9 line-move spring).
+        private let activeLineAnchorFraction: CGFloat = 0.35
 
         // Intro "•••" instrumental indicator. Additive: nil unless the first
         // vocal line starts after `introGapThreshold`, in which case the engine
@@ -197,6 +242,10 @@ extension AppleMusicLyrics {
         // MARK: Build
 
         private func rebuildLineViews() {
+            lineCascades.removeAll()
+            lastCascadeTickTimestamp = 0
+            lastHighlightedPosition = nil
+            lastHighlightChangeTime = 0
             enabledLineViews.forEach { $0.removeFromSuperview() }
             enabledLineViews.removeAll()
             lineViewByOriginalIndex.removeAll()
@@ -279,7 +328,14 @@ extension AppleMusicLyrics {
             let clipHeight = bounds.height
             guard width > 0 else { return }
 
-            let topInset = clipHeight / 2
+            // Frames are being reset to their laid-out positions; abandon any
+            // in-flight cascade (its displacements would fight these frames).
+            lineCascades.removeAll()
+            lastCascadeTickTimestamp = 0
+
+            // Top/bottom padding match the active-line anchor, so the first line
+            // can rest at the anchor (clip pinned to 0) and the last line can too.
+            let topInset = clipHeight * activeLineAnchorFraction
             var cursorY = topInset
             if let instrumentalView {
                 let dotsHeight = instrumentalView.preferredHeight
@@ -293,6 +349,7 @@ extension AppleMusicLyrics {
             for (position, view) in enabledLineViews.enumerated() {
                 let height = view.preferredHeight(forWidth: width)
                 view.frame = NSRect(x: 0, y: cursorY, width: width, height: height)
+                view.cascadeBaselineY = cursorY
                 cursorY += height
                 if let interludeView = interludeByPosition[position] {
                     let dotsHeight = interludeView.preferredHeight
@@ -300,7 +357,7 @@ extension AppleMusicLyrics {
                     cursorY += dotsHeight
                 }
             }
-            let totalHeight = cursorY + clipHeight / 2
+            let totalHeight = cursorY + clipHeight * (1 - activeLineAnchorFraction)
             documentView.frame = NSRect(x: 0, y: 0, width: width, height: max(totalHeight, clipHeight))
             lastLaidOutSize = bounds.size
         }
@@ -319,7 +376,37 @@ extension AppleMusicLyrics {
 
             let isFollowing = interactionState?.isFollowing ?? true
             if isFollowing, let new = originalIndex {
-                centerLine(originalIndex: new, animated: animated)
+                if animated, window != nil {
+                    advanceFollowing(toOriginalIndex: new)
+                } else {
+                    clearLineCascades()
+                    centerLine(originalIndex: new, animated: false)
+                }
+            }
+        }
+
+        /// Decide how to move to a newly highlighted line while following: a large
+        /// gap jumps instantly, a rapid succession does a plain smooth scroll, and
+        /// a normal single step runs the per-line cascade. Mirrors the previous
+        /// SwiftUI `scrollToHighlighted` jump / rapid / cascade branching.
+        private func advanceFollowing(toOriginalIndex originalIndex: Int) {
+            guard let view = lineViewByOriginalIndex[originalIndex] else { return }
+            let now = CACurrentMediaTime()
+            let newPosition = view.enabledPosition
+            let timeSinceLast = lastHighlightChangeTime == 0 ? .greatestFiniteMagnitude : now - lastHighlightChangeTime
+            let isJump = lastHighlightedPosition.map { abs(newPosition - $0) > cascadeJumpThreshold } ?? true
+            let isRapid = !isJump && timeSinceLast < cascadeRapidThreshold
+            lastHighlightChangeTime = now
+            lastHighlightedPosition = newPosition
+
+            if isJump {
+                clearLineCascades()
+                centerLine(originalIndex: originalIndex, animated: false)
+            } else if isRapid {
+                clearLineCascades()
+                centerLine(originalIndex: originalIndex, animated: true)
+            } else {
+                cascadeToLine(originalIndex: originalIndex)
             }
         }
 
@@ -327,17 +414,22 @@ extension AppleMusicLyrics {
             let highlightedPosition = highlightedOriginalIndex.flatMap { lineViewByOriginalIndex[$0]?.enabledPosition }
             for view in enabledLineViews {
                 let target: CGFloat
+                let isSelected: Bool
                 if let highlightedPosition {
                     let distance = abs(view.enabledPosition - highlightedPosition)
                     target = distance == 0 ? 1.0 : max(0.125, min(0.55 - CGFloat(distance) * 0.05, 0.55))
+                    isSelected = distance == 0
                 } else {
                     target = 0.55
+                    isSelected = false
                 }
                 if animated {
                     view.animateAlpha(to: target, duration: 0.5)
                 } else {
                     view.alphaValue = target
                 }
+                // Apple Music's per-line 0.98 deselected scale (selected line 1.0).
+                view.setLineSelected(isSelected, animated: animated)
             }
         }
 
@@ -354,10 +446,7 @@ extension AppleMusicLyrics {
         }
 
         private func centerOn(midY: CGFloat, animated: Bool) {
-            let clipView = scrollView.contentView
-            let visibleHeight = clipView.bounds.height
-            let maxOriginY = max(0, documentView.frame.height - visibleHeight)
-            let targetY = min(max(0, midY - visibleHeight / 2), maxOriginY)
+            let targetY = clampedClipY(forMidY: midY)
 
             // A spring needs the display link to step it; if we're off-window it
             // is not running, so jump directly.
@@ -379,9 +468,131 @@ extension AppleMusicLyrics {
             scrollView.reflectScrolledClipView(clipView)
         }
 
-        /// Critically-ish-damped spring step toward `scrollTargetY`, driven by
-        /// the display link. Derived from a (duration, bounce) pair so the feel
-        /// matches the previous SwiftUI cascade spring.
+        private func clampedClipY(forMidY midY: CGFloat) -> CGFloat {
+            let visibleHeight = scrollView.contentView.bounds.height
+            let maxOriginY = max(0, documentView.frame.height - visibleHeight)
+            return min(max(0, midY - visibleHeight * activeLineAnchorFraction), maxOriginY)
+        }
+
+        // MARK: Line-switch cascade
+
+        /// Jump the scroll instantly to center the new line, displace every nearby
+        /// line so it appears stationary, then hand each line to the cascade
+        /// stepper to spring back to its baseline (below = staggered bounce,
+        /// above = smooth settle).
+        private func cascadeToLine(originalIndex: Int) {
+            guard let target = lineViewByOriginalIndex[originalIndex] else { return }
+            scrollTargetY = nil
+            scrollVelocity = 0
+
+            // Center on the target's LAID-OUT position (ignore any displacement it
+            // may still carry from an in-flight cascade) so the clip math is stable.
+            let oldClipY = scrollView.contentView.bounds.origin.y
+            let targetBaselineMidY = target.cascadeBaselineY + target.frame.height / 2
+            let newClipY = clampedClipY(forMidY: targetBaselineMidY)
+            setClipOrigin(newClipY)
+            let clipDelta = newClipY - oldClipY
+
+            // Carry over in-flight spring velocity so an interrupted cascade keeps
+            // its momentum and stays visually continuous through the clip jump,
+            // instead of being snapped back to baseline. The previous code cleared
+            // (snapped) the prior cascade here — that was the "reaches a point then
+            // retracts" jump the user saw whenever lines changed faster than a
+            // cascade settles (the common case during playback).
+            var velocityByView: [ObjectIdentifier: CGFloat] = [:]
+            for cascade in lineCascades {
+                velocityByView[ObjectIdentifier(cascade.view)] = cascade.velocity
+            }
+
+            let highlightedPosition = target.enabledPosition
+            var rebuilt: [LineCascade] = []
+            for view in enabledLineViews {
+                let order = abs(view.enabledPosition - highlightedPosition)
+                let identifier = ObjectIdentifier(view)
+                let isInFlight = velocityByView[identifier] != nil
+                let velocity = velocityByView[identifier] ?? 0
+                // Continuity: add the clip jump to the line's CURRENT displacement
+                // so it holds still through the jump, then springs to baseline.
+                let currentDisplacement = view.frame.origin.y - view.cascadeBaselineY
+                let displacement = currentDisplacement + clipDelta
+
+                guard order <= cascadeWindow else {
+                    // Outside the cascade window: settle any leftover displacement
+                    // with no extra stagger; otherwise leave it at baseline.
+                    if abs(displacement) > 0.5 {
+                        view.applyCascadeDisplacement(displacement)
+                        rebuilt.append(LineCascade(view: view, displacement: displacement, velocity: velocity, delayRemaining: 0, stiffness: cascadeSpringStiffness, damping: cascadeSpringDamping))
+                    } else {
+                        view.applyCascadeDisplacement(0)
+                    }
+                    continue
+                }
+
+                if abs(displacement) <= 0.5, !isInFlight {
+                    view.applyCascadeDisplacement(0)
+                    continue
+                }
+
+                // delay = lineDelay × (max(order, 1) − 1): the active line and its
+                // nearest neighbour start immediately, each further ring waits one
+                // more `lineDelay` (Apple Music's exact per-line formula). Lines
+                // already in flight keep moving — they aren't re-delayed.
+                let delay = isInFlight ? 0 : lineDelay * CFTimeInterval(max(order, 1) - 1)
+                view.applyCascadeDisplacement(displacement)
+                rebuilt.append(LineCascade(view: view, displacement: displacement, velocity: velocity, delayRemaining: delay, stiffness: cascadeSpringStiffness, damping: cascadeSpringDamping))
+            }
+            lineCascades = rebuilt
+            lastCascadeTickTimestamp = 0
+        }
+
+        private func clearLineCascades() {
+            guard !lineCascades.isEmpty else { return }
+            for cascade in lineCascades {
+                cascade.view.applyCascadeDisplacement(0)
+            }
+            lineCascades.removeAll()
+            lastCascadeTickTimestamp = 0
+        }
+
+        /// Step every active per-line cascade spring one frame toward its baseline.
+        private func stepLineCascades() {
+            guard !lineCascades.isEmpty else { return }
+
+            let timestamp = displayLink?.timestamp ?? lastCascadeTickTimestamp
+            var deltaTime = lastCascadeTickTimestamp == 0 ? (1.0 / 60.0) : (timestamp - lastCascadeTickTimestamp)
+            lastCascadeTickTimestamp = timestamp
+            deltaTime = min(max(deltaTime, 1.0 / 240.0), 1.0 / 30.0)
+            let step = CGFloat(deltaTime)
+
+            var stillActive: [LineCascade] = []
+            stillActive.reserveCapacity(lineCascades.count)
+            for var cascade in lineCascades {
+                if cascade.delayRemaining > 0 {
+                    cascade.delayRemaining -= deltaTime
+                    stillActive.append(cascade)
+                    continue
+                }
+                let acceleration = -cascade.stiffness * cascade.displacement - cascade.damping * cascade.velocity
+                cascade.velocity += acceleration * step
+                cascade.displacement += cascade.velocity * step
+                if abs(cascade.displacement) < 0.5, abs(cascade.velocity) < 1.0 {
+                    cascade.view.applyCascadeDisplacement(0)
+                } else {
+                    cascade.view.applyCascadeDisplacement(cascade.displacement)
+                    stillActive.append(cascade)
+                }
+            }
+            lineCascades = stillActive
+            if lineCascades.isEmpty {
+                lastCascadeTickTimestamp = 0
+            }
+        }
+
+        /// Spring step of the whole scroll toward `scrollTargetY`, driven by the
+        /// display link — this moves every line together (Apple Music's unified
+        /// line-change motion). Uses Apple Music's exact line-change spring
+        /// (`lineChangeSpringTimingParametersValues`): mass 1, stiffness 100,
+        /// damping 18 (damping ratio 0.9, settling ~0.6s).
         private func stepScrollSpring() {
             guard let targetY = scrollTargetY else { return }
 
@@ -390,10 +601,8 @@ extension AppleMusicLyrics {
             lastScrollTickTimestamp = timestamp
             deltaTime = min(max(deltaTime, 1.0 / 240.0), 1.0 / 30.0)
 
-            let omega = (2 * CGFloat.pi) / scrollSpringDuration
-            let dampingRatio = max(0, 1 - scrollSpringBounce)
-            let stiffness = omega * omega
-            let damping = 2 * dampingRatio * omega
+            let stiffness = scrollSpringStiffness
+            let damping = scrollSpringDamping
 
             let currentY = scrollView.contentView.bounds.origin.y
             let displacement = currentY - targetY
@@ -412,10 +621,12 @@ extension AppleMusicLyrics {
         }
 
         @objc private func userWillScroll() {
-            // The user took over — abandon any in-flight auto-scroll spring.
+            // The user took over — abandon any in-flight auto-scroll spring and
+            // line cascade so neither keeps moving content under the drag.
             scrollTargetY = nil
             scrollVelocity = 0
             lastScrollTickTimestamp = 0
+            clearLineCascades()
             interactionState?.userDidScroll()
         }
 
@@ -435,6 +646,7 @@ extension AppleMusicLyrics {
 
         @objc private func handleDisplayLink() {
             stepScrollSpring()
+            stepLineCascades()
             updateIntroDotsIfNeeded()
             updateInterludesIfNeeded()
 

@@ -35,6 +35,10 @@ extension AppleMusicLyrics {
         private(set) var originalIndex: Int = -1
         /// Position among the *enabled* lines (used for distance-based fading).
         var enabledPosition: Int = 0
+        /// Frame origin Y this line was laid out at (without cascade displacement);
+        /// set by the container during `relayout`. The line-switch cascade offsets
+        /// the frame from this baseline and springs it back to zero.
+        var cascadeBaselineY: CGFloat = 0
 
         var onTap: ((LyricsLine) -> Void)?
 
@@ -59,15 +63,87 @@ extension AppleMusicLyrics {
         /// row in lockstep.
         private var visualLineWidths: [CGFloat] = []
 
+        // MARK: Per-glyph breathing emphasis (highlighted line only)
+
+        /// One laid-out glyph of the highlighted line's main text. Apple Music
+        /// drives a per-glyph scale (`emphasizingScaleRange` 1.0…1.13) and lift
+        /// (`syllableLift` 2pt) as the karaoke sweep crosses each glyph — the
+        /// "breathing" that makes one line's motion feel like it carries the
+        /// whole stanza. We replicate it by stepping a critically-damped spring
+        /// per glyph (parameters reverse-engineered from Music 26.5.1; see memory
+        /// `applemusic-lyrics-animation-params`) and redrawing only this one line
+        /// per display-link frame. Non-highlighted lines stay a static
+        /// `NSStringDrawing` pass with no glyph machinery.
+        private struct GlyphLayoutEntry {
+            let glyph: CGGlyph
+            let font: CTFont
+            /// Glyph origin (baseline, left edge) in the view's flipped coords.
+            let baselineInView: CGPoint
+            let advanceWidth: CGFloat
+            /// Distance of the glyph's visual centre above its baseline — the
+            /// scale anchor, matching Apple's per-glyph bbox-centre scaling.
+            let centerHeightAboveBaseline: CGFloat
+            let visualLineIndex: Int
+            /// Index of the first character this glyph renders (for mapping the
+            /// glyph onto an inline-timetag syllable and the karaoke sweep).
+            let characterIndex: Int
+        }
+        private var glyphLayoutEntries: [GlyphLayoutEntry] = []
+        private var glyphEmphasis: [CGFloat] = []
+        private var glyphEmphasisVelocity: [CGFloat] = []
+        private var glyphLayoutWidth: CGFloat = -1
+        /// Left edge (view x) of each visual line's text, parallel to
+        /// `visualLineWidths`, used to place the karaoke fill edge per glyph.
+        private var visualLineContentLeftX: [CGFloat] = []
+        // Per-glyph timing, parallel to `glyphLayoutEntries`, rebuilt when the
+        // line duration is known: the sweep arrival time, the owning syllable's
+        // end time, and that syllable's duration (the emphasis spring response).
+        private var glyphActivationTimes: [TimeInterval] = []
+        private var glyphSyllableEndTimes: [TimeInterval] = []
+        private var glyphSyllableDurations: [TimeInterval] = []
+        private var glyphTimingLineDuration: TimeInterval = -1
+        private var lastEmphasisTickTimestamp: CFTimeInterval = 0
+
         // MARK: Layout / appearance constants (tuned against Apple's values in Phase 3)
 
         private let verticalPadding: CGFloat = 28
         private let horizontalPadding: CGFloat = 24
         private let mainToTranslationSpacing: CGFloat = 4
         private let unsungOpacity: CGFloat = 0.4
-        /// Subtle "pop" of the current line, mirroring Apple Music's emphasis.
-        /// Kept modest so it never overlaps neighbours given the line padding.
-        private let highlightScale: CGFloat = 1.05
+
+        // Reverse-engineered from Apple Music 26.5.1 (`LyricsSpecs`, see memory
+        // `applemusic-lyrics-animation-params`). The active line's glyphs scale
+        // up `emphasizingScaleRange` (1.0…1.13) and lift `syllableLift` (2pt) as
+        // they are sung, then relax. The rise is a critically-damped spring whose
+        // `response` is the owning syllable's duration (capped at 3s); the relax
+        // is a critically-damped 1.5s spring. Both convert to a stiffness/damping
+        // pair exactly as `CASpringAnimation(response:dampingRatio:)` does:
+        // `stiffness = (2π/response)²`, `damping = dampingRatio · 4π/response`
+        // (mass 1). Emphasis begins `animationHeadstart` (0.1s) before a syllable
+        // is sung.
+        private let emphasisScaleRange: CGFloat = 0.13
+        private let syllableLift: CGFloat = 2.0
+        private let emphasisHeadstart: TimeInterval = 0.1
+        private let emphasisRelaxResponse: TimeInterval = 1.5
+        private let emphasisMaxResponse: TimeInterval = 3.0
+        // Floor the response so a near-zero syllable duration cannot blow the
+        // semi-implicit spring up (stable while `response > π · maxFrameStep`).
+        private let emphasisMinResponse: TimeInterval = 0.12
+        // Apple's per-glyph glow (`glowRange` 0…0.4, `glowRadius` 5) follows the
+        // SAME emphasis weight as the scale, so `glow = emphasis · 0.4`. Drawn as
+        // a white blur behind the glyph; skipped below the threshold so the
+        // per-frame blur only costs the handful of currently-emphasised glyphs.
+        private let glowOpacityRange: CGFloat = 0.4
+        private let glowRadius: CGFloat = 5
+        private let glowEmphasisThreshold: CGFloat = 0.02
+
+        // Apple Music shrinks every NON-selected line to `deselectedTransform`
+        // (0.98) while the selected line stays at 1.0 (its emphasis is purely
+        // per-syllable). Animated by the line-select spring (mass 1, stiffness
+        // 14, damping 7 — ζ≈0.94, settle ~1.7s). This is NOT the active-line
+        // scale the user disliked: the active line is never scaled here.
+        private let deselectedLineScale: CGFloat = 0.98
+        private var didCenterAnchorLayer = false
 
         // MARK: Lifecycle
 
@@ -136,6 +212,8 @@ extension AppleMusicLyrics {
             )
 
             sizedForWidth = -1 // force re-measure
+            glyphLayoutWidth = -1 // force glyph re-layout
+            glyphTimingLineDuration = -1
             needsDisplay = true
         }
 
@@ -208,7 +286,8 @@ extension AppleMusicLyrics {
 
             if let mainAttributed {
                 if isHighlighted {
-                    drawMainKaraoke(mainAttributed, in: mainRect, options: options)
+                    buildGlyphLayoutIfNeeded(forWidth: bounds.width)
+                    drawMainBreathing(mainAttributed, in: mainRect, options: options)
                 } else {
                     drawAttributed(mainAttributed, in: mainRect, options: options, alpha: 1.0)
                 }
@@ -223,36 +302,306 @@ extension AppleMusicLyrics {
             }
         }
 
-        private func drawMainKaraoke(_ attributed: NSAttributedString, in rect: CGRect, options: NSString.DrawingOptions) {
-            // Pass 1: whole line at un-sung opacity.
-            drawAttributed(attributed, in: rect, options: options, alpha: unsungOpacity)
-
-            // Pass 2: sung prefix at full brightness, cascading across wrapped
-            // visual lines — the fill advances along visual line 0, then 1, …,
-            // rather than lighting every wrapped row in lockstep.
-            let fraction = min(1, max(0, karaokeFraction))
-            guard fraction > 0, let context = NSGraphicsContext.current?.cgContext else { return }
-
-            let widths = visualLineWidths.isEmpty ? [mainTextSize.width] : visualLineWidths
-            let totalWidth = widths.reduce(0, +)
-            guard totalWidth > 0 else { return }
-
-            let rowHeight = mainTextSize.height / CGFloat(widths.count)
-            let totalFilledWidth = totalWidth * fraction
-            var consumedWidth: CGFloat = 0
-
-            for (visualLineIndex, lineWidth) in widths.enumerated() {
-                let remainingFill = totalFilledWidth - consumedWidth
-                consumedWidth += lineWidth
-                guard lineWidth > 0, remainingFill > 0 else { continue }
-
-                let fillWidth = min(lineWidth, remainingFill)
-                let rowY = rect.minY + CGFloat(visualLineIndex) * rowHeight
-                context.saveGState()
-                context.clip(to: CGRect(x: rect.minX, y: rowY, width: fillWidth, height: rowHeight))
-                drawAttributed(attributed, in: rect, options: options, alpha: 1.0)
-                context.restoreGState()
+        /// Draw the highlighted line glyph-by-glyph: each glyph carries its own
+        /// spring-driven scale + lift (the per-syllable "breathing") and a
+        /// two-pass karaoke fill (dim whole glyph, then the sung portion at full
+        /// brightness clipped to the fill edge). Per-glyph emphasis is stepped in
+        /// `stepEmphasis`; here we only render the current state.
+        private func drawMainBreathing(_ attributed: NSAttributedString, in rect: CGRect, options: NSString.DrawingOptions) {
+            guard let context = NSGraphicsContext.current?.cgContext else { return }
+            guard !glyphLayoutEntries.isEmpty else {
+                // No glyph layout yet (e.g. zero width): fall back to the flat
+                // two-pass NSStringDrawing fill so the line is never blank.
+                drawAttributed(attributed, in: rect, options: options, alpha: unsungOpacity)
+                return
             }
+
+            let fraction = min(1, max(0, karaokeFraction))
+            let widths = visualLineWidths.isEmpty ? [mainTextSize.width] : visualLineWidths
+            let totalWidth = max(0.0001, widths.reduce(0, +))
+            let totalFilledWidth = totalWidth * fraction
+            // Cumulative width before each visual line, so the fill cascades line
+            // by line instead of lighting every wrapped row at once.
+            var cumulativeBefore = [CGFloat](repeating: 0, count: widths.count)
+            var running: CGFloat = 0
+            for index in widths.indices {
+                cumulativeBefore[index] = running
+                running += widths[index]
+            }
+
+            context.saveGState()
+            // Flip into a y-up text space so Core Text glyphs render upright in
+            // this flipped view; +y is now up on screen.
+            context.textMatrix = .identity
+            context.translateBy(x: 0, y: bounds.height)
+            context.scaleBy(x: 1, y: -1)
+            let viewHeight = bounds.height
+
+            for index in glyphLayoutEntries.indices {
+                let entry = glyphLayoutEntries[index]
+                let emphasis = index < glyphEmphasis.count ? glyphEmphasis[index] : 0
+                let scale = 1.0 + emphasis * emphasisScaleRange
+                let lift = emphasis * syllableLift
+
+                let baselineY = viewHeight - entry.baselineInView.y
+                let centerX = entry.baselineInView.x + entry.advanceWidth / 2
+                let centerY = baselineY + entry.centerHeightAboveBaseline
+
+                // Karaoke fill edge for this glyph's visual line (view x).
+                let lineIndex = entry.visualLineIndex
+                let lineLeftX = lineIndex < visualLineContentLeftX.count ? visualLineContentLeftX[lineIndex] : horizontalPadding
+                let lineWidth = lineIndex < widths.count ? widths[lineIndex] : totalWidth
+                let filledInLine = min(max(0, totalFilledWidth - cumulativeBefore[lineIndex]), lineWidth)
+                let fillEdgeX = lineLeftX + filledInLine
+
+                var glyph = entry.glyph
+                var position = CGPoint(x: entry.baselineInView.x, y: baselineY)
+
+                // Pass 1: un-sung (dim) — the whole glyph, scaled + lifted, with
+                // the emphasis-driven white glow behind it.
+                context.saveGState()
+                context.translateBy(x: centerX, y: centerY + lift)
+                context.scaleBy(x: scale, y: scale)
+                context.translateBy(x: -centerX, y: -centerY)
+                if emphasis > glowEmphasisThreshold {
+                    context.setShadow(offset: .zero, blur: glowRadius, color: NSColor.white.withAlphaComponent(emphasis * glowOpacityRange).cgColor)
+                }
+                context.setFillColor(NSColor.white.withAlphaComponent(unsungOpacity).cgColor)
+                CTFontDrawGlyphs(entry.font, &glyph, &position, 1, context)
+                context.restoreGState()
+
+                // Pass 2: sung (bright) — the same glyph clipped to the fill edge.
+                // The clip is set in the un-scaled y-up space (so it stays fixed
+                // at the sweep position) before the per-glyph scale is applied.
+                if fillEdgeX > entry.baselineInView.x {
+                    context.saveGState()
+                    context.clip(to: CGRect(x: -1_000_000, y: -1_000_000, width: fillEdgeX + 1_000_000, height: 2_000_000))
+                    context.translateBy(x: centerX, y: centerY + lift)
+                    context.scaleBy(x: scale, y: scale)
+                    context.translateBy(x: -centerX, y: -centerY)
+                    context.setFillColor(NSColor.white.cgColor)
+                    CTFontDrawGlyphs(entry.font, &glyph, &position, 1, context)
+                    context.restoreGState()
+                }
+            }
+            context.restoreGState()
+        }
+
+        /// Lay the highlighted line's main text out via Core Text into per-glyph
+        /// entries (glyph id, font, baseline in flipped view coords, advance,
+        /// scale-anchor height, visual line, first character). Cached by width;
+        /// rebuilt on width / font / translation change. Also refreshes
+        /// `visualLineWidths` + `visualLineContentLeftX` from the same frame so
+        /// the karaoke fill stays consistent with the glyph positions.
+        private func buildGlyphLayoutIfNeeded(forWidth width: CGFloat) {
+            guard width > 0 else { return }
+            if glyphLayoutWidth == width, !glyphLayoutEntries.isEmpty { return }
+            glyphLayoutWidth = width
+            glyphLayoutEntries = []
+            glyphEmphasis = []
+            glyphEmphasisVelocity = []
+            glyphActivationTimes = []
+            glyphTimingLineDuration = -1
+            visualLineContentLeftX = []
+
+            guard let mainAttributed else { return }
+            let textWidth = max(1, width - horizontalPadding * 2)
+            let framesetter = CTFramesetterCreateWithAttributedString(mainAttributed)
+            let path = CGMutablePath()
+            // Unbounded height (see `computeVisualLineWidths`): a height-bounded
+            // path can silently drop the last visual line(s).
+            path.addRect(CGRect(x: 0, y: 0, width: textWidth, height: 100_000))
+            let frame = CTFramesetterCreateFrame(framesetter, CFRange(location: 0, length: 0), path, nil)
+            guard let ctLines = CTFrameGetLines(frame) as? [CTLine], !ctLines.isEmpty else { return }
+
+            var lineOrigins = [CGPoint](repeating: .zero, count: ctLines.count)
+            CTFrameGetLineOrigins(frame, CFRange(location: 0, length: 0), &lineOrigins)
+
+            // Path coordinates are y-up; the very top of the first line sits at
+            // `origin0.y + ascent0`. Map every baseline down from the view's top
+            // inset so line 0's baseline lands at `verticalPadding + ascent0`.
+            var ascent0: CGFloat = 0, descent0: CGFloat = 0, leading0: CGFloat = 0
+            _ = CTLineGetTypographicBounds(ctLines[0], &ascent0, &descent0, &leading0)
+            let blockTopPathY = lineOrigins[0].y + ascent0
+
+            var entries: [GlyphLayoutEntry] = []
+            var widths: [CGFloat] = []
+            var leftXs: [CGFloat] = []
+            for (lineIndex, ctLine) in ctLines.enumerated() {
+                var ascent: CGFloat = 0, descent: CGFloat = 0, leading: CGFloat = 0
+                let typographicWidth = CGFloat(CTLineGetTypographicBounds(ctLine, &ascent, &descent, &leading))
+                widths.append(typographicWidth)
+                let lineContentLeftX = horizontalPadding + lineOrigins[lineIndex].x
+                leftXs.append(lineContentLeftX)
+                let baselineInView = verticalPadding + (blockTopPathY - lineOrigins[lineIndex].y)
+                let centerHeightAboveBaseline = (ascent - descent) / 2
+
+                guard let runs = CTLineGetGlyphRuns(ctLine) as? [CTRun] else { continue }
+                for run in runs {
+                    let glyphCount = CTRunGetGlyphCount(run)
+                    guard glyphCount > 0 else { continue }
+                    var glyphs = [CGGlyph](repeating: 0, count: glyphCount)
+                    var positions = [CGPoint](repeating: .zero, count: glyphCount)
+                    var advances = [CGSize](repeating: .zero, count: glyphCount)
+                    var stringIndices = [CFIndex](repeating: 0, count: glyphCount)
+                    CTRunGetGlyphs(run, CFRange(location: 0, length: 0), &glyphs)
+                    CTRunGetPositions(run, CFRange(location: 0, length: 0), &positions)
+                    CTRunGetAdvances(run, CFRange(location: 0, length: 0), &advances)
+                    CTRunGetStringIndices(run, CFRange(location: 0, length: 0), &stringIndices)
+
+                    let runAttributes = CTRunGetAttributes(run) as NSDictionary
+                    let runFont: CTFont
+                    if let fontValue = runAttributes[kCTFontAttributeName as String] {
+                        // The attribute value is a CTFont (CFTypeRef); a force
+                        // cast from `Any` is the documented bridge.
+                        runFont = fontValue as! CTFont
+                    } else {
+                        // Never hit in practice (the string always carries a
+                        // font); NSFont is toll-free bridged to CTFont.
+                        runFont = unsafeBitCast(NSFont.systemFont(ofSize: mainFontSize, weight: .bold), to: CTFont.self)
+                    }
+
+                    for glyphIndex in 0 ..< glyphCount {
+                        let baselineX = lineContentLeftX + positions[glyphIndex].x
+                        entries.append(GlyphLayoutEntry(
+                            glyph: glyphs[glyphIndex],
+                            font: runFont,
+                            baselineInView: CGPoint(x: baselineX, y: baselineInView),
+                            advanceWidth: advances[glyphIndex].width,
+                            centerHeightAboveBaseline: centerHeightAboveBaseline,
+                            visualLineIndex: lineIndex,
+                            characterIndex: stringIndices[glyphIndex]
+                        ))
+                    }
+                }
+            }
+
+            glyphLayoutEntries = entries
+            glyphEmphasis = [CGFloat](repeating: 0, count: entries.count)
+            glyphEmphasisVelocity = [CGFloat](repeating: 0, count: entries.count)
+            visualLineWidths = widths
+            visualLineContentLeftX = leftXs
+        }
+
+        /// Map every glyph onto an inline-timetag syllable to get its sweep
+        /// arrival time, the syllable's end time, and the syllable's duration
+        /// (the emphasis spring `response`). Recomputed only when the line
+        /// duration changes; cheap enough to leave keyed on it.
+        private func rebuildGlyphTiming(lineDuration: TimeInterval) {
+            guard !glyphLayoutEntries.isEmpty else {
+                glyphActivationTimes = []
+                glyphSyllableEndTimes = []
+                glyphSyllableDurations = []
+                return
+            }
+            if glyphActivationTimes.count == glyphLayoutEntries.count, glyphTimingLineDuration == lineDuration { return }
+            glyphTimingLineDuration = lineDuration
+
+            let totalCharacterCount = max(1, line?.content.count ?? 1)
+            let timings = line?.wordTimingEntries ?? []
+            var activations = [TimeInterval](repeating: 0, count: glyphLayoutEntries.count)
+            var endTimes = [TimeInterval](repeating: lineDuration, count: glyphLayoutEntries.count)
+            var durations = [TimeInterval](repeating: lineDuration, count: glyphLayoutEntries.count)
+
+            for (index, entry) in glyphLayoutEntries.enumerated() {
+                let characterIndex = entry.characterIndex
+                if timings.isEmpty {
+                    // No word timing: a single linear sweep across the whole line.
+                    activations[index] = lineDuration * Double(characterIndex) / Double(totalCharacterCount)
+                    endTimes[index] = lineDuration
+                    durations[index] = lineDuration
+                    continue
+                }
+                // Find the syllable segment [startChar, endChar) containing this
+                // character, and its [startTime, endTime).
+                let startCharacter: Int
+                let startTime: TimeInterval
+                let endCharacter: Int
+                let endTime: TimeInterval
+                if characterIndex < timings[0].characterIndex {
+                    startCharacter = 0
+                    startTime = 0
+                    endCharacter = timings[0].characterIndex
+                    endTime = timings[0].timeOffset
+                } else {
+                    var segmentIndex = 0
+                    for candidate in timings.indices where timings[candidate].characterIndex <= characterIndex {
+                        segmentIndex = candidate
+                    }
+                    startCharacter = timings[segmentIndex].characterIndex
+                    startTime = timings[segmentIndex].timeOffset
+                    endCharacter = segmentIndex + 1 < timings.count ? timings[segmentIndex + 1].characterIndex : totalCharacterCount
+                    endTime = segmentIndex + 1 < timings.count ? timings[segmentIndex + 1].timeOffset : lineDuration
+                }
+                let segmentCharacterSpan = max(1, endCharacter - startCharacter)
+                let segmentDuration = max(0, endTime - startTime)
+                // Apple staggers a syllable's glyphs by `min(perGlyphDur · 0.4,
+                // 0.4)` each, so the whole syllable swells almost together with a
+                // quick left-to-right ripple — not a slow per-character crawl.
+                // The glyph then ramps to 1.13 over the syllable duration (the
+                // spring response) and relaxes after the syllable's end time.
+                let perCharacterDuration = segmentDuration / Double(segmentCharacterSpan)
+                let staggerStep = min(perCharacterDuration * 0.4, 0.4)
+                activations[index] = startTime + staggerStep * Double(characterIndex - startCharacter)
+                endTimes[index] = endTime
+                durations[index] = segmentDuration
+            }
+
+            glyphActivationTimes = activations
+            glyphSyllableEndTimes = endTimes
+            glyphSyllableDurations = durations
+        }
+
+        /// Step every glyph's emphasis spring one display-link frame toward its
+        /// target (1 while its syllable is being sung — `animationHeadstart`
+        /// early — else 0). The rise uses the syllable-duration response; the
+        /// relax uses the fixed 1.5s response. Returns whether anything is still
+        /// moving, so the caller knows to keep repainting.
+        @discardableResult
+        private func stepEmphasis(elapsedTime: TimeInterval) -> Bool {
+            guard isHighlighted, !glyphLayoutEntries.isEmpty,
+                  glyphActivationTimes.count == glyphLayoutEntries.count,
+                  glyphEmphasis.count == glyphLayoutEntries.count else { return false }
+
+            let timestamp = CACurrentMediaTime()
+            var deltaTime = lastEmphasisTickTimestamp == 0 ? (1.0 / 60.0) : (timestamp - lastEmphasisTickTimestamp)
+            lastEmphasisTickTimestamp = timestamp
+            deltaTime = min(max(deltaTime, 1.0 / 240.0), 1.0 / 30.0)
+            let step = CGFloat(deltaTime)
+
+            var anyMoved = false
+            for index in glyphLayoutEntries.indices {
+                let isActive = (elapsedTime + emphasisHeadstart) >= glyphActivationTimes[index]
+                    && elapsedTime < glyphSyllableEndTimes[index]
+                let target: CGFloat = isActive ? 1.0 : 0.0
+                let response = isActive
+                    ? max(emphasisMinResponse, min(glyphSyllableDurations[index], emphasisMaxResponse))
+                    : emphasisRelaxResponse
+                let angularFrequency = 2 * CGFloat.pi / CGFloat(response)
+                let stiffness = angularFrequency * angularFrequency
+                let damping = 2 * angularFrequency // critically damped (dampingRatio 1.0)
+
+                var emphasis = glyphEmphasis[index]
+                var velocity = glyphEmphasisVelocity[index]
+                let acceleration = -stiffness * (emphasis - target) - damping * velocity
+                velocity += acceleration * step
+                emphasis += velocity * step
+                if abs(emphasis - target) < 0.001, abs(velocity) < 0.01 {
+                    emphasis = target
+                    velocity = 0
+                } else {
+                    anyMoved = true
+                }
+                glyphEmphasis[index] = min(1.0, max(0.0, emphasis))
+                glyphEmphasisVelocity[index] = velocity
+            }
+            return anyMoved
+        }
+
+        private func resetEmphasis() {
+            for index in glyphEmphasis.indices { glyphEmphasis[index] = 0 }
+            for index in glyphEmphasisVelocity.indices { glyphEmphasisVelocity[index] = 0 }
+            lastEmphasisTickTimestamp = 0
         }
 
         /// Lays the wrapped text out once via Core Text to recover the width of
@@ -289,59 +638,22 @@ extension AppleMusicLyrics {
         func setHighlighted(_ highlighted: Bool) {
             guard isHighlighted != highlighted else { return }
             isHighlighted = highlighted
-            if !highlighted {
+            if highlighted {
+                buildGlyphLayoutIfNeeded(forWidth: bounds.width)
+            } else {
                 karaokeFraction = 0
             }
+            // Start (or end) every per-glyph spring from rest so a re-highlighted
+            // line never inherits a stale mid-animation emphasis.
+            resetEmphasis()
             needsDisplay = true
-            updateScaleEmphasis(animated: true)
         }
 
-        // MARK: Scale emphasis (current line "pops")
-        //
-        // Known minor limitation: the scale is a purely visual `layer.transform`,
-        // so hit-testing still uses the unscaled frame. The ~2.4pt enlarged
-        // sliver of the current line is not clickable (a tap there routes to the
-        // neighbour). Accepted: the scale is small, the text body stays well
-        // inside the unscaled bounds, and the current line is the playing one.
-
-        private func updateScaleEmphasis(animated: Bool) {
-            guard let layer else { return }
-            let target = leadingScaleTransform(isHighlighted ? highlightScale : 1.0)
-            if animated {
-                let animation = CABasicAnimation(keyPath: "transform")
-                animation.fromValue = layer.presentation()?.transform ?? layer.transform
-                animation.toValue = target
-                animation.duration = 0.4
-                animation.timingFunction = CAMediaTimingFunction(name: .easeOut)
-                layer.add(animation, forKey: "scaleEmphasis")
-            }
-            layer.transform = target
-        }
-
-        /// Scales around the **leading edge** (text start), vertical center —
-        /// regardless of the backing layer's `anchorPoint` (which AppKit owns).
-        /// Anchoring at the center would push a short, left-aligned line leftward
-        /// (more the wider the view), drifting it out of alignment with the other
-        /// lines and clipping it against the scroll view; anchoring at the leading
-        /// edge keeps the text start fixed and grows rightward. `layer.transform`
-        /// is not in AppKit's view→layer property sync set, so it is safe to set.
-        private func leadingScaleTransform(_ scale: CGFloat) -> CATransform3D {
-            guard scale != 1.0, let layer else { return CATransform3DIdentity }
-            let offsetX = horizontalPadding - bounds.width * layer.anchorPoint.x
-            let offsetY = bounds.midY - bounds.height * layer.anchorPoint.y
-            var transform = CATransform3DIdentity
-            transform = CATransform3DTranslate(transform, offsetX, offsetY, 0)
-            transform = CATransform3DScale(transform, scale, scale, 1)
-            transform = CATransform3DTranslate(transform, -offsetX, -offsetY, 0)
-            return transform
-        }
-
-        override func layout() {
-            super.layout()
-            // Re-derive the leading-scale transform after a size change.
-            if isHighlighted {
-                updateScaleEmphasis(animated: false)
-            }
+        /// Offset the frame vertically from its laid-out baseline for the
+        /// line-switch cascade. Moving the frame origin (not size) is cheap — no
+        /// text re-measure.
+        func applyCascadeDisplacement(_ displacement: CGFloat) {
+            setFrameOrigin(NSPoint(x: frame.origin.x, y: cascadeBaselineY + displacement))
         }
 
         func animateAlpha(to target: CGFloat, duration: TimeInterval) {
@@ -352,10 +664,48 @@ extension AppleMusicLyrics {
             }
         }
 
+        /// Apple Music's line-level discrete transform: the selected line rests
+        /// at 1.0, every other line shrinks to `deselectedLineScale` (0.98),
+        /// animated by the line-select spring. Scales about the line's centre so
+        /// it never drifts sideways. The active line is intentionally left at
+        /// 1.0 — all of its growth is per-syllable, not whole-line.
+        func setLineSelected(_ selected: Bool, animated: Bool) {
+            guard let layer else { return }
+            ensureCenterAnchor(layer)
+            let targetScale: CGFloat = selected ? 1.0 : deselectedLineScale
+            let newTransform = CATransform3DMakeScale(targetScale, targetScale, 1)
+            if CATransform3DEqualToTransform(layer.transform, newTransform) { return }
+            if animated, window != nil {
+                let animation = CASpringAnimation(keyPath: "transform")
+                animation.fromValue = NSValue(caTransform3D: layer.presentation()?.transform ?? layer.transform)
+                animation.toValue = NSValue(caTransform3D: newTransform)
+                animation.mass = 1
+                animation.stiffness = 14
+                animation.damping = 7
+                animation.duration = animation.settlingDuration
+                layer.add(animation, forKey: "lineSelectScale")
+            }
+            layer.transform = newTransform
+        }
+
+        /// Move the backing layer's anchor to its centre (once) so the
+        /// line-select scale grows/shrinks about the middle. AppKit keeps
+        /// `position` in sync with the view's frame afterwards, so the cascade's
+        /// `setFrameOrigin` still works.
+        private func ensureCenterAnchor(_ layer: CALayer) {
+            guard !didCenterAnchorLayer else { return }
+            didCenterAnchorLayer = true
+            layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+            layer.position = CGPoint(x: frame.midX, y: frame.midY)
+        }
+
         // MARK: Karaoke (per-frame, highlighted line only)
 
         func updateKaraoke(elapsedTime: TimeInterval, lineDuration: TimeInterval, mode: KaraokeMode) {
             guard let line, isHighlighted else { return }
+            buildGlyphLayoutIfNeeded(forWidth: bounds.width)
+            rebuildGlyphTiming(lineDuration: lineDuration)
+
             let fraction = KaraokeFill.fraction(
                 elapsedTime: elapsedTime,
                 lineDuration: lineDuration,
@@ -364,9 +714,15 @@ extension AppleMusicLyrics {
                 mode: mode
             )
             karaokeFraction = fraction
-            // Repaint only when the fill edge moved by at least half a point,
-            // so a paused or slow-moving line does not repaint every frame.
-            if abs(fraction - lastDrawnFraction) * max(1, mainTextSize.width) >= 0.5 {
+
+            // Advance the per-glyph breathing springs every frame; they keep
+            // moving (rising as each syllable is sung, relaxing afterwards) even
+            // when the fill edge itself is momentarily static.
+            let emphasisMoved = stepEmphasis(elapsedTime: elapsedTime)
+            // Repaint when the fill edge moved by at least half a point or any
+            // glyph is still breathing, so a paused line does not repaint forever.
+            let fillMoved = abs(fraction - lastDrawnFraction) * max(1, mainTextSize.width) >= 0.5
+            if fillMoved || emphasisMoved {
                 needsDisplay = true
             }
         }
