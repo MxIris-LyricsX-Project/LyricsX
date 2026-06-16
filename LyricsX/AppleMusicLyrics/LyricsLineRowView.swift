@@ -35,10 +35,6 @@ extension AppleMusicLyrics {
         private(set) var originalIndex: Int = -1
         /// Position among the *enabled* lines (used for distance-based fading).
         var enabledPosition: Int = 0
-        /// Frame origin Y this line was laid out at (without cascade displacement);
-        /// set by the container during `relayout`. The line-switch cascade offsets
-        /// the frame from this baseline and springs it back to zero.
-        var cascadeBaselineY: CGFloat = 0
 
         var onTap: ((LyricsLine) -> Void)?
 
@@ -577,15 +573,25 @@ extension AppleMusicLyrics {
                 let response = isActive
                     ? max(emphasisMinResponse, min(glyphSyllableDurations[index], emphasisMaxResponse))
                     : emphasisRelaxResponse
+                // Angular frequency from the same `response → stiffness` mapping a
+                // `CASpringAnimation(response:dampingRatio:1)` uses: ω = 2π/response.
                 let angularFrequency = 2 * CGFloat.pi / CGFloat(response)
-                let stiffness = angularFrequency * angularFrequency
-                let damping = 2 * angularFrequency // critically damped (dampingRatio 1.0)
 
-                var emphasis = glyphEmphasis[index]
-                var velocity = glyphEmphasisVelocity[index]
-                let acceleration = -stiffness * (emphasis - target) - damping * velocity
-                velocity += acceleration * step
-                emphasis += velocity * step
+                // EXACT analytic step of a critically-damped (ζ = 1) spring toward
+                // `target`. The previous semi-implicit Euler integrator DIVERGED for
+                // short syllables — with `damping·Δt = 2ω·Δt > 2` (true once the
+                // response drops below ~0.13 s even at 60 Hz) the velocity update
+                // flips sign and amplifies every frame, so the clamped emphasis
+                // oscillated between 0 and 1: that was the per-syllable "抖动".
+                // The closed-form solution below is unconditionally stable for any Δt
+                // and reproduces a real CASpringAnimation's curve precisely.
+                let displacement = glyphEmphasis[index] - target            // y₀
+                let coefficient = glyphEmphasisVelocity[index] + angularFrequency * displacement // B = v₀ + ω·y₀
+                let decay = CGFloat(exp(Double(-angularFrequency * step)))
+                let nextDisplacement = (displacement + coefficient * step) * decay
+                let nextVelocity = (coefficient - angularFrequency * (displacement + coefficient * step)) * decay
+                var emphasis = target + nextDisplacement
+                var velocity = nextVelocity
                 if abs(emphasis - target) < 0.001, abs(velocity) < 0.01 {
                     emphasis = target
                     velocity = 0
@@ -647,13 +653,6 @@ extension AppleMusicLyrics {
             // line never inherits a stale mid-animation emphasis.
             resetEmphasis()
             needsDisplay = true
-        }
-
-        /// Offset the frame vertically from its laid-out baseline for the
-        /// line-switch cascade. Moving the frame origin (not size) is cheap — no
-        /// text re-measure.
-        func applyCascadeDisplacement(_ displacement: CGFloat) {
-            setFrameOrigin(NSPoint(x: frame.origin.x, y: cascadeBaselineY + displacement))
         }
 
         func animateAlpha(to target: CGFloat, duration: TimeInterval) {
