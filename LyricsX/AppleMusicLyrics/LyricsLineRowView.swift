@@ -1,5 +1,6 @@
 import AppKit
 import CoreText
+import CoreImage
 import QuartzCore
 import LyricsXFoundation
 import OpenCC
@@ -152,6 +153,8 @@ extension AppleMusicLyrics {
             super.init(frame: frameRect)
             wantsLayer = true
             layerContentsRedrawPolicy = .onSetNeedsDisplay
+            // Allow a Core Image Gaussian blur on non-active lines (`lineBlurEnabled`).
+            layerUsesCoreImageFilters = true
         }
 
         @available(*, unavailable)
@@ -665,6 +668,23 @@ extension AppleMusicLyrics {
                 context.duration = duration
                 context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 animator().alphaValue = target
+            }
+        }
+
+        private var currentBlurRadius: CGFloat = -1
+        /// Apple Music blurs every NON-active line (`lineBlurEnabled = true`,
+        /// implemented there as a Metal two-pass gaussian). We approximate it with a
+        /// Core Image Gaussian blur applied as the view's content filter — the
+        /// AppKit-safe path (the layer's `filters` are synced from `contentFilters`,
+        /// so setting it directly would be overwritten). The active line is sharp
+        /// (radius 0). Idempotent so the per-frame distance update is cheap.
+        func setLineBlur(radius: CGFloat) {
+            guard abs(radius - currentBlurRadius) > 0.05 else { return }
+            currentBlurRadius = radius
+            if radius <= 0.05 {
+                contentFilters = []
+            } else if let blur = CIFilter(name: "CIGaussianBlur", parameters: [kCIInputRadiusKey: radius]) {
+                contentFilters = [blur]
             }
         }
 

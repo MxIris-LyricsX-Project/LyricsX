@@ -389,8 +389,18 @@ extension AppleMusicLyrics {
                 } else {
                     view.alphaValue = target
                 }
-                // Apple Music's per-line 0.98 deselected scale (selected line 1.0).
+                // `deselectedTransform` is the identity (no whole-line scale) — kept
+                // for the active line staying at 1.0.
                 view.setLineSelected(isSelected, animated: animated)
+                // Apple Music blurs non-active lines (`lineBlurEnabled`); the active
+                // line is sharp. Scale the blur with distance for a depth-of-field
+                // falloff (the active line pops, far lines recede).
+                if let highlightedPosition {
+                    let distance = abs(view.enabledPosition - highlightedPosition)
+                    view.setLineBlur(radius: distance == 0 ? 0 : min(CGFloat(distance) * 1.6, 9))
+                } else {
+                    view.setLineBlur(radius: 0)
+                }
             }
         }
 
