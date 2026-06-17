@@ -105,7 +105,10 @@ extension AppleMusicLyrics {
         private let verticalPadding: CGFloat = 28
         private let horizontalPadding: CGFloat = 24
         private let mainToTranslationSpacing: CGFloat = 4
-        private let unsungOpacity: CGFloat = 0.4
+        // Active line's not-yet-sung text = 50% white (`selectedUpcomingTextColor`
+        // α=0.5, from lldb dump of the live LyricsSpecs); the sung prefix fills to
+        // 100%. Other (non-active) lines sit at 40% via the container's alpha.
+        private let unsungOpacity: CGFloat = 0.5
 
         // Reverse-engineered from Apple Music 26.5.1 (`LyricsSpecs`, see memory
         // `applemusic-lyrics-animation-params`). The active line's glyphs scale
@@ -117,8 +120,10 @@ extension AppleMusicLyrics {
         // `stiffness = (2π/response)²`, `damping = dampingRatio · 4π/response`
         // (mass 1). Emphasis begins `animationHeadstart` (0.1s) before a syllable
         // is sung.
-        private let emphasisScaleRange: CGFloat = 0.13
-        private let syllableLift: CGFloat = 2.0
+        // `emphasizingScaleRange` 1.0 → 1.14 and `syllableLift` 3.0 pt — exact values
+        // read at runtime from Apple Music's live LyricsSpecs (lldb, 2026-06-17).
+        private let emphasisScaleRange: CGFloat = 0.14
+        private let syllableLift: CGFloat = 3.0
         private let emphasisHeadstart: TimeInterval = 0.1
         private let emphasisRelaxResponse: TimeInterval = 1.5
         private let emphasisMaxResponse: TimeInterval = 3.0
@@ -133,12 +138,12 @@ extension AppleMusicLyrics {
         private let glowRadius: CGFloat = 5
         private let glowEmphasisThreshold: CGFloat = 0.02
 
-        // Apple Music shrinks every NON-selected line to `deselectedTransform`
-        // (0.98) while the selected line stays at 1.0 (its emphasis is purely
-        // per-syllable). Animated by the line-select spring (mass 1, stiffness
-        // 14, damping 7 — ζ≈0.94, settle ~1.7s). This is NOT the active-line
-        // scale the user disliked: the active line is never scaled here.
-        private let deselectedLineScale: CGFloat = 0.98
+        // Apple Music's `deselectedTransform` is the IDENTITY (no whole-line
+        // scale) — confirmed by lldb dump of the live LyricsSpecs (2026-06-17).
+        // Non-active lines are differentiated by opacity (40%) + blur ONLY, never
+        // by scale. (The 0.98 seen in static disassembly was a different field.)
+        // Keeping the field at 1.0 so `setLineSelected` is a no-op scale.
+        private let deselectedLineScale: CGFloat = 1.0
         private var didCenterAnchorLayer = false
 
         // MARK: Lifecycle
