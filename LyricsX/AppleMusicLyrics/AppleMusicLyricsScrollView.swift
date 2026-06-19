@@ -58,16 +58,11 @@ extension AppleMusicLyrics {
         // A line advance further than this (e.g. a seek) snaps instantly instead of
         // springing across the whole song.
         private let scrollJumpThreshold = 5
-        // Apple Music pins the active line near the very TOP of the lyrics area —
-        // `LyricsSpecs.selectedLinePosition = .top(12.0)` — so there is (almost)
-        // nothing above the active line and a full screen of upcoming lines below.
-        // Frame-by-frame comparison against a 26.5.1 capture (2026-06-16) confirms
-        // the active line is consistently the topmost line with only a small fixed
-        // top margin. The earlier 0.35 anchor (active line a third of the way down,
-        // with two already-sung lines above it) was a brightness-centroid
-        // mis-measurement — the karaoke fill and faded just-sung lines skewed the
-        // centroid downward.
-        private let selectedLineTopInset: CGFloat = 12
+        // The active (highlighted) line is centred vertically in the viewport.
+        // The document is padded by half the clip height at the top and bottom
+        // (see `relayout`) so even the first and last lines can sit at the exact
+        // centre. (Apple Music's own `selectedLinePosition` is `.top(12)`, but a
+        // centred anchor is the chosen behaviour here.)
 
         // Intro "•••" instrumental indicator. Additive: nil unless the first
         // vocal line starts after `introGapThreshold`, in which case the engine
@@ -307,10 +302,11 @@ extension AppleMusicLyrics {
             let clipHeight = bounds.height
             guard width > 0 else { return }
 
-            // The first line rests at the top inset (clip pinned to 0); a full
-            // screen of bottom padding (added below) lets the LAST line scroll up
-            // to the same top anchor — matching Apple Music's `.top(12)` position.
-            var cursorY = selectedLineTopInset
+            // Half a screen of padding above the first line and below the last
+            // (added at the end) so any line — first or last included — can be
+            // scrolled to the exact vertical centre of the viewport.
+            let edgePadding = clipHeight / 2
+            var cursorY = edgePadding
             if let instrumentalView {
                 let dotsHeight = instrumentalView.preferredHeight
                 instrumentalView.frame = NSRect(x: 0, y: cursorY, width: width, height: dotsHeight)
@@ -330,7 +326,7 @@ extension AppleMusicLyrics {
                     cursorY += dotsHeight
                 }
             }
-            let totalHeight = cursorY + clipHeight
+            let totalHeight = cursorY + edgePadding
             documentView.frame = NSRect(x: 0, y: 0, width: width, height: max(totalHeight, clipHeight))
             lastLaidOutSize = bounds.size
         }
@@ -392,15 +388,6 @@ extension AppleMusicLyrics {
                 // `deselectedTransform` is the identity (no whole-line scale) — kept
                 // for the active line staying at 1.0.
                 view.setLineSelected(isSelected, animated: animated)
-                // Apple Music blurs non-active lines (`lineBlurEnabled`); the active
-                // line is sharp. Scale the blur with distance for a depth-of-field
-                // falloff (the active line pops, far lines recede).
-                if let highlightedPosition {
-                    let distance = abs(view.enabledPosition - highlightedPosition)
-                    view.setLineBlur(radius: distance == 0 ? 0 : min(CGFloat(distance) * 1.6, 9))
-                } else {
-                    view.setLineBlur(radius: 0)
-                }
             }
         }
 
@@ -408,18 +395,18 @@ extension AppleMusicLyrics {
 
         private func centerLine(originalIndex: Int, animated: Bool) {
             guard let view = lineViewByOriginalIndex[originalIndex] else { return }
-            anchorClip(toTopY: view.frame.minY, animated: animated)
+            anchorClip(toCenterY: view.frame.midY, animated: animated)
         }
 
         private func centerOnInstrumentalDots(animated: Bool) {
             guard let instrumentalView else { return }
-            anchorClip(toTopY: instrumentalView.frame.minY, animated: animated)
+            anchorClip(toCenterY: instrumentalView.frame.midY, animated: animated)
         }
 
-        /// Scroll so `topY` (a line or indicator's TOP edge) sits `selectedLineTopInset`
-        /// below the top of the viewport — Apple Music's `.top(12)` active-line anchor.
-        private func anchorClip(toTopY topY: CGFloat, animated: Bool) {
-            let targetY = clampedClipY(forTopY: topY)
+        /// Scroll so `centerY` (a line or indicator's vertical CENTRE) sits at the
+        /// vertical centre of the viewport — the active line is centred.
+        private func anchorClip(toCenterY centerY: CGFloat, animated: Bool) {
+            let targetY = clampedClipY(forCenterY: centerY)
 
             // A spring needs the display link to step it; if we're off-window it
             // is not running, so jump directly.
@@ -449,10 +436,10 @@ extension AppleMusicLyrics {
             scrollView.reflectScrolledClipView(clipView)
         }
 
-        private func clampedClipY(forTopY topY: CGFloat) -> CGFloat {
+        private func clampedClipY(forCenterY centerY: CGFloat) -> CGFloat {
             let visibleHeight = scrollView.contentView.bounds.height
             let maxOriginY = max(0, documentView.frame.height - visibleHeight)
-            return min(max(0, topY - selectedLineTopInset), maxOriginY)
+            return min(max(0, centerY - visibleHeight / 2), maxOriginY)
         }
 
         // MARK: Auto-follow scroll spring
@@ -576,7 +563,7 @@ extension AppleMusicLyrics {
             // During an interlude, keep the dots centered (the previous line
             // stays highlighted but the focus is the upcoming-break indicator).
             if let activeSegment, interactionState?.isFollowing ?? true {
-                anchorClip(toTopY: activeSegment.view.frame.minY, animated: true)
+                anchorClip(toCenterY: activeSegment.view.frame.midY, animated: true)
             }
         }
 
