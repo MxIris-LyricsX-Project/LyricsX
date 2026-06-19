@@ -149,24 +149,33 @@ extension AppleMusicLyrics {
     }
 
     /// Borderless SF Symbol control with a subtle hover background, for the
-    /// transport controls. Built on `LayerBackedView` so the hover fill and
-    /// corner radius flow through the renderer's `updateLayer` (never poked onto
-    /// the layer against AppKit's sync); the glyph lives in a child `NSImageView`
-    /// and clicks are handled on `mouseUp` — mirroring `InteractionToggleButton`.
+    /// transport controls. The hover highlight is a rounded-square fill in a
+    /// dedicated child `LayerBackedView` behind the glyph, faded in/out by
+    /// animating its `alphaValue` (the AppKit-blessed way to animate a layer-backed
+    /// view). The glyph lives in another child `NSImageView` and clicks are handled
+    /// on `mouseUp` — mirroring `InteractionToggleButton`.
     final class PanelControlButton: LayerBackedView {
         var onClick: (() -> Void)?
 
         private let pointSize: CGFloat
         private let iconView = NSImageView()
-        // The hit area / hover pill extends this far beyond the glyph on every
-        // side, so the rounded hover background reads as a circle around the
-        // icon instead of being clipped flush to the glyph (which made the hover
-        // invisible). The glyph itself stays at its natural size, centred.
+        private let hoverBackground = LayerBackedView()
+        // The hit area / hover square extends this far beyond the glyph on every
+        // side, so the rounded background reads as a frame around the icon instead
+        // of being clipped flush to the glyph (which made the hover invisible).
+        // The glyph itself stays at its natural size, centred.
         private let hoverPadding: CGFloat = 10
+        // Rounded-square (NOT circular) hover fill.
+        private let hoverCornerRadius: CGFloat = 8
+        private let hoverFadeDuration: TimeInterval = 0.16
         private var isHovering = false {
             didSet {
                 guard isHovering != oldValue else { return }
-                backgroundColor = NSColor.white.withAlphaComponent(isHovering ? 0.15 : 0)
+                NSAnimationContext.runAnimationGroup { context in
+                    context.duration = hoverFadeDuration
+                    context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                    hoverBackground.animator().alphaValue = isHovering ? 1 : 0
+                }
             }
         }
 
@@ -175,11 +184,25 @@ extension AppleMusicLyrics {
             super.init(frame: .zero)
             self.onClick = onClick
             translatesAutoresizingMaskIntoConstraints = false
+
+            // Rounded-square hover fill behind the glyph, hidden until hovered.
+            hoverBackground.translatesAutoresizingMaskIntoConstraints = false
+            hoverBackground.backgroundColor = NSColor.white.withAlphaComponent(0.15)
+            hoverBackground.cornerRadius = hoverCornerRadius
+            hoverBackground.clipsToBounds = true
+            hoverBackground.alphaValue = 0
+            addSubview(hoverBackground)
+
             iconView.contentTintColor = .white
             iconView.imageScaling = .scaleProportionallyDown
             iconView.translatesAutoresizingMaskIntoConstraints = false
             addSubview(iconView)
+
             NSLayoutConstraint.activate([
+                hoverBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
+                hoverBackground.trailingAnchor.constraint(equalTo: trailingAnchor),
+                hoverBackground.topAnchor.constraint(equalTo: topAnchor),
+                hoverBackground.bottomAnchor.constraint(equalTo: bottomAnchor),
                 iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
                 iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
             ])
@@ -199,17 +222,11 @@ extension AppleMusicLyrics {
         }
 
         override var intrinsicContentSize: NSSize {
-            // A square sized to the larger glyph dimension plus padding, so every
-            // transport button is a circular tap/hover target around its icon.
+            // A square sized to the larger glyph dimension plus padding, so the
+            // rounded-square hover fill frames the icon with even margin.
             let glyphSize = iconView.image?.size ?? NSSize(width: pointSize, height: pointSize)
             let side = max(glyphSize.width, glyphSize.height) + hoverPadding * 2
             return NSSize(width: side, height: side)
-        }
-
-        override func layout() {
-            super.layout()
-            // Pill-shaped hover fill; `cornerRadius` flows through the renderer.
-            cornerRadius = bounds.height / 2
         }
 
         override func updateTrackingAreas() {
