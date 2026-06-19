@@ -24,6 +24,9 @@ extension AppleMusicLyrics {
         private var karaokeMode: KaraokeMode = .characterLevel
         private var cancellables: Set<AnyCancellable> = []
         private var chromeTimer: Timer?
+        // Holds the scrubber position when paused, matching the lyric karaoke
+        // (the system time regresses/resets on pause — see `PausedHoldClock`).
+        private var holdClock = PausedHoldClock()
 
         // MARK: Views
 
@@ -110,7 +113,7 @@ extension AppleMusicLyrics {
             infoColumn.spacing = 2
 
             progressView.translatesAutoresizingMaskIntoConstraints = false
-            progressView.onSeek = { time in selectedPlayer.playbackTime = time }
+            progressView.onSeek = { [weak self] time in self?.seekPlayback(to: time) }
 
             let transport = NSStackView(views: [previousButton, playPauseButton, nextButton])
             transport.orientation = .horizontal
@@ -129,8 +132,8 @@ extension AppleMusicLyrics {
             // Right: lyrics engine.
             lyricsContainer.translatesAutoresizingMaskIntoConstraints = false
             lyricsContainer.onSeek = { [weak self] time in
-                guard let lyrics = self?.currentLyrics else { return }
-                selectedPlayer.playbackTime = time - lyrics.adjustedTimeDelay
+                guard let self, let lyrics = currentLyrics else { return }
+                seekPlayback(to: time - lyrics.adjustedTimeDelay)
             }
             lyricsContainer.interactionState = interactionState
             lyricsContainer.karaokeMode = karaokeMode
@@ -265,6 +268,8 @@ extension AppleMusicLyrics {
 
         private func startChromeTimer() {
             guard chromeTimer == nil else { return }
+            // Re-sync the paused-hold clock to the live time on (re)open.
+            holdClock.reset()
             let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
                 self?.chromeTick()
             }
@@ -322,7 +327,8 @@ extension AppleMusicLyrics {
         private func chromeTick() {
             let isPlaying = selectedPlayer.playbackState.isPlaying
             playPauseButton.setSymbol(isPlaying ? "pause.fill" : "play.fill")
-            progressView.update(currentTime: selectedPlayer.playbackTime, duration: trackDuration ?? 0)
+            let currentTime = holdClock.resolve(liveTime: selectedPlayer.playbackTime, isPlaying: isPlaying)
+            progressView.update(currentTime: currentTime, duration: trackDuration ?? 0)
             if coverImageView.image == nil {
                 refreshArtwork()
             }
@@ -360,10 +366,18 @@ extension AppleMusicLyrics {
 
         private func previousTrack() {
             if selectedPlayer.playbackTime > 5 {
-                selectedPlayer.playbackTime = 0
+                seekPlayback(to: 0)
             } else {
                 selectedPlayer.skipToPreviousItem()
             }
+        }
+
+        /// Seek the player and re-sync both paused-hold clocks (the scrubber's and
+        /// the lyrics container's) so the new position is followed even when paused.
+        private func seekPlayback(to time: TimeInterval) {
+            selectedPlayer.playbackTime = time
+            holdClock.reset()
+            lyricsContainer.resyncPlaybackClock()
         }
 
         // MARK: Interaction button

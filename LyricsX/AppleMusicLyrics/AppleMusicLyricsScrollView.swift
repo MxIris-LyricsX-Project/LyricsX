@@ -7,6 +7,42 @@ import LyricsXFoundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
+    /// Smooths the player's reported time across a pause. The system Now-Playing
+    /// clock is unreliable the instant playback pauses — it often lags behind the
+    /// real stop position or briefly reports 0, only correcting once playback
+    /// resumes — which made the karaoke fill and scrubber jump backwards or reset
+    /// to the start on pause. While paused this holds the last playing position,
+    /// following the live time only when it clearly advances (a deliberate forward
+    /// seek). `reset()` re-syncs to the live time when the panel is re-opened.
+    struct PausedHoldClock {
+        private var heldTime: TimeInterval = 0
+        private var wasPlaying = true
+        private var hasSynced = false
+
+        mutating func resolve(liveTime: TimeInterval, isPlaying: Bool) -> TimeInterval {
+            if !hasSynced {
+                hasSynced = true
+                wasPlaying = isPlaying
+                heldTime = liveTime
+            } else if isPlaying {
+                heldTime = liveTime
+                wasPlaying = true
+            } else if wasPlaying {
+                // Just paused: freeze at the last playing position.
+                wasPlaying = false
+            } else if liveTime > heldTime + 0.3 {
+                // A forward jump while paused is a deliberate seek; follow it.
+                // Backward / zero glitches are ignored so progress never regresses.
+                heldTime = liveTime
+            }
+            return heldTime
+        }
+
+        mutating func reset() {
+            hasSynced = false
+        }
+    }
+
     final class SyncedLyricsContainerView: NSView {
         // MARK: Inputs
 
@@ -33,6 +69,11 @@ extension AppleMusicLyrics {
         private var lastLaidOutSize: CGSize = .zero
         private var displayLink: CADisplayLink?
         private var preferenceObservers: Set<AnyCancellable> = []
+        // Holds the lyric/karaoke position when paused (see `PausedHoldClock`).
+        private var holdClock = PausedHoldClock()
+        // The playback time resolved for the current display-link frame; drives
+        // the karaoke fill and the intro/interlude indicators together.
+        private var resolvedPlaybackTime: TimeInterval = 0
 
         // Auto-follow scroll. Apple Music animates a single spring on
         // `scrollView.contentView.bounds` (the clip origin) so the whole line
@@ -506,6 +547,8 @@ extension AppleMusicLyrics {
 
         private func startDisplayLink() {
             guard displayLink == nil else { return }
+            // Re-sync the paused-hold clock to the live time on (re)open.
+            holdClock.reset()
             let link = displayLink(target: self, selector: #selector(handleDisplayLink))
             // Apple Music drives its lyric animations at ProMotion rates
             // (`setPreferredFrameRateRange:` = CAFrameRateRange(80, 120, preferred 120)).
@@ -520,7 +563,20 @@ extension AppleMusicLyrics {
             displayLink = nil
         }
 
+        /// Re-sync the paused-hold clock to the live time after an explicit seek,
+        /// so a seek while paused (even backwards) is followed instead of held.
+        func resyncPlaybackClock() {
+            holdClock.reset()
+        }
+
         @objc private func handleDisplayLink() {
+            // Resolve the playback time once per frame, holding the last position
+            // when paused so the karaoke / indicators don't regress (see
+            // `PausedHoldClock`). Everything below uses this single value.
+            resolvedPlaybackTime = holdClock.resolve(
+                liveTime: selectedPlayer.playbackTime,
+                isPlaying: selectedPlayer.playbackState.isPlaying
+            )
             stepScrollSpring()
             updateIntroDotsIfNeeded()
             updateInterludesIfNeeded()
@@ -530,13 +586,13 @@ extension AppleMusicLyrics {
                   highlighted < lyrics.lines.count,
                   let view = lineViewByOriginalIndex[highlighted] else { return }
             let line = lyrics.lines[highlighted]
-            let elapsed = selectedPlayer.playbackTime + lyrics.adjustedTimeDelay - line.position
+            let elapsed = resolvedPlaybackTime + lyrics.adjustedTimeDelay - line.position
             view.updateKaraoke(elapsedTime: elapsed, lineDuration: lineDuration(forOriginalIndex: highlighted), mode: karaokeMode)
         }
 
         private func updateIntroDotsIfNeeded() {
             guard let instrumentalView, let lyrics else { return }
-            let currentTime = selectedPlayer.playbackTime + lyrics.adjustedTimeDelay
+            let currentTime = resolvedPlaybackTime + lyrics.adjustedTimeDelay
             if currentTime < introEndTime {
                 let fraction = introEndTime > 0 ? CGFloat(currentTime / introEndTime) : 0
                 instrumentalView.setProgress(fraction)
@@ -547,7 +603,7 @@ extension AppleMusicLyrics {
 
         private func updateInterludesIfNeeded() {
             guard !interludeSegments.isEmpty, let lyrics else { return }
-            let currentTime = selectedPlayer.playbackTime + lyrics.adjustedTimeDelay
+            let currentTime = resolvedPlaybackTime + lyrics.adjustedTimeDelay
             var activeSegment: InterludeSegment?
             for segment in interludeSegments {
                 if currentTime < segment.startTime {
