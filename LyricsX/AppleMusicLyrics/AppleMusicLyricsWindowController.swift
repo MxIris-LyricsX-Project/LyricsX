@@ -38,6 +38,7 @@ extension AppleMusicLyrics {
             window.toolbar = NSToolbar()
             window.toolbarStyle = .unified
             window.delegate = self
+            window.minSize = .init(width: 980, height: 600)
             self.window = window
         }
 
