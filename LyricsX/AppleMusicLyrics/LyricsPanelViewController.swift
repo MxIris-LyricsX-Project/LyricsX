@@ -114,7 +114,10 @@ extension AppleMusicLyrics {
 
             let transport = NSStackView(views: [previousButton, playPauseButton, nextButton])
             transport.orientation = .horizontal
-            transport.spacing = 28
+            // Each `PanelControlButton` now carries ~10pt of hover padding per
+            // side, so the spacing is trimmed to keep the icons the same visual
+            // distance apart as before while leaving the hover circles a gap.
+            transport.spacing = 8
             transport.alignment = .centerY
 
             leftColumn.orientation = .vertical

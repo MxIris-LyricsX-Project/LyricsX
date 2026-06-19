@@ -158,6 +158,11 @@ extension AppleMusicLyrics {
 
         private let pointSize: CGFloat
         private let iconView = NSImageView()
+        // The hit area / hover pill extends this far beyond the glyph on every
+        // side, so the rounded hover background reads as a circle around the
+        // icon instead of being clipped flush to the glyph (which made the hover
+        // invisible). The glyph itself stays at its natural size, centred.
+        private let hoverPadding: CGFloat = 10
         private var isHovering = false {
             didSet {
                 guard isHovering != oldValue else { return }
@@ -194,7 +199,11 @@ extension AppleMusicLyrics {
         }
 
         override var intrinsicContentSize: NSSize {
-            iconView.image?.size ?? NSSize(width: pointSize, height: pointSize)
+            // A square sized to the larger glyph dimension plus padding, so every
+            // transport button is a circular tap/hover target around its icon.
+            let glyphSize = iconView.image?.size ?? NSSize(width: pointSize, height: pointSize)
+            let side = max(glyphSize.width, glyphSize.height) + hoverPadding * 2
+            return NSSize(width: side, height: side)
         }
 
         override func layout() {
