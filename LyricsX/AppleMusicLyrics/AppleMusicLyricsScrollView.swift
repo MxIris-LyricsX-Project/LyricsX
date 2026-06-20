@@ -7,59 +7,6 @@ import LyricsXFoundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
-    /// Resolves the time used to drive the karaoke fill / scrubber, freezing it
-    /// across a pause — the way the desktop karaoke overlay freezes its progress
-    /// animation (`pauseProgressAnimation`). While playing, `PlaybackState.time`
-    /// (`.playing` interpolation) is accurate, so we track it live. The instant
-    /// playback pauses the player reports a STALE `.paused(time:)` that can be
-    /// several seconds behind the real stop position, so re-reading it (as this
-    /// panel did every frame, unlike every other lyrics view) made the fill and
-    /// scrubber jump backwards. Instead we hold the last playing position, and
-    /// only follow the reported time again when it moves away from the value
-    /// captured at the pause (a deliberate seek, not the stale jump).
-    struct LyricsPlaybackClock {
-        private var displayTime: TimeInterval = 0
-        private var wasPlaying = true
-        private var pausedReportedAnchor: TimeInterval = 0
-        private var hasStarted = false
-
-        /// `reportedTime` must be the accurate-while-playing source —
-        /// `PlaybackState.lyricsDisplayTime(trackDuration:)`.
-        mutating func resolve(reportedTime: TimeInterval, isPlaying: Bool) -> TimeInterval {
-            defer { wasPlaying = isPlaying }
-            if isPlaying {
-                displayTime = reportedTime
-                hasStarted = true
-                return displayTime
-            }
-            if !hasStarted {
-                // Opened while already paused — trust the reported time once.
-                hasStarted = true
-                displayTime = reportedTime
-                pausedReportedAnchor = reportedTime
-                return displayTime
-            }
-            if wasPlaying {
-                // Just paused: the reported paused time may have jumped back, so
-                // freeze at the last playing value and remember the reported value
-                // to tell a later seek apart from this stale jump.
-                pausedReportedAnchor = reportedTime
-                return displayTime
-            }
-            // Still paused: follow only a real seek (the reported time moving away
-            // from the value captured at the pause), not the frozen stale value.
-            if abs(reportedTime - pausedReportedAnchor) > 0.25 {
-                displayTime = reportedTime
-                pausedReportedAnchor = reportedTime
-            }
-            return displayTime
-        }
-
-        mutating func reset() {
-            hasStarted = false
-        }
-    }
-
     final class SyncedLyricsContainerView: NSView {
         // MARK: Inputs
 
@@ -87,10 +34,8 @@ extension AppleMusicLyrics {
         private var displayLink: CADisplayLink?
         private var preferenceObservers: Set<AnyCancellable> = []
         // The lyrics display time resolved once per display-link frame; drives the
-        // karaoke fill and the intro/interlude indicators together. Frozen across a
-        // pause by `playbackClock` (see `LyricsPlaybackClock`).
+        // karaoke fill and the intro/interlude indicators together.
         private var resolvedPlaybackTime: TimeInterval = 0
-        private var playbackClock = LyricsPlaybackClock()
 
         // Auto-follow scroll. Apple Music animates a single spring on
         // `scrollView.contentView.bounds` (the clip origin) so the whole line
@@ -564,8 +509,6 @@ extension AppleMusicLyrics {
 
         private func startDisplayLink() {
             guard displayLink == nil else { return }
-            // Re-sync the freeze clock to the live time on (re)open.
-            playbackClock.reset()
             let link = displayLink(target: self, selector: #selector(handleDisplayLink))
             // Apple Music drives its lyric animations at ProMotion rates
             // (`setPreferredFrameRateRange:` = CAFrameRateRange(80, 120, preferred 120)).
@@ -581,14 +524,12 @@ extension AppleMusicLyrics {
         }
 
         @objc private func handleDisplayLink() {
-            // Resolve the lyrics time once per frame, frozen across a pause (the
-            // player reports a stale, backward `.paused(time:)`; the karaoke would
-            // otherwise jump back — see `LyricsPlaybackClock`). Everything below
-            // uses this single value.
-            let state = selectedPlayer.playbackState
-            resolvedPlaybackTime = playbackClock.resolve(
-                reportedTime: state.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration),
-                isPlaying: state.isPlaying
+            // Resolve the lyrics time once per frame from the player STATE
+            // (`lyricsDisplayTime`) — the canonical source every other lyrics view
+            // uses, accurate while playing and (now) stable when paused. Everything
+            // below uses this single value.
+            resolvedPlaybackTime = selectedPlayer.playbackState.lyricsDisplayTime(
+                trackDuration: selectedPlayer.currentTrack?.duration
             )
             stepScrollSpring()
             updateIntroDotsIfNeeded()
