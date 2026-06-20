@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
       "state" : {
-        "revision" : "438758a4234c62fcdd52d2034ff9355bba77b67e",
-        "version" : "1.8.4"
+        "revision" : "ced0ac74f3dd2d364743581e66404af0e35d37e7",
+        "version" : "1.8.5"
       }
     },
     {

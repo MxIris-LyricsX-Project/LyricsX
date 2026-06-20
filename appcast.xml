@@ -5,6 +5,23 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.8.5</title>
+            <pubDate>Fri, 15 May 2026 01:16:47 +0000</pubDate>
+            <sparkle:version>2920</sparkle:version>
+            <sparkle:shortVersionString>1.8.5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+            <description><![CDATA[# LyricsX 1.8.5 What's New
+
+## Fixes
+
+- **Fixed startup crash on macOS 10.15 (Catalina)** — Resolved an issue that caused LyricsX to crash on launch on macOS 10.15.
+
+## System Requirements
+
+- Minimum requirement: **macOS 10.15 (Catalina)**]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.5/LyricsX_1.8.5+2920.zip" length="8849837" type="application/octet-stream" sparkle:edSignature="PCRmaOzUw/DMqyPFbZwekaLsGlINu3rcj6KJiTq5rnyMDrkHki1r9+h4NGvKd1UtjKkQVXDW2nrypmG2kg/TAg==" />
+        </item>
+        <item>
             <title>1.8.3</title>
             <pubDate>Thu, 14 May 2026 04:15:17 +0000</pubDate>
             <sparkle:version>2917</sparkle:version>
