@@ -7,42 +7,6 @@ import LyricsXFoundation
 
 @available(macOS 15, *)
 extension AppleMusicLyrics {
-    /// Smooths the player's reported time across a pause. The system Now-Playing
-    /// clock is unreliable the instant playback pauses — it often lags behind the
-    /// real stop position or briefly reports 0, only correcting once playback
-    /// resumes — which made the karaoke fill and scrubber jump backwards or reset
-    /// to the start on pause. While paused this holds the last playing position,
-    /// following the live time only when it clearly advances (a deliberate forward
-    /// seek). `reset()` re-syncs to the live time when the panel is re-opened.
-    struct PausedHoldClock {
-        private var heldTime: TimeInterval = 0
-        private var wasPlaying = true
-        private var hasSynced = false
-
-        mutating func resolve(liveTime: TimeInterval, isPlaying: Bool) -> TimeInterval {
-            if !hasSynced {
-                hasSynced = true
-                wasPlaying = isPlaying
-                heldTime = liveTime
-            } else if isPlaying {
-                heldTime = liveTime
-                wasPlaying = true
-            } else if wasPlaying {
-                // Just paused: freeze at the last playing position.
-                wasPlaying = false
-            } else if liveTime > heldTime + 0.3 {
-                // A forward jump while paused is a deliberate seek; follow it.
-                // Backward / zero glitches are ignored so progress never regresses.
-                heldTime = liveTime
-            }
-            return heldTime
-        }
-
-        mutating func reset() {
-            hasSynced = false
-        }
-    }
-
     final class SyncedLyricsContainerView: NSView {
         // MARK: Inputs
 
@@ -69,10 +33,8 @@ extension AppleMusicLyrics {
         private var lastLaidOutSize: CGSize = .zero
         private var displayLink: CADisplayLink?
         private var preferenceObservers: Set<AnyCancellable> = []
-        // Holds the lyric/karaoke position when paused (see `PausedHoldClock`).
-        private var holdClock = PausedHoldClock()
-        // The playback time resolved for the current display-link frame; drives
-        // the karaoke fill and the intro/interlude indicators together.
+        // The lyrics display time resolved once per display-link frame; drives the
+        // karaoke fill and the intro/interlude indicators together.
         private var resolvedPlaybackTime: TimeInterval = 0
 
         // Auto-follow scroll. Apple Music animates a single spring on
@@ -547,8 +509,6 @@ extension AppleMusicLyrics {
 
         private func startDisplayLink() {
             guard displayLink == nil else { return }
-            // Re-sync the paused-hold clock to the live time on (re)open.
-            holdClock.reset()
             let link = displayLink(target: self, selector: #selector(handleDisplayLink))
             // Apple Music drives its lyric animations at ProMotion rates
             // (`setPreferredFrameRateRange:` = CAFrameRateRange(80, 120, preferred 120)).
@@ -563,19 +523,15 @@ extension AppleMusicLyrics {
             displayLink = nil
         }
 
-        /// Re-sync the paused-hold clock to the live time after an explicit seek,
-        /// so a seek while paused (even backwards) is followed instead of held.
-        func resyncPlaybackClock() {
-            holdClock.reset()
-        }
-
         @objc private func handleDisplayLink() {
-            // Resolve the playback time once per frame, holding the last position
-            // when paused so the karaoke / indicators don't regress (see
-            // `PausedHoldClock`). Everything below uses this single value.
-            resolvedPlaybackTime = holdClock.resolve(
-                liveTime: selectedPlayer.playbackTime,
-                isPlaying: selectedPlayer.playbackState.isPlaying
+            // Resolve the lyrics time once per frame from the player STATE
+            // (`lyricsDisplayTime`), NOT the cached `selectedPlayer.playbackTime`.
+            // The cached value is stale while paused — it lags behind the real
+            // stop position or momentarily reads 0, only correcting on resume —
+            // which made ONLY this panel's karaoke jump backwards or restart when
+            // paused. Every other lyrics view already uses this canonical source.
+            resolvedPlaybackTime = selectedPlayer.playbackState.lyricsDisplayTime(
+                trackDuration: selectedPlayer.currentTrack?.duration
             )
             stepScrollSpring()
             updateIntroDotsIfNeeded()
