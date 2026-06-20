@@ -24,6 +24,10 @@ extension AppleMusicLyrics {
         private var karaokeMode: KaraokeMode = .characterLevel
         private var cancellables: Set<AnyCancellable> = []
         private var chromeTimer: Timer?
+        // Freezes the scrubber time across a pause, matching the lyric karaoke
+        // (the player reports a stale, backward time on pause — see
+        // `LyricsPlaybackClock`).
+        private var playbackClock = LyricsPlaybackClock()
 
         // MARK: Views
 
@@ -265,6 +269,8 @@ extension AppleMusicLyrics {
 
         private func startChromeTimer() {
             guard chromeTimer == nil else { return }
+            // Re-sync the freeze clock to the live time on (re)open.
+            playbackClock.reset()
             let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
                 self?.chromeTick()
             }
@@ -320,11 +326,15 @@ extension AppleMusicLyrics {
         }
 
         private func chromeTick() {
-            let isPlaying = selectedPlayer.playbackState.isPlaying
+            let state = selectedPlayer.playbackState
+            let isPlaying = state.isPlaying
             playPauseButton.setSymbol(isPlaying ? "pause.fill" : "play.fill")
-            // Use the player STATE's time (stable when paused), not the cached
-            // `selectedPlayer.playbackTime`, so the scrubber matches the lyrics.
-            let currentTime = selectedPlayer.playbackState.lyricsDisplayTime(trackDuration: trackDuration)
+            // Freeze the scrubber across a pause (the reported paused time can be
+            // stale and jump backwards), matching the karaoke fill.
+            let currentTime = playbackClock.resolve(
+                reportedTime: state.lyricsDisplayTime(trackDuration: trackDuration),
+                isPlaying: isPlaying
+            )
             progressView.update(currentTime: currentTime, duration: trackDuration ?? 0)
             if coverImageView.image == nil {
                 refreshArtwork()
