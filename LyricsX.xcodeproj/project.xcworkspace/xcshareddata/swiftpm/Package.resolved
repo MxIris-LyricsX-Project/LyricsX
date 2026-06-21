@@ -1,13 +1,13 @@
 {
-  "originHash" : "587003ae32ace5137d7a9af382ac6c173092e09c9fcd87f1c5fe8f6ba8e980c5",
+  "originHash" : "e036e1c9a4dac56f9e845ee7e2ef1645eb469c60cd9744112652455e74e27073",
   "pins" : [
     {
       "identity" : "associatedobject",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/p-x9/AssociatedObject",
       "state" : {
-        "revision" : "9454715a21dfb346bf5d467da4e19b70a7f4ba87",
-        "version" : "0.14.0"
+        "revision" : "f358e1ccf6761b9d1d53136022a65c601cdc4da3",
+        "version" : "0.15.0"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "4288ebae7324ddef8cb084f25c84ca7941a1e276",
-        "version" : "0.5.4"
+        "revision" : "b82281eb8a6ffcb312941c3d06584182837f4ca9",
+        "version" : "0.7.1"
       }
     },
     {
@@ -71,6 +71,15 @@
       "state" : {
         "revision" : "9a894d799269cb591037f9f9cb0961510d4dca81",
         "version" : "5.0.2"
+      }
+    },
+    {
+      "identity" : "lyricskit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-LyricsX-Project/LyricsKit",
+      "state" : {
+        "revision" : "bb255842eb8fe48880e15c23c0a7704599dd3504",
+        "version" : "1.10.0"
       }
     },
     {
@@ -107,6 +116,15 @@
       "state" : {
         "revision" : "1ba3e769b734e456317fa7e45321fa7f53eefb67",
         "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "musicplayer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
+      "state" : {
+        "revision" : "438758a4234c62fcdd52d2034ff9355bba77b67e",
+        "version" : "1.8.4"
       }
     },
     {
@@ -150,8 +168,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sparkle-project/Sparkle",
       "state" : {
-        "revision" : "066e75a8b3e99962685d6a90cdd5293ebffd9261",
-        "version" : "2.9.1"
+        "revision" : "d46d456107feacc80711b21847b82b07bd9fb46e",
+        "version" : "2.9.3"
       }
     },
     {
@@ -186,8 +204,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/p-x9/swift-literal-type-inference.git",
       "state" : {
-        "revision" : "898d4a8c5920a3a47d70a43e76d708697e14cd72",
-        "version" : "0.5.0"
+        "revision" : "a67dc0c90511f0b036de8ee51ecba9243d1a5ec0",
+        "version" : "0.6.0"
       }
     },
     {
@@ -204,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
-        "version" : "601.0.1"
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
       }
     },
     {
@@ -240,8 +258,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/UIFoundation",
       "state" : {
-        "revision" : "36dc65d71b0f27a3ec3e7576f56703275d4f02af",
-        "version" : "0.10.2"
+        "revision" : "f2d5a1c66355ee19f46966dd1fb3954544428522",
+        "version" : "0.11.0"
       }
     }
   ],
