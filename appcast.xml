@@ -5,19 +5,6 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
-            <title>1.8.7</title>
-            <pubDate>Sun, 21 Jun 2026 11:51:05 +0000</pubDate>
-            <sparkle:version>2926</sparkle:version>
-            <sparkle:shortVersionString>1.8.7</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
-            <description><![CDATA[<h2>What's New</h2>
-<h3>Fixes</h3>
-<ul>
-<li><strong>Auto-launch with your music player now works again</strong> — On some macOS versions the app failed to start automatically when a music player was launched. Fixed.</li>
-</ul>]]></description>
-            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.7/LyricsX_1.8.7+2926.zip" length="8860705" type="application/octet-stream" sparkle:edSignature="uhmZd/DkCbDye7ApXAwynXwZFt3rQvZwpo2KPlIMFWt3qXeoMArktiJ2G04cRFUSCLueUzRLLUeauN0rYCdvBQ==" />
-        </item>
-        <item>
             <title>1.8.6</title>
             <pubDate>Sun, 21 Jun 2026 01:19:25 +0000</pubDate>
             <sparkle:version>2921</sparkle:version>
