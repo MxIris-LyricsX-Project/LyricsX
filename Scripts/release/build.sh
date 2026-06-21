@@ -70,12 +70,18 @@ xcodebuild \
     archive
 
 log_info "Exporting signed .app"
+# Export intentionally omits AUTH_ARGS (-allowProvisioningUpdates). The
+# Developer ID profiles for the app and the embedded Helper are injected by
+# setup-keychain.sh, and the CI ASC API key has no permission to create
+# "Developer ID" profiles. With -allowProvisioningUpdates xcodebuild insists
+# on refreshing/creating them online and fails ("Team does not have permission
+# to create Developer ID provisioning profiles"); without it, it signs with the
+# installed profiles as-is.
 xcodebuild \
     -exportArchive \
     -archivePath "$ARCHIVE_PATH" \
     -exportOptionsPlist ExportOptions.plist \
-    -exportPath "$EXPORT_PATH" \
-    "${AUTH_ARGS[@]}"
+    -exportPath "$EXPORT_PATH"
 
 if [ ! -d "${EXPORT_PATH}/LyricsX.app" ]; then
     die "Export did not produce ${EXPORT_PATH}/LyricsX.app"
