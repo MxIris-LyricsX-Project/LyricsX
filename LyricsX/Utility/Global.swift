@@ -8,14 +8,14 @@ let fontNameFallbackCountMax = 1
 // 7 days. after this period of time since the app built, the app is not considered as "in review".
 let masReviewPeriodLimit: TimeInterval = 60 * 60 * 24 * 7
 
-// NOTE: to build your own product, you need to replace the team identifier to yours
-// and do the same thing in LyricsXHelper
+// NOTE: to build your own product, replace these identifiers with yours and
+// do the same in LyricsXHelper.
 #if DEBUG
-let lyricsXGroupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
+let lyricsXSharedSuiteName = "dev.JH.LyricsX.shared"
 let lyricsXHelperIdentifier = "dev.JH.LyricsXHelper"
 let lyricsXErrorDomain = "dev.JH.LyricsX"
 #else
-let lyricsXGroupIdentifier = "D5Q73692VW.group.com.JH.LyricsX"
+let lyricsXSharedSuiteName = "com.JH.LyricsX.shared"
 let lyricsXHelperIdentifier = "com.JH.LyricsXHelper"
 let lyricsXErrorDomain = "com.JH.LyricsX"
 #endif
@@ -23,7 +23,12 @@ let lyricsXErrorDomain = "com.JH.LyricsX"
 let crowdinProjectURL = URL(string: "https://crowdin.com/project/lyricsx")!
 
 let defaults = UserDefaults.standard
-let groupDefaults = UserDefaults(suiteName: lyricsXGroupIdentifier)!
+// Shared between the app and the (non-sandboxed) LyricsXHelper via a plain
+// preferences suite at ~/Library/Preferences/<suite>.plist. Deliberately NOT an
+// App Group container: a non-sandboxed process can't read App Group preferences
+// through cfprefsd ("kCFPreferencesAnyUser ... only allowed for System
+// Containers"); a plain suite works for both processes.
+let sharedDefaults = UserDefaults(suiteName: lyricsXSharedSuiteName)!
 let defaultNC = NotificationCenter.default
 let workspaceNC = NSWorkspace.shared.notificationCenter
 let selectedPlayer = MusicPlayers.Selected.shared

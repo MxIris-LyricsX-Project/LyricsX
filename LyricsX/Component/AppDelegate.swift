@@ -30,10 +30,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         UserDefaultsMigrator.shared.migrateFromSandboxIfNeeded()
-        UserDefaultsMigrator.shared.migrateGroupDefaultsIfNeeded(
-            groupIdentifier: lyricsXGroupIdentifier,
-            groupDefaults: groupDefaults
-        )
         registerUserDefaults()
 
         let controller = AppController.shared
@@ -62,19 +58,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         NSRunningApplication.runningApplications(withBundleIdentifier: lyricsXHelperIdentifier).forEach { $0.terminate() }
 
-        let sharedKeys: [UserDefaults.DefaultsKeys] = [
-            .launchAndQuitWithPlayer,
-            .preferredPlayerIndex,
-        ]
-        for sharedKey in sharedKeys {
-            groupDefaults.bind(NSBindingName(sharedKey.key), withDefaultName: sharedKey)
-            // Cocoa Bindings to a bare UserDefaults instance doesn't push the
-            // current value at bind time, so LyricsXHelper would otherwise
-            // read a stale/absent value from groupDefaults until the user
-            // toggles the UI. Mirror the current value explicitly.
-            if let currentValue = defaults.object(forKey: sharedKey.key) {
-                groupDefaults.set(currentValue, forKey: sharedKey.key)
-            }
+        // Mirror the keys LyricsXHelper reads from the shared suite. KVO on the
+        // standard defaults is reliable; Cocoa Bindings to a bare UserDefaults
+        // instance was not — it never actually pushed values into the suite, so
+        // the helper read a stale/absent value and exited. `.initial` writes the
+        // current value at launch; `.new` keeps the suite in sync as the user
+        // toggles the preference.
+        observeDefaults(key: .launchAndQuitWithPlayer, options: [.new, .initial]) { _, change in
+            sharedDefaults[.launchAndQuitWithPlayer] = change.newValue
+        }
+        observeDefaults(key: .preferredPlayerIndex, options: [.new, .initial]) { _, change in
+            sharedDefaults[.preferredPlayerIndex] = change.newValue
         }
 
         updateController.updater.checkForUpdatesInBackground()
@@ -108,11 +102,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if defaults[.launchAndQuitWithPlayer] {
             let url = Bundle.main.bundleURL
                 .appendingPathComponent("Contents/Library/LoginItems/LyricsXHelper.app")
-            groupDefaults[.launchHelperTime] = Date()
-            // Force-flush the timestamp so helper can read it during its
-            // `isLaunchedByMain` check; without this, cfprefsd may still be
-            // batching writes when this process dies.
-            groupDefaults.synchronize()
+            // Write everything the helper reads at launch right before spawning
+            // it, then flush — don't rely on cfprefsd having the latest values
+            // batched when this process dies.
+            sharedDefaults[.launchAndQuitWithPlayer] = defaults[.launchAndQuitWithPlayer]
+            sharedDefaults[.preferredPlayerIndex] = defaults[.preferredPlayerIndex]
+            sharedDefaults[.launchHelperTime] = Date()
+            sharedDefaults.synchronize()
 
             // `openApplication` is asynchronous and we're seconds away from
             // process death — block briefly so the LaunchServices request
