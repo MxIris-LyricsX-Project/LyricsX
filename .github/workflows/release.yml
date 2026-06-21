@@ -49,6 +49,7 @@ jobs:
           APPLE_DEV_ID_CERT_PASSWORD: ${{ secrets.APPLE_DEV_ID_CERT_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           LYRICSX_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_DEVID_PROFILE_BASE64 }}
+          LYRICSX_HELPER_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_HELPER_DEVID_PROFILE_BASE64 }}
         run: bash Scripts/release/setup-keychain.sh
 
       - name: Install Sparkle tools
