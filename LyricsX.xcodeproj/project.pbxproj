@@ -166,7 +166,8 @@
 		7D6BD5589D2AF12282AEAEA1 /* LyricsWidgetConfigurationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsWidgetConfigurationIntent.swift; sourceTree = "<group>"; };
 		8931B1832B5D2B6904035627 /* PlaybackControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControlView.swift; sourceTree = "<group>"; };
 		8B6F3EA72D4C91A0F5E87B34 /* AppleMusicLyricsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicLyricsScrollView.swift; sourceTree = "<group>"; };
-		91D79DEE28FAE73594348345 /* LyricsXWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LyricsXWidget.entitlements; sourceTree = "<group>"; };
+		91D79DEE28FAE73594348345 /* LyricsXWidget-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsXWidget-Release.entitlements"; sourceTree = "<group>"; };
+		A100000000000000000000D3 /* LyricsXWidget-Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsXWidget-Debug.entitlements"; sourceTree = "<group>"; };
 		9E8C4D1F3A72B5E60D9F14C3 /* LyricsPanelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsPanelViewController.swift; sourceTree = "<group>"; };
 		A043BAE1603803A839C0CB52 /* GradientBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientBackgroundView.swift; sourceTree = "<group>"; };
 		BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChineseConverter+Singleton.swift"; sourceTree = "<group>"; };
@@ -195,14 +196,16 @@
 		BB60F3051E889A1B00BA1FD2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB60F3081E889A1B00BA1FD2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		BB60F30A1E889A1B00BA1FD2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BB60F30E1E889C5400BA1FD2 /* LyricsXHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LyricsXHelper.entitlements; sourceTree = "<group>"; };
+		BB60F30E1E889C5400BA1FD2 /* LyricsXHelper-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsXHelper-Release.entitlements"; sourceTree = "<group>"; };
+		A100000000000000000000D2 /* LyricsXHelper-Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsXHelper-Debug.entitlements"; sourceTree = "<group>"; };
 		BB6139751FCCFA6700CBD808 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Preferences.storyboard; sourceTree = "<group>"; };
 		BB63C24E22774B47008CFFBB /* TouchBarPlaybackControlViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarPlaybackControlViewController.swift; sourceTree = "<group>"; };
 		BB72784920996DE900231C63 /* PreferenceLabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceLabViewController.swift; sourceTree = "<group>"; };
 		BB7EC7B11E4E018C00A0AC3F /* LyricsHUDViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LyricsHUDViewController.swift; sourceTree = "<group>"; };
 		BB89089D21ED69410078F522 /* Lyrics+Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Lyrics+Language.swift"; sourceTree = "<group>"; };
 		BB947DFA23B4C60000C43BF2 /* SelectedPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPlayer.swift; sourceTree = "<group>"; };
-		BB9BCEB81E84120D001BC54B /* LyricsX.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LyricsX.entitlements; sourceTree = "<group>"; };
+		BB9BCEB81E84120D001BC54B /* LyricsX-Release.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsX-Release.entitlements"; sourceTree = "<group>"; };
+		A100000000000000000000D1 /* LyricsX-Debug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "LyricsX-Debug.entitlements"; sourceTree = "<group>"; };
 		BB9BCEB91E843157001BC54B /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		BBA1B2C3D4E5F6A7B8C9D0E2 /* UserDefaultsMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsMigrator.swift; sourceTree = "<group>"; };
 		BBB9AAE21E57EE880078F91A /* SearchLyricsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchLyricsViewController.swift; sourceTree = "<group>"; };
@@ -326,7 +329,8 @@
 				0432F6E783099AB6712D1704 /* Views */,
 				900916C067D6442749745881 /* Utilities */,
 				56E13B1B5CE9261781062495 /* Info.plist */,
-				91D79DEE28FAE73594348345 /* LyricsXWidget.entitlements */,
+				91D79DEE28FAE73594348345 /* LyricsXWidget-Release.entitlements */,
+				A100000000000000000000D3 /* LyricsXWidget-Debug.entitlements */,
 			);
 			path = LyricsXWidget;
 			sourceTree = "<group>";
@@ -415,7 +419,8 @@
 				BB4141B11E458BA800A51775 /* Assets.xcassets */,
 				E9A38A6A2D7337E700DEFE0E /* Localizable.xcstrings */,
 				E9A38A6D2D7337E700DEFE0E /* InfoPlist.xcstrings */,
-				BB9BCEB81E84120D001BC54B /* LyricsX.entitlements */,
+				BB9BCEB81E84120D001BC54B /* LyricsX-Release.entitlements */,
+				A100000000000000000000D1 /* LyricsX-Debug.entitlements */,
 				BB4141B61E458BA900A51775 /* Info.plist */,
 				BB58B0811E82971400598D4F /* UserDefaults.plist */,
 				BB58B0881E82CA9B00598D4F /* Credits.rtf */,
@@ -482,7 +487,8 @@
 			children = (
 				BB60F3071E889A1B00BA1FD2 /* MainMenu.xib */,
 				BB60F3051E889A1B00BA1FD2 /* Assets.xcassets */,
-				BB60F30E1E889C5400BA1FD2 /* LyricsXHelper.entitlements */,
+				BB60F30E1E889C5400BA1FD2 /* LyricsXHelper-Release.entitlements */,
+				A100000000000000000000D2 /* LyricsXHelper-Debug.entitlements */,
 				BB60F30A1E889A1B00BA1FD2 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -965,7 +971,7 @@
 		160373E16CDDEA775B47C84C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = LyricsXWidget/LyricsXWidget.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "LyricsXWidget/LyricsXWidget-Release.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2926;
 				DEAD_CODE_STRIPPING = YES;
@@ -991,7 +997,7 @@
 		36F95C6F463C7E023699EF0C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = LyricsXWidget/LyricsXWidget.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "LyricsXWidget/LyricsXWidget-Debug.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2926;
 				DEAD_CODE_STRIPPING = YES;
@@ -1147,7 +1153,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LyricsX/Supporting Files/LyricsX.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "LyricsX/Supporting Files/LyricsX-Debug.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
@@ -1174,7 +1180,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = "LyricsX/Supporting Files/LyricsX.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "LyricsX/Supporting Files/LyricsX-Release.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
@@ -1200,7 +1206,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = LyricsXHelper/LyricsXHelper.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "LyricsXHelper/LyricsXHelper-Debug.entitlements";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1221,7 +1227,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = LyricsXHelper/LyricsXHelper.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "LyricsXHelper/LyricsXHelper-Release.entitlements";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1374,6 +1380,8 @@
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.9.0;
 			};
+			traits = (
+			);
 		};
 /* End XCRemoteSwiftPackageReference section */
 

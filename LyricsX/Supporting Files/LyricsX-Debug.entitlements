@@ -18,7 +18,7 @@
 	<false/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>$(TeamIdentifierPrefix)group.$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<string>group.dev.JH.LyricsX</string>
 	</array>
 	<key>com.apple.security.assets.music.read-write</key>
 	<true/>
