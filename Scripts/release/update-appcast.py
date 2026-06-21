@@ -17,7 +17,9 @@ Inputs (env):
 """
 from __future__ import annotations
 
+import html
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,6 +34,57 @@ def require(name: str) -> str:
 
 def rfc822_now() -> str:
     return datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+
+def markdown_to_html(markdown_text: str) -> str:
+    """Convert the limited Markdown used in release notes to HTML.
+
+    Sparkle renders the appcast <description> as HTML, so embedding raw
+    Markdown shows its literal syntax (`#`, `**`, `-`) and collapses the
+    paragraphs. This handles the subset the notes use: `#`/`##` headings,
+    `- ` bullet lists, `**bold**`, `[text](url)` links, `---` rules, and
+    blank-line-separated paragraphs.
+    """
+    def render_inline(text: str) -> str:
+        escaped = html.escape(text, quote=False)
+        with_links = re.sub(
+            r"\[([^\]]+)\]\((https?://[^\s)]+)\)", r'<a href="\2">\1</a>', escaped
+        )
+        return re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", with_links)
+
+    rendered_lines: list[str] = []
+    inside_list = False
+
+    def close_list() -> None:
+        nonlocal inside_list
+        if inside_list:
+            rendered_lines.append("</ul>")
+            inside_list = False
+
+    for line in markdown_text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            close_list()
+        elif stripped == "---":
+            close_list()
+            rendered_lines.append("<hr>")
+        elif stripped.startswith("## "):
+            close_list()
+            rendered_lines.append(f"<h3>{render_inline(stripped[3:])}</h3>")
+        elif stripped.startswith("# "):
+            close_list()
+            rendered_lines.append(f"<h2>{render_inline(stripped[2:])}</h2>")
+        elif stripped.startswith("- "):
+            if not inside_list:
+                rendered_lines.append("<ul>")
+                inside_list = True
+            rendered_lines.append(f"<li>{render_inline(stripped[2:])}</li>")
+        else:
+            close_list()
+            rendered_lines.append(f"<p>{render_inline(stripped)}</p>")
+
+    close_list()
+    return "\n".join(rendered_lines)
 
 
 def main() -> int:
@@ -63,7 +116,7 @@ def main() -> int:
         "https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/"
         f"v{version}/LyricsX_{version}+{build}.zip"
     )
-    description = release_notes_path.read_text(encoding="utf-8").strip()
+    description = markdown_to_html(release_notes_path.read_text(encoding="utf-8").strip())
     if "]]>" in description:
         sys.exit("[ERROR] Release notes contain ']]>', which would break the CDATA block.")
 

@@ -10,15 +10,15 @@
             <sparkle:version>2921</sparkle:version>
             <sparkle:shortVersionString>1.8.6</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
-            <description><![CDATA[# LyricsX 1.8.6 What's New
-
-## Fixes
-
-- **Fixed desktop lyrics flickering** — The desktop line-by-line lyrics no longer flicker about once a second during playback (an issue that could also trigger a brief line-change-like animation). Lyrics now track playback smoothly again.
-
-## System Requirements
-
-- Minimum requirement: **macOS 10.15 (Catalina)**]]></description>
+            <description><![CDATA[<h2>LyricsX 1.8.6 What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li><strong>Fixed desktop lyrics flickering</strong> — The desktop line-by-line lyrics no longer flicker about once a second during playback (an issue that could also trigger a brief line-change-like animation). Lyrics now track playback smoothly again.</li>
+</ul>
+<h3>System Requirements</h3>
+<ul>
+<li>Minimum requirement: <strong>macOS 10.15 (Catalina)</strong></li>
+</ul>]]></description>
             <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.8.6/LyricsX_1.8.6+2921.zip" length="8849995" type="application/octet-stream" sparkle:edSignature="Q6bJjH7+8c2JDNxZDYf5qF+BCehcBDuHpcR/hVNWfhCrdJH89CXIY/j1Gn/zi8kzl8UFJYpzO61CS8/CB9JRBw==" />
         </item>
         <item>
