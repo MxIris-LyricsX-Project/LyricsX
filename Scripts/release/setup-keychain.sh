@@ -7,13 +7,18 @@
 #   APPLE_DEV_ID_CERT_P12_BASE64    base64-encoded .p12
 #   APPLE_DEV_ID_CERT_PASSWORD      password for the .p12
 #   KEYCHAIN_PASSWORD               password to create the temp keychain with
-#   LYRICSX_DEVID_PROFILE_BASE64    (optional) base64 of the LyricsX
-#                                   Developer ID Application provisioning
-#                                   profile (.provisionprofile). When present,
-#                                   it is decoded into the user's local
-#                                   provisioning-profile directory so export
-#                                   can sign with Developer ID without trying
-#                                   to fetch a profile from App Store Connect.
+#   LYRICSX_DEVID_PROFILE_BASE64        (optional) base64 of the main app's
+#                                       Developer ID Application provisioning
+#                                       profile (.provisionprofile). When
+#                                       present, it is decoded into the user's
+#                                       local provisioning-profile directory so
+#                                       export can sign with Developer ID
+#                                       without fetching from App Store Connect.
+#   LYRICSX_HELPER_DEVID_PROFILE_BASE64 (optional) same, for the embedded
+#                                       LyricsXHelper login item. It carries the
+#                                       App Groups entitlement too, so it needs
+#                                       its own profile or export leaves it
+#                                       unsigned for that entitlement.
 #
 # Side effects:
 #   Creates ~/Library/Keychains/lyricsx-release.keychain-db and adds it to the
@@ -75,12 +80,22 @@ security list-keychains -d user -s "$KEYCHAIN_PATH" $ORIGINAL_LIST
 log_info "Installed identities:"
 security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
-if [ -n "${LYRICSX_DEVID_PROFILE_BASE64:-}" ]; then
-    PROFILE_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
-    mkdir -p "$PROFILE_DIR"
-    PROFILE_PATH="${PROFILE_DIR}/lyricsx-devid.provisionprofile"
-    printf '%s' "$LYRICSX_DEVID_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
-    log_info "Installed LyricsX Developer ID provisioning profile to ${PROFILE_PATH}"
-else
-    log_warn "LYRICSX_DEVID_PROFILE_BASE64 not set; xcodebuild export may fail with 'No profiles for ...'"
-fi
+PROFILE_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
+mkdir -p "$PROFILE_DIR"
+
+# Both the main app and the embedded LyricsXHelper login item carry the
+# App Groups entitlement, so each needs its own Developer ID profile installed
+# for the export step to sign them without fetching from App Store Connect.
+install_devid_profile() {
+    local base64_value="$1" file_name="$2" human_name="$3"
+    if [ -z "$base64_value" ]; then
+        log_warn "${human_name} profile env not set; its export may fail (App Groups unsigned)."
+        return
+    fi
+    local profile_path="${PROFILE_DIR}/${file_name}.provisionprofile"
+    printf '%s' "$base64_value" | base64 --decode > "$profile_path"
+    log_info "Installed ${human_name} Developer ID provisioning profile to ${profile_path}"
+}
+
+install_devid_profile "${LYRICSX_DEVID_PROFILE_BASE64:-}" "lyricsx-devid" "LyricsX"
+install_devid_profile "${LYRICSX_HELPER_DEVID_PROFILE_BASE64:-}" "lyricsx-helper-devid" "LyricsXHelper"

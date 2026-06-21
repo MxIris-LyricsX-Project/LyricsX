@@ -81,4 +81,29 @@ if [ ! -d "${EXPORT_PATH}/LyricsX.app" ]; then
     die "Export did not produce ${EXPORT_PATH}/LyricsX.app"
 fi
 
+# Both the main app and the embedded LyricsXHelper carry the App Groups
+# entitlement — it backs the cross-process groupDefaults that drives
+# launch-with-player. If their embedded provisioning profile doesn't authorize
+# App Groups, taskgated rejects the entitlement on other machines and the
+# feature silently breaks (the exact bug that shipped in 1.8.6). Fail here
+# instead of shipping a broken signature.
+verify_app_groups_profile() {
+    local app_path="$1" human_name="$2"
+    local profile_path="${app_path}/Contents/embedded.provisionprofile"
+    [ -f "$profile_path" ] || die "${human_name}: missing embedded.provisionprofile (App Groups would be unsigned)."
+    local decoded_plist
+    decoded_plist="$(mktemp -t lyricsx-prof).plist"
+    security cms -D -i "$profile_path" > "$decoded_plist" 2>/dev/null
+    if ! /usr/libexec/PlistBuddy -c 'Print :Entitlements:com.apple.security.application-groups' "$decoded_plist" >/dev/null 2>&1; then
+        rm -f "$decoded_plist"
+        die "${human_name}: provisioning profile does not authorize com.apple.security.application-groups."
+    fi
+    rm -f "$decoded_plist"
+    log_info "${human_name}: embedded profile authorizes App Groups"
+}
+
+MAIN_APP="${EXPORT_PATH}/LyricsX.app"
+verify_app_groups_profile "$MAIN_APP" "LyricsX"
+verify_app_groups_profile "${MAIN_APP}/Contents/Library/LoginItems/LyricsXHelper.app" "LyricsXHelper"
+
 log_info "Built ${EXPORT_PATH}/LyricsX.app"
