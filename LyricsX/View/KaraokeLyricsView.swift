@@ -4,12 +4,12 @@ import SnapKit
 
 class KaraokeLyricsView: NSView {
     private let backgroundView: NSView
-    private let stackView: NSStackView
+    private let contentStackView: NSStackView
 
     @objc dynamic var isVertical = false {
         didSet {
-            stackView.orientation = isVertical ? .horizontal : .vertical
-            (isVertical ? displayLine2 : displayLine1).map { stackView.insertArrangedSubview($0, at: 0) }
+            contentStackView.orientation = isVertical ? .horizontal : .vertical
+            (isVertical ? displayLine2 : displayLine1).map { contentStackView.insertArrangedSubview($0, at: 0) }
             updateFontSize()
         }
     }
@@ -38,16 +38,16 @@ class KaraokeLyricsView: NSView {
     var displayLine2: KaraokeLabel?
 
     override init(frame frameRect: NSRect) {
-        self.stackView = NSStackView(frame: frameRect)
-        stackView.orientation = .vertical
-        stackView.autoresizingMask = [.width, .height]
+        self.contentStackView = NSStackView(frame: frameRect)
+        contentStackView.orientation = .vertical
+        contentStackView.autoresizingMask = [.width, .height]
         self.backgroundView = NSView() // NSVisualEffectView(frame: frameRect)
         backgroundView.autoresizingMask = [.width, .height]
         backgroundView.wantsLayer = true
         super.init(frame: frameRect)
         wantsLayer = true
         addSubview(backgroundView)
-        backgroundView.addSubview(stackView)
+        backgroundView.addSubview(contentStackView)
         backgroundView.layer?.cornerRadius = 12
     }
 
@@ -62,15 +62,15 @@ class KaraokeLyricsView: NSView {
         if isVertical {
             (insetX, insetY) = (insetY, insetX)
         }
-        stackView.snp.remakeConstraints {
+        contentStackView.snp.remakeConstraints {
             $0.edges.equalToSuperview().inset(NSEdgeInsets(top: insetY, left: insetX, bottom: insetY, right: insetX))
         }
-        stackView.spacing = font.pointSize / 3
+        contentStackView.spacing = font.pointSize / 3
         backgroundView.layer?.cornerRadius = font.pointSize / 2
     }
 
     private func lyricsLabel(_ content: String, sourceFurigana: LyricsLine.Attachments.RangeAttribute?) -> KaraokeLabel {
-        if let view = stackView.subviews.lazy.compactMap({ $0 as? KaraokeLabel }).first(where: { !stackView.arrangedSubviews.contains($0) }) {
+        if let view = contentStackView.subviews.lazy.compactMap({ $0 as? KaraokeLabel }).first(where: { !contentStackView.arrangedSubviews.contains($0) }) {
             view.alphaValue = 0
             view.stringValue = content
             view.sourceFurigana = sourceFurigana
@@ -98,7 +98,7 @@ class KaraokeLyricsView: NSView {
         firstLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil,
         secondLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil
     ) {
-        var toBeHide = stackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
+        var toBeHide = contentStackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
         var toBeShow: [NSTextField] = []
         var shouldHideAll = false
 
@@ -129,16 +129,16 @@ class KaraokeLyricsView: NSView {
             context.allowsImplicitAnimation = true
             context.timingFunction = .swiftOut
             toBeHide.forEach {
-                stackView.removeArrangedSubview($0)
+                contentStackView.removeArrangedSubview($0)
                 $0.isHidden = true
                 $0.alphaValue = 0
                 $0.removeProgressAnimation()
             }
             toBeShow.forEach {
                 if isVertical {
-                    stackView.insertArrangedSubview($0, at: 0)
+                    contentStackView.insertArrangedSubview($0, at: 0)
                 } else {
-                    stackView.addArrangedSubview($0)
+                    contentStackView.addArrangedSubview($0)
                 }
                 $0.isHidden = false
                 $0.alphaValue = 1
