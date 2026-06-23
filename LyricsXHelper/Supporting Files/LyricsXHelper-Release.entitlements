@@ -8,6 +8,14 @@
 	<array>
 		<string>$(TeamIdentifierPrefix)group.$(LX_BUNDLE_ID_PREFIX).LyricsX</string>
 	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudDocuments</string>
+	</array>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>$(LX_ICLOUD_CONTAINER)</string>
+	</array>
 	<key>com.apple.security.automation.apple-events</key>
 	<true/>
 </dict>

@@ -12,10 +12,12 @@ let masReviewPeriodLimit: TimeInterval = 60 * 60 * 24 * 7
 // and do the same thing in LyricsXHelper
 #if DEBUG
 let lyricsXGroupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
+let lyricsXSharedSuiteName = "dev.JH.LyricsX.shared"
 let lyricsXHelperIdentifier = "dev.JH.LyricsXHelper"
 let lyricsXErrorDomain = "dev.JH.LyricsX"
 #else
 let lyricsXGroupIdentifier = "D5Q73692VW.group.com.JH.LyricsX"
+let lyricsXSharedSuiteName = "com.JH.LyricsX.shared"
 let lyricsXHelperIdentifier = "com.JH.LyricsXHelper"
 let lyricsXErrorDomain = "com.JH.LyricsX"
 #endif
@@ -23,7 +25,21 @@ let lyricsXErrorDomain = "com.JH.LyricsX"
 let crowdinProjectURL = URL(string: "https://crowdin.com/project/lyricsx")!
 
 let defaults = UserDefaults.standard
+// Two distinct shared channels, deliberately kept separate:
+//
+// 1. `sharedDefaults` — shared between the app and the (non-sandboxed)
+//    LyricsXHelper via a plain preferences suite at
+//    ~/Library/Preferences/<suite>.plist. Deliberately NOT an App Group
+//    container: a non-sandboxed process can't read App Group preferences
+//    through cfprefsd ("kCFPreferencesAnyUser ... only allowed for System
+//    Containers"); a plain suite works for both processes.
+//
+// 2. `lyricsXGroupIdentifier` — the App Group container shared with the
+//    sandboxed LyricsXWidget extension (via WidgetDataStore). A sandboxed
+//    extension can only share with the host app through an App Group, so the
+//    widget channel must stay on the App Group even though the helper can't.
 let groupDefaults = UserDefaults(suiteName: lyricsXGroupIdentifier)!
+let sharedDefaults = UserDefaults(suiteName: lyricsXSharedSuiteName)!
 let defaultNC = NotificationCenter.default
 let workspaceNC = NSWorkspace.shared.notificationCenter
 let selectedPlayer = MusicPlayers.Selected.shared
