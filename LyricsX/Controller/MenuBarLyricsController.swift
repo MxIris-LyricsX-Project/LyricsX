@@ -42,13 +42,18 @@ final class MenuBarLyricsController {
         spacing: 4
     ) {
         marqueeLabel
+            .box
             .size(width: MenuBarLyricsController.lyricsWidth, height: MenuBarLyricsController.lyricsHeight)
+            .stackView
             .customSpacing(MenuBarLyricsController.lyricsToControlsGap)
         previousButton
+            .box
             .size(MenuBarLyricsController.controlButtonSize)
         playPauseButton
+            .box
             .size(MenuBarLyricsController.controlButtonSize)
         nextButton
+            .box
             .size(MenuBarLyricsController.controlButtonSize)
     }
 
