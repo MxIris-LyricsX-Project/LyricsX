@@ -141,10 +141,10 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     private func scheduleArtworkScoring(for lyrics: Lyrics) {
         guard defaults[.artworkSimilarityBoostEnabled],
               let url = lyrics.metadata.artworkURL else { return }
-        let task = Task.detached { [weak self] in
+        let task = Task.detached {
             let matched = await ArtworkSimilarityScorer.shared.matches(artworkURL: url)
             guard matched, !Task.isCancelled else { return }
-            await MainActor.run {
+            await MainActor.run { [weak self] in 
                 guard let self else { return }
                 self.applyArtworkBonus(to: lyrics)
             }
