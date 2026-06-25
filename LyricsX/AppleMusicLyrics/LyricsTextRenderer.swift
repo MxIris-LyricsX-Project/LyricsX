@@ -2,8 +2,6 @@ import AppKit
 import LyricsXFoundation
 
 // MARK: - Word Timing Data
-
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     struct WordTimingEntry {
         var characterIndex: Int
@@ -74,8 +72,6 @@ extension AppleMusicLyrics {
 }
 
 // MARK: - Helper to Extract Word Timings from LyricsKit InlineTimeTag
-
-@available(macOS 15, *)
 extension LyricsLine {
     var wordTimingEntries: [AppleMusicLyrics.WordTimingEntry]? {
         guard let timetag = attachments.timetag else { return nil }

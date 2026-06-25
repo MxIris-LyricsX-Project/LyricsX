@@ -3,7 +3,6 @@ import CoreGraphics
 import ColorfulX
 import UIFoundation
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     /// Metal-rendered animated multicolor gradient background (ColorfulX),
     /// driven by the current artwork's dominant colors. Pure AppKit — no SwiftUI.
@@ -77,7 +76,6 @@ extension AppleMusicLyrics {
 
 /// Extracts a small palette of dominant colors from album artwork via
 /// downsampling + k-means, for driving the ColorfulX gradient.
-@available(macOS 15, *)
 enum ArtworkColorExtractor {
     /// Returns up to `count` vivid dominant colors (ColorfulX renders up to 8
     /// stops). Raw album-art clusters skew dark and desaturated, which reads as a

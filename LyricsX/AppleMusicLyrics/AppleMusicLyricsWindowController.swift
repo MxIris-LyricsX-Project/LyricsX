@@ -1,9 +1,7 @@
 import AppKit
 
-@available(macOS 15, *)
 enum AppleMusicLyrics {}
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     final class WindowController: NSWindowController, NSWindowDelegate {
         private static let windowFrameName = NSWindow.FrameAutosaveName("AppleMusicLyricsWindow")

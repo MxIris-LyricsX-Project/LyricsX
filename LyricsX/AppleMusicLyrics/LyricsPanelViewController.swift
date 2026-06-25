@@ -5,7 +5,6 @@ import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     /// The full Apple Music-style lyrics panel, in pure AppKit. Hosts the
     /// ColorfulX Metal gradient background, the album/track/transport chrome,

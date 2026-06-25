@@ -2,8 +2,6 @@ import AppKit
 import UIFoundation
 
 // Pure-AppKit chrome controls for the lyrics panel (playback scrubber + buttons).
-
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     /// An `NSImageView` with a fixed corner radius. Mirrors `UIFoundation.ImageView`:
     /// an image-bearing `NSImageView` does not take the `updateLayer` fast path,

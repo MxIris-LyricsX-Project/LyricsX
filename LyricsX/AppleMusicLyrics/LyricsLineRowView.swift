@@ -4,7 +4,6 @@ import QuartzCore
 import LyricsXFoundation
 import OpenCC
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     /// One lyric line, rendered as a layer-backed `NSView`.
     ///

@@ -1,6 +1,5 @@
 import Foundation
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     /// Tracks whether the lyrics view auto-follows playback or has been
     /// "delegated" to the user (scrolled away), with a countdown back to
@@ -45,7 +44,7 @@ extension AppleMusicLyrics {
             state = .intermediate
             delegationProgress = 0
             intermediateTask = Task { @MainActor [weak self] in
-                try? await Task.sleep(for: .seconds(self?.countDownDelay ?? 1.0))
+                try? await Task.sleep(seconds: self?.countDownDelay ?? 1.0)
                 guard !Task.isCancelled else { return }
                 self?.startCountdown()
             }
@@ -71,7 +70,7 @@ extension AppleMusicLyrics {
                 let steps = 60
                 let stepDuration = self.countDownDuration / Double(steps)
                 for step in 1 ... steps {
-                    try? await Task.sleep(for: .seconds(stepDuration))
+                    try? await Task.sleep(seconds: stepDuration)
                     guard !Task.isCancelled else { return }
                     self.delegationProgress = Double(step) / Double(steps)
                 }

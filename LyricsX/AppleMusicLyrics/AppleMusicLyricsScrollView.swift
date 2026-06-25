@@ -2,10 +2,10 @@ import AppKit
 import QuartzCore
 import Combine
 import LyricsXFoundation
+import MSDisplayLink
 
 // MARK: - Container View (AppKit + CALayer lyrics engine)
 
-@available(macOS 15, *)
 extension AppleMusicLyrics {
     final class SyncedLyricsContainerView: NSView {
         // MARK: Inputs
@@ -31,7 +31,12 @@ extension AppleMusicLyrics {
         private var translationFontSize: CGFloat = 18
         private var signature: LayoutSignature?
         private var lastLaidOutSize: CGSize = .zero
-        private var displayLink: CADisplayLink?
+        private var displayLink: DisplayLink?
+        // Timestamp of the current display-link frame, updated by
+        // `synchronization(context:)`. MSDisplayLink does not expose a
+        // `timestamp` property on the link itself, so we mirror CADisplayLink's
+        // semantics by stashing the per-frame value here.
+        private var currentFrameTimestamp: TimeInterval = 0
         private var preferenceObservers: Set<AnyCancellable> = []
         // The lyrics display time resolved once per display-link frame; drives the
         // karaoke fill and the intro/interlude indicators together.
@@ -113,7 +118,7 @@ extension AppleMusicLyrics {
 
         deinit {
             NotificationCenter.default.removeObserver(self)
-            displayLink?.invalidate()
+            displayLink = nil
         }
 
         private func setupScrollView() {
@@ -459,7 +464,7 @@ extension AppleMusicLyrics {
         private func stepScrollSpring() {
             guard let targetY = scrollTargetY else { return }
 
-            let timestamp = displayLink?.timestamp ?? lastScrollTickTimestamp
+            let timestamp = currentFrameTimestamp != 0 ? currentFrameTimestamp : lastScrollTickTimestamp
             var deltaTime = lastScrollTickTimestamp == 0 ? (1.0 / 60.0) : (timestamp - lastScrollTickTimestamp)
             lastScrollTickTimestamp = timestamp
             deltaTime = min(max(deltaTime, 1.0 / 240.0), 1.0 / 30.0)
@@ -509,21 +514,19 @@ extension AppleMusicLyrics {
 
         private func startDisplayLink() {
             guard displayLink == nil else { return }
-            let link = displayLink(target: self, selector: #selector(handleDisplayLink))
-            // Apple Music drives its lyric animations at ProMotion rates
-            // (`setPreferredFrameRateRange:` = CAFrameRateRange(80, 120, preferred 120)).
-            // Match it so the spring scroll and per-syllable breathing are as smooth.
-            link.preferredFrameRateRange = CAFrameRateRange(minimum: 80, maximum: 120, preferred: 120)
-            link.add(to: .main, forMode: .common)
+            // MSDisplayLink wraps CADisplayLink (macOS 14+) and CVDisplayLink (older)
+            // behind a single back-deployable Combine-friendly API, so the karaoke
+            // driver runs on every supported macOS version.
+            let link = DisplayLink()
+            link.delegatingObject(self)
             displayLink = link
         }
 
         private func stopDisplayLink() {
-            displayLink?.invalidate()
             displayLink = nil
         }
 
-        @objc private func handleDisplayLink() {
+        private func handleDisplayLink() {
             // Resolve the lyrics time once per frame from the player STATE
             // (`lyricsDisplayTime`) — the canonical source every other lyrics view
             // uses, accurate while playing and (now) stable when paused. Everything
@@ -640,5 +643,12 @@ extension AppleMusicLyrics {
         private final class FlippedDocumentView: NSView {
             override var isFlipped: Bool { true }
         }
+    }
+}
+
+extension AppleMusicLyrics.SyncedLyricsContainerView: DisplayLinkDelegate {
+    func synchronization(context: DisplayLinkCallbackContext) {
+        currentFrameTimestamp = context.timestamp
+        handleDisplayLink()
     }
 }
