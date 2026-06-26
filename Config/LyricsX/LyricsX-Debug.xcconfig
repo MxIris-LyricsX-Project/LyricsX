@@ -1,0 +1,10 @@
+// LyricsX (main app) Debug.
+
+#include "LyricsX.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = LyricsX/Supporting Files/LyricsX-Debug.entitlements
+PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX
+
+// Debug build product is named "LyricsX-Debug" so it doesn't collide with
+// a coexisting Release build on the same machine.
+PRODUCT_NAME = $(TARGET_NAME)-Debug

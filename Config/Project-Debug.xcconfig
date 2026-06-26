@@ -1,0 +1,10 @@
+// Project-level Debug configuration. Acts as the base layer for every
+// target's Debug configuration unless the target's xcconfig overrides it.
+
+#include "Shared-Debug.xcconfig"
+
+PRODUCT_NAME = $(TARGET_NAME)
+MACOSX_DEPLOYMENT_TARGET = 12.0
+
+// Generate Swift extensions on asset catalog symbols (Color, Image, etc.).
+ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES

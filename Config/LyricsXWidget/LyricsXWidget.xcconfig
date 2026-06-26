@@ -1,0 +1,21 @@
+// Settings shared by LyricsXWidget Debug and Release.
+//
+// Widget keeps its own MACOSX_DEPLOYMENT_TARGET = 15.0 separate from the
+// rest of the project (12.0). The widget code uses AppIntentConfiguration,
+// AppIntentTimelineProvider, and containerBackground(for: .widget), all of
+// which require macOS 14+; the 15.0 target is conservative and matches
+// what Xcode generates by default for new widget extensions.
+
+CODE_SIGN_STYLE = Automatic
+CURRENT_PROJECT_VERSION = 2926
+GENERATE_INFOPLIST_FILE = NO
+INFOPLIST_FILE = LyricsXWidget/Supporting Files/Info.plist
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks
+MACOSX_DEPLOYMENT_TARGET = 15.0
+MARKETING_VERSION = 1.9.0
+REGISTER_APP_GROUPS = YES
+SKIP_INSTALL = YES
+
+// Widget target opts in to the WIDGET_EXTENSION Swift compilation
+// condition; this overrides the project-level SWIFT_ACTIVE_COMPILATION_CONDITIONS.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = WIDGET_EXTENSION

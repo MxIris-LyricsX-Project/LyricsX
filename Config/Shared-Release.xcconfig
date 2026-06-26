@@ -1,0 +1,18 @@
+// Settings shared by every Release build configuration.
+
+#include "Shared.xcconfig"
+
+// Optimization & debugging
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+ENABLE_NS_ASSERTIONS = NO
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+MTL_ENABLE_DEBUG_INFO = NO
+
+// Swift flags — pair with Shared-Debug.xcconfig's -DDEBUG.
+OTHER_SWIFT_FLAGS = -DRELEASE
+
+// Bundle identifier / iCloud container — com.JH prefix for Release.
+LX_BUNDLE_ID_PREFIX = com.JH
+LX_HELPER_BUNDLE_ID = com.JH.LyricsXHelper
+LX_ICLOUD_CONTAINER = iCloud.com.JH.LyricsX

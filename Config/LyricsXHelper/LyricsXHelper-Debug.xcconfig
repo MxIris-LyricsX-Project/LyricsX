@@ -1,0 +1,6 @@
+// LyricsXHelper Debug.
+
+#include "LyricsXHelper.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = LyricsXHelper/Supporting Files/LyricsXHelper-Debug.entitlements
+PRODUCT_BUNDLE_IDENTIFIER = $(LX_HELPER_BUNDLE_ID)

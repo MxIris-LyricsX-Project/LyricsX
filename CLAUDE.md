@@ -120,6 +120,33 @@ LyricsX-side bug.
 
 Hybrid Xcode project + Swift Package Manager. The Xcode project (`LyricsX.xcodeproj`) is the primary build entry point. It integrates `LyricsXPackage/` as a local Swift package, and all third-party dependencies are managed via Xcode's SPM integration (no CocoaPods/Carthage).
 
+#### Build settings live in `Config/*.xcconfig`, not the pbxproj
+
+All build settings are split out of `LyricsX.xcodeproj/project.pbxproj` into a layered set of `.xcconfig` files under `Config/`. The 8 `XCBuildConfiguration` entries in the pbxproj keep empty `buildSettings = { }` blocks and only carry a `baseConfigurationReference` pointing at the corresponding xcconfig. Edit `Config/**/*.xcconfig` to change settings — do not add settings back into the pbxproj.
+
+```
+Config/
+├── Shared.xcconfig                # cross-target, cross-config base (warnings, SDK, SWIFT_VERSION, code signing, hardened runtime, etc.)
+├── Shared-Debug.xcconfig          # includes Shared; adds Debug optimization, -DDEBUG, LX_BUNDLE_ID_PREFIX = dev.JH, ...
+├── Shared-Release.xcconfig        # includes Shared; adds Release optimization, -DRELEASE, LX_BUNDLE_ID_PREFIX = com.JH, ...
+├── Project-Debug.xcconfig         # includes Shared-Debug; project-wide Debug (MACOSX_DEPLOYMENT_TARGET = 12.0, asset symbols)
+├── Project-Release.xcconfig       # includes Shared-Release; project-wide Release
+├── LyricsX/
+│   ├── LyricsX.xcconfig           # main app: Info.plist, app icon, framework search paths, REGISTER_APP_GROUPS, MACOSX_DEPLOYMENT_TARGET = 12.0
+│   ├── LyricsX-Debug.xcconfig     # includes LyricsX.xcconfig; entitlements, PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX, PRODUCT_NAME = LyricsX-Debug
+│   └── LyricsX-Release.xcconfig   # includes LyricsX.xcconfig; entitlements, PRODUCT_BUNDLE_IDENTIFIER, PRODUCT_NAME = LyricsX
+├── LyricsXHelper/
+│   ├── LyricsXHelper.xcconfig
+│   ├── LyricsXHelper-Debug.xcconfig
+│   └── LyricsXHelper-Release.xcconfig
+└── LyricsXWidget/
+    ├── LyricsXWidget.xcconfig     # widget keeps MACOSX_DEPLOYMENT_TARGET = 15.0 separately (independent of project's 12.0)
+    ├── LyricsXWidget-Debug.xcconfig
+    └── LyricsXWidget-Release.xcconfig
+```
+
+Setting evaluation order (high overrides low): target xcconfig → project xcconfig → Xcode platform defaults. Debug vs Release bundle identifiers are produced via the `$(LX_BUNDLE_ID_PREFIX)` variable defined in `Shared-Debug.xcconfig` / `Shared-Release.xcconfig`; the entitlements files live in `<Target>/Supporting Files/*-Debug.entitlements` and `*-Release.entitlements`.
+
 ### Targets
 
 | Target | Purpose |

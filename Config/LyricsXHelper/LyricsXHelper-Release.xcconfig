@@ -1,0 +1,6 @@
+// LyricsXHelper Release.
+
+#include "LyricsXHelper.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = LyricsXHelper/Supporting Files/LyricsXHelper-Release.entitlements
+PRODUCT_BUNDLE_IDENTIFIER = $(LX_HELPER_BUNDLE_ID)

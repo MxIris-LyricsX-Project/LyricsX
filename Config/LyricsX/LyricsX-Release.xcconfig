@@ -1,0 +1,6 @@
+// LyricsX (main app) Release.
+
+#include "LyricsX.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = LyricsX/Supporting Files/LyricsX-Release.entitlements
+PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX
