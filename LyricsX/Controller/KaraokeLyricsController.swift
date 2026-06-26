@@ -136,31 +136,6 @@ class KaraokeLyricsWindowController: NSWindowController {
         .desktopLyricsBackgroundColor,
     ]
 
-    // Captures playback/content state for the current render. Repeated
-    // `playbackStateWillChange` publishes for the same line otherwise tear
-    // down and re-add the karaoke `inlineProgress` animation each call,
-    // which restarts it from `values[0]` (the current playback offset).
-    // When the publisher fires faster than the animation can advance, the
-    // progress stays pinned near zero — visible as the "stuck at 0s"
-    // first-line flicker reported in single-song repeat.
-    private struct DisplayKey: Equatable {
-        let lyricsId: ObjectIdentifier
-        let lineIndex: Int
-        let isPlaying: Bool
-        let preferBilingual: Bool
-        let oneLineMode: Bool
-        let chineseConversionIndex: Int
-        // Quantized to ms so floating-point equality is stable. The
-        // progress animation below interpolates each timetag against
-        // `adjustedTimeDelay`, so a change here (user adjusts global
-        // or per-track lyric offset) must invalidate the cached
-        // render even when staying on the same line.
-        let timeDelayMs: Int
-    }
-
-    private var lastShowingKey: DisplayKey?
-    private var lastRenderedPlaybackState: PlaybackState?
-    private var lastRenderedWallclock: Date?
     private var hasDisplayedLyrics = false
     private var pendingDisplayPreferenceRefresh = false
 
@@ -169,13 +144,10 @@ class KaraokeLyricsWindowController: NSWindowController {
     }
 
     private func lyricsOffsetChanged() {
-        invalidateDisplayedLine()
         handleLyricsDisplay()
     }
 
     private func displayPreferencesChanged() {
-        invalidateDisplayedLine()
-
         guard !pendingDisplayPreferenceRefresh else { return }
         pendingDisplayPreferenceRefresh = true
 
@@ -187,20 +159,12 @@ class KaraokeLyricsWindowController: NSWindowController {
             DispatchQueue.lyricsDisplay.async { [weak self] in
                 guard let self = self else { return }
                 self.pendingDisplayPreferenceRefresh = false
-                self.invalidateDisplayedLine()
                 self.handleLyricsDisplay()
             }
         }
     }
 
-    private func invalidateDisplayedLine() {
-        lastShowingKey = nil
-        lastRenderedPlaybackState = nil
-        lastRenderedWallclock = nil
-    }
-
     private func clearDisplayedLyricsIfNeeded() {
-        lastShowingKey = nil
         guard hasDisplayedLyrics else { return }
         hasDisplayedLyrics = false
         DispatchQueue.main.async {
@@ -212,63 +176,26 @@ class KaraokeLyricsWindowController: NSWindowController {
         handleLyricsDisplay(playbackState: selectedPlayer.playbackState)
     }
 
+    // Every entry re-installs the progress animation against the
+    // incoming `playbackState`. Upstream `setPlayerState:tolerate:`
+    // already gates `playbackStateWillChange` against sub-tolerance
+    // jitter, so each publish here represents a real event worth
+    // re-anchoring (seek, buffer correction, repeat-one wrap, pause /
+    // resume). Earlier revisions kept a `DisplayKey`-based skip path
+    // with an 80ms wallclock-extrapolation threshold to suppress
+    // jitter-induced re-anchors when the upstream tolerance was 0.1s;
+    // with the wider gate that is no longer load-bearing.
     private func handleLyricsDisplay(playbackState: PlaybackState) {
         let isPlaying = playbackState.isPlaying
         guard defaults[.desktopLyricsEnabled],
               !defaults[.disableLyricsWhenPaused] || isPlaying,
               let lyrics = AppController.shared.currentLyrics,
               let index = AppController.shared.currentLineIndex else {
-            lastRenderedPlaybackState = nil
-            lastRenderedWallclock = nil
             clearDisplayedLyricsIfNeeded()
             return
         }
 
-        // Re-anchor the progress animation only when playback actually
-        // jumps. We extrapolate the previous state forward by wallclock
-        // (linear when playing, frozen when paused) and treat any drift
-        // beyond ~80ms as a real seek/buffer/wrap-around — which is when
-        // the animation needs to be re-installed against a fresh anchor.
-        // Linear playback inside a single line stays anchored, so the
-        // running keyframe animation continues uninterrupted, and the
-        // highlight tracks playback to within the jump threshold (vs.
-        // up to 0.5s of drift previously).
-        let didJump: Bool
-        if let lastState = lastRenderedPlaybackState, let lastWall = lastRenderedWallclock {
-            let elapsed = Date().timeIntervalSince(lastWall)
-            let predicted: TimeInterval
-            switch lastState {
-            case .playing:
-                predicted = lastState.time
-            case .fastForwarding(let time):
-                predicted = time + elapsed
-            case .rewinding(let time):
-                predicted = time - elapsed
-            case .paused(let time):
-                predicted = time
-            case .stopped:
-                predicted = 0
-            }
-            didJump = abs(playbackState.time - predicted) > 0.08
-        } else {
-            didJump = true
-        }
         let trackDuration = selectedPlayer.currentTrack?.duration
-        let key = DisplayKey(
-            lyricsId: ObjectIdentifier(lyrics),
-            lineIndex: index,
-            isPlaying: isPlaying,
-            preferBilingual: defaults[.preferBilingualLyrics],
-            oneLineMode: defaults[.desktopLyricsOneLineMode],
-            chineseConversionIndex: defaults[.chineseConversionIndex],
-            timeDelayMs: Int((lyrics.adjustedTimeDelay * 1000).rounded())
-        )
-        if lastShowingKey == key && !didJump {
-            return
-        }
-        lastShowingKey = key
-        lastRenderedPlaybackState = playbackState
-        lastRenderedWallclock = Date()
         hasDisplayedLyrics = true
 
         let lrc = lyrics.lines[index]
