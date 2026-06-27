@@ -83,6 +83,10 @@ extension NSStoryboard.SceneIdentifier {
 
 extension UserDefaults.DefaultsKeys {
     static let notifiedUpdateVersion = Key<String?>("NotifiedUpdateVersion")
+    // Opt-in to Sparkle's "beta" channel. When true, the updater accepts
+    // appcast items tagged <sparkle:channel>beta</sparkle:channel> in addition
+    // to untagged (stable) items. When false, only untagged items are eligible.
+    static let receiveBetaUpdates = Key<Bool>("ReceiveBetaUpdates")
     static let noSearchingTrackIds = Key<[String]>("NoSearchingTrackIds")
     static let noSearchingAlbumNames = Key<[String]>("NoSearchingAlbumNames")
 

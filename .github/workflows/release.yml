@@ -101,13 +101,13 @@ jobs:
         run: bash Scripts/release/create-release.sh
 
       - name: Update canonical appcast
-        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash Scripts/release/publish-appcast.sh canonical
 
       - name: Mirror to legacy Pages repo
-        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        if: ${{ !inputs.dry_run }}
         env:
           PAGES_MIRROR_TOKEN: ${{ secrets.PAGES_MIRROR_TOKEN }}
         run: bash Scripts/release/publish-appcast.sh mirror

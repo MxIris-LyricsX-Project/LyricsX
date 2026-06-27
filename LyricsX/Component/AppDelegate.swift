@@ -16,7 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
-    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: self)
+    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: self, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
 
@@ -126,6 +126,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         updateController.updater.checkForUpdatesInBackground()
+
+        // Flipping the beta toggle should take effect immediately. Sparkle
+        // re-evaluates allowedChannels(for:) on every feed parse, so kicking
+        // a background check is enough — no feed-URL swap required.
+        observeDefaults(key: .receiveBetaUpdates, options: [.new]) { [weak self] _, _ in
+            self?.updateController.updater.checkForUpdatesInBackground()
+        }
 
         observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
             if change.newValue, TouchBarLyricsController.shared == nil {
@@ -353,6 +360,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 extension AppDelegate: SPUStandardUserDriverDelegate {
     func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool {
         return true
+    }
+}
+
+extension AppDelegate: SPUUpdaterDelegate {
+    // Sparkle's channel contract: items WITHOUT <sparkle:channel> are always
+    // eligible; items WITH a channel are only eligible if the channel name is
+    // in the returned set. So {} = "stable only", {"beta"} = "stable + beta".
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        return defaults[.receiveBetaUpdates] ? ["beta"] : []
     }
 }
 

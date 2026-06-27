@@ -14,6 +14,10 @@ Inputs (env):
     ZIP_LENGTH              value for length attribute (string of integer)
     MIN_SYSTEM_VERSION      minimumSystemVersion, e.g. "10.15"
     RELEASE_NOTES_PATH      (optional) defaults to ReleaseNotes/<VERSION>_en.md
+    IS_PRERELEASE           (optional) "true" emits <sparkle:channel>beta</...>
+                            so only opted-in clients pick the item up; any
+                            other value (or unset) produces a stable item
+                            visible to every client.
 """
 from __future__ import annotations
 
@@ -67,10 +71,17 @@ def main() -> int:
     if "]]>" in description:
         sys.exit("[ERROR] Release notes contain ']]>', which would break the CDATA block.")
 
+    is_prerelease = os.environ.get("IS_PRERELEASE", "").lower() == "true"
+    channel_element = (
+        "            <sparkle:channel>beta</sparkle:channel>\n"
+        if is_prerelease else ""
+    )
+
     new_item = (
         "        <item>\n"
         f"            <title>{version}</title>\n"
         f"            <pubDate>{rfc822_now()}</pubDate>\n"
+        f"{channel_element}"
         f"            <sparkle:version>{build}</sparkle:version>\n"
         f"            {short_version_tag}\n"
         f"            <sparkle:minimumSystemVersion>{min_system_version}</sparkle:minimumSystemVersion>\n"

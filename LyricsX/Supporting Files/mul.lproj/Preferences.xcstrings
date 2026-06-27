@@ -15561,6 +15561,36 @@
           }
         }
       }
+    },
+    "bta-bC-005.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Receive beta updates\"; ObjectID = \"bta-bC-005\";",
+      "extractionState" : "manual",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive beta updates"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive beta updates"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收 Beta 版更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收 Beta 版更新"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

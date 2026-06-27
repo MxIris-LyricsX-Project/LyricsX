@@ -321,6 +321,7 @@
                                     <gridRow yPlacement="center" height="20" id="6xB-DX-5FD"/>
                                     <gridRow yPlacement="center" height="30" id="JRU-jX-DWY"/>
                                     <gridRow yPlacement="center" height="30" id="zOY-h3-QvW"/>
+                                    <gridRow yPlacement="center" height="30" id="bta-rW-001"/>
                                 </rows>
                                 <columns>
                                     <gridColumn xPlacement="trailing" width="200" trailingPadding="11" id="3Hg-Ka-QrM"/>
@@ -633,6 +634,19 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="968-l4-9l5" name="value" keyPath="values.HideMenuBarItems" id="Vvm-hg-hrg"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="bta-rW-001" column="3Hg-Ka-QrM" id="bta-cL-002"/>
+                                    <gridCell row="bta-rW-001" column="IfN-lq-biT" id="bta-cR-003">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bta-bV-004">
+                                            <rect key="frame" x="217" y="7" width="149" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Receive beta updates" bezelStyle="regularSquare" imagePosition="left" inset="2" id="bta-bC-005">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.ReceiveBetaUpdates" id="bta-bD-006"/>
                                             </connections>
                                         </button>
                                     </gridCell>

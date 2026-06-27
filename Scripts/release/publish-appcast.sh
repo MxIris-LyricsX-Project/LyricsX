@@ -20,9 +20,11 @@ MODE="${1:-}"
 
 require_env VERSION BUILD IS_PRERELEASE ED_SIGNATURE ZIP_LENGTH
 
+# Prereleases are no longer skipped. They land in the same appcast as stable
+# items, tagged with <sparkle:channel>beta</sparkle:channel>, and only reach
+# clients that opted in via the "Receive beta updates" preference.
 if [ "$IS_PRERELEASE" = "true" ]; then
-    log_info "IS_PRERELEASE=true — skipping appcast update."
-    exit 0
+    log_info "IS_PRERELEASE=true — publishing as beta-channel item."
 fi
 
 # minimumSystemVersion mirrors the app's deployment target. project.pbxproj
@@ -48,6 +50,7 @@ case "$MODE" in
         VERSION="$VERSION" BUILD="$BUILD" \
         ED_SIGNATURE="$ED_SIGNATURE" ZIP_LENGTH="$ZIP_LENGTH" \
         MIN_SYSTEM_VERSION="$MIN_SYSTEM_VERSION" \
+        IS_PRERELEASE="$IS_PRERELEASE" \
             python3 Scripts/release/update-appcast.py
 
         if git diff --quiet -- appcast.xml; then
@@ -82,6 +85,7 @@ case "$MODE" in
         VERSION="$VERSION" BUILD="$BUILD" \
         ED_SIGNATURE="$ED_SIGNATURE" ZIP_LENGTH="$ZIP_LENGTH" \
         MIN_SYSTEM_VERSION="$MIN_SYSTEM_VERSION" \
+        IS_PRERELEASE="$IS_PRERELEASE" \
             python3 Scripts/release/update-appcast.py
 
         if (cd "$MIRROR_DIR" && git diff --quiet -- appcast.xml); then
