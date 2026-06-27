@@ -9,9 +9,7 @@ import FoundationToolbox
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
-    static var shared: AppDelegate? {
-        return NSApplication.shared.delegate as? AppDelegate
-    }
+    static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
 
     @IBOutlet var lyricsOffsetView: NSView!
     @IBOutlet var lyricsOffsetTextField: NSTextField!
@@ -38,7 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         // timer alive in the background. `lyricsHUD` stays a cached lazy
         // property (lightweight) and is reused across opens.
         let hud: NSWindowController
-        if #available(macOS 15, *), defaults[.useAppleMusicLyricsWindow] {
+        if defaults[.useAppleMusicLyricsWindow] {
             hud = AppleMusicLyrics.WindowController()
         } else {
             hud = lyricsHUD
