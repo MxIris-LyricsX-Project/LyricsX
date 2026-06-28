@@ -4,3 +4,9 @@
 
 CODE_SIGN_ENTITLEMENTS = LyricsXWidget/Supporting Files/LyricsXWidget-Release.entitlements
 PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX.LyricsWidget
+
+// Manual signing for distribution — see LyricsX-Release.xcconfig for the
+// rationale. The Name matches the asc-created MAC_APP_DIRECT profile.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Developer ID Application
+PROVISIONING_PROFILE_SPECIFIER = LyricsXWidget Developer ID

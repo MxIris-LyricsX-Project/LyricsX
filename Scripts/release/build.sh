@@ -37,7 +37,14 @@ mkdir -p build
 
 export LYRICSX_USE_LOCAL_DEPENDENCY=0
 
-log_info "Archiving LyricsX (team=${TEAM_ID}, identity=Developer ID Application)"
+log_info "Archiving LyricsX (team=${TEAM_ID})"
+# All signing settings come from per-target Config/*-Release.xcconfig — they
+# pin Manual + Developer ID Application + the hardcoded asc-created profile
+# Name per target. The CLI here intentionally does NOT override
+# CODE_SIGN_IDENTITY / CODE_SIGN_STYLE because doing so under Automatic-style
+# SPM dependency targets (MASShortcut, SnapKit, FrameworkTool*Macros, etc.)
+# triggers "conflicting provisioning settings" errors — the override would
+# leak into those dependency targets globally.
 xcodebuild \
     -project LyricsX.xcodeproj \
     -scheme LyricsX \
@@ -47,7 +54,6 @@ xcodebuild \
     -skipMacroValidation \
     -skipPackagePluginValidation \
     DEVELOPMENT_TEAM="$TEAM_ID" \
-    CODE_SIGN_IDENTITY="Developer ID Application" \
     OTHER_CODE_SIGN_FLAGS="--timestamp" \
     archive
 

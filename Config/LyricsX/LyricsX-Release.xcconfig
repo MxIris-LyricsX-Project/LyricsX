@@ -4,3 +4,15 @@
 
 CODE_SIGN_ENTITLEMENTS = LyricsX/Supporting Files/LyricsX-Release.entitlements
 PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX
+
+// Manual signing for distribution. Overrides the LyricsX.xcconfig default
+// (CODE_SIGN_IDENTITY = Apple Development, CODE_SIGN_STYLE = Automatic) which
+// is only correct for Debug. The matching Developer ID profile is created via
+// `asc profiles create --profile-type MAC_APP_DIRECT` against cert U8Y7P4JPG9
+// and installed under ~/Library/MobileDevice/Provisioning Profiles/ by
+// Scripts/release/setup-keychain.sh at CI time. The Name is hardcoded here
+// rather than templated because it's stable across rebuilds (manual asc-
+// created profiles don't rotate their Name on re-issue).
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Developer ID Application
+PROVISIONING_PROFILE_SPECIFIER = LyricsX Developer ID
