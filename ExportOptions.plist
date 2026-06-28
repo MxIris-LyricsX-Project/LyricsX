@@ -4,14 +4,24 @@
 <dict>
 	<key>method</key>
 	<string>developer-id</string>
-	<!-- signingStyle=automatic: exportArchive scans the keychain for a matching
-	     Developer ID Application identity and the per-target Developer ID
-	     profiles installed by Scripts/release/setup-keychain.sh under
-	     ~/Library/MobileDevice/Provisioning Profiles/. Combined with the
-	     archive's CODE_SIGNING_ALLOWED=NO, this is the only step that signs,
-	     and it does so entirely offline — no ASC API contact, no throwaway
-	     "Apple Development: Created via API" cert minted per run. -->
+	<!-- Manual signing — must match the archive's signing (per-target
+	     Config/*-Release.xcconfig pins Manual + Developer ID Application +
+	     the asc-created profile Name). signingStyle=automatic here would
+	     make exportArchive try to fetch profiles via the ASC API instead
+	     of using the installed ones, which fails without
+	     -allowProvisioningUpdates ("No profiles for <bundle id> were found"). -->
 	<key>signingStyle</key>
-	<string>automatic</string>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.JH.LyricsX</key>
+		<string>LyricsX Developer ID</string>
+		<key>com.JH.LyricsXHelper</key>
+		<string>LyricsXHelper Developer ID</string>
+		<key>com.JH.LyricsX.LyricsWidget</key>
+		<string>LyricsXWidget Developer ID</string>
+	</dict>
 </dict>
 </plist>
