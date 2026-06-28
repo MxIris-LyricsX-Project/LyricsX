@@ -9,11 +9,12 @@
 # .provisionprofile files (main app + helper + widget) under
 # ~/Library/MobileDevice/Provisioning Profiles/.
 #
-# Signing model: archive skips signing entirely (CODE_SIGNING_ALLOWED=NO);
-# exportArchive does the only real signing pass, with method=developer-id +
-# signingStyle=automatic in ExportOptions.plist. xcodebuild auto-discovers the
-# Developer ID Application identity from the keychain and each target's
-# Developer ID profile by bundle id from the installed .provisionprofile files.
+# Signing model: archive signs each target with the imported Developer ID
+# Application identity (overriding the Debug-default CODE_SIGN_IDENTITY =
+# "Apple Development" / "Mac Developer" in the per-target xcconfig), against
+# pre-installed Developer ID profiles. exportArchive then re-signs for the
+# developer-id distribution method, picking the same identity + profiles
+# automatically (ExportOptions.plist: method=developer-id, signingStyle=automatic).
 # No `-allowProvisioningUpdates`, no ASC API contact, so no throwaway
 # "Apple Development: Created via API" cert is minted per archive (which the
 # previous Automatic+API-key flow used to burn one slot off the per-individual
@@ -36,7 +37,7 @@ mkdir -p build
 
 export LYRICSX_USE_LOCAL_DEPENDENCY=0
 
-log_info "Archiving LyricsX (team=${TEAM_ID}, signing deferred to exportArchive)"
+log_info "Archiving LyricsX (team=${TEAM_ID}, identity=Developer ID Application)"
 xcodebuild \
     -project LyricsX.xcodeproj \
     -scheme LyricsX \
@@ -46,7 +47,8 @@ xcodebuild \
     -skipMacroValidation \
     -skipPackagePluginValidation \
     DEVELOPMENT_TEAM="$TEAM_ID" \
-    CODE_SIGNING_ALLOWED=NO \
+    CODE_SIGN_IDENTITY="Developer ID Application" \
+    OTHER_CODE_SIGN_FLAGS="--timestamp" \
     archive
 
 log_info "Exporting signed .app"
