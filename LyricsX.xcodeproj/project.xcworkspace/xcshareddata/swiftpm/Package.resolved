@@ -1,5 +1,5 @@
 {
-  "originHash" : "e036e1c9a4dac56f9e845ee7e2ef1645eb469c60cd9744112652455e74e27073",
+  "originHash" : "0ca70e31fa27d443c2db324fd2a2bd64be8ba83ca271a9fc93de1058d27ec612",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "b82281eb8a6ffcb312941c3d06584182837f4ca9",
-        "version" : "0.7.1"
+        "revision" : "61178c630fccf746bc2c13835dade9a7dfb79613",
+        "version" : "0.7.4"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/LyricsKit",
       "state" : {
-        "revision" : "bb255842eb8fe48880e15c23c0a7704599dd3504",
-        "version" : "1.10.0"
+        "branch" : "develop",
+        "revision" : "bb255842eb8fe48880e15c23c0a7704599dd3504"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
       "state" : {
-        "revision" : "438758a4234c62fcdd52d2034ff9355bba77b67e",
-        "version" : "1.8.4"
+        "branch" : "develop",
+        "revision" : "e85e8afd1d95d50984f2e8c5917ba05d048a4a2f"
       }
     },
     {
@@ -209,6 +209,15 @@
       }
     },
     {
+      "identity" : "swift-macro-toolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/stackotter/swift-macro-toolkit",
+      "state" : {
+        "revision" : "d6ed555bb83c9f21a292e9769952e8f52610a6e2",
+        "version" : "0.9.0"
+      }
+    },
+    {
       "identity" : "swift-object-association",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/p-x9/swift-object-association.git",
@@ -258,8 +267,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/UIFoundation",
       "state" : {
-        "revision" : "f2d5a1c66355ee19f46966dd1fb3954544428522",
-        "version" : "0.11.0"
+        "revision" : "959d48f336ef46f97d6d5093c7d456983f2259f7",
+        "version" : "0.12.0"
       }
     }
   ],
