@@ -4,17 +4,3 @@
 
 CODE_SIGN_ENTITLEMENTS = LyricsX/Supporting Files/LyricsX-Release.entitlements
 PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX
-
-// Manual signing for distribution. The pre-installed Developer ID Application
-// certificate (imported from a .p12 stored as a CI secret) plus the pre-
-// installed Developer ID provisioning profile sign the binary; xcodebuild does
-// NOT contact ASC API and does NOT mint a throwaway "Apple Development: Created
-// via API" cert per archive run (which burns the per-individual Apple
-// Development cert quota — only 2 are allowed).
-// LX_MAIN_PROFILE_NAME is exported into the build env by
-// Scripts/release/setup-keychain.sh after extracting the Name field from the
-// installed .provisionprofile, and forwarded on the xcodebuild CLI by
-// Scripts/release/build.sh as a user-defined setting.
-CODE_SIGN_STYLE = Manual
-CODE_SIGN_IDENTITY = Developer ID Application
-PROVISIONING_PROFILE_SPECIFIER = $(LX_MAIN_PROFILE_NAME)

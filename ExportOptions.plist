@@ -4,5 +4,14 @@
 <dict>
 	<key>method</key>
 	<string>developer-id</string>
+	<!-- signingStyle=automatic: exportArchive scans the keychain for a matching
+	     Developer ID Application identity and the per-target Developer ID
+	     profiles installed by Scripts/release/setup-keychain.sh under
+	     ~/Library/MobileDevice/Provisioning Profiles/. Combined with the
+	     archive's CODE_SIGNING_ALLOWED=NO, this is the only step that signs,
+	     and it does so entirely offline — no ASC API contact, no throwaway
+	     "Apple Development: Created via API" cert minted per run. -->
+	<key>signingStyle</key>
+	<string>automatic</string>
 </dict>
 </plist>

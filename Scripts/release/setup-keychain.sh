@@ -8,29 +8,24 @@
 #   APPLE_DEV_ID_CERT_PASSWORD          password for the .p12
 #   KEYCHAIN_PASSWORD                   password to create the temp keychain with
 #   LYRICSX_DEVID_PROFILE_BASE64        base64 of the main app's Developer ID
-#                                       Application provisioning profile
-#                                       (.provisionprofile).
+#                                       Application provisioning profile.
 #   LYRICSX_HELPER_DEVID_PROFILE_BASE64 base64 of the embedded LyricsXHelper
-#                                       login item's Developer ID profile —
-#                                       carries the App Groups entitlement.
+#                                       login item's Developer ID profile.
 #   LYRICSX_WIDGET_DEVID_PROFILE_BASE64 base64 of the LyricsXWidget extension's
-#                                       Developer ID profile — carries App
-#                                       Groups + iCloud (CloudDocuments)
-#                                       entitlements shared with the main app.
+#                                       Developer ID profile.
 #
-# All three profile env vars are required for the Manual-signed archive in
-# Scripts/release/build.sh to find a profile per target; missing one will fail
-# the archive with "No profiles for <bundle id>".
+# All three profile env vars are required. With Scripts/release/build.sh in
+# RuntimeViewer-style mode (archive skips signing via CODE_SIGNING_ALLOWED=NO,
+# exportArchive runs with signingStyle=automatic + method=developer-id),
+# exportArchive auto-discovers each target's profile by bundle id from the
+# installed .provisionprofile files. Missing any one fails the export with
+# "No profiles for <bundle id>".
 #
 # Side effects:
-#   Creates ~/Library/Keychains/lyricsx-release.keychain-db and adds it to the
-#   user's keychain search list. Unlocks it and allows codesign access.
+#   Creates ~/Library/Keychains/lyricsx-release.keychain-db, adds it to the
+#   user's keychain search list, unlocks it, allows codesign access.
 #   Installs the three Developer ID profiles under
 #   ~/Library/MobileDevice/Provisioning Profiles/.
-#   Extracts each profile's Name field (used by xcodebuild's
-#   PROVISIONING_PROFILE_SPECIFIER) and appends to $GITHUB_ENV as
-#   LX_MAIN_PROFILE_NAME / LX_HELPER_PROFILE_NAME / LX_WIDGET_PROFILE_NAME so
-#   subsequent build steps can reference them per-target via xcconfig.
 #
 # To clean up, call this script with the "cleanup" argument.
 
@@ -110,34 +105,3 @@ install_devid_profile() {
 install_devid_profile "${LYRICSX_DEVID_PROFILE_BASE64:-}" "lyricsx-devid" "LyricsX"
 install_devid_profile "${LYRICSX_HELPER_DEVID_PROFILE_BASE64:-}" "lyricsx-helper-devid" "LyricsXHelper"
 install_devid_profile "${LYRICSX_WIDGET_DEVID_PROFILE_BASE64:-}" "lyricsx-widget-devid" "LyricsXWidget"
-
-# Extract each profile's Name field — that's what xcodebuild's
-# PROVISIONING_PROFILE_SPECIFIER expects to identify the profile under Manual
-# signing. The per-target Config/*Release.xcconfig files reference these as
-# $(LX_*_PROFILE_NAME); build.sh forwards them on the xcodebuild CLI as
-# user-defined settings so the xcconfig substitution resolves at build time.
-extract_profile_name() {
-    local profile_path="$1"
-    local decoded_plist
-    decoded_plist="$(mktemp -t lyricsx-prof).plist"
-    security cms -D -i "$profile_path" > "$decoded_plist" 2>/dev/null
-    local profile_name
-    profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$decoded_plist" 2>/dev/null)"
-    rm -f "$decoded_plist"
-    printf '%s' "$profile_name"
-}
-
-export_profile_name() {
-    local environment_variable_name="$1" profile_file_path="$2" human_name="$3"
-    local profile_name
-    profile_name="$(extract_profile_name "$profile_file_path")"
-    [ -n "$profile_name" ] || die "${human_name}: failed to extract Name from ${profile_file_path}"
-    log_info "${environment_variable_name}=${profile_name}"
-    if [ -n "${GITHUB_ENV:-}" ]; then
-        printf '%s=%s\n' "$environment_variable_name" "$profile_name" >> "$GITHUB_ENV"
-    fi
-}
-
-export_profile_name "LX_MAIN_PROFILE_NAME"   "${PROFILE_DIR}/lyricsx-devid.provisionprofile"        "LyricsX"
-export_profile_name "LX_HELPER_PROFILE_NAME" "${PROFILE_DIR}/lyricsx-helper-devid.provisionprofile" "LyricsXHelper"
-export_profile_name "LX_WIDGET_PROFILE_NAME" "${PROFILE_DIR}/lyricsx-widget-devid.provisionprofile" "LyricsXWidget"

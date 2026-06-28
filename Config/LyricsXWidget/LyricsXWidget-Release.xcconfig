@@ -4,10 +4,3 @@
 
 CODE_SIGN_ENTITLEMENTS = LyricsXWidget/Supporting Files/LyricsXWidget-Release.entitlements
 PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX.LyricsWidget
-
-// Manual signing for distribution — see LyricsX-Release.xcconfig for the
-// rationale. LX_WIDGET_PROFILE_NAME is exported by setup-keychain.sh and
-// forwarded by build.sh.
-CODE_SIGN_STYLE = Manual
-CODE_SIGN_IDENTITY = Developer ID Application
-PROVISIONING_PROFILE_SPECIFIER = $(LX_WIDGET_PROFILE_NAME)
