@@ -2,24 +2,36 @@
 # Archive + exportArchive into build/Export/LyricsX.app
 #
 # Inputs (env):
-#   DEVELOPMENT_TEAM            (optional) team identifier; defaults to D5Q73692VW
-#   APPLE_API_KEY_P8_BASE64     (optional) base64 ASC API key, enables auto profile fetch
-#   APPLE_API_KEY_ID            (optional) ASC API Key ID
-#   APPLE_API_KEY_ISSUER_ID     (optional) ASC API Issuer UUID
+#   DEVELOPMENT_TEAM        (optional) team identifier; defaults to D5Q73692VW
+#   LX_MAIN_PROFILE_NAME    profile Name for the main app target
+#                           (com.JH.LyricsX) — exported by setup-keychain.sh
+#   LX_HELPER_PROFILE_NAME  profile Name for LyricsXHelper
+#   LX_WIDGET_PROFILE_NAME  profile Name for LyricsXWidget
 #
-# Requires: setup-keychain.sh must have run first so the Developer ID
-# Application identity is in the keychain search list.
+# Requires: setup-keychain.sh must have run first to import the Developer ID
+# Application identity, install all three .provisionprofile files under
+# ~/Library/MobileDevice/Provisioning Profiles/, and export the three
+# LX_*_PROFILE_NAME env vars (or write them to $GITHUB_ENV under CI).
 #
-# When APPLE_API_KEY_* are present, xcodebuild auto-fetches the Developer ID
-# provisioning profile (needed because LyricsX entitlements include iCloud and
-# other restricted capabilities). Without them, manual profile install would be
-# required.
+# Manual signing: the three Config/*-Release.xcconfig files pin
+# CODE_SIGN_STYLE=Manual, CODE_SIGN_IDENTITY="Developer ID Application",
+# PROVISIONING_PROFILE_SPECIFIER=$(LX_<target>_PROFILE_NAME). The user-defined
+# settings are forwarded on the xcodebuild CLI below so the xcconfig $(...)
+# substitution resolves at build time. xcodebuild does NOT contact ASC API
+# during archive — no -allowProvisioningUpdates, no -authenticationKey* — so
+# no throwaway "Apple Development: Created via API" cert is minted per run.
+# (The Apple Developer account's per-individual Apple Development cert quota
+# is only 2; the previous Automatic+API-key flow walked it down every release.)
+# Notarization (Scripts/release/notarize.sh) still uses the ASC API key,
+# which is unrelated to code-signing identity selection.
 
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${HERE}/lib.sh"
 cd "$(repo_root)"
+
+require_env LX_MAIN_PROFILE_NAME LX_HELPER_PROFILE_NAME LX_WIDGET_PROFILE_NAME
 
 TEAM_ID="${DEVELOPMENT_TEAM:-D5Q73692VW}"
 ARCHIVE_PATH="build/LyricsX.xcarchive"
@@ -30,30 +42,10 @@ mkdir -p build
 
 export LYRICSX_USE_LOCAL_DEPENDENCY=0
 
-AUTH_ARGS=()
-if [ -n "${APPLE_API_KEY_P8_BASE64:-}" ] && \
-   [ -n "${APPLE_API_KEY_ID:-}" ] && \
-   [ -n "${APPLE_API_KEY_ISSUER_ID:-}" ]; then
-    API_KEY_PATH="$(mktemp -t lyricsx-build-key).p8"
-    trap 'rm -f "$API_KEY_PATH"' EXIT
-    printf '%s' "$APPLE_API_KEY_P8_BASE64" | base64 --decode > "$API_KEY_PATH"
-    AUTH_ARGS=(
-        -allowProvisioningUpdates
-        -authenticationKeyPath "$API_KEY_PATH"
-        -authenticationKeyID "$APPLE_API_KEY_ID"
-        -authenticationKeyIssuerID "$APPLE_API_KEY_ISSUER_ID"
-    )
-    log_info "Auto-fetching provisioning profile via App Store Connect API key"
-else
-    log_warn "APPLE_API_KEY_* not set; xcodebuild will use only locally-installed profiles"
-fi
-
 log_info "Archiving LyricsX (team=${TEAM_ID})"
-# Use Automatic signing in archive: combined with -allowProvisioningUpdates
-# and an App Store Connect API key, xcodebuild downloads (or with App Manager
-# role, creates) the matching Developer ID provisioning profile for every
-# target. ExportOptions.plist (method=developer-id) re-signs the export with
-# the correct distribution identity.
+log_info "  LX_MAIN_PROFILE_NAME=${LX_MAIN_PROFILE_NAME}"
+log_info "  LX_HELPER_PROFILE_NAME=${LX_HELPER_PROFILE_NAME}"
+log_info "  LX_WIDGET_PROFILE_NAME=${LX_WIDGET_PROFILE_NAME}"
 xcodebuild \
     -project LyricsX.xcodeproj \
     -scheme LyricsX \
@@ -62,10 +54,11 @@ xcodebuild \
     -archivePath "$ARCHIVE_PATH" \
     -skipMacroValidation \
     -skipPackagePluginValidation \
-    "${AUTH_ARGS[@]}" \
-    CODE_SIGN_STYLE=Automatic \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     OTHER_CODE_SIGN_FLAGS="--timestamp" \
+    LX_MAIN_PROFILE_NAME="$LX_MAIN_PROFILE_NAME" \
+    LX_HELPER_PROFILE_NAME="$LX_HELPER_PROFILE_NAME" \
+    LX_WIDGET_PROFILE_NAME="$LX_WIDGET_PROFILE_NAME" \
     archive
 
 log_info "Exporting signed .app"
