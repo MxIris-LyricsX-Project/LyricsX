@@ -3,10 +3,6 @@ build/
 Scripts/release/bin/
 .DS_Store
 xcuserdata
-project.xcworkspace/**
-!project.xcworkspace/xcshareddata/
-!project.xcworkspace/xcshareddata/swiftpm/
-!project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 .claude
 .omc
 swift-syntax/.swiftpm
