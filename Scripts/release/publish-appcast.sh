@@ -27,15 +27,26 @@ if [ "$IS_PRERELEASE" = "true" ]; then
     log_info "IS_PRERELEASE=true — publishing as beta-channel item."
 fi
 
-# minimumSystemVersion mirrors the app's deployment target. project.pbxproj
-# carries a low project-level baseline plus per-target overrides; the app's
-# effective floor is the highest MACOSX_DEPLOYMENT_TARGET among them.
+# minimumSystemVersion mirrors the MAIN APP's deployment target so Sparkle
+# decides update eligibility against the main app's floor — not against any
+# extension's higher floor. The LyricsXWidget extension is intentionally at
+# 15.0 (uses WidgetKit APIs that need macOS 14+), but the main app still runs
+# on macOS 12+, and macOS 12-14 users should still receive updates (the
+# widget just won't load for them).
+#
+# After the 216a99e xcconfig refactor, build settings no longer live in
+# project.pbxproj — read from the main app's xcconfig stack instead. The
+# project-level baseline (Project-Release.xcconfig) is the floor; the main
+# app's xcconfig (LyricsX.xcconfig) may override upward. Take the max of
+# those two, deliberately excluding LyricsXWidget.xcconfig (15.0).
 MIN_SYSTEM_VERSION="$(
-    grep -E 'MACOSX_DEPLOYMENT_TARGET = ' LyricsX.xcodeproj/project.pbxproj \
+    grep -E 'MACOSX_DEPLOYMENT_TARGET = ' \
+            Config/Project-Release.xcconfig \
+            Config/LyricsX/LyricsX.xcconfig \
         | sed -E 's/.*= *//; s/;.*//' \
         | sort -V | tail -1
 )"
-[ -n "$MIN_SYSTEM_VERSION" ] || die "Could not read MACOSX_DEPLOYMENT_TARGET from project.pbxproj"
+[ -n "$MIN_SYSTEM_VERSION" ] || die "Could not read MACOSX_DEPLOYMENT_TARGET from main-app xcconfig stack"
 log_info "minimumSystemVersion=${MIN_SYSTEM_VERSION}"
 
 git_id() {
