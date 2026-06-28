@@ -527,6 +527,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E9C00C0100000000000000B4 /* Project-Debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = D5Q73692VW;
 			};
 			name = Debug;
 		};
@@ -534,6 +535,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E9C00C0100000000000000B5 /* Project-Release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = D5Q73692VW;
 			};
 			name = Release;
 		};
