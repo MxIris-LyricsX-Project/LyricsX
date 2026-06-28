@@ -28,7 +28,6 @@ EXPORT_PATH="build/Export"
 rm -rf "$ARCHIVE_PATH" "$EXPORT_PATH"
 mkdir -p build
 
-export LYRICSX_SKIP_BUILD_BUMP=1
 export LYRICSX_USE_LOCAL_DEPENDENCY=0
 
 AUTH_ARGS=()

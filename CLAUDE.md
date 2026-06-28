@@ -78,8 +78,15 @@ Then in **this** repo:
    `LyricsX.xcodeproj/.../Package.resolved`.
 5. Commit the updated `Package.resolved` and (if changed)
    `Package.swift`.
-6. Bump `CFBundleVersion` in `LyricsX/Supporting Files/Info.plist` and
-   `LyricsXWidget/Info.plist` together.
+6. Bump `CFBundleShortVersionString` (marketing version) in
+   `LyricsX/Supporting Files/Info.plist` and
+   `LyricsXWidget/Supporting Files/Info.plist` if the new version's base
+   (`X.Y.Z` portion, stripping any `-beta.N` / `-rc.N` suffix) differs
+   from what's committed. **`CFBundleVersion` does not need to be
+   touched** — `Scripts/release/validate.sh` derives it from VERSION using
+   the encoded scheme (see `Documentations/BuildNumberScheme.md`) and
+   overwrites both plists at CI time, so the value committed in the repo
+   is informational only.
 7. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`,
    following the conventions below.
 8. Push the branch, then tag and push `v<version>` to trigger the

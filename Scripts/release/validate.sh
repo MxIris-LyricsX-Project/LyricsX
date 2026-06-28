@@ -40,11 +40,18 @@ if [ "$PLIST_VERSION" != "$VERSION" ] && [ "$PLIST_VERSION" != "$VERSION_BASE" ]
     die "Info.plist CFBundleShortVersionString ('${PLIST_VERSION}') doesn't match version ('${VERSION}') or its base ('${VERSION_BASE}'). Bump Info.plist and commit first."
 fi
 
-# 5. CFBundleVersion is a positive integer
-BUILD=$(plist_buddy -c 'Print CFBundleVersion' "$INFO_PLIST_PATH")
-if ! [[ "$BUILD" =~ ^[1-9][0-9]*$ ]]; then
-    die "Info.plist CFBundleVersion ('${BUILD}') is not a positive integer."
-fi
+# 5. Derive CFBundleVersion from VERSION using the encoded scheme and
+#    propagate it into both the main-app and widget Info.plists. This
+#    overrides whatever stale integer is committed to the repo, so the
+#    archive that ships always carries a build number that sorts correctly
+#    across stable / beta channels under Sparkle's default comparator.
+#    See Documentations/BuildNumberScheme.md for the formula.
+BUILD=$(encode_build_number "$VERSION")
+log_info "Encoded BUILD=${BUILD} from VERSION=${VERSION}"
+
+WIDGET_INFO_PLIST_PATH="LyricsXWidget/Supporting Files/Info.plist"
+plist_buddy -c "Set :CFBundleVersion ${BUILD}" "$INFO_PLIST_PATH"
+plist_buddy -c "Set :CFBundleVersion ${BUILD}" "$WIDGET_INFO_PLIST_PATH"
 
 # 6. Tag exists when triggered by a tag push
 if [ "$GITHUB_EVENT_NAME" = "push" ]; then
