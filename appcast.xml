@@ -5,6 +5,31 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-beta.9</title>
+            <pubDate>Sun, 28 Jun 2026 12:31:16 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900109</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-beta.9</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>New</h3>
+<ul>
+<li><strong>Opt in to prerelease builds</strong> — A new *Receive beta updates* switch under *Preferences → Updates* (off by default).</li>
+<li><strong>Apple Music style lyrics panel now works on macOS 12–14</strong> — Previously required macOS 15. The overall minimum supported macOS is now 12; users on macOS 11 will not receive this or later updates.</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li><strong>Desktop lyrics no longer flicker about once a second</strong> — Affects Apple Music, Spotify and other scriptable players.</li>
+<li><strong>Karaoke fill and scrubber stay aligned with playback</strong> — No longer drift or reset on pause/resume.</li>
+<li><strong>Pause/resume on the system Now Playing source no longer drifts lyrics</strong> — No backward jump on pause; no forward drift on resume.</li>
+<li><strong>Apple Music style panel reopens at its last size and position</strong> — No longer jumps back to the default frame.</li>
+<li><strong>Apple Music style panel has a minimum window size</strong> — Can no longer be shrunk into an unreadable strip.</li>
+<li><strong>Transport buttons now show hover feedback</strong> — Play / previous / next highlight when hovered.</li>
+<li><strong>Artwork-based lyric matching no longer rejects the correct cover</strong> — A too-strict brightness check has been relaxed.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.9/LyricsX_1.9.0-beta.9+10900109.zip" length="9374898" type="application/octet-stream" sparkle:edSignature="JAlHHOQ9huiZz1kxblk/jQ4l8jCbt4Eml+xMSnZ9lEEg2kDE+CpcM8AbEfV7yVMf2b54wS1bj0E40WEMPaJhDg==" />
+        </item>
+        <item>
             <title>1.8.8</title>
             <pubDate>Sun, 21 Jun 2026 16:11:39 +0000</pubDate>
             <sparkle:version>2933</sparkle:version>
