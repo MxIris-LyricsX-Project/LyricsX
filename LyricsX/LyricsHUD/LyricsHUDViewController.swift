@@ -132,9 +132,9 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
 
     // MARK: DragNDropDelegate
 
-    func dragFinished(content: String) {
+    func dragFinished(content: String, filePath: String?) {
         do {
-            try AppController.shared.importLyrics(content)
+            try AppController.shared.importLyrics(content, filePath: filePath)
         } catch {
             let alert = NSAlert(error: error)
             alert.beginSheetModal(for: view.window!)

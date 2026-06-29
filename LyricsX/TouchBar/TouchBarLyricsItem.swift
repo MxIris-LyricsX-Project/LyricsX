@@ -52,7 +52,10 @@ class TouchBarLyricsItem: NSCustomTouchBarItem {
         DispatchQueue.main.async {
             self.lyricsTextField.stringValue = lyricsContent
             if let timetag = line.attachments.timetag {
-                let progress = timetag.tags.map { ($0.time + line.position - timeDelay - position, $0.index) }
+                var progress = timetag.tags.map { ($0.time + line.position - timeDelay - position, $0.index) }
+                if let duration = timetag.duration, duration > 0 {
+                    progress.append((duration + line.position - timeDelay - position, line.content.count))
+                }
                 self.lyricsTextField.setProgressAnimation(color: self.progressColor, progress: progress)
                 if !playbackState.isPlaying {
                     self.lyricsTextField.pauseProgressAnimation()

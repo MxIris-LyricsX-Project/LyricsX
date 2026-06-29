@@ -2503,6 +2503,30 @@
         }
       }
     },
+    "AMG-Cl-L01.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Lyrics Language:\"; ObjectID = \"AMG-Cl-L01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lyrics Language:"
+          }
+        }
+      }
+    },
+    "AMG-Cl-N01.placeholderString" : {
+      "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"System default (e.g. zh-Hans, ja-JP)\"; ObjectID = \"AMG-Cl-N01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "System default (e.g. zh-Hans, ja-JP)"
+          }
+        }
+      }
+    },
     "AML-Cl-001.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Use Apple Music-style lyrics window\"; ObjectID = \"AML-Cl-001\";",
       "extractionState" : "extracted_with_value",
@@ -2607,6 +2631,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用 Apple Music 風格的歌詞視窗"
+          }
+        }
+      }
+    },
+    "AMS-Cl-L01.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Storefront:\"; ObjectID = \"AMS-Cl-L01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Storefront:"
+          }
+        }
+      }
+    },
+    "AMS-Cl-N01.placeholderString" : {
+      "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Auto-detect (e.g. cn, us, jp)\"; ObjectID = \"AMS-Cl-N01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Auto-detect (e.g. cn, us, jp)"
+          }
+        }
+      }
+    },
+    "AMT-Cl-L01.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Apple Music Token:\"; ObjectID = \"AMT-Cl-L01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apple Music Token:"
+          }
+        }
+      }
+    },
+    "AMT-Cl-N01.placeholderString" : {
+      "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Paste media-user-token from music.apple.com\"; ObjectID = \"AMT-Cl-N01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Paste media-user-token from music.apple.com"
           }
         }
       }
@@ -3621,6 +3693,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "延遲顯示歌詞："
+          }
+        }
+      }
+    },
+    "bta-bC-005.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Receive beta updates\"; ObjectID = \"bta-bC-005\";",
+      "extractionState" : "manual",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive beta updates"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receive beta updates"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收 Beta 版更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收 Beta 版更新"
           }
         }
       }
@@ -9721,120 +9823,6 @@
         }
       }
     },
-    "source-Kana-Cell.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Use source-provided kana when available\"; ObjectID = \"source-Kana-Cell\";",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "استخدام الكانا المقدَّمة من المصدر عند توفرها"
-          }
-        },
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use source-provided kana when available"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vom Anbieter bereitgestellte Kana verwenden, sofern verfügbar"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Use source-provided kana when available"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar los kana proporcionados por la fuente cuando estén disponibles"
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "استفاده از کانای ارائه‌شده توسط منبع در صورت موجود بودن"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utiliser les kana fournis par la source lorsqu’ils sont disponibles"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gunakan kana yang disediakan sumber jika tersedia"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa i kana forniti dalla fonte quando disponibili"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "取得元が提供するかなを優先的に使用する"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "출처에서 제공하는 가나를 가능할 때 사용"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Door bron aangeleverde kana gebruiken indien beschikbaar"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Używaj kana dostarczonych przez źródło, jeśli są dostępne"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar os kana fornecidos pela fonte quando disponíveis"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Использовать кану из источника, если она доступна"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Використовувати кану з джерела, якщо доступна"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "优先使用歌词源提供的假名"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "優先使用歌詞源提供的假名"
-          }
-        }
-      }
-    },
     "new-Romajin-Cell.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romajin for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
       "extractionState" : "extracted_with_value",
@@ -11797,6 +11785,120 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全體歌詞時間軸偏移 (ms)："
+          }
+        }
+      }
+    },
+    "source-Kana-Cell.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Use source-provided kana when available\"; ObjectID = \"source-Kana-Cell\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدام الكانا المقدَّمة من المصدر عند توفرها"
+          }
+        },
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use source-provided kana when available"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vom Anbieter bereitgestellte Kana verwenden, sofern verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use source-provided kana when available"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar los kana proporcionados por la fuente cuando estén disponibles"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استفاده از کانای ارائه‌شده توسط منبع در صورت موجود بودن"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser les kana fournis par la source lorsqu’ils sont disponibles"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan kana yang disediakan sumber jika tersedia"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa i kana forniti dalla fonte quando disponibili"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取得元が提供するかなを優先的に使用する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처에서 제공하는 가나를 가능할 때 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Door bron aangeleverde kana gebruiken indien beschikbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Używaj kana dostarczonych przez źródło, jeśli są dostępne"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar os kana fornecidos pela fonte quando disponíveis"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать кану из источника, если она доступна"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Використовувати кану з джерела, якщо доступна"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优先使用歌词源提供的假名"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先使用歌詞源提供的假名"
           }
         }
       }
@@ -15558,36 +15660,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全體歌詞時間軸偏移 (ms)："
-          }
-        }
-      }
-    },
-    "bta-bC-005.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Receive beta updates\"; ObjectID = \"bta-bC-005\";",
-      "extractionState" : "manual",
-      "localizations" : {
-        "base" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Receive beta updates"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Receive beta updates"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "接收 Beta 版更新"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "接收 Beta 版更新"
           }
         }
       }
