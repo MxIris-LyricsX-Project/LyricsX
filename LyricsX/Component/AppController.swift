@@ -90,7 +90,7 @@ final class AppController: NSObject {
         .map { (defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name) }
         .removeDuplicates(by: ==)
         .sink { [weak self] _ in
-            Task { @MainActor in self?.updateLyricsManager() }
+            Task { @MainActor in await self?.updateLyricsManager() }
         }
         .store(in: &cancelBag)
 
@@ -162,21 +162,49 @@ final class AppController: NSObject {
 
         currentTrackChanged()
 
-        Task { @MainActor in
-            updateLyricsManager()
+        Task {
+            // Prime the Apple Music amp-api session: store the user's
+            // `media-user-token`, plus any storefront / language override
+            // they pinned in preferences. The overrides are pure state
+            // bias for the provider's path-building; only `configure`
+            // triggers any network work (the lazy developer-token fetch
+            // on the next `musicAPI()` call).
+            if #available(macOS 12.0, *) {
+                if let token = defaults[.appleMusicMediaUserToken], !token.isEmpty {
+                    await AppleMusicSession.shared.configure(mediaUserToken: token)
+                }
+                if let storefront = defaults[.appleMusicStorefront], !storefront.isEmpty {
+                    await AppleMusicSession.shared.setStorefrontOverride(storefront)
+                }
+                if let language = defaults[.appleMusicLanguage], !language.isEmpty {
+                    await AppleMusicSession.shared.setLanguageOverride(language)
+                }
+            }
+            await updateLyricsManager()
         }
     }
 
     @MainActor
-    func updateLyricsManager() {
+    func updateLyricsManager() async {
         let musixmatchToken = defaults[.musixmatchToken].flatMap { $0.isEmpty ? nil : $0 }
-        let providers: [LyricsProvider] = [
+        var providers: [LyricsProvider] = [
             LyricsProviders.Service.netease.create(),
             LyricsProviders.Service.qq.create(),
             LyricsProviders.Service.kugou.create(),
             LyricsProviders.Service.lrclib.create(),
             LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)),
         ]
+        // Route A: official Apple Music syllable-lyrics via amp-api. Only
+        // registered when the user supplied a `media-user-token` AND the
+        // session can actually reach amp-api with it (the probe hits
+        // `/v1/me/storefront` once, cached per-process) — without that,
+        // every fetch would 401 and pollute the result stream.
+        if #available(macOS 12.0, *),
+           let token = defaults[.appleMusicMediaUserToken],
+           !token.isEmpty,
+           await AppleMusicSession.shared.isAuthorized() {
+            providers.append(LyricsProviders.Service.appleMusic.create())
+        }
         // Route B: for Apple Music tracks, a search plugin recovers the
         // native-script name via the Apple Music catalog so the providers
         // can match it. The plugin runs upstream of the providers — it
@@ -646,8 +674,17 @@ final class AppController: NSObject {
 }
 
 extension AppController {
-    func importLyrics(_ lyricsString: String) throws {
-        guard let lrc = Lyrics(lyricsString) else {
+    func importLyrics(_ lyricsString: String, filePath: String? = nil) throws {
+        // Pick the parser by file extension first (drag-and-drop of a `.ttml`
+        // file). For pasted text without a path, auto-detect by root element.
+        let isTTML: Bool = {
+            if let filePath {
+                return (filePath as NSString).pathExtension.lowercased() == "ttml"
+            }
+            return lyricsString.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<tt")
+        }()
+        let parsed: Lyrics? = isTTML ? Lyrics(ttmlContent: lyricsString) : Lyrics(lyricsString)
+        guard let lrc = parsed else {
             let errorInfo = [
                 NSLocalizedDescriptionKey: "Invalid lyric file",
                 NSLocalizedRecoverySuggestionErrorKey: "Please try another one.",

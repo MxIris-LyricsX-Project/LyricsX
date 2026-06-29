@@ -201,6 +201,23 @@ extension UserDefaults.DefaultsKeys {
     // Apple Music Route B — recover a track's native-script name via the
     // Apple Music catalog so the third-party providers can match it.
     static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")
+
+    // Apple Music Route A — official syllable-lyrics, fetched via the
+    // amp-api `music.api.music()` from a `WKWebView` signed in with the
+    // user's `media-user-token`. The token is pasted by the user (it
+    // cannot be obtained programmatically without MusicKit Capability +
+    // user consent, which Route A's endpoint does not honor).
+    //
+    // When empty, the Apple Music provider is not registered.
+    static let appleMusicMediaUserToken = Key<String?>("AppleMusicMediaUserToken")
+
+    // Storefront override (2-letter country code, e.g. "cn", "us", "jp").
+    // When empty, auto-detected via `/v1/me/storefront`.
+    static let appleMusicStorefront = Key<String?>("AppleMusicStorefront")
+
+    // Language override for TTML translations (e.g. "zh-Hans", "ja-JP").
+    // When empty, uses `Locale.preferredLanguages[0]`.
+    static let appleMusicLanguage = Key<String?>("AppleMusicLanguage")
 }
 
 // MARK: - Lyrics Priority

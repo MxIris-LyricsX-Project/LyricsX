@@ -1519,6 +1519,9 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="AML-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ANR-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
+                                    <gridRow yPlacement="fill" height="30" topPadding="5" id="AMT-Ro-W01"/>
+                                    <gridRow yPlacement="fill" height="30" topPadding="5" id="AMS-Ro-W01"/>
+                                    <gridRow yPlacement="fill" height="30" topPadding="5" id="AMG-Ro-W01"/>
                                     <gridRow yPlacement="fill" height="30" topPadding="5" id="lp0-JX-wTa"/>
                                 </rows>
                                 <columns>
@@ -1746,6 +1749,75 @@
                                             </buttonCell>
                                         </button>
                                     </gridCell>
+                                    <gridCell row="AMT-Ro-W01" column="8ba-lF-U7s" yPlacement="center" id="AMT-Ce-L01">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AMT-Lb-T01">
+                                            <rect key="frame" x="0" y="0" width="150" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Apple Music Token:" id="AMT-Cl-L01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AMT-Ro-W01" column="4uA-B7-Dvh" yPlacement="center" id="AMT-Ce-R01">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="AMT-Tf-N01">
+                                            <rect key="frame" x="170" y="4" width="350" height="22"/>
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Paste media-user-token from music.apple.com" usesSingleLineMode="YES" bezelStyle="round" id="AMT-Cl-N01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <action selector="appleMusicMediaUserTokenChanged:" target="JPs-hn-m7d" id="AMT-Ac-N01"/>
+                                            </connections>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AMS-Ro-W01" column="8ba-lF-U7s" yPlacement="center" id="AMS-Ce-L01">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AMS-Lb-T01">
+                                            <rect key="frame" x="0" y="0" width="150" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Storefront:" id="AMS-Cl-L01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AMS-Ro-W01" column="4uA-B7-Dvh" yPlacement="center" id="AMS-Ce-R01">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="AMS-Tf-N01">
+                                            <rect key="frame" x="170" y="4" width="200" height="22"/>
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Auto-detect (e.g. cn, us, jp)" usesSingleLineMode="YES" bezelStyle="round" id="AMS-Cl-N01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <action selector="appleMusicStorefrontChanged:" target="JPs-hn-m7d" id="AMS-Ac-N01"/>
+                                            </connections>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AMG-Ro-W01" column="8ba-lF-U7s" yPlacement="center" id="AMG-Ce-L01">
+                                        <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AMG-Lb-T01">
+                                            <rect key="frame" x="0" y="0" width="150" height="16"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="Lyrics Language:" id="AMG-Cl-L01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </gridCell>
+                                    <gridCell row="AMG-Ro-W01" column="4uA-B7-Dvh" yPlacement="center" id="AMG-Ce-R01">
+                                        <textField key="contentView" focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="AMG-Tf-N01">
+                                            <rect key="frame" x="170" y="4" width="200" height="22"/>
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" refusesFirstResponder="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="System default (e.g. zh-Hans, ja-JP)" usesSingleLineMode="YES" bezelStyle="round" id="AMG-Cl-N01">
+                                                <font key="font" usesAppearanceFont="YES"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <action selector="appleMusicLanguageChanged:" target="JPs-hn-m7d" id="AMG-Ac-N01"/>
+                                            </connections>
+                                        </textField>
+                                    </gridCell>
                                     <gridCell row="lp0-JX-wTa" column="8ba-lF-U7s" yPlacement="center" id="YZh-w9-vzD">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="g7i-g1-pzs">
                                             <rect key="frame" x="32" y="7" width="120" height="16"/>
@@ -1780,7 +1852,10 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="appleMusicLanguageField" destination="AMG-Tf-N01" id="AMG-Ot-U01"/>
+                        <outlet property="appleMusicMediaUserTokenField" destination="AMT-Tf-N01" id="AMT-Ot-U01"/>
                         <outlet property="appleMusicNameRecoveryButton" destination="ANR-Bt-N01" id="ANR-Ot-U01"/>
+                        <outlet property="appleMusicStorefrontField" destination="AMS-Tf-N01" id="AMS-Ot-U01"/>
                         <outlet property="artworkSimilarityBoostButton" destination="ART-Bt-N01" id="ART-Ot-U01"/>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
