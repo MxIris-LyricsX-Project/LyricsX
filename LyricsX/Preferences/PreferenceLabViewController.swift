@@ -75,50 +75,36 @@ class PreferenceLabViewController: PreferenceViewController {
     // MARK: - Apple Music media-user-token / overrides
 
     /// The user pastes their `media-user-token` (copied from Safari's
-    /// `music.apple.com` cookies). Saving it reconfigures the off-screen
-    /// web session so MusicKit on that page picks up the injected cookie.
+    /// `music.apple.com` cookies). The provider rebuild picks up the new
+    /// value and constructs a fresh `AppleMusicSession` against it.
     @IBAction func appleMusicMediaUserTokenChanged(_ sender: NSTextField) {
         let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmed = value.isEmpty ? nil : value
-        if let trimmed {
-            defaults[.appleMusicMediaUserToken] = trimmed
-        } else {
+        if value.isEmpty {
             defaults.remove(.appleMusicMediaUserToken)
+        } else {
+            defaults[.appleMusicMediaUserToken] = value
         }
-
-        guard #available(macOS 12.0, *) else { return }
-        Task {
-            if let trimmed {
-                await AppleMusicSession.shared.configure(mediaUserToken: trimmed)
-            } else {
-                await AppleMusicSession.shared.clearToken()
-            }
-            await AppController.shared.updateLyricsManager()
-        }
+        Task { @MainActor in await AppController.shared.updateLyricsManager() }
     }
 
     @IBAction func appleMusicStorefrontChanged(_ sender: NSTextField) {
         let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmed = value.isEmpty ? nil : value
-        if let trimmed {
-            defaults[.appleMusicStorefront] = trimmed
-        } else {
+        if value.isEmpty {
             defaults.remove(.appleMusicStorefront)
+        } else {
+            defaults[.appleMusicStorefront] = value
         }
-        guard #available(macOS 12.0, *) else { return }
-        Task { await AppleMusicSession.shared.setStorefrontOverride(trimmed) }
+        Task { @MainActor in await AppController.shared.updateLyricsManager() }
     }
 
     @IBAction func appleMusicLanguageChanged(_ sender: NSTextField) {
         let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmed = value.isEmpty ? nil : value
-        if let trimmed {
-            defaults[.appleMusicLanguage] = trimmed
-        } else {
+        if value.isEmpty {
             defaults.remove(.appleMusicLanguage)
+        } else {
+            defaults[.appleMusicLanguage] = value
         }
-        guard #available(macOS 12.0, *) else { return }
-        Task { await AppleMusicSession.shared.setLanguageOverride(trimmed) }
+        Task { @MainActor in await AppController.shared.updateLyricsManager() }
     }
 
     @IBAction func customizeAllowsNowPlayingApplicationsAction(_ sender: NSButton) {

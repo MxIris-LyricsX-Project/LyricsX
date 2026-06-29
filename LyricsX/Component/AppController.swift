@@ -162,26 +162,7 @@ final class AppController: NSObject {
 
         currentTrackChanged()
 
-        Task {
-            // Prime the Apple Music amp-api session: store the user's
-            // `media-user-token`, plus any storefront / language override
-            // they pinned in preferences. The overrides are pure state
-            // bias for the provider's path-building; only `configure`
-            // triggers any network work (the lazy developer-token fetch
-            // on the next `musicAPI()` call).
-            if #available(macOS 12.0, *) {
-                if let token = defaults[.appleMusicMediaUserToken], !token.isEmpty {
-                    await AppleMusicSession.shared.configure(mediaUserToken: token)
-                }
-                if let storefront = defaults[.appleMusicStorefront], !storefront.isEmpty {
-                    await AppleMusicSession.shared.setStorefrontOverride(storefront)
-                }
-                if let language = defaults[.appleMusicLanguage], !language.isEmpty {
-                    await AppleMusicSession.shared.setLanguageOverride(language)
-                }
-            }
-            await updateLyricsManager()
-        }
+        Task { await updateLyricsManager() }
     }
 
     @MainActor
@@ -196,14 +177,22 @@ final class AppController: NSObject {
         ]
         // Route A: official Apple Music syllable-lyrics via amp-api. Only
         // registered when the user supplied a `media-user-token` AND the
-        // session can actually reach amp-api with it (the probe hits
-        // `/v1/me/storefront` once, cached per-process) — without that,
+        // provider can actually reach amp-api with it (`isAuthorized` hits
+        // `/v1/me/storefront` once, cached per-instance) — without that,
         // every fetch would 401 and pollute the result stream.
         if #available(macOS 12.0, *),
            let token = defaults[.appleMusicMediaUserToken],
-           !token.isEmpty,
-           await AppleMusicSession.shared.isAuthorized() {
-            providers.append(LyricsProviders.Service.appleMusic.create())
+           !token.isEmpty {
+            let appleMusicProvider = LyricsProviders.Service.appleMusic.create(
+                .init(
+                    mediaUserToken: token,
+                    storefrontOverride: defaults[.appleMusicStorefront].flatMap { $0.isEmpty ? nil : $0 },
+                    languageOverride: defaults[.appleMusicLanguage].flatMap { $0.isEmpty ? nil : $0 }
+                )
+            )
+            if await appleMusicProvider.isAuthorized {
+                providers.append(appleMusicProvider)
+            }
         }
         // Route B: for Apple Music tracks, a search plugin recovers the
         // native-script name via the Apple Music catalog so the providers
