@@ -250,7 +250,12 @@ class KaraokeLyricsWindowController: NSWindowController {
                 // animation is not seeded from a stale `selectedPlayer.playbackTime`
                 // around repeat-one wrap or track-change boundaries.
                 let position = playbackState.lyricsDisplayTime(trackDuration: trackDuration)
-                let progress = timetag.tags.map { ($0.time + lrc.position - timeDelay - position, $0.index) }
+                var progress = timetag.tags.map { ($0.time + lrc.position - timeDelay - position, $0.index) }
+                // Append a final keyframe at the line's end so the last word
+                // fills progressively instead of getting stuck at its begin tag.
+                if let duration = timetag.duration, duration > 0 {
+                    progress.append((duration + lrc.position - timeDelay - position, lrc.content.count))
+                }
                 upperTextField.setProgressAnimation(color: self.lyricsView.progressColor, progress: progress)
                 if !isPlaying {
                     upperTextField.pauseProgressAnimation()
