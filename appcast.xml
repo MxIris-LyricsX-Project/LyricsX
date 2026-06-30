@@ -5,6 +5,20 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-beta.10</title>
+            <pubDate>Tue, 30 Jun 2026 16:23:26 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900110</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-beta.10</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li><strong>Internal release pipeline housekeeping</strong> — placeholder; no user-visible changes.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.10/LyricsX_1.9.0-beta.10+10900110.zip" length="9534071" type="application/octet-stream" sparkle:edSignature="vjdUCkJvmayZnWR6BI6Vm37zFtgev+q/2HatGYBlG+2H6Z32WomE5Q+al/tY9wkrDIjAgeHRFF3r7OcY4VWBCg==" />
+        </item>
+        <item>
             <title>1.9.0-beta.9</title>
             <pubDate>Sun, 28 Jun 2026 12:31:16 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
