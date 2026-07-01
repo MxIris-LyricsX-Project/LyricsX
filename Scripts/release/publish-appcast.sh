@@ -56,27 +56,39 @@ git_id() {
 
 case "$MODE" in
     canonical)
-        log_info "Updating canonical appcast.xml in current checkout"
-        APPCAST_PATH="appcast.xml" \
+        CANONICAL_DIRECTORY="build/canonical-appcast"
+        rm -rf "$CANONICAL_DIRECTORY"
+        mkdir -p build
+
+        CANONICAL_REPOSITORY_URL="$(git remote get-url origin)"
+        CANONICAL_REPOSITORY_TOKEN="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
+        if [ -n "$CANONICAL_REPOSITORY_TOKEN" ]; then
+            CANONICAL_REPOSITORY_URL="https://x-access-token:${CANONICAL_REPOSITORY_TOKEN}@github.com/MxIris-LyricsX-Project/LyricsX.git"
+        fi
+
+        log_info "Cloning canonical master appcast branch"
+        git clone --depth 1 --branch master "$CANONICAL_REPOSITORY_URL" "$CANONICAL_DIRECTORY"
+
+        log_info "Updating canonical appcast.xml"
+        APPCAST_PATH="${CANONICAL_DIRECTORY}/appcast.xml" \
         VERSION="$VERSION" BUILD="$BUILD" \
         ED_SIGNATURE="$ED_SIGNATURE" ZIP_LENGTH="$ZIP_LENGTH" \
         MIN_SYSTEM_VERSION="$MIN_SYSTEM_VERSION" \
         IS_PRERELEASE="$IS_PRERELEASE" \
             python3 Scripts/release/update-appcast.py
 
-        if git diff --quiet -- appcast.xml; then
+        if (cd "$CANONICAL_DIRECTORY" && git diff --quiet -- appcast.xml); then
             log_info "appcast.xml unchanged — nothing to commit."
             exit 0
         fi
 
-        git_id
-        git add appcast.xml
-        git commit -m "release: update appcast.xml for v${VERSION}"
-        # --autostash: the archive step leaves unrelated working-tree churn
-        # (e.g. a re-resolved Package.resolved); only appcast.xml is staged
-        # into the commit, so carry the rest across the rebase untouched.
-        git pull --rebase --autostash origin master
-        git push origin HEAD:master
+        (
+            cd "$CANONICAL_DIRECTORY"
+            git_id
+            git add appcast.xml
+            git commit -m "release: update appcast.xml for v${VERSION}"
+            git push origin HEAD:master
+        )
         ;;
 
     mirror)

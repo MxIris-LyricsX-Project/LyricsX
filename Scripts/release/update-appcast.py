@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Insert a new <item> into a Sparkle appcast.xml file.
+"""Insert or refresh an <item> in a Sparkle appcast.xml file.
 
-Append-only and idempotent: the new <item> is spliced in as plain text
-in front of the first existing <item>; every other byte of the file —
-including the CDATA blocks of older items — is left untouched. If an
-item for the same version is already present, the file is not modified.
+Append-only for new releases: the new <item> is spliced in as plain text
+in front of the first existing <item>; every other byte of the file is left
+untouched. If an item for the same version is already present, only its
+<description> CDATA block is refreshed from the current release notes.
 
 Inputs (env):
     APPCAST_PATH            path to the appcast.xml file to modify
@@ -91,6 +91,42 @@ def markdown_to_html(markdown_text: str) -> str:
     return "\n".join(rendered_lines)
 
 
+def replace_existing_item_description(
+    appcast_text: str,
+    short_version_tag: str,
+    description: str,
+) -> tuple[str, bool]:
+    short_version_index = appcast_text.find(short_version_tag)
+    if short_version_index == -1:
+        return appcast_text, False
+
+    item_start_index = appcast_text.rfind("        <item>", 0, short_version_index)
+    item_end_index = appcast_text.find("        </item>", short_version_index)
+    if item_start_index == -1 or item_end_index == -1:
+        sys.exit(f"[ERROR] Found {short_version_tag}, but could not locate its <item> block.")
+
+    item_end_index += len("        </item>")
+    item_text = appcast_text[item_start_index:item_end_index]
+    description_pattern = re.compile(
+        r"<description><!\[CDATA\[.*?\]\]></description>",
+        re.DOTALL,
+    )
+    if not description_pattern.search(item_text):
+        sys.exit(f"[ERROR] Found {short_version_tag}, but it has no <description> block.")
+
+    refreshed_description = f"<description><![CDATA[{description}]]></description>"
+    refreshed_item_text = description_pattern.sub(refreshed_description, item_text, count=1)
+    if refreshed_item_text == item_text:
+        return appcast_text, True
+
+    refreshed_appcast_text = (
+        appcast_text[:item_start_index]
+        + refreshed_item_text
+        + appcast_text[item_end_index:]
+    )
+    return refreshed_appcast_text, True
+
+
 def main() -> int:
     appcast_path = Path(require("APPCAST_PATH"))
     version = require("VERSION")
@@ -108,22 +144,30 @@ def main() -> int:
         sys.exit(f"[ERROR] RELEASE_NOTES_PATH does not exist: {release_notes_path}")
 
     raw = appcast_path.read_text(encoding="utf-8")
+    description = markdown_to_html(release_notes_path.read_text(encoding="utf-8").strip())
+    if "]]>" in description:
+        sys.exit("[ERROR] Release notes contain ']]>', which would break the CDATA block.")
 
     short_version_tag = (
         f"<sparkle:shortVersionString>{version}</sparkle:shortVersionString>"
     )
-    if short_version_tag in raw:
-        print(f"[INFO] {appcast_path}: item {version} already present, no change.")
+    refreshed_raw, item_already_present = replace_existing_item_description(
+        raw,
+        short_version_tag,
+        description,
+    )
+    if item_already_present:
+        if refreshed_raw == raw:
+            print(f"[INFO] {appcast_path}: item {version} already present, no change.")
+        else:
+            appcast_path.write_text(refreshed_raw, encoding="utf-8")
+            print(f"[INFO] {appcast_path}: refreshed description for v{version}.")
         return 0
 
     enclosure_url = (
         "https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/"
         f"v{version}/LyricsX_{version}+{build}.zip"
     )
-    description = markdown_to_html(release_notes_path.read_text(encoding="utf-8").strip())
-    if "]]>" in description:
-        sys.exit("[ERROR] Release notes contain ']]>', which would break the CDATA block.")
-
     is_prerelease = os.environ.get("IS_PRERELEASE", "").lower() == "true"
     channel_element = (
         "            <sparkle:channel>beta</sparkle:channel>\n"
