@@ -12,9 +12,9 @@
             <sparkle:shortVersionString>1.9.0-beta.10</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
             <description><![CDATA[<h2>What's New</h2>
-<h3>Fixes</h3>
+<h3>New</h3>
 <ul>
-<li><strong>Internal release pipeline housekeeping</strong> — placeholder; no user-visible changes.</li>
+<li><strong>Apple Music lyrics source</strong> — LyricsX can now fetch lyrics from Apple Music. To use it, sign in to Apple Music in your browser, find the `media-user-token` value in the site's cookies, then paste that token into LyricsX preferences.</li>
 </ul>]]></description>
             <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.10/LyricsX_1.9.0-beta.10+10900110.zip" length="9534071" type="application/octet-stream" sparkle:edSignature="vjdUCkJvmayZnWR6BI6Vm37zFtgev+q/2HatGYBlG+2H6Z32WomE5Q+al/tY9wkrDIjAgeHRFF3r7OcY4VWBCg==" />
         </item>
