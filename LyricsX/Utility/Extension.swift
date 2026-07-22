@@ -86,13 +86,38 @@ extension UserDefaults {
 }
 
 extension UserDefaults {
+    var lyricsDefaultSavingDirectory: URL {
+        let userPath = String(cString: getpwuid(getuid()).pointee.pw_dir)
+        return URL(fileURLWithPath: userPath).appendingPathComponent("Music/LyricsX")
+    }
+
     func lyricsSavingPath() -> (URL, security: Bool) {
         if self[.lyricsSavingPathPopUpIndex] != 0, let path = lyricsCustomSavingPath {
             return (path, true)
         } else {
-            let userPath = String(cString: getpwuid(getuid()).pointee.pw_dir)
-            return (URL(fileURLWithPath: userPath).appendingPathComponent("Music/LyricsX"), false)
+            return (lyricsDefaultSavingDirectory, false)
         }
+    }
+
+    func lyricsSavingDestination(
+        title: String?,
+        artist: String?
+    ) -> LyricsStorageDestination? {
+        return LyricsStoragePolicy.destination(
+            locationRawValue: self[.lyricsSavingPathPopUpIndex],
+            title: title,
+            artist: artist,
+            defaultDirectoryURL: lyricsDefaultSavingDirectory,
+            customDirectoryURL: lyricsCustomSavingPath
+        )
+    }
+
+    func lyricsSecurityScopedDirectory(containing fileURL: URL) -> URL? {
+        guard let directoryURL = lyricsCustomSavingPath,
+              LyricsStoragePolicy.contains(fileURL, in: directoryURL) else {
+            return nil
+        }
+        return directoryURL
     }
 
     var lyricsCustomSavingPath: URL? {
@@ -129,50 +154,65 @@ extension Lyrics {
     }
 
     var fileName: String? {
-        guard let title = metadata.title?.replacingOccurrences(of: "/", with: ":"),
-              let artist = metadata.artist?.replacingOccurrences(of: "/", with: ":") else {
+        guard let baseName = LyricsStoragePolicy.libraryFileBaseName(
+            title: metadata.title,
+            artist: metadata.artist
+        ) else {
             return nil
         }
-        return "\(title) - \(artist).lrcx"
+        return "\(baseName).lrcx"
     }
 
-    func persist() {
-        let (url, security) = defaults.lyricsSavingPath()
-        if security {
-            guard url.startAccessingSecurityScopedResource() else {
-                return
+    @discardableResult
+    func persist() -> Bool {
+        let destination: LyricsStorageDestination
+        if let localURL = metadata.localURL {
+            destination = LyricsStorageDestination(
+                fileURL: localURL,
+                securityScopedDirectoryURL: defaults.lyricsSecurityScopedDirectory(containing: localURL)
+            )
+        } else if let newDestination = defaults.lyricsSavingDestination(
+            title: metadata.title,
+            artist: metadata.artist
+        ) {
+            destination = newDestination
+        } else {
+            return false
+        }
+
+        let securityURL = destination.securityScopedDirectoryURL
+        if let securityURL {
+            guard securityURL.startAccessingSecurityScopedResource() else {
+                return false
             }
         }
         defer {
-            if security {
-                url.stopAccessingSecurityScopedResource()
+            if let securityURL {
+                securityURL.stopAccessingSecurityScopedResource()
             }
         }
+
+        let fileURL = destination.fileURL
+        let directoryURL = fileURL.deletingLastPathComponent()
         let fileManager = FileManager.default
 
         do {
             var isDir: ObjCBool = false
-            if fileManager.fileExists(atPath: url.path, isDirectory: &isDir) {
-                if !isDir.boolValue {
-                    return
+            if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDir) {
+                guard isDir.boolValue else {
+                    return false
                 }
             } else {
-                try fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+                try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
             }
 
-            guard let lrcFileURL = fileName.map(url.appendingPathComponent) else {
-                return
-            }
-
-            if fileManager.fileExists(atPath: lrcFileURL.path) {
-                try fileManager.removeItem(at: lrcFileURL)
-            }
-            try description.write(to: lrcFileURL, atomically: true, encoding: .utf8)
-            metadata.localURL = lrcFileURL
+            try Data(description.utf8).write(to: fileURL, options: .atomic)
+            metadata.localURL = fileURL
             metadata.needsPersist = false
+            return true
         } catch {
             log(error.localizedDescription)
-            return
+            return false
         }
     }
 }
