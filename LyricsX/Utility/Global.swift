@@ -168,6 +168,12 @@ extension UserDefaults.DefaultsKeys {
 
     static let musixmatchToken = Key<String?>("MusixmatchToken")
 
+    static let aiLyricsTranslationEnabled = Key<Bool>("AILyricsTranslationEnabled")
+    static let aiLyricsTranslationEndpoint = Key<String>("AILyricsTranslationEndpoint")
+    static let aiLyricsTranslationModel = Key<String>("AILyricsTranslationModel")
+    static let aiLyricsTranslationTargetLanguage = Key<String>("AILyricsTranslationTargetLanguage")
+    static let aiLyricsTranslationPrompt = Key<String>("AILyricsTranslationPrompt")
+
     //
     static let isInMASReview = Key<Bool?>("isInMASReview")
 

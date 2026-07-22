@@ -14790,6 +14790,36 @@
         }
       }
     },
+    "ai-translation-label-inner.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"AI lyrics translation:\"; ObjectID = \"ai-translation-label-inner\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : { "stringUnit" : { "state" : "translated", "value" : "AI lyrics translation:" } },
+        "en" : { "stringUnit" : { "state" : "new", "value" : "AI lyrics translation:" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "AI 歌词翻译：" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "AI 歌詞翻譯：" } }
+      }
+    },
+    "ai-translation-enable-cell.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Enable\"; ObjectID = \"ai-translation-enable-cell\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : { "stringUnit" : { "state" : "translated", "value" : "Enable" } },
+        "en" : { "stringUnit" : { "state" : "new", "value" : "Enable" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "启用" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "啟用" } }
+      }
+    },
+    "ai-translation-configure-cell.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Configure...\"; ObjectID = \"ai-translation-configure-cell\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : { "stringUnit" : { "state" : "translated", "value" : "Configure..." } },
+        "en" : { "stringUnit" : { "state" : "new", "value" : "Configure..." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "配置..." } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "設定..." } }
+      }
+    },
     "zS6-oP-7aR.title" : {
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Global offset (ms):\"; ObjectID = \"zS6-oP-7aR\";",
       "extractionState" : "extracted_with_value",

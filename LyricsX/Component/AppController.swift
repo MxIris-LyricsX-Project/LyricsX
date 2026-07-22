@@ -4,6 +4,7 @@ import Regex
 import OpenCC
 import MusicPlayer
 import LyricsXFoundation
+import os.log
 
 private final class LyricsDisplayTransfer<Value>: @unchecked Sendable {
     let value: Value
@@ -26,6 +27,7 @@ final class AppController: NSObject, @unchecked Sendable {
         didSet {
             didChangeValue(forKey: "lyricsOffset")
             scheduleCurrentLineCheck()
+            scheduleAITranslationForCurrentLyrics()
         }
     }
 
@@ -35,6 +37,11 @@ final class AppController: NSObject, @unchecked Sendable {
     private var searchTask: Task<Void, Never>?
     private var searchDeadline: DispatchWorkItem?
     private var automaticSearchGeneration: UUID?
+    private var defersAITranslationUntilSearchCompletes = false
+
+    private var aiTranslationScheduleGeneration: UUID?
+    private var aiTranslationTask: Task<Void, Never>?
+    private var aiTranslationGeneration: UUID?
 
     private var cancelBag = Set<AnyCancellable>()
 
@@ -59,10 +66,12 @@ final class AppController: NSObject, @unchecked Sendable {
     func setCurrentLyrics(_ lyrics: Lyrics?) {
         if DispatchQueue.isOnLyricsDisplay {
             cancelAutomaticLyricsSearchOnLyricsDisplay()
+            cancelAITranslationOnLyricsDisplay()
             currentLyrics = lyrics
         } else {
             DispatchQueue.lyricsDisplay.sync {
                 self.cancelAutomaticLyricsSearchOnLyricsDisplay()
+                self.cancelAITranslationOnLyricsDisplay()
                 self.currentLyrics = lyrics
             }
         }
@@ -183,7 +192,9 @@ final class AppController: NSObject, @unchecked Sendable {
                 }
                 if defaults[.writeiTunesWithTranslation] {
                     // TODO: tagged translation
-                    let code = currentLyrics.metadata.translationLanguages.first
+                    let code = currentLyrics.metadata.preferredTranslationLanguage(
+                        targetLanguage: defaults[.aiLyricsTranslationTargetLanguage]
+                    )
                     if var translation = line.attachments[.translation(languageCode: code)] {
                         if let converter = ChineseConverter.shared {
                             translation = converter.convert(translation)
@@ -205,6 +216,7 @@ final class AppController: NSObject, @unchecked Sendable {
             currentLyrics?.persist()
         }
         cancelAutomaticLyricsSearchOnLyricsDisplay()
+        cancelAITranslationOnLyricsDisplay()
         currentLyrics = nil
         currentLineIndex = nil
         guard let track = selectedPlayer.currentTrack else {
@@ -244,13 +256,13 @@ final class AppController: NSObject, @unchecked Sendable {
         }
 
         let (url, security) = defaults.lyricsSavingPath()
-        let titleForReading = title.replacingOccurrences(of: "/", with: ":")
-        let artistForReading = artist.replacingOccurrences(of: "/", with: ":")
-        let fileName = url.appendingPathComponent("\(titleForReading) - \(artistForReading)")
-        candidateLyricsURL += [
-            (fileName.appendingPathExtension("lrcx"), security, false),
-            (fileName.appendingPathExtension("lrc"), security, true),
-        ]
+        for baseName in LyricsStoragePolicy.libraryFileBaseNameCandidates(title: title, artist: artist) {
+            let fileName = url.appendingPathComponent(baseName)
+            candidateLyricsURL += [
+                (fileName.appendingPathExtension("lrcx"), security, false),
+                (fileName.appendingPathExtension("lrc"), security, true),
+            ]
+        }
 
         for (url, security, needsSearching) in candidateLyricsURL {
             if security {
@@ -271,6 +283,9 @@ final class AppController: NSObject, @unchecked Sendable {
                 lyrics.metadata.artist = artist
                 lyrics.filtrate()
                 lyrics.recognizeLanguage()
+                if needsSearching {
+                    defersAITranslationUntilSearchCompletes = true
+                }
                 currentLyrics = lyrics
                 if needsSearching {
                     break
@@ -281,6 +296,8 @@ final class AppController: NSObject, @unchecked Sendable {
         }
 
         if let album = track.album, defaults[.noSearchingAlbumNames].contains(album) {
+            defersAITranslationUntilSearchCompletes = false
+            scheduleAITranslationForCurrentLyrics()
             return
         }
 
@@ -291,6 +308,7 @@ final class AppController: NSObject, @unchecked Sendable {
         let priorityWindow = max(defaults[.lyricsPriorityWindow] ?? 5, 0)
         searchRequest = request
         automaticSearchGeneration = searchGeneration
+        defersAITranslationUntilSearchCompletes = true
         searchTask = Task { [weak self] in
             do {
                 for try await lyrics in provider.lyrics(for: request) {
@@ -320,6 +338,7 @@ final class AppController: NSObject, @unchecked Sendable {
         searchTask = nil
         searchRequest = nil
         automaticSearchGeneration = nil
+        defersAITranslationUntilSearchCompletes = false
     }
 
     private func scheduleAutomaticSearchDeadline(
@@ -397,8 +416,197 @@ final class AppController: NSObject, @unchecked Sendable {
         searchTask = nil
         searchRequest = nil
         automaticSearchGeneration = nil
+        defersAITranslationUntilSearchCompletes = false
+        scheduleAITranslationOnLyricsDisplay()
         if defaults[.writeToiTunesAutomatically] {
             writeToiTunes(overwrite: true)
+        }
+    }
+
+    func scheduleAITranslationForCurrentLyrics() {
+        if DispatchQueue.isOnLyricsDisplay {
+            enqueueAITranslationScheduleOnLyricsDisplay()
+        } else {
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                self?.enqueueAITranslationScheduleOnLyricsDisplay()
+            }
+        }
+    }
+
+    func cancelAITranslation() {
+        DispatchQueue.lyricsDisplay.async { [weak self] in
+            self?.cancelAITranslationOnLyricsDisplay()
+        }
+    }
+
+    private func cancelAITranslationOnLyricsDisplay() {
+        aiTranslationScheduleGeneration = nil
+        aiTranslationTask?.cancel()
+        aiTranslationTask = nil
+        aiTranslationGeneration = nil
+    }
+
+    private func enqueueAITranslationScheduleOnLyricsDisplay() {
+        let generation = UUID()
+        aiTranslationScheduleGeneration = generation
+        DispatchQueue.lyricsDisplay.async { [weak self] in
+            guard let self,
+                  self.aiTranslationScheduleGeneration == generation else {
+                return
+            }
+            self.aiTranslationScheduleGeneration = nil
+            self.scheduleAITranslationOnLyricsDisplay()
+        }
+    }
+
+    private func scheduleAITranslationOnLyricsDisplay() {
+        cancelAITranslationOnLyricsDisplay()
+        guard defaults[.aiLyricsTranslationEnabled],
+              !defersAITranslationUntilSearchCompletes,
+              let lyrics = currentLyrics,
+              let trackID = selectedPlayer.currentTrack?.id,
+              AILyricsTranslationPolicy.shouldTranslate(
+                  lyrics: lyrics,
+                  sourceLanguage: lyrics.metadata.language,
+                  targetLanguage: defaults[.aiLyricsTranslationTargetLanguage]
+              ) else {
+            return
+        }
+
+        let configuration: AILyricsTranslationConfiguration
+        do {
+            configuration = try AILyricsTranslationPolicy.configuration(
+                endpoint: defaults[.aiLyricsTranslationEndpoint],
+                model: defaults[.aiLyricsTranslationModel],
+                targetLanguage: defaults[.aiLyricsTranslationTargetLanguage],
+                prompt: defaults[.aiLyricsTranslationPrompt]
+            )
+        } catch {
+            disableAITranslationPreference()
+            log("AI lyrics translation settings are invalid; the feature was disabled")
+            return
+        }
+
+        let sourceSnapshot = Lyrics(
+            lines: lyrics.lines,
+            idTags: lyrics.idTags,
+            metadata: lyrics.metadata
+        )
+        let generation = UUID()
+        aiTranslationGeneration = generation
+        aiTranslationTask = Task.detached(priority: .utility) { [weak self, weak lyrics] in
+            defer {
+                self?.finishAITranslation(generation: generation)
+            }
+            guard let self, let lyrics else {
+                return
+            }
+            do {
+                try Task.checkCancellation()
+                let apiKey = try AILyricsTranslationCredentialStore.apiKey(
+                    for: configuration.endpoint
+                )
+                guard let apiKey, !apiKey.isEmpty else {
+                    self.disableAITranslationForUnreadableCredential(generation: generation)
+                    return
+                }
+                try Task.checkCancellation()
+                let translated = try await OpenAICompatibleLyricsTranslator().translate(
+                    lyrics: sourceSnapshot,
+                    configuration: configuration,
+                    apiKey: apiKey
+                )
+                try Task.checkCancellation()
+                self.applyAITranslation(
+                    translated,
+                    replacing: lyrics,
+                    trackID: trackID,
+                    generation: generation
+                )
+            } catch is CancellationError {
+                return
+            } catch is AILyricsTranslationCredentialError {
+                self.disableAITranslationForUnreadableCredential(generation: generation)
+            } catch let error as OpenAICompatibleLyricsTranslatorError {
+                switch error {
+                case .httpStatus(let statusCode):
+                    log("AI lyrics translation request failed with HTTP status \(statusCode)")
+                case .invalidResponse:
+                    log("AI lyrics translation returned an invalid response")
+                case .responseTooLarge:
+                    log("AI lyrics translation response exceeded the size limit")
+                }
+            } catch let error as AILyricsTranslationError {
+                os_log(
+                    "AI lyrics translation rejected the response: %{public}@",
+                    type: .error,
+                    String(describing: error)
+                )
+            } catch {
+                log("AI lyrics translation failed without exposing request credentials")
+            }
+        }
+    }
+
+    private func applyAITranslation(
+        _ translated: Lyrics,
+        replacing source: Lyrics,
+        trackID: String,
+        generation: UUID
+    ) {
+        let transfer = LyricsDisplayTransfer((source: source, translated: translated))
+        DispatchQueue.lyricsDisplay.async { [weak self] in
+            let source = transfer.value.source
+            let translated = transfer.value.translated
+            guard let self,
+                  defaults[.aiLyricsTranslationEnabled],
+                  self.aiTranslationGeneration == generation,
+                  self.currentLyrics === source,
+                  selectedPlayer.currentTrack?.id == trackID else {
+                return
+            }
+
+            self.aiTranslationGeneration = nil
+            self.aiTranslationTask = nil
+
+            // Preserve user changes such as an offset adjustment made while the
+            // request was in flight, while retaining the translated attachment tags.
+            let translatedAttachmentTags = translated.metadata.attachmentTags
+            translated.idTags = source.idTags
+            translated.metadata = source.metadata
+            translated.metadata.attachmentTags = translatedAttachmentTags
+            translated.metadata.needsPersist = true
+            self.currentLyrics = translated
+            if !translated.persist() {
+                log("AI lyrics translation could not be saved; it remains available for retry")
+            }
+        }
+    }
+
+    private func finishAITranslation(generation: UUID) {
+        DispatchQueue.lyricsDisplay.async { [weak self] in
+            guard let self, self.aiTranslationGeneration == generation else {
+                return
+            }
+            self.aiTranslationGeneration = nil
+            self.aiTranslationTask = nil
+        }
+    }
+
+    private func disableAITranslationForUnreadableCredential(generation: UUID) {
+        DispatchQueue.lyricsDisplay.async { [weak self] in
+            guard let self, self.aiTranslationGeneration == generation else {
+                return
+            }
+            self.cancelAITranslationOnLyricsDisplay()
+            self.disableAITranslationPreference()
+            log("AI lyrics translation key is missing or unreadable; the feature was disabled")
+        }
+    }
+
+    private func disableAITranslationPreference() {
+        DispatchQueue.main.async {
+            defaults[.aiLyricsTranslationEnabled] = false
         }
     }
 
