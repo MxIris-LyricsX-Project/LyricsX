@@ -4,16 +4,21 @@ import OpenCC
 
 protocol ScrollLyricsViewDelegate: AnyObject {
     func doubleClickLyricsLine(at position: TimeInterval)
+    func lyricsViewContextMenu() -> NSMenu
     func scrollWheelDidStartScroll()
     func scrollWheelDidEndScroll()
 }
 
+final class LyricsTextView: LyricsInteractionTextView {}
+
+final class LyricsPlaceholderTextField: LyricsContextMenuTextField {}
+
 class ScrollLyricsView: NSScrollView {
     weak var delegate: ScrollLyricsViewDelegate?
 
-    private var textView: NSTextView {
+    private var textView: LyricsTextView {
         // swiftlint:disable:next force_cast
-        return documentView as! NSTextView
+        return documentView as! LyricsTextView
     }
 
     var fadeStripWidth: CGFloat = 24
@@ -49,6 +54,20 @@ class ScrollLyricsView: NSScrollView {
 
     private var ranges: [(TimeInterval, NSRange)] = []
     private var highlightedRange: NSRange?
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        textView.doubleClickHandler = { [weak self] event in
+            self?.handleDoubleClick(with: event)
+        }
+        textView.contextMenuProvider = { [weak self] _ in
+            guard let menu = self?.delegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+                return nil
+            }
+            return menu
+        }
+    }
 
     func setupTextContents(lyrics: Lyrics?) {
         guard let lyrics = lyrics else {
@@ -107,6 +126,10 @@ class ScrollLyricsView: NSScrollView {
             return
         }
 
+        handleDoubleClick(with: event)
+    }
+
+    private func handleDoubleClick(with event: NSEvent) {
         let clickPoint = textView.convert(event.locationInWindow, from: nil)
         let clickRange = ranges.filter { _, range in
             let bounding = textView.layoutManager!.boundingRect(forGlyphRange: range, in: textView.textContainer!)
@@ -115,6 +138,14 @@ class ScrollLyricsView: NSScrollView {
         if let (position, _) = clickRange.first {
             delegate?.doubleClickLyricsLine(at: position)
         }
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        guard let menu = delegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+            super.rightMouseDown(with: event)
+            return
+        }
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
 
     override func scrollWheel(with event: NSEvent) {
