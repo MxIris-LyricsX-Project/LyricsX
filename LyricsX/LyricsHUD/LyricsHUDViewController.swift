@@ -34,9 +34,12 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
             $0.delegate = self
         }
         // swiftlint:disable:next force_cast
-        let accessory = NSStoryboard.main!.instantiateController(withIdentifier: .lyricsHUDAccessory) as! NSTitlebarAccessoryViewController
+        let accessory = NSStoryboard.main!.instantiateController(withIdentifier: .lyricsHUDAccessory) as! LyricsHUDAccessoryViewController
         accessory.layoutAttribute = .right
+        // Force Storyboard to connect outlets before applying the initial control state.
+        _ = accessory.view
         view.window?.addTitlebarAccessoryViewController(accessory)
+        accessory.applyLockState()
 
         dragNDropView.dragDelegate = self
         lyricsScrollView.delegate = self
@@ -152,11 +155,17 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
 }
 
 class LyricsHUDAccessoryViewController: NSTitlebarAccessoryViewController {
+    @IBOutlet var lockButton: NSButton!
+
+    func applyLockState() {
+        setWindowLevel(for: lockButton.state)
+    }
+
     @IBAction func lockAction(_ sender: NSButton) {
-        if sender.state == .on {
-            view.window?.level = .modalPanel
-        } else {
-            view.window?.level = .normal
-        }
+        setWindowLevel(for: sender.state)
+    }
+
+    private func setWindowLevel(for state: NSControl.StateValue) {
+        view.window?.level = state == .on ? .modalPanel : .normal
     }
 }
