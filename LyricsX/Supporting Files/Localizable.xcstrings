@@ -644,12 +644,331 @@
         }
       }
     },
+    "Edit" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحرير"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ویرایش"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактировать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редагувати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "편집"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerken"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj"
+          }
+        }
+      }
+    },
+    "Embedded lyrics cannot be edited." : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lirik tertanam tidak dapat diedit."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Embedded lyrics cannot be edited."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não é possível editar letras incorporadas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il testo incorporato non può essere modificato."
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يمكن تحرير كلمات الأغنية المضمّنة."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ترانهٔ تعبیه‌شده قابل ویرایش نیست."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingebettete Songtexte können nicht bearbeitet werden."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "埋め込み歌詞は編集できません。"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Встроенный текст песни нельзя редактировать."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вбудований текст пісні не можна редагувати."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "内嵌歌词无法编辑。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내장된 가사는 편집할 수 없습니다."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las letras incrustadas no se pueden editar."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "內嵌歌詞無法編輯。"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingesloten songteksten kunnen niet worden bewerkt."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les paroles intégrées ne peuvent pas être modifiées."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Osadzonego tekstu nie można edytować."
+          }
+        }
+      }
+    },
+    "Search" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "value" : "Cari",
+            "state" : "translated"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "value" : "Pesquisar",
+            "state" : "translated"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "value" : "بحث",
+            "state" : "translated"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جستجو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "value" : "検索",
+            "state" : "translated"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "value" : "Поиск",
+            "state" : "translated"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "value" : "Пошук",
+            "state" : "translated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "value" : "搜尋",
+            "state" : "translated"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "value" : "Zoeken",
+            "state" : "translated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "value" : "Rechercher",
+            "state" : "translated"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukaj"
+          }
+        }
+      },
+      "comment" : "Lyrics window context menu"
+    },
     "Search Lyrics" : {
       "localizations" : {
         "id" : {
           "stringUnit" : {
-            "value" : "Cari Lirik",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Cari Lirik"
           }
         },
         "en" : {
@@ -660,8 +979,8 @@
         },
         "pt" : {
           "stringUnit" : {
-            "value" : "Pesquisar Letras",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Pesquisar Letras"
           }
         },
         "it" : {
@@ -672,8 +991,8 @@
         },
         "ar" : {
           "stringUnit" : {
-            "value" : "البحث عن كلمات الأغاني",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "البحث عن كلمات الأغاني"
           }
         },
         "fa" : {
@@ -690,20 +1009,20 @@
         },
         "ja" : {
           "stringUnit" : {
-            "value" : "歌詞を検索",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "歌詞を検索"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "value" : "Поиск текста песни",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Поиск текста песни"
           }
         },
         "uk" : {
           "stringUnit" : {
-            "value" : "Пошук текстів",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Пошук текстів"
           }
         },
         "zh-Hans" : {
@@ -726,20 +1045,20 @@
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "value" : "搜尋歌詞",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "搜尋歌詞"
           }
         },
         "nl" : {
           "stringUnit" : {
-            "value" : "Songteksten zoeken",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Songteksten zoeken"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "value" : "Rechercher des paroles",
-            "state" : "translated"
+            "state" : "translated",
+            "value" : "Rechercher des paroles"
           }
         },
         "pl" : {
@@ -748,8 +1067,175 @@
             "value" : "Szukaj tekstu"
           }
         }
-      },
-      "comment" : "window title"
+      }
+    },
+    "AI Lyrics Translation" : {
+      "comment" : "AI translation configuration title",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "AI 歌词翻译" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "AI 歌詞翻譯" } }
+      }
+    },
+    "When enabled, LyricsX translates foreign-language lyrics that do not already include a translation." : {
+      "comment" : "AI translation configuration description",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "启用后，LyricsX 会翻译尚未包含译文的外语歌词。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "啟用後，LyricsX 會翻譯尚未包含譯文的外語歌詞。" } }
+      }
+    },
+    "Enter a new API key" : {
+      "comment" : "AI translation API key placeholder",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "输入新的 API 密钥" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "輸入新的 API 金鑰" } }
+      }
+    },
+    "The API key is stored in macOS Keychain. It is never written to LyricsX preferences or logs." : {
+      "comment" : "AI translation Keychain security note",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "API 密钥安全存储在 macOS 钥匙串中，不会写入 LyricsX 偏好设置或日志。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "API 金鑰安全儲存於 macOS 鑰匙圈，不會寫入 LyricsX 偏好設定或日誌。" } }
+      }
+    },
+    "Use the full Chat Completions endpoint. HTTPS is required except for localhost." : {
+      "comment" : "AI translation endpoint security note",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请使用完整的 Chat Completions 端点。除 localhost 外必须使用 HTTPS。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請使用完整的 Chat Completions 端點。除 localhost 外必須使用 HTTPS。" } }
+      }
+    },
+    "Remove API Key" : {
+      "comment" : "Remove stored AI API key button",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除 API 密钥" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "移除 API 金鑰" } }
+      }
+    },
+    "Cancel" : {
+      "comment" : "Cancel AI translation settings",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "取消" } }
+      }
+    },
+    "Save" : {
+      "comment" : "Save AI translation settings",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "儲存" } }
+      }
+    },
+    "Endpoint:" : {
+      "comment" : "AI translation endpoint label",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "接口：" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "端點：" } }
+      }
+    },
+    "Model:" : {
+      "comment" : "AI translation model label",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "模型：" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "模型：" } }
+      }
+    },
+    "API Key:" : {
+      "comment" : "AI translation API key label",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "API 密钥：" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "API 金鑰：" } }
+      }
+    },
+    "Prompt:" : {
+      "comment" : "AI translation prompt label",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "提示词：" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "提示詞：" } }
+      }
+    },
+    "Stored in Keychain" : {
+      "comment" : "AI API key stored status",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已存入钥匙串" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "已儲存至鑰匙圈" } }
+      }
+    },
+    "Not stored" : {
+      "comment" : "AI API key missing status",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未存储" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "未儲存" } }
+      }
+    },
+    "Keychain unavailable" : {
+      "comment" : "AI API key Keychain error status",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "钥匙串不可用" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "鑰匙圈無法使用" } }
+      }
+    },
+    "Could not save the API key." : {
+      "comment" : "AI API key save error",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法保存 API 密钥。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法儲存 API 金鑰。" } }
+      }
+    },
+    "Check Keychain access and try again." : {
+      "comment" : "AI API key Keychain recovery suggestion",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请检查钥匙串访问权限后重试。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請檢查鑰匙圈存取權限後重試。" } }
+      }
+    },
+    "Could not remove the API key." : {
+      "comment" : "AI API key removal error",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法删除 API 密钥。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法移除 API 金鑰。" } }
+      }
+    },
+    "Enter a valid full Chat Completions endpoint." : {
+      "comment" : "Invalid AI endpoint validation",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入有效且完整的 Chat Completions 端点。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請輸入有效且完整的 Chat Completions 端點。" } }
+      }
+    },
+    "Use HTTPS. Plain HTTP is allowed only for localhost." : {
+      "comment" : "Insecure AI endpoint validation",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请使用 HTTPS。仅 localhost 可使用明文 HTTP。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請使用 HTTPS。僅 localhost 可使用明文 HTTP。" } }
+      }
+    },
+    "Enter a model name." : {
+      "comment" : "Missing AI model validation",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入模型名称。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請輸入模型名稱。" } }
+      }
+    },
+    "Enter a translation prompt." : {
+      "comment" : "Missing AI prompt validation",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请输入翻译提示词。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請輸入翻譯提示詞。" } }
+      }
+    },
+    "Review the translation settings and try again." : {
+      "comment" : "Generic AI settings validation",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请检查翻译设置后重试。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "請檢查翻譯設定後重試。" } }
+      }
+    },
+    "Invalid AI translation settings" : {
+      "comment" : "AI settings validation title",
+      "localizations" : {
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "AI 翻译设置无效" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "AI 翻譯設定無效" } }
+      }
     },
     "Add Current Playing" : {
       "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote."

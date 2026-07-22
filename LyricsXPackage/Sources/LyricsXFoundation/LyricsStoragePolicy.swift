@@ -84,6 +84,47 @@ public enum LyricsStoragePolicy {
         }
         return candidates
     }
+
+    public static func prepareEmptyFile(
+        at destination: LyricsStorageDestination,
+        fileManager: FileManager = .default
+    ) throws -> URL {
+        let securityURL = destination.securityScopedDirectoryURL
+        if let securityURL,
+           !securityURL.startAccessingSecurityScopedResource() {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+        defer {
+            securityURL?.stopAccessingSecurityScopedResource()
+        }
+
+        let fileURL = destination.fileURL
+        let directoryURL = fileURL.deletingLastPathComponent()
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDirectory) {
+            guard isDirectory.boolValue else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+        } else {
+            try fileManager.createDirectory(
+                at: directoryURL,
+                withIntermediateDirectories: true,
+                attributes: nil
+            )
+        }
+
+        isDirectory = false
+        if fileManager.fileExists(atPath: fileURL.path, isDirectory: &isDirectory) {
+            guard !isDirectory.boolValue else {
+                throw CocoaError(.fileWriteInvalidFileName)
+            }
+            return fileURL
+        }
+
+        try Data().write(to: fileURL, options: .atomic)
+        return fileURL
+    }
+
     private static func sanitizedPathComponent(_ value: String?) -> String? {
         guard let value else {
             return nil
