@@ -496,6 +496,9 @@
                             <constraint firstItem="Gza-SX-MCH" firstAttribute="centerY" secondItem="iU6-PW-pat" secondAttribute="centerY" id="hu1-3a-FKw"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="lockButton" destination="Gza-SX-MCH" id="46A-YT-Qzi"/>
+                    </connections>
                 </viewController>
                 <customObject id="BzW-ne-X63" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
