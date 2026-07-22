@@ -1,6 +1,7 @@
 import AppKit
 import AppleMusicLyricsPanel
 import GenericID
+import LyricsXFoundation
 import MASShortcut
 import MusicKit
 import MusicPlayer
@@ -283,6 +284,81 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBAction func searchLyrics(_ sender: Any?) {
         searchLyricsWC.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    var canEditCurrentLyrics: Bool {
+        let lyrics = AppController.shared.currentLyrics
+        let track = selectedPlayer.currentTrack
+        let canCreateBlankFile = track.flatMap {
+            defaults.lyricsSavingDestination(
+                title: $0.title,
+                artist: $0.artist
+            )
+        } != nil
+        return LyricsEditingPolicy.canEdit(
+            hasLyrics: lyrics != nil,
+            hasLocalFile: lyrics?.metadata.localURL != nil,
+            canPersist: lyrics?.metadata.needsPersist == true,
+            canCreateBlankFile: canCreateBlankFile
+        )
+    }
+
+    @IBAction func editCurrentLyrics(_ sender: Any?) {
+        guard let track = selectedPlayer.currentTrack else {
+            return
+        }
+
+        let url: URL
+        if let lyrics = AppController.shared.currentLyrics {
+            if lyrics.metadata.localURL == nil, lyrics.metadata.needsPersist {
+                lyrics.persist()
+            }
+            guard let localURL = lyrics.metadata.localURL else {
+                return
+            }
+            url = localURL
+        } else {
+            guard let destination = defaults.lyricsSavingDestination(
+                title: track.title,
+                artist: track.artist
+            ) else {
+                NSSound.beep()
+                return
+            }
+            do {
+                url = try LyricsStoragePolicy.prepareEmptyFile(at: destination)
+            } catch {
+                log(error.localizedDescription)
+                NSSound.beep()
+                return
+            }
+        }
+
+        let workspace = NSWorkspace.shared
+        let isAccessing = url.startAccessingSecurityScopedResource()
+        if #available(macOS 10.15, *),
+           let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") {
+            workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
+                if isAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+                if error != nil {
+                    DispatchQueue.main.async {
+                        NSSound.beep()
+                    }
+                }
+            }
+            return
+        }
+
+        defer {
+            if isAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+        if !workspace.openFile(url.path, withApplication: "TextEdit") {
+            NSSound.beep()
+        }
     }
 
     @IBAction func wrongLyrics(_ sender: Any?) {
