@@ -250,6 +250,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         let url: URL
+        let securityScopedDirectoryURL: URL?
         if let lyrics = AppController.shared.currentLyrics {
             if lyrics.metadata.localURL == nil, lyrics.metadata.needsPersist {
                 lyrics.persist()
@@ -258,6 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 return
             }
             url = localURL
+            securityScopedDirectoryURL = defaults.lyricsSecurityScopedDirectory(containing: localURL)
         } else {
             guard let destination = defaults.lyricsSavingDestination(
                 title: track.title,
@@ -268,6 +270,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
             do {
                 url = try LyricsStoragePolicy.prepareEmptyFile(at: destination)
+                securityScopedDirectoryURL = destination.securityScopedDirectoryURL
             } catch {
                 log(error.localizedDescription)
                 NSSound.beep()
@@ -276,13 +279,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         let workspace = NSWorkspace.shared
-        let isAccessing = url.startAccessingSecurityScopedResource()
+        if let securityScopedDirectoryURL,
+           !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            NSSound.beep()
+            return
+        }
         if #available(macOS 10.15, *),
            let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") {
             workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
-                if isAccessing {
-                    url.stopAccessingSecurityScopedResource()
-                }
+                securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
                 if error != nil {
                     DispatchQueue.main.async {
                         NSSound.beep()
@@ -293,9 +298,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         defer {
-            if isAccessing {
-                url.stopAccessingSecurityScopedResource()
-            }
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
         }
         if !workspace.openFile(url.path, withApplication: "TextEdit") {
             NSSound.beep()
@@ -313,8 +316,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if let url = AppController.shared.currentLyrics?.metadata.localURL {
             try? FileManager.default.removeItem(at: url)
         }
-        AppController.shared.currentLyrics = nil
-        AppController.shared.searchTask?.cancel()
+        AppController.shared.setCurrentLyrics(nil)
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
@@ -329,7 +331,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if let url = AppController.shared.currentLyrics?.metadata.localURL {
             try? FileManager.default.removeItem(at: url)
         }
-        AppController.shared.currentLyrics = nil
+        AppController.shared.setCurrentLyrics(nil)
     }
 
     func registerUserDefaults() {

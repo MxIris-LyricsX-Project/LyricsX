@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		0F07BAF52E8A8B2900085912 /* PreferenceSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */; };
+		A17000012F10000100A17000 /* AITranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17000022F10000100A17000 /* AITranslationService.swift */; };
 		BB03C8891FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */; };
 		BB063B2E1E8A93C900A25C3E /* KaraokeLyricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */; };
 		BB0B296A1E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */; };
@@ -113,6 +114,7 @@
 
 /* Begin PBXFileReference section */
 		0F07BAF42E8A8B2900085912 /* PreferenceSourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferenceSourceViewController.swift; sourceTree = "<group>"; };
+		A17000022F10000100A17000 /* AITranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AITranslationService.swift; sourceTree = "<group>"; };
 		BB03C8881FDF6FC000FBE0DA /* ChineseConverter+Singleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChineseConverter+Singleton.swift"; sourceTree = "<group>"; };
 		BB063B2D1E8A93C900A25C3E /* KaraokeLyricsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KaraokeLyricsView.swift; sourceTree = "<group>"; };
 		BB0B29691E7FBA2D00B1D6C9 /* PreferenceFilterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferenceFilterViewController.swift; sourceTree = "<group>"; };
@@ -359,6 +361,7 @@
 		E9C49A8E2110490700159ADC /* Component */ = {
 			isa = PBXGroup;
 			children = (
+				A17000022F10000100A17000 /* AITranslationService.swift */,
 				BB4141AD1E458BA800A51775 /* AppDelegate.swift */,
 				BBC1D35A1E485BA7002538A2 /* AppController.swift */,
 				BB947DFA23B4C60000C43BF2 /* SelectedPlayer.swift */,
@@ -650,6 +653,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A17000012F10000100A17000 /* AITranslationService.swift in Sources */,
 				BB4141C01E45B67800A51775 /* KaraokeLyricsController.swift in Sources */,
 				E97593E42150F47900D80616 /* Polyfill.swift in Sources */,
 				E9EF0D552D6F70E400D45E0F /* SearchLyricsWindowController.swift in Sources */,
