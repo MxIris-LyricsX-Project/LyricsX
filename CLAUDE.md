@@ -28,9 +28,23 @@ xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Release bui
 xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Release archive
 ```
 
-There are no automated tests configured in the Xcode scheme. `LyricsXPackage` has an empty test target `LyricsXFoundationTests`, plus a real probe suite `AppleMusicLyricsPanelTests` that renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts its animation geometry and karaoke colour (no clipping, bounded lift, sweep actually paints white, no position drift):
+There are no automated tests configured in the Xcode scheme, and no GitHub
+Actions workflow runs on pull requests — `release.yml` is tag-triggered only, so
+the package tests below are the only automated gate and they have to be run by
+hand.
+
+`LyricsXPackage` has two suites. `LyricsXFoundationTests` covers the pure
+policies — lyrics storage destinations, editing eligibility, HUD window
+configuration, playback-position preservation — and is fast and headless enough
+to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
+renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
+its animation geometry and karaoke colour (no clipping, bounded lift, sweep
+actually paints white, no position drift):
 
 ```bash
+# Policy tests — run these on any change under LyricsXFoundation (<1s)
+cd LyricsXPackage && swift test --filter LyricsXFoundationTests
+
 # Offscreen probe tests for the Apple Music lyrics engine (~8s, needs a GPU session)
 cd LyricsXPackage && swift test --filter LineEmphasisProbes
 
