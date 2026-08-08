@@ -74,6 +74,8 @@
 		<string>QQMusic</string>
 		<string>Spotify</string>
 	</array>
+	<key>WriteBackToLyricsBesideTrack</key>
+	<false/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>
