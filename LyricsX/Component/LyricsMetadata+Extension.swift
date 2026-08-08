@@ -38,6 +38,17 @@ extension Lyrics.Metadata {
     var translationLanguages: [String] {
         return attachmentTags.compactMap { $0.translationLanguageCode }
     }
+
+    func preferredTranslationLanguage(targetLanguage: String?) -> String? {
+        let languages = translationLanguages
+        guard let targetLanguage,
+              let normalizedTarget = AILyricsTranslationPolicy.normalizedLanguageIdentifier(targetLanguage) else {
+            return languages.first
+        }
+        return languages.first {
+            AILyricsTranslationPolicy.languageIdentifiersMatch($0, normalizedTarget)
+        } ?? languages.first
+    }
 }
 
 extension LyricsLine.Attachments.Tag {

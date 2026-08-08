@@ -63,6 +63,16 @@
 	</array>
 	<key>GlobalLyricsOffset</key>
 	<integer>0</integer>
+	<key>AILyricsTranslationEnabled</key>
+	<false/>
+	<key>AILyricsTranslationEndpoint</key>
+	<string>https://api.openai.com/v1/chat/completions</string>
+	<key>AILyricsTranslationModel</key>
+	<string>gpt-4o-mini</string>
+	<key>AILyricsTranslationTargetLanguage</key>
+	<string>zh-Hans</string>
+	<key>AILyricsTranslationPrompt</key>
+	<string>Translate every lyric line into natural, concise $targetLanguage. Preserve the song's tone, imagery, names, and repeated phrases. Do not add explanations or commentary.</string>
 	<key>LyricsSourcePriorityEnabled</key>
 	<false/>
 	<key>LyricsSourcePriorityOrder</key>
@@ -74,6 +84,8 @@
 		<string>QQMusic</string>
 		<string>Spotify</string>
 	</array>
+	<key>WriteBackToLyricsBesideTrack</key>
+	<false/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>

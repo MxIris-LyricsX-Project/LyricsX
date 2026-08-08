@@ -121,7 +121,9 @@ class KaraokeLyricsWindowController: NSWindowController {
         let lrc = lyrics.lines[index]
         let next = lyrics.lines[(index + 1)...].first { $0.enabled }
 
-        let languageCode = lyrics.metadata.translationLanguages.first
+        let languageCode = lyrics.metadata.preferredTranslationLanguage(
+            targetLanguage: defaults[.aiLyricsTranslationTargetLanguage]
+        )
 
         var firstLine = lrc.content
         var secondLine: String

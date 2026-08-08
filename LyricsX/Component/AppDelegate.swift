@@ -1,5 +1,6 @@
 import AppKit
 import GenericID
+import LyricsXFoundation
 import MASShortcut
 import MusicPlayer
 import Sparkle
@@ -226,6 +227,86 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    var canEditCurrentLyrics: Bool {
+        let lyrics = AppController.shared.currentLyrics
+        let track = selectedPlayer.currentTrack
+        let canCreateBlankFile = track.flatMap {
+            defaults.lyricsSavingDestination(
+                title: $0.title,
+                artist: $0.artist
+            )
+        } != nil
+        return LyricsEditingPolicy.canEdit(
+            hasLyrics: lyrics != nil,
+            hasLocalFile: lyrics?.metadata.localURL != nil,
+            canPersist: lyrics?.metadata.needsPersist == true,
+            canCreateBlankFile: canCreateBlankFile
+        )
+    }
+
+    @IBAction func editCurrentLyrics(_ sender: Any?) {
+        guard let track = selectedPlayer.currentTrack else {
+            return
+        }
+
+        let url: URL
+        let securityScopedDirectoryURL: URL?
+        if let lyrics = AppController.shared.currentLyrics {
+            if lyrics.metadata.localURL == nil, lyrics.metadata.needsPersist {
+                lyrics.persist()
+            }
+            guard let localURL = lyrics.metadata.localURL else {
+                return
+            }
+            url = localURL
+            // Opening should work for every local lyrics file, including user-owned
+            // beside-track files. Only the custom lyrics library needs a security scope.
+            securityScopedDirectoryURL = defaults.lyricsSecurityScopedDirectory(containing: localURL)
+        } else {
+            guard let destination = defaults.lyricsSavingDestination(
+                title: track.title,
+                artist: track.artist
+            ) else {
+                NSSound.beep()
+                return
+            }
+            do {
+                url = try LyricsStoragePolicy.prepareEmptyFile(at: destination)
+                securityScopedDirectoryURL = destination.securityScopedDirectoryURL
+            } catch {
+                log(error.localizedDescription)
+                NSSound.beep()
+                return
+            }
+        }
+
+        let workspace = NSWorkspace.shared
+        if let securityScopedDirectoryURL,
+           !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            NSSound.beep()
+            return
+        }
+        if #available(macOS 10.15, *),
+           let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") {
+            workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
+                securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+                if error != nil {
+                    DispatchQueue.main.async {
+                        NSSound.beep()
+                    }
+                }
+            }
+            return
+        }
+
+        defer {
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+        }
+        if !workspace.openFile(url.path, withApplication: "TextEdit") {
+            NSSound.beep()
+        }
+    }
+
     @IBAction func wrongLyrics(_ sender: Any?) {
         guard let track = selectedPlayer.currentTrack else {
             return
@@ -237,8 +318,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if let url = AppController.shared.currentLyrics?.metadata.localURL {
             try? FileManager.default.removeItem(at: url)
         }
-        AppController.shared.currentLyrics = nil
-        AppController.shared.searchTask?.cancel()
+        AppController.shared.setCurrentLyrics(nil)
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
@@ -253,7 +333,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if let url = AppController.shared.currentLyrics?.metadata.localURL {
             try? FileManager.default.removeItem(at: url)
         }
-        AppController.shared.currentLyrics = nil
+        AppController.shared.setCurrentLyrics(nil)
     }
 
     func registerUserDefaults() {
