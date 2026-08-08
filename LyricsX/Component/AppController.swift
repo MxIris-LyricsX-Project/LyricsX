@@ -5,12 +5,20 @@ import OpenCC
 import MusicPlayer
 import LyricsXFoundation
 
-class AppController: NSObject {
+private final class LyricsDisplayTransfer<Value>: @unchecked Sendable {
+    let value: Value
+
+    init(_ value: Value) {
+        self.value = value
+    }
+}
+
+final class AppController: NSObject, @unchecked Sendable {
     static let shared = AppController()
 
     var lyricsManager: LyricsProvider
 
-    @Published var currentLyrics: Lyrics? {
+    @Published private(set) var currentLyrics: Lyrics? {
         willSet {
             willChangeValue(forKey: "lyricsOffset")
             currentLineIndex = nil
@@ -23,19 +31,40 @@ class AppController: NSObject {
 
     @Published var currentLineIndex: Int?
 
-    var searchRequest: LyricsSearchRequest?
-    var searchTask: Task<Void, Never>?
+    private var searchRequest: LyricsSearchRequest?
+    private var searchTask: Task<Void, Never>?
+    private var searchDeadline: DispatchWorkItem?
+    private var automaticSearchGeneration: UUID?
 
     private var cancelBag = Set<AnyCancellable>()
 
     @objc dynamic var lyricsOffset: Int {
         get {
+            if !DispatchQueue.isOnLyricsDisplay {
+                return DispatchQueue.lyricsDisplay.sync { self.lyricsOffset }
+            }
             return currentLyrics?.offset ?? 0
         }
         set {
+            if !DispatchQueue.isOnLyricsDisplay {
+                DispatchQueue.lyricsDisplay.sync { self.lyricsOffset = newValue }
+                return
+            }
             currentLyrics?.offset = newValue
             currentLyrics?.metadata.needsPersist = true
             scheduleCurrentLineCheck()
+        }
+    }
+
+    func setCurrentLyrics(_ lyrics: Lyrics?) {
+        if DispatchQueue.isOnLyricsDisplay {
+            cancelAutomaticLyricsSearchOnLyricsDisplay()
+            currentLyrics = lyrics
+        } else {
+            DispatchQueue.lyricsDisplay.sync {
+                self.cancelAutomaticLyricsSearchOnLyricsDisplay()
+                self.currentLyrics = lyrics
+            }
         }
     }
 
@@ -61,10 +90,16 @@ class AppController: NSObject {
                     NSApplication.shared.terminate(self)
                 }
             }.store(in: &cancelBag)
-        currentTrackChanged()
-
-        Task {
-            try await updateLyricsManager()
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await self.updateLyricsManager()
+            } catch {
+                log("Failed to initialize lyrics providers")
+            }
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                self?.currentTrackChanged()
+            }
         }
     }
 
@@ -83,7 +118,13 @@ class AppController: NSObject {
             providers.append(musixmatchProvider)
         }
 
-        lyricsManager = LyricsProviders.Group(providers: providers)
+        let lyricsManager = LyricsDisplayTransfer(LyricsProviders.Group(providers: providers))
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                self?.lyricsManager = lyricsManager.value
+                continuation.resume()
+            }
+        }
     }
 
     var currentLineCheckSchedule: Cancellable?
@@ -109,6 +150,12 @@ class AppController: NSObject {
     }
 
     func writeToiTunes(overwrite: Bool) {
+        if !DispatchQueue.isOnLyricsDisplay {
+            DispatchQueue.lyricsDisplay.sync {
+                self.writeToiTunes(overwrite: overwrite)
+            }
+            return
+        }
         guard selectedPlayer.name == .appleMusic,
               let currentLyrics = currentLyrics,
               let sbTrack = selectedPlayer.currentTrack?.originalTrack,
@@ -157,9 +204,9 @@ class AppController: NSObject {
         if currentLyrics?.metadata.needsPersist == true {
             currentLyrics?.persist()
         }
+        cancelAutomaticLyricsSearchOnLyricsDisplay()
         currentLyrics = nil
         currentLineIndex = nil
-        searchTask?.cancel()
         guard let track = selectedPlayer.currentTrack else {
             return
         }
@@ -239,44 +286,119 @@ class AppController: NSObject {
 
         let duration = track.duration ?? 0
         let request = LyricsSearchRequest(searchTerm: .info(title: title, artist: artist), duration: duration, limit: 5)
+        let searchGeneration = UUID()
+        let provider = lyricsManager
+        let priorityWindow = max(defaults[.lyricsPriorityWindow] ?? 5, 0)
         searchRequest = request
-        searchTask = Task { @MainActor in
+        automaticSearchGeneration = searchGeneration
+        searchTask = Task { [weak self] in
             do {
-                // Accept the first arrived lyrics immediately,
-                // but keep collecting for a short window to allow higher-priority providers,
-                // which might be slower, to replace it.
-                let window = defaults[.lyricsPriorityWindow] ?? 5 // seconds
-                var firstReceived = false
-                var collectionStart: Date?
-
-                for try await lyrics in lyricsManager.lyrics(for: request) {
-                    if !firstReceived {
-                        lyricsReceived(lyrics: lyrics)
-                        if let current = currentLyrics, current === lyrics {
-                            firstReceived = true
-                            collectionStart = Date()
-                        }
-                        continue
-                    }
-
-                    if let start = collectionStart,
-                       Date().timeIntervalSince(start) <= window {
-                        lyricsReceived(lyrics: lyrics)
-                        continue
-                    } else {
-                        // window expired
-                        break
-                    }
-                }
-
-                if defaults[.writeToiTunesAutomatically] {
-                    writeToiTunes(overwrite: true)
+                for try await lyrics in provider.lyrics(for: request) {
+                    try Task.checkCancellation()
+                    await self?.receiveAutomaticLyrics(
+                        lyrics,
+                        generation: searchGeneration,
+                        priorityWindow: priorityWindow
+                    )
                 }
             } catch is CancellationError {
                 // Search was cancelled due to track change
             } catch {
                 print("Failed to fetch lyrics: \(error.localizedDescription)")
             }
+            await self?.finishAutomaticLyricsSearch(
+                generation: searchGeneration,
+                cancelProviderTask: false
+            )
+        }
+    }
+
+    private func cancelAutomaticLyricsSearchOnLyricsDisplay() {
+        searchDeadline?.cancel()
+        searchDeadline = nil
+        searchTask?.cancel()
+        searchTask = nil
+        searchRequest = nil
+        automaticSearchGeneration = nil
+    }
+
+    private func scheduleAutomaticSearchDeadline(
+        generation: UUID,
+        priorityWindow: TimeInterval
+    ) {
+        guard automaticSearchGeneration == generation,
+              searchDeadline == nil else {
+            return
+        }
+        let deadline = DispatchWorkItem { [weak self] in
+            self?.finishAutomaticLyricsSearchOnLyricsDisplay(
+                generation: generation,
+                cancelProviderTask: true
+            )
+        }
+        searchDeadline = deadline
+        DispatchQueue.lyricsDisplay.asyncAfter(
+            deadline: .now() + max(priorityWindow, 0),
+            execute: deadline
+        )
+    }
+
+    private func receiveAutomaticLyrics(
+        _ lyrics: Lyrics,
+        generation: UUID,
+        priorityWindow: TimeInterval
+    ) async {
+        let lyrics = LyricsDisplayTransfer(lyrics)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                defer { continuation.resume() }
+                guard let self,
+                      self.automaticSearchGeneration == generation else {
+                    return
+                }
+                self.lyricsReceived(lyrics: lyrics.value)
+                if self.currentLyrics === lyrics.value {
+                    self.scheduleAutomaticSearchDeadline(
+                        generation: generation,
+                        priorityWindow: priorityWindow
+                    )
+                }
+            }
+        }
+    }
+
+    private func finishAutomaticLyricsSearch(
+        generation: UUID,
+        cancelProviderTask: Bool
+    ) async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.lyricsDisplay.async { [weak self] in
+                self?.finishAutomaticLyricsSearchOnLyricsDisplay(
+                    generation: generation,
+                    cancelProviderTask: cancelProviderTask
+                )
+                continuation.resume()
+            }
+        }
+    }
+
+    private func finishAutomaticLyricsSearchOnLyricsDisplay(
+        generation: UUID,
+        cancelProviderTask: Bool
+    ) {
+        guard automaticSearchGeneration == generation else {
+            return
+        }
+        searchDeadline?.cancel()
+        searchDeadline = nil
+        if cancelProviderTask {
+            searchTask?.cancel()
+        }
+        searchTask = nil
+        searchRequest = nil
+        automaticSearchGeneration = nil
+        if defaults[.writeToiTunesAutomatically] {
+            writeToiTunes(overwrite: true)
         }
     }
 
@@ -326,7 +448,7 @@ extension AppController {
         lrc.filtrate()
         lrc.recognizeLanguage()
         lrc.metadata.needsPersist = true
-        currentLyrics = lrc
+        setCurrentLyrics(lrc)
         if let index = defaults[.noSearchingTrackIds].firstIndex(of: track.id) {
             defaults[.noSearchingTrackIds].remove(at: index)
         }

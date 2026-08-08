@@ -103,7 +103,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
         let lrc = searchResult[index]
         lrc.associateWithTrack(track)
-        AppController.shared.currentLyrics = lrc
+        AppController.shared.setCurrentLyrics(lrc)
         if defaults[.writeToiTunesAutomatically] {
             AppController.shared.writeToiTunes(overwrite: true)
         }
