@@ -3,6 +3,19 @@ import Foundation
 public enum LyricsSavingLocation: Int, Sendable {
     case lyricsXDirectory = 0
     case customDirectory = 1
+
+    /// The saving-path pop-up carries a separator and an "Other…" row on top of
+    /// the two real choices, so the bound preference reaches 2 and 3 — picking
+    /// "Other…" leaves it at 3, because the open-panel completion re-selects the
+    /// user-path row programmatically and that does not write back through the
+    /// binding. Reads treat every non-zero index as the custom directory, so
+    /// writes must do the same or the two disagree and saved lyrics are never
+    /// found again.
+    public init(popUpIndex: Int) {
+        self = popUpIndex == LyricsSavingLocation.lyricsXDirectory.rawValue
+            ? .lyricsXDirectory
+            : .customDirectory
+    }
 }
 
 public struct LyricsStorageDestination: Equatable, Sendable {
@@ -16,6 +29,8 @@ public struct LyricsStorageDestination: Equatable, Sendable {
 }
 
 public enum LyricsStoragePolicy {
+    public static let lyricsFileExtension = "lrcx"
+
     public static func contains(_ fileURL: URL, in directoryURL: URL) -> Bool {
         let directoryComponents = directoryURL.standardizedFileURL.pathComponents
         let fileComponents = fileURL.standardizedFileURL.pathComponents
@@ -57,7 +72,17 @@ public enum LyricsStoragePolicy {
                 defaultDirectoryURL: defaultDirectoryURL,
                 customDirectoryURL: customDirectoryURL
             )
-            if isManaged || allowUnmanagedLocalWriteBack {
+            // Inside the library, only an existing LRCX file is rewritten in
+            // place. A plain `.lrc` there is re-searched on every load, so
+            // overwriting it would keep the track searching forever, because
+            // the `.lrcx` that ends that loop never gets produced — write that
+            // file beside it instead. Outside the library the opt-in means
+            // "update the file the user pointed us at", so its own extension
+            // is kept.
+            let writesBackInPlace = isManaged
+                ? localURL.pathExtension.lowercased() == Self.lyricsFileExtension
+                : allowUnmanagedLocalWriteBack
+            if writesBackInPlace {
                 let securityScopedDirectoryURL: URL?
                 if let customDirectoryURL, contains(localURL, in: customDirectoryURL) {
                     securityScopedDirectoryURL = customDirectoryURL
@@ -80,7 +105,7 @@ public enum LyricsStoragePolicy {
         defaultDirectoryURL: URL,
         customDirectoryURL: URL?
     ) -> LyricsStorageDestination? {
-        let location = LyricsSavingLocation(rawValue: locationRawValue) ?? .lyricsXDirectory
+        let location = LyricsSavingLocation(popUpIndex: locationRawValue)
 
         let directoryURL: URL
         let securityScopedDirectoryURL: URL?
@@ -98,7 +123,7 @@ public enum LyricsStoragePolicy {
         return LyricsStorageDestination(
             fileURL: directoryURL
                 .appendingPathComponent(baseName)
-                .appendingPathExtension("lrcx"),
+                .appendingPathExtension(lyricsFileExtension),
             securityScopedDirectoryURL: securityScopedDirectoryURL
         )
     }

@@ -91,12 +91,14 @@ extension UserDefaults {
         return URL(fileURLWithPath: userPath).appendingPathComponent("Music/LyricsX")
     }
 
+    /// Reading and writing must resolve the pop-up index through the same rule,
+    /// so both go through `LyricsSavingLocation`.
     func lyricsSavingPath() -> (URL, security: Bool) {
-        if self[.lyricsSavingPathPopUpIndex] != 0, let path = lyricsCustomSavingPath {
+        let location = LyricsSavingLocation(popUpIndex: self[.lyricsSavingPathPopUpIndex])
+        if location == .customDirectory, let path = lyricsCustomSavingPath {
             return (path, true)
-        } else {
-            return (lyricsDefaultSavingDirectory, false)
         }
+        return (lyricsDefaultSavingDirectory, false)
     }
 
     func lyricsSavingDestination(
