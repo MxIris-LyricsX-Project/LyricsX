@@ -29,6 +29,8 @@ final class AppController: NSObject {
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
 
+    private var previousPlaybackState: PlaybackState?
+
     private var cancelBag = Set<AnyCancellable>()
 
     private let widgetDataStore = WidgetDataStore(groupIdentifier: lyricsXGroupIdentifier)
@@ -216,6 +218,24 @@ final class AppController: NSObject {
     // the cached `selectedPlayer` value, is preserved by routing every
     // event through here.
     private func playbackStateChanged(_ playbackState: PlaybackState) {
+        let shouldPreserveCurrentLine = currentLyrics != nil &&
+            currentLineIndex != nil &&
+            selectedPlayer.currentTrack != nil &&
+            LyricsPlaybackPositionPolicy.shouldPreserveCurrentLine(
+                previousState: previousPlaybackState,
+                newState: playbackState
+            )
+        previousPlaybackState = playbackState
+
+        // The zero-time pause publish carries no usable anchor, so there is
+        // nothing to reschedule against: drop the pending timer and leave
+        // `currentLineIndex` where it is until a state with a real time
+        // arrives.
+        if shouldPreserveCurrentLine {
+            currentLineCheckSchedule?.cancel()
+            currentLineCheckSchedule = nil
+            return
+        }
         scheduleCurrentLineCheck(playbackState: playbackState)
     }
 
