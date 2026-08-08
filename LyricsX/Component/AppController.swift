@@ -26,6 +26,8 @@ class AppController: NSObject {
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
 
+    private var previousPlaybackState: PlaybackState?
+
     private var cancelBag = Set<AnyCancellable>()
 
     @objc dynamic var lyricsOffset: Int {
@@ -48,9 +50,10 @@ class AppController: NSObject {
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
-            .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
-            .invoke(AppController.scheduleCurrentLineCheck, weaklyOn: self)
+            .sink { [weak self] playbackState in
+                self?.playbackStateChanged(playbackState)
+            }
             .store(in: &cancelBag)
 
         workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
@@ -88,12 +91,30 @@ class AppController: NSObject {
 
     var currentLineCheckSchedule: Cancellable?
 
-    func scheduleCurrentLineCheck() {
+    private func playbackStateChanged(_ playbackState: PlaybackState) {
+        let shouldPreserveCurrentLine = currentLyrics != nil &&
+            currentLineIndex != nil &&
+            selectedPlayer.currentTrack != nil &&
+            LyricsPlaybackPositionPolicy.shouldPreserveCurrentLine(
+                previousState: previousPlaybackState,
+                newState: playbackState
+            )
+        previousPlaybackState = playbackState
+
+        if shouldPreserveCurrentLine {
+            currentLineCheckSchedule?.cancel()
+            currentLineCheckSchedule = nil
+            return
+        }
+        scheduleCurrentLineCheck(playbackState: playbackState)
+    }
+
+    func scheduleCurrentLineCheck(playbackState: PlaybackState? = nil) {
         currentLineCheckSchedule?.cancel()
         guard let lyrics = currentLyrics else {
             return
         }
-        let playbackState = MusicPlayers.Selected.shared.playbackState
+        let playbackState = playbackState ?? MusicPlayers.Selected.shared.playbackState
         let playbackTime = playbackState.time
         let (index, next) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
         if currentLineIndex != index {
