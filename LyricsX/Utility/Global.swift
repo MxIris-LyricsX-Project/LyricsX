@@ -103,6 +103,7 @@ extension UserDefaults.DefaultsKeys {
     static let lyricsSavingPathPopUpIndex = Key<Int>("LyricsSavingPathPopUpIndex")
     static let lyricsCustomSavingPathBookmark = Key<Data?>("LyricsCustomSavingPathBookmark")
     static let loadLyricsBesideTrack = Key<Bool>("LoadLyricsBesideTrack")
+    static let writeBackToLyricsBesideTrack = Key<Bool>("WriteBackToLyricsBesideTrack")
 
     static let selectedLanguage = Key<String?>("SelectedLanguage")
 

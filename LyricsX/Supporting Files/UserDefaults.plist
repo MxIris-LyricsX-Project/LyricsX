@@ -82,6 +82,8 @@
 	<false/>
 	<key>StripSearchTitleBracketsEnabled</key>
 	<true/>
+	<key>WriteBackToLyricsBesideTrack</key>
+	<false/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>

@@ -309,6 +309,7 @@
                                     <gridRow yPlacement="center" height="30" id="5do-X5-xgX"/>
                                     <gridRow yPlacement="center" height="30" id="Nkw-LC-Lbi"/>
                                     <gridRow yPlacement="top" height="20" id="bYQ-nJ-Ce7"/>
+                                    <gridRow yPlacement="top" height="20" id="writeBackBeside-row"/>
                                     <gridRow yPlacement="center" height="30" id="1nK-QJ-9q8"/>
                                     <gridRow yPlacement="center" height="30" id="x5a-Q5-Acb"/>
                                     <gridRow yPlacement="center" height="20" id="ApI-Zi-AYg"/>
@@ -429,6 +430,28 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="968-l4-9l5" name="value" keyPath="values.LoadLyricsBesideTrack" id="UK2-Uw-ZcK">
+                                                    <dictionary key="options">
+                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="writeBackBeside-row" column="3Hg-Ka-QrM" id="writeBackBeside-label-cell"/>
+                                    <gridCell row="writeBackBeside-row" column="IfN-lq-biT" id="writeBackBeside-button-cell">
+                                        <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="writeBackBeside-button">
+                                            <rect key="frame" x="217" y="304" width="354" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Allow writing changes back to lyrics beside the track" bezelStyle="regularSquare" imagePosition="left" inset="2" id="writeBackBeside-button-cell-inner">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="968-l4-9l5" name="value" keyPath="values.WriteBackToLyricsBesideTrack" id="writeBackBeside-value-binding">
+                                                    <dictionary key="options">
+                                                        <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    </dictionary>
+                                                </binding>
+                                                <binding destination="968-l4-9l5" name="enabled" keyPath="values.LoadLyricsBesideTrack" id="writeBackBeside-enabled-binding">
                                                     <dictionary key="options">
                                                         <bool key="NSConditionallySetsEnabled" value="NO"/>
                                                     </dictionary>

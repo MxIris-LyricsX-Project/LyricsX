@@ -165,18 +165,16 @@ extension Lyrics {
 
     @discardableResult
     func persist() -> Bool {
-        let destination: LyricsStorageDestination
-        if let localURL = metadata.localURL {
-            destination = LyricsStorageDestination(
-                fileURL: localURL,
-                securityScopedDirectoryURL: defaults.lyricsSecurityScopedDirectory(containing: localURL)
+        guard let destination = LyricsStoragePolicy.persistDestination(
+            localURL: metadata.localURL,
+            allowUnmanagedLocalWriteBack: defaults[.writeBackToLyricsBesideTrack],
+            defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
+            customDirectoryURL: defaults.lyricsCustomSavingPath,
+            libraryDestination: defaults.lyricsSavingDestination(
+                title: metadata.title,
+                artist: metadata.artist
             )
-        } else if let newDestination = defaults.lyricsSavingDestination(
-            title: metadata.title,
-            artist: metadata.artist
-        ) {
-            destination = newDestination
-        } else {
+        ) else {
             return false
         }
 

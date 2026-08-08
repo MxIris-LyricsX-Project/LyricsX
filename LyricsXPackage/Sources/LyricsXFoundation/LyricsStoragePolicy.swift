@@ -27,6 +27,52 @@ public enum LyricsStoragePolicy {
         }
     }
 
+    /// Files LyricsX itself manages live in the default or custom lyrics library.
+    /// Lyrics loaded from beside a track are treated as user-owned unless the
+    /// caller explicitly allows writing them back.
+    public static func isManagedLibraryFile(
+        _ fileURL: URL,
+        defaultDirectoryURL: URL,
+        customDirectoryURL: URL?
+    ) -> Bool {
+        if contains(fileURL, in: defaultDirectoryURL) {
+            return true
+        }
+        if let customDirectoryURL, contains(fileURL, in: customDirectoryURL) {
+            return true
+        }
+        return false
+    }
+
+    public static func persistDestination(
+        localURL: URL?,
+        allowUnmanagedLocalWriteBack: Bool,
+        defaultDirectoryURL: URL,
+        customDirectoryURL: URL?,
+        libraryDestination: LyricsStorageDestination?
+    ) -> LyricsStorageDestination? {
+        if let localURL {
+            let isManaged = isManagedLibraryFile(
+                localURL,
+                defaultDirectoryURL: defaultDirectoryURL,
+                customDirectoryURL: customDirectoryURL
+            )
+            if isManaged || allowUnmanagedLocalWriteBack {
+                let securityScopedDirectoryURL: URL?
+                if let customDirectoryURL, contains(localURL, in: customDirectoryURL) {
+                    securityScopedDirectoryURL = customDirectoryURL
+                } else {
+                    securityScopedDirectoryURL = nil
+                }
+                return LyricsStorageDestination(
+                    fileURL: localURL,
+                    securityScopedDirectoryURL: securityScopedDirectoryURL
+                )
+            }
+        }
+        return libraryDestination
+    }
+
     public static func destination(
         locationRawValue: Int,
         title: String?,

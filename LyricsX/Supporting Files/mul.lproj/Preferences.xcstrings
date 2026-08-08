@@ -13499,6 +13499,24 @@
         }
       }
     },
+    "writeBackBeside-button-cell-inner.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Allow writing changes back to lyrics beside the track\"; ObjectID = \"writeBackBeside-button-cell-inner\";",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow writing changes back to lyrics beside the track"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许将修改写回音轨同目录歌词文件"
+          }
+        }
+      }
+    },
     "Vyb-yN-EFY.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Swinsian\"; ObjectID = \"Vyb-yN-EFY\"; Note = \"#bc-ignore!\";",
       "extractionState" : "stale",
