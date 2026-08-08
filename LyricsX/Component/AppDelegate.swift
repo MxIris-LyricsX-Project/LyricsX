@@ -250,6 +250,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         let url: URL
+        let securityScopedDirectoryURL: URL?
         if let lyrics = AppController.shared.currentLyrics {
             if lyrics.metadata.localURL == nil, lyrics.metadata.needsPersist {
                 lyrics.persist()
@@ -258,6 +259,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 return
             }
             url = localURL
+            // Opening should work for every local lyrics file, including user-owned
+            // beside-track files. Only the custom lyrics library needs a security scope.
+            securityScopedDirectoryURL = defaults.lyricsSecurityScopedDirectory(containing: localURL)
         } else {
             guard let destination = defaults.lyricsSavingDestination(
                 title: track.title,
@@ -268,6 +272,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
             do {
                 url = try LyricsStoragePolicy.prepareEmptyFile(at: destination)
+                securityScopedDirectoryURL = destination.securityScopedDirectoryURL
             } catch {
                 log(error.localizedDescription)
                 NSSound.beep()
@@ -276,13 +281,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         let workspace = NSWorkspace.shared
-        let isAccessing = url.startAccessingSecurityScopedResource()
+        if let securityScopedDirectoryURL,
+           !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            NSSound.beep()
+            return
+        }
         if #available(macOS 10.15, *),
            let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") {
             workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
-                if isAccessing {
-                    url.stopAccessingSecurityScopedResource()
-                }
+                securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
                 if error != nil {
                     DispatchQueue.main.async {
                         NSSound.beep()
@@ -293,9 +300,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         defer {
-            if isAccessing {
-                url.stopAccessingSecurityScopedResource()
-            }
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
         }
         if !workspace.openFile(url.path, withApplication: "TextEdit") {
             NSSound.beep()
