@@ -37,7 +37,17 @@ let isInSandbox = ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"
 let isFromMacAppStore = (try? Bundle.main.appStoreReceiptURL?.checkResourceIsReachable()) == true
 
 extension DispatchQueue {
-    static let lyricsDisplay = DispatchQueue(label: "LyricsDisplay")
+    private static let lyricsDisplaySpecificKey = DispatchSpecificKey<Void>()
+
+    static let lyricsDisplay: DispatchQueue = {
+        let queue = DispatchQueue(label: "LyricsDisplay")
+        queue.setSpecific(key: lyricsDisplaySpecificKey, value: ())
+        return queue
+    }()
+
+    static var isOnLyricsDisplay: Bool {
+        return DispatchQueue.getSpecific(key: lyricsDisplaySpecificKey) != nil
+    }
 }
 
 extension CAMediaTimingFunction {
