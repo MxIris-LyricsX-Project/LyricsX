@@ -160,7 +160,8 @@ class KaraokeLabel: NSTextField {
         let progression: CTFrameProgression = isVertical ? .rightToLeft : .topToBottom
         let frameAttr: [CTFrame.AttributeKey: Any] = [.progression: progression.rawValue as NSNumber]
         let framesetter = CTFramesetter.create(attributedString: attrString)
-        let (suggestSize, fitRange) = framesetter.suggestFrameSize(constraints: (dirtyRect ?? bounds).size, frameAttributes: frameAttr)
+        // A partial repaint must use the same layout as the progress mask.
+        let (suggestSize, fitRange) = framesetter.suggestFrameSize(constraints: bounds.size, frameAttributes: frameAttr)
         let path = CGPath(rect: CGRect(origin: .zero, size: suggestSize), transform: nil)
         let ctFrame = framesetter.frame(stringRange: fitRange, path: path, frameAttributes: frameAttr)
         _ctFrame = ctFrame
@@ -228,6 +229,13 @@ class KaraokeLabel: NSTextField {
             transform *= .flip(height: bounds.height)
         }
         lineBounds.apply(t: transform)
+
+        if isVertical {
+            // Rotated horizontal line metrics do not cover vertical glyph offsets.
+            // Keep the full column width while animating only its height.
+            lineBounds.origin.x = bounds.minX
+            lineBounds.size.width = bounds.width
+        }
 
         progressLayer.anchorPoint = isVertical ? CGPoint(x: 0.5, y: 0) : CGPoint(x: 0, y: 0.5)
         progressLayer.frame = lineBounds
