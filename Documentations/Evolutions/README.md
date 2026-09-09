@@ -40,4 +40,5 @@
 | [0029](0029-playback-route-lyrics-offset.md) | 按播放器与输出设备设置歌词偏移 | Implemented |
 | [0030](0030-apple-music-token-status.md) | 实验室页显示 Apple Music token 是否有效 | Implemented |
 | [0031](0031-lyrics-source-switches.md) | 歌词源可以单独关掉 | Implemented |
+| [0032](0032-track-lyrics-offsets.md) | 记住无法原地写回的歌词偏移 | Implemented |
 | [draft](draft-split-lyricsx-foundation.md) | 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头 | Draft |
