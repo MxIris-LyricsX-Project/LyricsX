@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import CryptoKit
 import Regex
 import OpenCC
 import MusicPlayer
@@ -121,14 +122,62 @@ final class AppController: NSObject {
     /// writes it back. Read and written on `DispatchQueue.lyricsDisplay`.
     private var widgetSnapshotIsRetired = false
 
+    /// The file and offset as read, shared by cached menu choices and the display.
+    /// After publication, its offset changes only on the display queue after write-back.
+    fileprivate final class LoadedLocalLyrics {
+        let lyrics: Lyrics
+        let fileURL: URL?
+        let contentFingerprint: String
+        var sourceOffset: Int
+
+        init(lyrics: Lyrics, contentFingerprint: String) {
+            self.lyrics = lyrics
+            self.fileURL = lyrics.metadata.localURL
+            self.contentFingerprint = contentFingerprint
+            self.sourceOffset = lyrics.offset
+        }
+
+        var fingerprint: String {
+            "\(contentFingerprint):\(sourceOffset)"
+        }
+
+        var writesBackInPlace: Bool {
+            fileURL.map { defaults.lyricsPersistRewritesFileInPlace($0) } ?? false
+        }
+    }
+
+    /// The source remains the same when the display shows a translated copy.
+    /// Accessed on the lyrics display queue.
+    private struct LocalLyricsOffsetSource {
+        weak var lyrics: Lyrics?
+        let trackID: String
+        let loaded: LoadedLocalLyrics
+    }
+
+    private var localLyricsOffsetSource: LocalLyricsOffsetSource?
+
     @objc dynamic var lyricsOffset: Int {
         get {
             return currentLyrics?.offset ?? 0
         }
         set {
-            currentLyrics?.offset = newValue
-            currentLyrics?.metadata.needsPersist = true
-            scheduleCurrentLineCheck()
+            performOnLyricsDisplayQueue {
+                guard let lyrics = currentLyrics else { return }
+                lyrics.offset = newValue
+                lyrics.metadata.needsPersist = true
+                if let source = localLyricsOffsetSource, source.lyrics === lyrics {
+                    var offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
+                    let loaded = source.loaded
+                    let sourceIsReadOnly = !loaded.writesBackInPlace
+                    let hasDifferentSaveFile = loaded.fileURL != lyrics.metadata.localURL
+                    let hasPendingWriteBack = offsets.offset(for: source.trackID, fingerprint: loaded.fingerprint) != nil
+                    if sourceIsReadOnly || hasDifferentSaveFile || hasPendingWriteBack {
+                        offsets.setOffset(newValue, for: source.trackID, fingerprint: loaded.fingerprint)
+                        defaults[.trackLyricsOffsets] = offsets.storedData
+                    }
+                }
+                scheduleCurrentLineCheck()
+            }
         }
     }
 
@@ -526,9 +575,10 @@ final class AppController: NSObject {
         cancelLyricsTranslation()
         automaticLyricsReplacementWindow.reset()
         performOnLyricsDisplayQueue {
-            if currentLyrics?.metadata.needsPersist == true {
-                currentLyrics?.persist()
+            if let lyrics = currentLyrics, lyrics.metadata.needsPersist {
+                lyrics.persist()
             }
+            localLyricsOffsetSource = nil
         }
         currentLyrics = nil
         currentLineIndex = nil
@@ -555,14 +605,14 @@ final class AppController: NSObject {
         // it, either of which would otherwise win on order alone and silently
         // undo the choice.
         if let selectedLyrics = loadUserSelectedLyrics(for: track, title: title, artist: artist) {
-            currentLyrics = selectedLyrics
-            adoptAsSoleLyricsCandidate(selectedLyrics)
+            displayLocalLyrics(selectedLyrics, forTrackID: track.id)
+            adoptAsSoleLyricsCandidate(selectedLyrics.lyrics)
             return
         }
 
         if let lookupResult = automaticLocalLookup(for: track, title: title, artist: artist) {
-            currentLyrics = lookupResult.lyrics
-            adoptAsSoleLyricsCandidate(lookupResult.lyrics)
+            displayLocalLyrics(lookupResult.loaded, forTrackID: track.id)
+            adoptAsSoleLyricsCandidate(lookupResult.loaded.lyrics)
             if lookupResult.endsLookup {
                 return
             }
@@ -1084,6 +1134,9 @@ final class AppController: NSObject {
                     // A copy, so the candidate pool still holds the original;
                     // `reconcileLyricsCandidatePoolWithScreen()` swaps it in
                     // there before the pool is next used.
+                    if localLyricsOffsetSource?.lyrics === displayedLyrics {
+                        localLyricsOffsetSource?.lyrics = translatedLyrics
+                    }
                     currentLyrics = translatedLyrics
                     if translatedLyrics.persist() {
                         if let languagePairToDownload = outcome.languagePairToDownload {
@@ -1193,14 +1246,14 @@ final class AppController: NSObject {
             return
         }
         for candidateFile in librarySearchFiles(title: title, artist: artist) {
-            if let lyrics = loadLyrics(
+            if let loaded = loadLyrics(
                 at: candidateFile.fileURL,
                 securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
                 title: title,
                 artist: artist
             ) {
-                currentLyrics = lyrics
-                adoptAsSoleLyricsCandidate(lyrics)
+                displayLocalLyrics(loaded, forTrackID: track.id)
+                adoptAsSoleLyricsCandidate(loaded.lyrics)
                 return
             }
         }
@@ -1451,7 +1504,7 @@ final class AppController: NSObject {
     /// pick was: a file, or the lyrics embedded in the track. `nil` when there
     /// is no pick or it can no longer be read — the file is gone, or the track
     /// has lost its lyrics — so the automatic lookup takes over.
-    private func loadUserSelectedLyrics(for track: MusicTrack, title: String, artist: String) -> Lyrics? {
+    private func loadUserSelectedLyrics(for track: MusicTrack, title: String, artist: String) -> LoadedLocalLyrics? {
         switch LyricsSelectionOverrideTable.selection(forTrackId: track.id, in: defaults[.lyricsSelectionOverrides]) {
         case .file(let fileURL):
             return loadLyrics(
@@ -1471,7 +1524,7 @@ final class AppController: NSObject {
     /// hand picks left out of it.
     private struct AutomaticLocalLookupResult {
         let source: LocalLyricsSource
-        let lyrics: Lyrics
+        let loaded: LoadedLocalLyrics
         /// `false` for a plain `.lrc` in the library: it goes on screen, but
         /// the search still runs and may replace it.
         let endsLookup: Bool
@@ -1486,8 +1539,8 @@ final class AppController: NSObject {
 
         if defaults[.loadLyricsBesideTrack] {
             if let embeddedLyrics = track.lyrics,
-               let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
-                return AutomaticLocalLookupResult(source: .embedded, lyrics: lyrics, endsLookup: true)
+               let loaded = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
+                return AutomaticLocalLookupResult(source: .embedded, loaded: loaded, endsLookup: true)
             }
             if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
                 candidateLyricsFiles += [
@@ -1515,7 +1568,7 @@ final class AppController: NSObject {
         candidateLyricsFiles += librarySearchFiles(title: title, artist: artist)
 
         for candidateFile in candidateLyricsFiles {
-            guard let lyrics = loadLyrics(
+            guard let loaded = loadLyrics(
                 at: candidateFile.fileURL,
                 securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
                 title: title,
@@ -1528,12 +1581,12 @@ final class AppController: NSObject {
             // decision, so they stay in play.
             if candidateFile.isLibraryFile,
                defaults[.ignoreCachedLyricsLibrary],
-               !lyrics.isUserPicked {
+               !loaded.lyrics.isUserPicked {
                 continue
             }
             return AutomaticLocalLookupResult(
                 source: .file(candidateFile.fileURL),
-                lyrics: lyrics,
+                loaded: loaded,
                 endsLookup: !candidateFile.allowsFurtherSearching
             )
         }
@@ -1561,7 +1614,7 @@ final class AppController: NSObject {
         )
     }
 
-    private func loadLyrics(at fileURL: URL, securityScopedURL: URL?, title: String, artist: String) -> Lyrics? {
+    private func loadLyrics(at fileURL: URL, securityScopedURL: URL?, title: String, artist: String) -> LoadedLocalLyrics? {
         if let securityScopedURL {
             guard securityScopedURL.startAccessingSecurityScopedResource() else {
                 return nil
@@ -1580,10 +1633,10 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
-        return lyrics
+        return captureLocalLyrics(lyrics)
     }
 
-    private func loadEmbeddedLyrics(_ embeddedLyrics: String, title: String, artist: String) -> Lyrics? {
+    private func loadEmbeddedLyrics(_ embeddedLyrics: String, title: String, artist: String) -> LoadedLocalLyrics? {
         guard !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               let lyrics = Lyrics(embeddedLyrics) else {
             return nil
@@ -1597,7 +1650,12 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
-        return lyrics
+        return captureLocalLyrics(lyrics)
+    }
+
+    private func captureLocalLyrics(_ lyrics: Lyrics) -> LoadedLocalLyrics {
+        let digest = SHA256.hash(data: Data(lyricsContentFingerprint(lyrics).utf8))
+        return LoadedLocalLyrics(lyrics: lyrics, contentFingerprint: Data(digest).base64EncodedString())
     }
 
     private func makeLyricsSearchRequest(for track: MusicTrack) -> LyricsSearchRequest {
@@ -1667,13 +1725,42 @@ final class AppController: NSObject {
 
     // MARK: Local Lyrics
 
+    /// Called after a successful save, on the display queue.
+    func lyricsDidPersist(_ lyrics: Lyrics, to fileURL: URL) {
+        guard let source = localLyricsOffsetSource, source.lyrics === lyrics,
+              source.loaded.fileURL == fileURL else { return }
+        let loaded = source.loaded
+        var offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
+        if offsets.removeOffset(for: source.trackID, fingerprint: loaded.fingerprint) {
+            defaults[.trackLyricsOffsets] = offsets.storedData
+        }
+        // The menu may still hold the parsed lyrics that preceded a translation.
+        loaded.sourceOffset = lyrics.offset
+        loaded.lyrics.offset = lyrics.offset
+    }
+
+    private func displayLocalLyrics(_ loaded: LoadedLocalLyrics, forTrackID trackID: String) {
+        performOnLyricsDisplayQueue {
+            let lyrics = loaded.lyrics
+            localLyricsOffsetSource = LocalLyricsOffsetSource(lyrics: lyrics, trackID: trackID, loaded: loaded)
+            let offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
+            if let offset = offsets.offset(for: trackID, fingerprint: loaded.fingerprint) {
+                if offset != loaded.sourceOffset, loaded.writesBackInPlace {
+                    lyrics.metadata.needsPersist = true
+                }
+                lyrics.offset = offset
+            }
+            currentLyrics = lyrics
+        }
+    }
+
     /// Lyrics the Local Lyrics menu can put on screen, already read and
     /// prepared the way the automatic lookup prepares them.
     struct LocalLyricsChoice {
         let source: LocalLyricsSource
         /// The copy in LyricsX's own library, as opposed to a file beside the track.
         let isLibraryFile: Bool
-        let lyrics: Lyrics
+        fileprivate let loaded: LoadedLocalLyrics
     }
 
     /// Every local source `track` has, in the order the automatic lookup
@@ -1687,26 +1774,26 @@ final class AppController: NSObject {
         let artist = track.artist ?? ""
         var choices: [LocalLyricsChoice] = []
         if let embeddedLyrics = track.lyrics,
-           let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
-            choices.append(LocalLyricsChoice(source: .embedded, isLibraryFile: false, lyrics: lyrics))
+           let loaded = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
+            choices.append(LocalLyricsChoice(source: .embedded, isLibraryFile: false, loaded: loaded))
         }
         if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
             for pathExtension in ["lrcx", "lrc"] {
                 let fileURL = besideTrackBaseURL.appendingPathExtension(pathExtension)
-                if let lyrics = loadLyrics(at: fileURL, securityScopedURL: nil, title: title, artist: artist) {
-                    choices.append(LocalLyricsChoice(source: .file(fileURL), isLibraryFile: false, lyrics: lyrics))
+                if let loaded = loadLyrics(at: fileURL, securityScopedURL: nil, title: title, artist: artist) {
+                    choices.append(LocalLyricsChoice(source: .file(fileURL), isLibraryFile: false, loaded: loaded))
                 }
             }
         }
         for candidateFile in librarySearchFiles(title: title, artist: artist)
             where !choices.contains(where: { $0.source == .file(candidateFile.fileURL) }) {
-            if let lyrics = loadLyrics(
+            if let loaded = loadLyrics(
                 at: candidateFile.fileURL,
                 securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
                 title: title,
                 artist: artist
             ) {
-                choices.append(LocalLyricsChoice(source: .file(candidateFile.fileURL), isLibraryFile: true, lyrics: lyrics))
+                choices.append(LocalLyricsChoice(source: .file(candidateFile.fileURL), isLibraryFile: true, loaded: loaded))
                 break
             }
         }
@@ -1733,16 +1820,14 @@ final class AppController: NSObject {
         if let index = defaults[.noSearchingAlbumNames].firstIndex(of: track.album ?? "") {
             defaults[.noSearchingAlbumNames].remove(at: index)
         }
-        performOnLyricsDisplayQueue {
-            currentLyrics = choice.lyrics
-        }
+        displayLocalLyrics(choice.loaded, forTrackID: track.id)
         // Into the pool rather than in place of it, so the next-candidate
         // shortcut carries on from this choice and can come back to it.
-        let fingerprint = lyricsContentFingerprint(choice.lyrics)
+        let fingerprint = lyricsContentFingerprint(choice.loaded.lyrics)
         let otherCandidates = candidatePoolTrackId == track.id
             ? lyricsCandidatePool.candidates.filter { lyricsContentFingerprint($0) != fingerprint }
             : []
-        adoptLyricsCandidates(otherCandidates + [choice.lyrics], selecting: choice.lyrics, for: track)
+        adoptLyricsCandidates(otherCandidates + [choice.loaded.lyrics], selecting: choice.loaded.lyrics, for: track)
         rememberLyricsSelection(choice.source, for: track)
     }
 
@@ -1883,8 +1968,8 @@ final class AppController: NSObject {
         // Align widget's time axis with the main app's lyrics time axis.
         // The main app uses `playbackTime + adjustedTimeDelay` everywhere
         // (currentLineIndex computation, karaoke progress, HUD), where
-        // adjustedTimeDelay folds in the lyrics file's [offset:] tag plus
-        // the user's global offset preference. The widget's
+        // adjustedTimeDelay adds the track, global and playback-route offsets.
+        // The widget's
         // LyricsLineEntry.startTime is the raw LRC position, so we have to
         // offset playbackPosition the same way — otherwise the widget
         // permanently lags the main app by adjustedTimeDelay seconds (up

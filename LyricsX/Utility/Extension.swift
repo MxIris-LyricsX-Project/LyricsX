@@ -235,6 +235,7 @@ extension Lyrics {
             try Data(description.utf8).write(to: fileURL, options: .atomic)
             metadata.localURL = fileURL
             metadata.needsPersist = false
+            AppController.shared.lyricsDidPersist(self, to: fileURL)
             return true
         } catch {
             log(error.localizedDescription)
