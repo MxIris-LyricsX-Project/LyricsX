@@ -30,6 +30,10 @@
   - [0010 歌词面板背景改按 Music 26「正在播放」的 MediaCoreUI 管线重做](Evolutions/0010-apple-music-now-playing-backdrop.md)
     —— 逆向确认对照窗口的背景是 `MediaCoreUI.Backdrop.CompositeRenderer` 而非 `TSLBackdropMetalView`，按其管线重做背景，
     旧管线以 `legacyTSL` 变体保留供并排比较。
+  - [0011 行内抬高改成 Music 26.6 的逐音节软弹簧](Evolutions/0011-apple-music-syllable-lift.md)
+    —— 行内抬高从「整词一次抬起」改成按音节起始时间逐个抬起，只有 Music 会拖长的词才额外做 swell。
+  - [0012 行内标签歌词也走 Music 26.6 的逐音节抬高](Evolutions/0012-inline-tag-syllable-lift.md)
+    —— 酷狗 / QQ / 部分网易的 `[tt]` 行内标签歌词按分段逐个抬高，旧的整行 emphasis 保留为可切换策略。
 
 ## 实现说明
 
