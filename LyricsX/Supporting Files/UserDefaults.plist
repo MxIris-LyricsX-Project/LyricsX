@@ -80,6 +80,8 @@
 	</array>
 	<key>UseAppleMusicLyricsWindow</key>
 	<false/>
+	<key>HighResolutionPanelArtworkEnabled</key>
+	<true/>
 	<key>StripSearchTitleBracketsEnabled</key>
 	<true/>
 	<key>WriteBackToLyricsBesideTrack</key>

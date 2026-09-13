@@ -21,6 +21,12 @@ extension AppleMusicLyrics {
         private var currentTrackID: String?
         private var trackDuration: TimeInterval?
         private var lastArtworkFetchAttempt: Date = .distantPast
+        /// Set once a higher-resolution cover has replaced the player's own for
+        /// the current track, so the periodic refresh does not put the small one
+        /// back.
+        private var isShowingUpgradedArtwork = false
+        /// Whether the backdrop has been handed artwork for the current track.
+        private var hasSuppliedBackdropArtwork = false
 
         private let interactionState = InteractionStateModel()
         private var karaokeMode: KaraokeMode = .characterLevel
@@ -312,6 +318,11 @@ extension AppleMusicLyrics {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in self?.handleTrackChange() }
                 .store(in: &cancellables)
+
+            AppleMusicLyrics.hostEnvironment.artworkUpgrades
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] upgrade in self?.applyUpgradedArtwork(upgrade) }
+                .store(in: &cancellables)
         }
 
         private func startChromeTimer() {
@@ -366,6 +377,8 @@ extension AppleMusicLyrics {
                 coverImageView.image = nil
                 backgroundView.update(artwork: nil, trackIdentity: newTrackID)
                 lastArtworkFetchAttempt = .distantPast
+                isShowingUpgradedArtwork = false
+                hasSuppliedBackdropArtwork = false
             }
             refreshArtwork()
             refreshTrackInfo()
@@ -388,7 +401,7 @@ extension AppleMusicLyrics {
 
         private func refreshArtwork() {
             if let artwork = selectedPlayer.currentTrack?.artwork {
-                applyArtwork(artwork)
+                applyPlayerArtwork(artwork)
                 return
             }
             // Throttled SBObject fallback (matches the previous implementation).
@@ -396,12 +409,34 @@ extension AppleMusicLyrics {
             guard now.timeIntervalSince(lastArtworkFetchAttempt) >= 1.0 else { return }
             lastArtworkFetchAttempt = now
             if let artwork = selectedPlayer.currentTrack?.resolvedArtwork {
-                applyArtwork(artwork)
+                applyPlayerArtwork(artwork)
             }
         }
 
-        private func applyArtwork(_ artwork: NSImage) {
+        /// The artwork the player itself published. Both the lyrics arriving and
+        /// the chrome tick re-run the refresh, so this has to leave a
+        /// higher-resolution replacement alone once one is on screen.
+        private func applyPlayerArtwork(_ artwork: NSImage) {
+            guard !isShowingUpgradedArtwork else { return }
             coverImageView.image = artwork
+            supplyBackdropArtwork(artwork)
+        }
+
+        /// A larger copy of the same cover, found by the app. The backdrop is
+        /// deliberately not re-rendered when it already has this track's artwork:
+        /// it downsamples the cover to 128 pixels, so the replacement would look
+        /// identical and only cost a visible cross-fade.
+        private func applyUpgradedArtwork(_ upgrade: AppleMusicLyrics.ArtworkUpgrade) {
+            guard upgrade.trackIdentifier == currentTrackID else { return }
+            isShowingUpgradedArtwork = true
+            coverImageView.image = upgrade.image
+            if !hasSuppliedBackdropArtwork {
+                supplyBackdropArtwork(upgrade.image)
+            }
+        }
+
+        private func supplyBackdropArtwork(_ artwork: NSImage) {
+            hasSuppliedBackdropArtwork = true
             backgroundView.update(artwork: artwork, trackIdentity: currentTrackID)
         }
 

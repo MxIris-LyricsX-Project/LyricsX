@@ -13,6 +13,8 @@ class PreferenceLabViewController: PreferenceViewController {
 
     @IBOutlet var artworkSimilarityBoostButton: NSButton!
 
+    @IBOutlet var highResolutionArtworkButton: NSButton!
+
     @IBOutlet weak var appleMusicMediaUserTokenField: NSTextField!
     @IBOutlet weak var appleMusicStorefrontField: NSTextField!
     @IBOutlet weak var appleMusicLanguageField: NSTextField!
@@ -22,6 +24,7 @@ class PreferenceLabViewController: PreferenceViewController {
 
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
         artworkSimilarityBoostButton.bind(.value, withDefaultName: .artworkSimilarityBoostEnabled)
+        highResolutionArtworkButton.bind(.value, withDefaultName: .highResolutionPanelArtworkEnabled)
 
         useAppleMusicLyricsWindowButton.bind(.value, withDefaultName: .useAppleMusicLyricsWindow)
         if #available(macOS 15, *) {

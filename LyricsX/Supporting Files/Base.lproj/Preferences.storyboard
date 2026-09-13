@@ -1599,6 +1599,7 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="AML-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ANR-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="HRA-Ro-W01"/>
                                     <gridRow yPlacement="fill" height="30" topPadding="5" id="AMT-Ro-W01"/>
                                     <gridRow yPlacement="fill" height="30" topPadding="5" id="AMS-Ro-W01"/>
                                     <gridRow yPlacement="fill" height="30" topPadding="5" id="AMG-Ro-W01"/>
@@ -1829,6 +1830,16 @@
                                             </buttonCell>
                                         </button>
                                     </gridCell>
+                                    <gridCell row="HRA-Ro-W01" column="8ba-lF-U7s" id="HRA-Ce-L01"/>
+                                    <gridCell row="HRA-Ro-W01" column="4uA-B7-Dvh" id="HRA-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HRA-Bt-N01">
+                                            <rect key="frame" x="170" y="127" width="350" height="32"/>
+                                            <buttonCell key="cell" type="check" title="Use a higher-resolution cover in the Apple Music-style window" bezelStyle="regularSquare" imagePosition="left" inset="2" id="HRA-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                        </button>
+                                    </gridCell>
                                     <gridCell row="AMT-Ro-W01" column="8ba-lF-U7s" yPlacement="center" id="AMT-Ce-L01">
                                         <textField key="contentView" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AMT-Lb-T01">
                                             <rect key="frame" x="30" y="136" width="122" height="16"/>
@@ -1937,6 +1948,7 @@
                         <outlet property="appleMusicNameRecoveryButton" destination="ANR-Bt-N01" id="ANR-Ot-U01"/>
                         <outlet property="appleMusicStorefrontField" destination="AMS-Tf-N01" id="AMS-Ot-U01"/>
                         <outlet property="artworkSimilarityBoostButton" destination="ART-Bt-N01" id="ART-Ot-U01"/>
+                        <outlet property="highResolutionArtworkButton" destination="HRA-Bt-N01" id="HRA-Ot-U01"/>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
                         <outlet property="useAppleMusicLyricsWindowButton" destination="AML-Bt-N01" id="AML-Ot-U01"/>

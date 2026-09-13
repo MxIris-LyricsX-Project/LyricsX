@@ -37,6 +37,15 @@ import Foundation
 //      chrominance — at 9×8 a single pixel is ~1.4% of the mean, an order of
 //      magnitude noisier.
 
+/// What comparing an image against the playing track's artwork established.
+enum ArtworkComparisonOutcome {
+    /// The playing track published no artwork, so there is nothing to compare
+    /// against — not a rejection.
+    case noReference
+    case match
+    case mismatch
+}
+
 actor ArtworkSimilarityScorer {
     static let shared = ArtworkSimilarityScorer()
 
@@ -95,6 +104,34 @@ actor ArtworkSimilarityScorer {
         currentTrackId = trackId
     }
 
+    /// Fills in the reference for a track whose artwork only turned up later.
+    /// ScriptingBridge caches an `NSNull` for `artwork` often enough that the
+    /// first look at a track comes back empty while the raw AppleEvent bytes are
+    /// there for the asking — see `MusicTrack.resolvedArtwork`. Without this the
+    /// artwork-bearing players would fall through to the weaker metadata check.
+    func supplyNowPlayingIfMissing(image: NSImage, trackIdentifier: String) {
+        guard trackIdentifier == currentTrackId, currentFingerprint == nil else { return }
+        currentFingerprint = Self.fingerprint(image: image)
+    }
+
+    /// Whether an image the caller already holds shows the same cover as the
+    /// playing track, with no download involved.
+    ///
+    /// `noReference` is its own answer rather than a `false`: the caller has to
+    /// tell "this is a different cover" (reject it) apart from "there is nothing
+    /// to compare against" (fall back to comparing metadata).
+    func evaluate(image: NSImage) -> ArtworkComparisonOutcome {
+        guard let target = currentFingerprint else {
+            return .noReference
+        }
+        guard let candidate = Self.fingerprint(image: image) else {
+            return .mismatch
+        }
+        return matches(candidate, against: target, describedAs: "in-memory")
+            ? .match
+            : .mismatch
+    }
+
     // MARK: - Candidate-side scoring
 
     func matches(artworkURL: URL) async -> Bool {
@@ -125,10 +162,18 @@ actor ArtworkSimilarityScorer {
             candidate = computed
         }
 
+        return matches(candidate, against: target, describedAs: artworkURL.absoluteString)
+    }
+
+    private func matches(
+        _ candidate: ArtworkFingerprint,
+        against target: ArtworkFingerprint,
+        describedAs description: String
+    ) -> Bool {
         let hashDistance = Self.hammingDistance(target.dHash, candidate.dHash)
         guard hashDistance <= dHashDistanceThreshold else {
             NSLog("[ArtworkMatch] url=%@ hashDist=%d (>%d) -> NO-MATCH",
-                  artworkURL.absoluteString, hashDistance, dHashDistanceThreshold)
+                  description, hashDistance, dHashDistanceThreshold)
             return false
         }
 
@@ -136,7 +181,7 @@ actor ArtworkSimilarityScorer {
         // brightness/encoding shift on a genuine match cannot veto it.
         if hashDistance <= strongHashDistanceThreshold {
             NSLog("[ArtworkMatch] url=%@ hashDist=%d (≤%d strong) -> MATCH",
-                  artworkURL.absoluteString, hashDistance, strongHashDistanceThreshold)
+                  description, hashDistance, strongHashDistanceThreshold)
             return true
         }
 
@@ -145,7 +190,7 @@ actor ArtworkSimilarityScorer {
         let chrominanceDistance = Self.chrominanceDistance(target, candidate)
         let matched = chrominanceDistance <= chrominanceDistanceThreshold
         NSLog("[ArtworkMatch] url=%@ hashDist=%d (≤%d) chromaDist=%.1f (≤%.0f:%@) -> %@",
-              artworkURL.absoluteString,
+              description,
               hashDistance, dHashDistanceThreshold,
               chrominanceDistance, chrominanceDistanceThreshold, matched ? "OK" : "FAIL",
               matched ? "MATCH" : "NO-MATCH")

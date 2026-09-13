@@ -214,6 +214,12 @@ extension UserDefaults.DefaultsKeys {
     // right version surfaces above same-title peers from other artists.
     static let artworkSimilarityBoostEnabled = Key<Bool>("ArtworkSimilarityBoostEnabled")
 
+    // The Apple Music-style panel stretches the cover to roughly 1400 pixels in
+    // full screen, well past the thumbnail a player publishes. When on, a
+    // higher-resolution copy of the same cover is looked up on the network and
+    // swapped in — see `HighResolutionArtworkService`.
+    static let highResolutionPanelArtworkEnabled = Key<Bool>("HighResolutionPanelArtworkEnabled")
+
     // Apple Music Route B — recover a track's native-script name via the
     // Apple Music catalog so the third-party providers can match it.
     static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")

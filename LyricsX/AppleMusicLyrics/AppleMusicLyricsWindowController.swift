@@ -9,6 +9,9 @@ extension AppleMusicLyrics {
     final class WindowController: NSWindowController, NSWindowDelegate {
         private static let windowFrameName = NSWindow.FrameAutosaveName("AppleMusicLyricsWindow")
 
+        private var cancellables: Set<AnyCancellable> = []
+        private var delayedArtworkUpgrade: DispatchWorkItem?
+
         init() {
             AppleMusicLyrics.hostEnvironment = .init(
                 player: MusicPlayers.Selected.shared,
@@ -18,11 +21,17 @@ extension AppleMusicLyrics {
                 translationSettingsDidChange: defaults
                     .publisher(for: [.preferBilingualLyrics, .chineseConversionIndex])
                     .map { _ in }
+                    .eraseToAnyPublisher(),
+                artworkUpgrades: HighResolutionArtworkService.shared.artworkPublisher
+                    .map { AppleMusicLyrics.ArtworkUpgrade(trackIdentifier: $0.trackIdentifier, image: $0.image) }
                     .eraseToAnyPublisher()
             )
             super.init(window: nil)
         }
 
+        deinit {
+            delayedArtworkUpgrade?.cancel()
+        }
 
         @available(*, unavailable)
         required init?(coder: NSCoder) {
@@ -58,6 +67,79 @@ extension AppleMusicLyrics {
                 window?.level = .floating
             }
             installPinButton(isPinned: isPinned)
+
+            observeArtworkSources()
+        }
+
+        // MARK: High-resolution artwork
+
+        /// Drives `HighResolutionArtworkService`. These subscriptions live and
+        /// die with the panel window, which is what keeps the app off the
+        /// network for anyone who never opens it.
+        ///
+        /// Both the track and the lyrics matter, and they arrive apart: the
+        /// track brings the title, artist and whatever artwork the player has;
+        /// the lyrics bring a second cover URL and, often, the artwork the
+        /// player only got round to publishing in the meantime.
+        private func observeArtworkSources() {
+            selectedPlayer.currentTrackWillChange
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] track in
+                    self?.requestArtworkUpgrade(for: track, lyrics: AppController.shared.currentLyrics)
+                    self?.scheduleDelayedArtworkUpgrade()
+                }
+                .store(in: &cancellables)
+
+            AppController.shared.$currentLyrics
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] lyrics in
+                    self?.requestArtworkUpgrade(for: selectedPlayer.currentTrack, lyrics: lyrics)
+                }
+                .store(in: &cancellables)
+        }
+
+        /// A track whose lyrics never arrive gets no second pass from the
+        /// publisher above, and the artwork a player publishes routinely lands a
+        /// beat after the track change — without this, the only look at that
+        /// track would be the one taken before either had a chance to show up.
+        private func scheduleDelayedArtworkUpgrade() {
+            delayedArtworkUpgrade?.cancel()
+            let upgrade = DispatchWorkItem { [weak self] in
+                self?.requestArtworkUpgrade(
+                    for: selectedPlayer.currentTrack,
+                    lyrics: AppController.shared.currentLyrics
+                )
+            }
+            delayedArtworkUpgrade = upgrade
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: upgrade)
+        }
+
+        private func requestArtworkUpgrade(for track: MusicTrack?, lyrics: Lyrics?) {
+            guard let track else { return }
+            let lyricsArtwork = lyrics?.metadata.artworkURL.map { artworkURL in
+                ArtworkCandidateSource(
+                    url: artworkURL,
+                    title: lyrics?.idTags[.title],
+                    artist: lyrics?.idTags[.artist],
+                    duration: lyrics?.length
+                )
+            }
+            let request = HighResolutionArtworkRequest(
+                trackIdentifier: track.id,
+                title: track.title,
+                artist: track.artist,
+                album: track.album,
+                duration: track.duration,
+                localArtwork: track.resolvedArtwork,
+                lyricsArtwork: lyricsArtwork,
+                // Lyrics settling is what makes a fruitless search final: before
+                // that, the second source has not had its chance yet.
+                mayRecordMiss: lyrics != nil
+            )
+            Task {
+                await HighResolutionArtworkService.shared.resolve(request)
+            }
         }
 
         // MARK: Pin control

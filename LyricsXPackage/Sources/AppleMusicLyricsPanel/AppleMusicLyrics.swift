@@ -1,5 +1,6 @@
-import Foundation
+import AppKit
 import Combine
+import Foundation
 import LyricsXFoundation
 import MusicPlayer
 
@@ -34,18 +35,41 @@ extension AppleMusicLyrics {
         /// bilingual / Chinese-conversion preference changes.
         public var translationSettingsDidChange: AnyPublisher<Void, Never>
 
+        /// Delivers a higher-resolution copy of a track's cover once the app has
+        /// found one and confirmed it depicts the same artwork. The panel's cover
+        /// view is stretched to roughly 1400 pixels on a full-screen 5K window,
+        /// well past what a player publishes, so the picture it starts with is
+        /// the player's and this replaces it in place.
+        public var artworkUpgrades: AnyPublisher<ArtworkUpgrade, Never>
+
         public init(
             player: MusicPlayerProtocol = MusicPlayers.Virtual(),
             isBilingualPreferred: @escaping () -> Bool = { true },
             transformTranslation: @escaping (String) -> String = { $0 },
             lyricsTimeDelay: @escaping (Lyrics) -> TimeInterval = { TimeInterval($0.offset) / 1000 },
-            translationSettingsDidChange: AnyPublisher<Void, Never> = Empty(completeImmediately: false).eraseToAnyPublisher()
+            translationSettingsDidChange: AnyPublisher<Void, Never> = Empty(completeImmediately: false).eraseToAnyPublisher(),
+            artworkUpgrades: AnyPublisher<ArtworkUpgrade, Never> = Empty(completeImmediately: false).eraseToAnyPublisher()
         ) {
             self.player = player
             self.isBilingualPreferred = isBilingualPreferred
             self.transformTranslation = transformTranslation
             self.lyricsTimeDelay = lyricsTimeDelay
             self.translationSettingsDidChange = translationSettingsDidChange
+            self.artworkUpgrades = artworkUpgrades
+        }
+    }
+
+    /// A cover the app found on the network, already confirmed to belong to
+    /// `trackIdentifier`'s song and to be larger than what the player published.
+    public struct ArtworkUpgrade {
+        /// The `MusicTrack.id` this cover was resolved for. The panel drops an
+        /// upgrade that arrives after the listener has moved on.
+        public let trackIdentifier: String
+        public let image: NSImage
+
+        public init(trackIdentifier: String, image: NSImage) {
+            self.trackIdentifier = trackIdentifier
+            self.image = image
         }
     }
 

@@ -23,3 +23,4 @@
 | [0012](0012-inline-tag-syllable-lift.md) | 行内标签歌词也走 Music 26.6 的逐音节抬高 | Implemented |
 | [0013](0013-now-playing-lyrics-sizing-parity.md) | 歌词面板的字号、行距、锚点与边缘渐隐改按 Music 26.6「正在播放」模式 | In Progress |
 | [0014](0014-panel-full-screen-titlebar.md) | 歌词面板全屏时收起标题栏，pin 按钮改挂标题栏视图 | In Progress |
+| [0015](0015-high-resolution-panel-artwork.md) | 歌词面板封面改用联网取到的高清图 | In Progress |

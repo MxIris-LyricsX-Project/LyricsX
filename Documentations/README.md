@@ -41,6 +41,9 @@
   - [0014 歌词面板全屏时收起标题栏，pin 按钮改挂标题栏视图](Evolutions/0014-panel-full-screen-titlebar.md)
     —— 空 toolbar 与 titlebar accessory 会让 AppKit 把全屏标题栏钉在顶部，露出一条黑底；两者只在
     全屏期间摘掉，pin 按钮改成标题栏视图的普通子视图（不计入 accessory 计数）。
+  - [0015 歌词面板封面改用联网取到的高清图](Evolutions/0015-high-resolution-panel-artwork.md)
+    —— 换歌时并行查 iTunes Search API 和歌词候选自带的封面 URL，用现有的 dHash 指纹确认是同一张封面后，
+    把面板封面换成像素更大的那张。
 
 ## 实现说明
 
@@ -61,6 +64,9 @@
 - [Apple Music 歌词面板 Metal 渐变背景](Internal/AppleMusicMetalGradient.md) —— 一个 `MTKView` 驱动器带两条管线：
   默认复刻 Music 26「正在播放」的 `MediaCoreUI` 背景（128 pixel gamma 空间封面、三实例旋转、四分之一画布 pt 级模糊、
   细分网格、白混与 LUT 近似），`legacyTSL` 保留 MiniPlayer 管线；以及生命周期暂停、失败降级与离屏验证边界。
+- [面板高清封面](Internal/HighResolutionPanelArtwork.md) —— 一首歌为什么要看三次、下载过的候选为什么
+  留在内存里、`.noReference` 为什么不能当成拒绝、ScriptingBridge 的 `NSNull` 封面怎么补，以及
+  `NSImage.size` 是点不是像素这个坑。
 - [歌词 HUD 窗口显示与关闭](Internal/LyricsHUDPresentation.md) —— 为什么菜单动作必须读取实际窗口可见性和
   应用前台状态，以及隐藏、后台和前台三种状态分别如何处理。
 
