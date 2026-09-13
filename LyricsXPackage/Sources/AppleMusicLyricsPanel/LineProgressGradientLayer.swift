@@ -86,6 +86,30 @@ extension AppleMusicLyrics {
             layoutSublayers()
         }
 
+        /// Core Animation calls this to build the presentation copy — for
+        /// `presentation()` on this layer, and for any ancestor's copy that is
+        /// then walked, as Xcode's view debugger does to the whole tree. The
+        /// copy has to know the same geometry, or `originX(forFillEdge:)`
+        /// answers for a zero-width line; the sublayers come from the render
+        /// tree and need no copying here.
+        override init(layer: Any) {
+            if let source = layer as? LineProgressGradientLayer {
+                self.lineWidth = source.lineWidth
+                self.featherWidth = source.featherWidth
+                self.direction = source.direction
+                self.verticalPadding = source.verticalPadding
+                self.color = source.color
+            } else {
+                // Unreachable in practice: Core Animation only ever passes an
+                // instance of the same class.
+                self.lineWidth = 0
+                self.featherWidth = LyricsSpecs.lineProgressionGradientFeather
+                self.direction = .leadingToTrailing
+                self.verticalPadding = 0
+            }
+            super.init(layer: layer)
+        }
+
         @available(*, unavailable)
         required init?(coder: NSCoder) {
             fatalError("init(coder:) has not been implemented")

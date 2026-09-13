@@ -376,6 +376,9 @@ row spacing，也没有保留额外 viewport inset。
 - 中断时只从 `presentation()` 读取可见起点；
 - animation key 稳定，新动画替换同属性旧动画；
 - layout pass 可以随时重投影 backing layer，而不会改变最终状态。
+- 面板内任何声明了自己指定初始化器的 `CALayer` 子类都必须覆盖 `init(layer:)`：Core Animation 造 presentation 副本
+  就是给原层的类 alloc 新实例再发 `initWithLayer:`，Swift 子类一旦有了自己的指定初始化器就不再继承它，漏掉的那个类
+  在任何人取副本时直接崩溃（见 2026-09-13 修正）。
 
 后续若直接长期修改 row backing layer 的 geometry，AppKit 下一次 layout 会把它重写，表现通常是
 换行中途突然跳回。不要用 completion 再补 model value，那会同时破坏 hit testing 和连续换行。
@@ -586,6 +589,33 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - **验证**：LyricsXPackage 全量 183 项 / 27 suite `--no-parallel` 退出码 0；workspace LyricsX Debug 隔离构建成功；
   SwiftFormat lint 本次改动文件无差异。未启动应用做交互式 UI 验证，观感待用户放 Kugou 歌确认。
 - **提案**：`Documentations/Evolutions/0012-inline-tag-syllable-lift.md`。
+
+### 2026-09-13 修正：sweep 层缺 `init(layer:)`，取 presentation 副本时崩溃
+
+- **现象**：`AppleMusicLyricsPanel/LineProgressGradientLayer.swift:30: Fatal error: Use of unimplemented initializer
+  'init(layer:)' for class 'AppleMusicLyricsPanel.LineProgressGradientLayer'`，行号指向类声明行。
+- **原因**：`CALayer.h` 对 `initWithLayer:` 的注释原话是它专供 Core Animation 造 shadow copy（presentation layer），
+  `presentationLayer` 返回 `instancetype`——副本是原层的类 alloc 出来再喂 `initWithLayer:` 的同类实例。Swift 子类一旦声明了
+  自己的指定初始化器就不再继承 `init(layer:)`，编译器留下的桩在运行时 trap。源码里没有任何一处直接对这个层调
+  `presentation()`，但副本的 `sublayers` / `mask` 返回的都是 presentation 版本，从祖先的副本往下走就会到它；Xcode 的
+  Debug View Hierarchy 对整棵树都这么做。
+- **四问**：能复现——`LayerPresentationCopyTests` 通过 `CALayer.Type` 元类型动态调 `init(layer:)`（与 Core Animation 同一条
+  路径），修复前以同一条 Fatal error 结束进程；静态调用甚至编不过，因为那个初始化器在类型上根本不存在。基线也有——
+  537c4c1 把面板提取成 package 时给 `GlyphRunLayer` 与 `SyncedLyricsLineContentLayer` 补了 `init(layer:)`，唯独漏了这个类，
+  之后没人动过。值得修——任何取层树 presentation 副本的操作都让应用直接崩溃。以前修过吗——同一条规则在 537c4c1 对两个
+  兄弟类做过，本类是当时漏掉的，不是回归。
+- **修法**：`LineProgressGradientLayer` 覆盖 `init(layer:)`，拷贝 `lineWidth`、`featherWidth`、`direction`、`verticalPadding`、
+  `color` 后调 `super.init(layer:)`；子层由渲染树提供，不复制。面板内 5 个 `CALayer` 子类至此全部合规：`NoAnimationLayer`
+  与 `NoAnimationGradientLayer` 没有自定义初始化器，自动继承；其余三个都有覆盖。规则写进上文「AppKit 与 Core Animation
+  的所有权」。
+- **回归**：`LayerPresentationCopyTests` 三条，逐一覆盖三个带自定义初始化器的层类。只断言 Swift 存储的状态：事务之外直接调
+  基类 `init(layer:)`，`bounds`、`contentsScale`、`isGeometryFlipped` 这些 Core Animation 自己管的属性不会拷贝，真实副本从
+  渲染树取。`GlyphRunLayer` 的 run 是私有的，靠画进 alpha-only 位图数覆盖像素来证明它带过来了——`CTRunDraw` 用属性字符串
+  自己的前景色（默认黑）而不是画布填充色，灰度画布上等于什么都没画，第一版就栽在这里。
+- **验证**：`LayerPresentationCopyTests` 修复前红（signal 5，退出码 1）、修复后绿（退出码 0）；LyricsXPackage 全量 208 项 /
+  28 个 suite `--no-parallel` 退出码 0；workspace LyricsX Debug
+  scheme 隔离 DerivedData 构建成功，退出码 0，3 条警告均为既有弃用告警；SwiftFormat lint 两个改动文件无差异。
+  XcodeBuildMCP CLI 在沙箱里建不了自己的日志目录，构建降级到裸 `xcodebuild`。未启动应用做交互式 UI 验证。
 
 ## 验证记录
 
