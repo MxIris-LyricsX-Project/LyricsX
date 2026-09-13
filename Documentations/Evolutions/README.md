@@ -22,3 +22,4 @@
 | [0011](0011-apple-music-syllable-lift.md) | 行内抬高改成 Music 26.6 的逐音节软弹簧 | Implemented |
 | [0012](0012-inline-tag-syllable-lift.md) | 行内标签歌词也走 Music 26.6 的逐音节抬高 | Implemented |
 | [0013](0013-now-playing-lyrics-sizing-parity.md) | 歌词面板的字号、行距、锚点与边缘渐隐改按 Music 26.6「正在播放」模式 | In Progress |
+| [0014](0014-panel-full-screen-titlebar.md) | 歌词面板全屏时收起标题栏，pin 按钮改挂标题栏视图 | In Progress |
