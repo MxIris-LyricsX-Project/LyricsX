@@ -44,6 +44,9 @@
   - [0015 歌词面板封面改用联网取到的高清图](Evolutions/0015-high-resolution-panel-artwork.md)
     —— 换歌时并行查 iTunes Search API 和歌词候选自带的封面 URL，用现有的 dHash 指纹确认是同一张封面后，
     把面板封面换成像素更大的那张。
+  - [0016 重新评估 LSUIElement](Evolutions/0016-lsuielement-tradeoff.md)
+    —— 这个 fork 已经有了正经的面板窗口，后台应用身份带来的隐式全屏缺失、标题栏唤出失效和多处
+    手动 activate 是否还值得，三条路尚未选定。
 
 ## 实现说明
 
