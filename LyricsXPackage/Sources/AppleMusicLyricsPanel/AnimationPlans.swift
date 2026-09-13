@@ -197,7 +197,31 @@ extension AppleMusicLyrics {
             visibleHeight: CGFloat,
             firstBaselineOffset: CGFloat
         ) -> CGFloat {
-            max(0, visibleHeight * selectedLineBaselineViewportFraction - firstBaselineOffset)
+            selectedLineTopInset(
+                anchor: .baselineViewportFraction(selectedLineBaselineViewportFraction),
+                visibleHeight: visibleHeight,
+                contentCenterOffset: 0,
+                firstBaselineOffset: firstBaselineOffset
+            )
+        }
+
+        /// How far the first line starts below the document's top so that the
+        /// selected line lands on the anchor. Music's `.center(rect:)`
+        /// (`sub_10015CD84`) centres the whole line frame on the anchor's y;
+        /// the project's row carries its own padding, so the centre is measured
+        /// from the row's top edge with `contentCenterOffset`.
+        static func selectedLineTopInset(
+            anchor: SelectedLineAnchor,
+            visibleHeight: CGFloat,
+            contentCenterOffset: CGFloat,
+            firstBaselineOffset: CGFloat
+        ) -> CGFloat {
+            switch anchor {
+            case .baselineViewportFraction(let fraction):
+                return max(0, visibleHeight * fraction - firstBaselineOffset)
+            case .contentCenter(let anchorY):
+                return max(0, anchorY - contentCenterOffset)
+            }
         }
     }
 

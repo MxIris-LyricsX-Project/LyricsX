@@ -247,24 +247,52 @@ extension AppleMusicLyrics {
             contentLeadingConstraint.constant = isWide ? max(40, size.width * 0.065) : 24
             contentStack.spacing = isWide ? max(40, size.width * 0.1) : 0
 
-            let mainFontSize = max(26, min(42, size.width * 0.03))
-            let translationFontSize = max(14, mainFontSize * 0.55)
+            // A constant changed above lands on the next layout pass, which calls
+            // back in here; the frames read below converge within that pass.
+            lyricsContainer.selectedLineAnchor = selectedLineAnchor(isWide: isWide)
             if let lyrics = currentLyrics {
                 lyricsContainer.update(
                     lyrics: lyrics,
                     highlightedLineIndex: currentLineIndex,
-                    mainFontSize: mainFontSize,
-                    translationFontSize: translationFontSize
+                    mainFontSize: adaptiveMainFontSize,
+                    translationFontSize: adaptiveTranslationFontSize
                 )
             }
         }
 
+        /// Music steps the Now Playing font by the width of the view that hosts
+        /// its lyrics, and that view is a fixed share of the window
+        /// (`NowPlayingLyricsLayoutPolicy.lyricsViewPanelWidthFraction`). This
+        /// panel gives its own lyrics column a larger share, so the step runs on
+        /// the column Music would have carved out of a window this wide, not on
+        /// the column the panel actually draws into.
         private var adaptiveMainFontSize: CGFloat {
-            max(26, min(42, view.bounds.width * 0.03))
+            NowPlayingLyricsLayoutPolicy.mainFontSize(
+                forPanelWidth: view.bounds.width,
+                lyricsColumnWidth: lyricsContainer.bounds.width
+            )
         }
 
         private var adaptiveTranslationFontSize: CGFloat {
-            max(14, adaptiveMainFontSize * 0.55)
+            NowPlayingLyricsLayoutPolicy.translationFontSize(forMainFontSize: adaptiveMainFontSize)
+        }
+
+        /// Music centres the selected line on the artwork: its `activeBaseline`
+        /// constraint carries `primaryArtworkCenterY - hostedContentMinY`
+        /// (`sub_100132638`). The narrow layout hides the cover, so there is
+        /// nothing to align with and the project's 40% baseline stays.
+        private func selectedLineAnchor(isWide: Bool) -> SelectedLineAnchor {
+            guard isWide,
+                  lyricsContainer.bounds.height > 0,
+                  let window = lyricsContainer.window,
+                  coverImageView.window === window
+            else {
+                return .baselineViewportFraction(LineTransitionPlan.selectedLineBaselineViewportFraction)
+            }
+            let coverCenter = NSPoint(x: coverImageView.bounds.midX, y: coverImageView.bounds.midY)
+            let coverCenterInLyrics = lyricsContainer.convert(coverCenter, from: coverImageView)
+            // The container is not flipped: measure the anchor down from its top.
+            return .contentCenter(y: lyricsContainer.bounds.height - coverCenterInLyrics.y)
         }
 
         // MARK: Subscriptions

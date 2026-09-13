@@ -21,3 +21,4 @@
 | [0010](0010-apple-music-now-playing-backdrop.md) | 歌词面板背景改按 Music 26「正在播放」的 MediaCoreUI 管线重做 | Implemented |
 | [0011](0011-apple-music-syllable-lift.md) | 行内抬高改成 Music 26.6 的逐音节软弹簧 | Implemented |
 | [0012](0012-inline-tag-syllable-lift.md) | 行内标签歌词也走 Music 26.6 的逐音节抬高 | Implemented |
+| [0013](0013-now-playing-lyrics-sizing-parity.md) | 歌词面板的字号、行距、锚点与边缘渐隐改按 Music 26.6「正在播放」模式 | In Progress |

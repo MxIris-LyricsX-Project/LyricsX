@@ -449,8 +449,9 @@ struct LineTransitionProbes {
         )
         let maskColors = try #require(gradientMask.colors as? [CGColor])
         let maskLocations = try #require(gradientMask.locations)
-        let expectedTopFadeEndLocation = NSNumber(value: 70 / Double(container.bounds.height))
-        let expectedBottomFadeStartLocation = NSNumber(value: 0.5)
+        // Music's pretty mode fades 128 points at both edges while following.
+        let expectedTopFadeEndLocation = NSNumber(value: 128 / Double(container.bounds.height))
+        let expectedBottomFadeStartLocation = NSNumber(value: 1 - 128 / Double(container.bounds.height))
 
         #expect(maskColors.count == 4)
         #expect(maskColors[0].alpha == 0)
@@ -465,6 +466,59 @@ struct LineTransitionProbes {
         #expect(gradientMask.startPoint == CGPoint(x: 0.5, y: 1))
         #expect(gradientMask.endPoint == CGPoint(x: 0.5, y: 0))
         #expect(gradientMask.frame == container.bounds)
+    }
+
+    /// `sub_1001284F8` narrows both fades to 30 points once the user scrolls
+    /// the lyrics themselves, and widens them again when following resumes.
+    @Test func scrollingAwayNarrowsBothFadesAndFollowingRestoresThem() throws {
+        let (container, window) = Self.makeMountedContainer(variant: .appleMusic26)
+        defer {
+            window.contentView = nil
+            window.close()
+        }
+        let interactionState = AppleMusicLyrics.InteractionStateModel()
+        container.interactionState = interactionState
+        container.layoutSubtreeIfNeeded()
+        let scrollView = try Self.scrollView(of: container)
+        let gradientMask = try #require(container.layer?.mask as? CAGradientLayer)
+        let containerHeight = Double(container.bounds.height)
+
+        NotificationCenter.default.post(name: NSScrollView.willStartLiveScrollNotification, object: scrollView)
+
+        #expect(!interactionState.isFollowing)
+        let scrollingLocations = try #require(gradientMask.locations)
+        #expect(abs(scrollingLocations[1].doubleValue - 30 / containerHeight) < 0.000_001)
+        #expect(abs(scrollingLocations[2].doubleValue - (1 - 30 / containerHeight)) < 0.000_001)
+
+        interactionState.returnToFollowing()
+        container.resumeFollowingIfNeeded()
+
+        let followingLocations = try #require(gradientMask.locations)
+        #expect(abs(followingLocations[1].doubleValue - 128 / containerHeight) < 0.000_001)
+        #expect(abs(followingLocations[2].doubleValue - (1 - 128 / containerHeight)) < 0.000_001)
+    }
+
+    /// Music's `.center(rect:)` anchor: the selected line's whole content block
+    /// sits centred on the anchor's y, the way the Now Playing player centres
+    /// it on the artwork.
+    @Test func contentCentreAnchorPutsTheSelectedLinesContentCentreOnTheAnchor() throws {
+        let lyrics = try #require(Self.makeLyrics(), "fixture lyrics failed to parse")
+        let (container, window) = Self.makeMountedContainer(variant: .legacySwiftUI)
+        defer {
+            window.contentView = nil
+            window.close()
+        }
+        let anchorY: CGFloat = 250
+        container.selectedLineAnchor = .contentCenter(y: anchorY)
+
+        Self.advanceHighlight(container, lyrics: lyrics, through: [2, 3])
+
+        let scrollView = try Self.scrollView(of: container)
+        let selectedLine = try #require(Self.lineViews(in: scrollView).first { $0.originalIndex == 3 })
+        let contentCentreInViewport = selectedLine.frame.minY
+            - scrollView.contentView.bounds.origin.y
+            + selectedLine.contentCenterOffset(forWidth: selectedLine.bounds.width)
+        #expect(abs(contentCentreInViewport - anchorY) < 1)
     }
 
     @Test func lyricsViewportUsesTheCompleteContainerHeight() throws {

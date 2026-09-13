@@ -89,7 +89,15 @@ extension AppleMusicLyrics {
 
         // MARK: Layout constants
 
-        let verticalPadding: CGFloat = 28
+        /// Half the line spacing: Music lays text-only line frames that far
+        /// apart, and two of these paddings meet between neighbouring rows.
+        /// Unlike Music's flat 50 pt it follows the font size, so a full-screen
+        /// window does not crowd its much larger text
+        /// (`NowPlayingLyricsLayoutPolicy.lineSpacing(forMainFontSize:)`).
+        var verticalPadding: CGFloat {
+            NowPlayingLyricsLayoutPolicy.lineSpacing(forMainFontSize: mainFontSize) / 2
+        }
+
         private let horizontalPadding: CGFloat = 24
         private let mainToTranslationSpacing: CGFloat = 4
         /// The active line's not-yet-sung text sits at 50% white
@@ -241,6 +249,20 @@ extension AppleMusicLyrics {
         var mainTextFirstBaselineOffset: CGFloat {
             let mainFont = NSFont.systemFont(ofSize: mainFontSize, weight: .bold)
             return verticalPadding + mainFont.ascender
+        }
+
+        /// Distance from the row's top edge to the centre of its content block —
+        /// the main text plus, when shown, the translation. Music's `.center`
+        /// anchor (`sub_10015CD84`) centres the whole line frame, and for Music
+        /// the line frame is exactly this block. Lays the row out for `width`
+        /// first, so it is usable before the row has been given a frame.
+        func contentCenterOffset(forWidth width: CGFloat) -> CGFloat {
+            buildLayoutIfNeeded(forWidth: width)
+            var contentHeight = mainTextSize.height
+            if translationAttributed != nil {
+                contentHeight += mainToTranslationSpacing + translationTextSize.height
+            }
+            return verticalPadding + contentHeight / 2
         }
 
         override func layout() {

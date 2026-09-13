@@ -158,16 +158,23 @@ seek、换行、歌词替换或 view reuse 都会取消尚未执行的 glyph ret
 
 ## 行间动画
 
-选中主歌词使用 `.topRelative(40)`。Apple Music 对 text-only line frame 的计算是：
+Music 26.6 的选中行定位（`LyricsSpecs.selectedLinePosition`）按模式分两种，细节见下文「字号、行距、锚点与
+边缘渐隐」：侧栏模式是 `.top(98 − 24 pt 粗体的 ascent + descent ≈ 69)`；「正在播放」（pretty）模式是
+`.center(rect:)`，rect 的 y 是 `activeBaseline`，即专辑封面的垂直中心换算到歌词视图坐标系
+（`sub_100132638`：`primaryArtworkCenterY − hostedContentMinY`）。`sub_10015CD84` 把选中行的 frame 中心对到
+这个 y 上：
 
 ```text
-topInset = visibleHeight × 0.40 - CTFontGetAscent(font)
-targetY  = max(lineFrame.minY - topInset, 0)
+topInset = |firstLine.minY − anchorY + firstLine.height / 2|
+targetY  = max(lineFrame.minY − topInset, 0)
 ```
 
-本项目的 row frame 在文字前还有 28 点内边距，因此 `LineTransitionPlan` 从 40% 中减去完整的
-`mainTextFirstBaselineOffset`。这样定位的是第一条文字 baseline，而不是 row 外框顶部；窗口高度变化时
-会重新计算，不能退回固定点数。
+本项目从 2026-09-13 起同样用封面中心做锚点：`LyricsPanelViewController` 在 `viewDidLayout` 里把
+`coverImageView` 的中心换算到 `lyricsContainer` 坐标，交给 `SyncedLyricsContainerView.selectedLineAnchor`；
+容器按 `LineTransitionPlan.selectedLineTopInset(anchor:…)` 算 `topInset = anchorY − 行内容中心到 row 顶的距离`
+（row 自带内边距，不能直接拿 frame 中心）。窄窗口隐藏封面时退回 `.baselineViewportFraction(0.4)`：第一条
+文字 baseline 在视口 40% 处，减去完整的 `mainTextFirstBaselineOffset`，那是 0007 时期对着侧栏校准出来的
+近似值。两种锚点都随窗口尺寸重新计算，不能退回固定点数。
 
 ### Apple Music 26.6 实际怎么切行
 
@@ -281,6 +288,58 @@ Apple Music 的 `SyncedLyricsLineLayer.init`（`sub_1001A5294`）设置 `shouldR
 缓存。正在做逐字动画的选中行也光栅化，和 Apple Music 一致；如果实测它每帧重光栅化的开销可见，再单独
 豁免并记入提案决策日志。
 
+## 字号、行距、锚点与边缘渐隐（Now Playing 模式）
+
+2026-09-13 逆向 `Music.i64`，起因是用户对照「正在播放」截图：顶部有一段不放歌词的空白，而本项目铺满整个
+高度；Music 的字号随窗口变化，本项目几乎不变。Music 的歌词有侧栏与「正在播放」（`Music.LyricsXViewController
+.prettyMode`）两套参数，此前项目抄的是侧栏的；这次整体切到 pretty 模式，常量落在
+`NowPlayingLyricsLayoutPolicy`，提案见
+[0013-now-playing-lyrics-sizing-parity](../Evolutions/0013-now-playing-lyrics-sizing-parity.md)。
+
+- **字号**：`viewWillLayout`（`sub_100125ABC`）→ `sub_100128AD8`，输入只有歌词视图自身宽度：`< 300 → 24`
+  （侧栏也是 24），`≥ 300 → 28`，`≥ 528 → 38`，`≥ 672 → 50`，`≥ 760 → 72`。`sub_100128D3C` 再按主字号乘系数填
+  其它字体：背景和声 ×0.63，翻译 ×0.46（small）/ ×0.57（large），音译 ×0.46 / ×0.27，全部 `boldSystemFont`；
+  同一函数按外观取 `focusStyle`，并在 pretty 模式把 `selectedLinePosition` 设成
+  `.center(rect: y = activeBaseline.valueInItem(view))`。2026-09-05 的视图层级抓取能对上：歌词列 533.5 pt →
+  38 pt，单行 45 pt 高，相邻行 pitch 95，即行距 50。翻译取 ×0.57。
+- **窗口与歌词列的比例**：Music 量的是它自己那个歌词视图，而这个视图在「正在播放」窗口里占窗口宽度的固定
+  比例。同一份抓取里窗口 1176 × 811：歌词视图 533.5 pt 宽、起于 x = 556、右侧余 86.5 pt；封面 329 pt 见方，
+  画在窗口坐标 (129.5, 150.5)，中心 (294, 315.25)，正是左半幅的中点，且中心 y 与歌词视图的 `activeBaseline`
+  （视图顶 88 + 常量 227）完全重合，反证了上一条的锚点。本项目面板的分栏给歌词的份额更大（前导 0.065、封面
+  0.285、间距 0.1，歌词占剩下的 0.55），直接拿 `lyricsContainer.bounds.width` 分档会比同宽窗口下的 Music 高
+  一到两档：并排截图里两个窗口都是 993 × 608 pt，Music 渲染 28 pt（歌词视图约 430 pt），本项目渲染 38 pt
+  （歌词列 546 pt）。因此分档输入改成 `min(歌词列宽, 面板宽 × 533.5 / 1176)`，即「同宽的窗口里 Music 会给
+  歌词多少宽度」；窗口窄到歌词列比这个份额还窄时仍以歌词列为准，字不会溢出。这条比例只有抓取这一个精确
+  样本，截图那个样本与它相差约 4%，落档结果一致。
+- **行距**：按模式的 specs 闭包 `sub_1001D0A1C`：pretty 模式 `lineSpacing = 50`，侧栏 36；同一闭包设
+  `lineBlurEnabled = prettyMode`、`syllableLift = 3`（pretty）、`lineDelay = 0.02`（侧栏，pretty 保持默认 0.05）、
+  `firstLineStartingPosition = 98 − (ascent + descent)`。`sub_1001E0C34` 的 y 布局是 `上一行.maxY + lineSpacing`
+  （`[X21,#0xA0]` 即 specs + 0x78），**不随字号变**。左右边距 20 由 Music 侧 `sub_100124334` 设 `margins`。
+  **这是本节唯一一个明确不照抄的值**：字号能涨到 72 而行距恒为 50，Music 自己在全屏下就挤，用户核对后要求
+  按「不是全屏那种」的疏密来。因此行距改成跟着主字号走，锚在 28 pt 档上正好等于 Music 的 50 pt，
+  即 `lineSpacing = 50 × 主字号 / 28`（24 → 42.9，38 → 67.9，50 → 89.3，72 → 128.6）。本项目的 row 上下各有
+  内边距，`verticalPadding` 就是这个值的一半，两个内边距在相邻行之间相接。
+- **锚点**：pretty 模式 `.center(rect:)`，y 来自 `MusicPlayerController.LyricsViewController` 的
+  `activeBaselineConstraint`，常量由 `Observations` 流持续写入 `NowPlayingViewModel.layoutHints
+  .primaryArtworkCenterY − hostedContentMinY`（`sub_100131EC0`、`sub_100132638`）。`sub_10015A090` 按
+  `selectedLinePosition` 的三种 case 算 `topInset`：`.top(v)` 取 v，`.topRelative(p)` 取
+  `visibleHeight × p / 100 − ascent`，`.center` 取 `|firstLine.minY − anchorY + firstLine.height / 2|`
+  （`sub_10015CD84`），没有行时取字体行高。间奏 instrumental line 走同一条路径（抓取里第一行就是 40 pt 高的
+  间奏行，中心 361.5 = 723 / 2 = 封面中心）。
+- **边缘渐隐**：见上文「外层 viewport edge fade」。
+- **默认 specs**（`sub_1001D1C28`）供核对：主字体 LargeTitle 加粗，`firstLineStartingPosition 60`，
+  `selectedLinePosition .topRelative(12)`，`staticTopContentInset 22 / staticBottomContentInset 30`，
+  `paragraphSpacing 39`，`lineSpacing 25`，`backgroundVocalsTopSpacing 15`，`lineDelay 0.05`，
+  `maxEndTimeOffset 0.5`，`maxSelectedLines 2`，`emphasizingScaleRange 1...1.14`，`translationSpacing 7`，
+  `translationBottomPadding 4`，`glowRadius 5`，`glowRange 0...0.4`，`lineProgressionGradientFeather 30`，
+  `syllableLift 2`（pretty 闭包改 3），`vocalGroupWidthCoefficient 0.85`，`lineChangeSpring 1 / 100 / 18`。
+
+验证：`NowPlayingLyricsLayoutPolicyTests` 断言分档边界、翻译系数、渐隐距离与 locations、两种锚点的
+`topInset`，「同宽窗口下与 Music 同字号」的四个窗口宽度（993 → 28、1176 → 38、1512 → 50、1728 → 72）
+和窄窗口回退，以及行距在五个字号档上「行距 ÷ 字号」恒定且 28 pt 档等于 50；`LineTransitionProbes` 的 mask 探针改断言 128 pt，新增「手动滚动收窄到 30 pt、跟随恢复后回到
+128 pt」和「`.contentCenter` 锚点把选中行内容中心投影到视口后落在锚点 ±1 pt」两条探针。没有交互式 UI 验证
+授权，未启动应用。
+
 ## 多行文本坐标
 
 `LineTextLayout` 已把 Core Text 的 y-up baseline 转换成 y-down frame，所以 `SyncedLyricsLineContentLayer`
@@ -337,9 +396,12 @@ locations = [0, firstFadeDistance / height,
              1 - secondFadeDistance / height, 1]
 ```
 
-汇编中的分支不能只看“是否自动跟随”：pretty mode 自动跟随时两个 distance 都是 128 point，手动
-scroll 时都是 30 point；non-pretty 自动跟随路径的 first distance 是 70 point，second distance 是
-视口高度的一半，因此得到 `[0, 70 / height, 0.5, 1]`。
+汇编中的分支按模式和滚动状态取值：pretty mode 自动跟随时两个 distance 都是 128 point，用户手动
+scroll（`isInScrollMode`，静态歌词也按这条走）时都是 30 point；non-pretty 自动跟随路径的 first distance
+是 70 point、second distance 是视口高度的一半，手动 scroll 时同样 30 / 30。本项目从 0007 到 2026-09-13
+之间用的是侧栏那组 `[0, 70 / height, 0.5, 1]`（当时的并排截图选了它）；对照对象明确为「正在播放」窗口后
+改用 pretty 的 128 / 30，由 `NowPlayingLyricsLayoutPolicy.edgeFadeDistance(isFollowing:)` 给出，
+`isFollowing == false` 对应 Music 的 scroll mode。
 
 Music 把 mask 安装在 flipped 的 `AMPFlippedDocumentView` 上，上述 locations 因而是在 flipped geometry
 中解释的。本项目把 mask 安装在外层、未 flipped 的 `SyncedLyricsContainerView` 上；内部 document view
@@ -347,16 +409,17 @@ Music 把 mask 安装在 flipped 的 `AMPFlippedDocumentView` 上，上述 locat
 
 ```text
 colors     = [clear, white, white, clear]
-locations  = [0, 70 / height, 0.5, 1]
+locations  = [0, 128 / height, 1 − 128 / height, 1]   # 手动滚动时 128 → 30
 startPoint = (0.5, 1)
 endPoint   = (0.5, 0)
 ```
 
-映射后的视觉结果是：顶部约 70 point 从透明过渡到完全不透明，中段保持完全不透明，底部从半屏处开始
-渐隐到透明。选中歌词 baseline 位于距视觉顶部 40% 的位置，因此不会再被 mask 降到约 78% opacity。
+映射后的视觉结果是：顶部 128 point 从透明过渡到完全不透明，中段保持完全不透明，底部 128 point 渐隐到
+透明；视口不足 256 point 时两段渐隐在中线相接而不交叉。选中行锚在封面中心（一般在视口 40% 上下），
+离两端的渐隐都很远。
 
 mask 只创建一次，每次 layout 在关闭 implicit animation 的 transaction 中更新 frame 和 locations，
-不参与 display-link tick。
+不参与 display-link tick；跟随状态切换时保留 layer 的隐式动画（Music 那边也没有关）。
 
 `NSScrollView` viewport 与 Apple Music 一样继续使用 container 的完整 bounds，不增加物理 top / bottom
 inset；边缘空间完全由 mask 的 alpha transition 形成。曾尝试上下各缩进 32 point，但用户并排截图
@@ -475,7 +538,8 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   用户确认为接近线性平移。2026-09-04 重新核对证明那条结论错了：Apple Music 本来就是逐行错峰
   cascade。2026-09-05 又补齐了此前遗漏的 timedWords 动态弹簧与 delay 减一逻辑，参数与机制见上文。
   旧 SwiftUI cascade 保留为第二档；40% baseline
-  anchor 仍是项目的视觉校准，Apple Music pretty 模式实际用 `.center(rect:)` 锚在 `activeBaseline`。
+  anchor 是项目的视觉校准，Apple Music pretty 模式实际用 `.center(rect:)` 锚在 `activeBaseline`——2026-09-13
+  起改为按封面中心锚定，40% 只留给没有封面的窄窗口，见上文「字号、行距、锚点与边缘渐隐」。
 - 0007 阶段的全屏掉帧被归因于 cascade 本身，后来证明根因是行 layer 从未光栅化；见上文「行 layer
   光栅化」。
 - 第一版只移植了 LyricsX 内部的 contextual blur，漏掉 Music 外层
@@ -486,7 +550,8 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   的 flipped 状态不同；对称版本还让位于视觉顶部 40% 的选中行进入 fade。最终保留恢复出的
   `[0, 70 / height, 0.5, 1]`，并在未 flipped 的外层 container 上反转 gradient vector。曾加入的
   scroll viewport 上下各 32 point 留白也被并排截图证明与 Apple Music 不符，最终恢复完整 container
-  height。仍然没有恢复距离型 blur、距离型 alpha 或扩大 row spacing。
+  height。仍然没有恢复距离型 blur、距离型 alpha 或扩大 row spacing。2026-09-13 对照对象明确为「正在播放」
+  窗口后，渐隐改回 pretty 的 128 / 128（手动滚动 30 / 30），row 内边距按 pretty 的 `lineSpacing = 50` 收成 25。
 - 本次没有获得交互式 UI 验证授权，因此没有启动应用；位置与流畅度判断使用用户提供的 Apple Music
   对比录屏，自动化 probe 验证 layer 层级、模型终点、presentation continuity、spring 参数、
   relative baseline、换行顺序与 rasterization 生命周期。
@@ -616,6 +681,47 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   28 个 suite `--no-parallel` 退出码 0；workspace LyricsX Debug
   scheme 隔离 DerivedData 构建成功，退出码 0，3 条警告均为既有弃用告警；SwiftFormat lint 两个改动文件无差异。
   XcodeBuildMCP CLI 在沙箱里建不了自己的日志目录，构建降级到裸 `xcodebuild`。未启动应用做交互式 UI 验证。
+
+### 2026-09-13 修正：字号、行距、锚点与渐隐改按「正在播放」模式
+
+- **现象**：用户对照 Music「正在播放」截图：Music 歌词列顶部有一段不放歌词的空白，本项目把整个高度铺满；
+  Music 的字号随窗口变化（全屏明显变大），本项目几乎不变。
+- **根因**：此前移植的是 Music 侧栏模式的参数（70 pt 顶部渐隐、40% 基线校准值、`max(26, min(42, 窗口宽 × 0.03))`
+  的连续缩放近似），而对照窗口走的是 `prettyMode`：字号按歌词视图宽度分四档、行距 50、当前行锚在封面中心、
+  上下各 128 pt 渐隐。
+- **修法**：新增 `NowPlayingLyricsLayoutPolicy` 与 `SelectedLineAnchor`；`LyricsPanelViewController` 按
+  `lyricsContainer.bounds.width` 分档取字号、把封面中心换算到容器坐标交给 `selectedLineAnchor`；容器的 mask 按
+  `isFollowing` 取 128 / 30；`SyncedLyricsLineView.verticalPadding` 28 → 25，并提供 `contentCenterOffset(forWidth:)`。
+- **回归**：`NowPlayingLyricsLayoutPolicyTests` 11 项分档边界 + 系数 + 渐隐 + 锚点；`LineTransitionProbes`
+  的 mask 探针改断言 128 pt，新增手动滚动收窄与 `.contentCenter` 锚点两条探针。
+
+### 2026-09-13 修正：分档的输入改成「同宽窗口下 Music 的歌词列宽」
+
+- **现象**：上一条落地后，用户把两个窗口调成同样大小并排：本项目的字明显更大，全屏时行距显得太挤。
+- **根因**：分档公式本身没错（`Music.i64` 复核：`view.bounds.width` 直接比 300 / 528 / 672 / 760，
+  `sub_1001D0A1C` 里 `lineSpacing = 50` 与字号无关），错的是喂给它的宽度。Music 的歌词视图只占窗口宽度的
+  约 45%，本项目的歌词列占 55%，同宽窗口下就高出一档：截图里两窗口皆 993 pt，Music 28 pt、本项目 38 pt；
+  全屏在 1512 pt 宽的屏幕上是 Music 50 pt、本项目 72 pt，而行距恒为 50，字越大越显挤——两个抱怨同一个根因。
+- **测量**：并排截图用 ImageMagick 逐行取局部标准差定位每行文字，得两窗口同为 993 × 608 pt、行 pitch
+  94 / 86 px、选中行墨迹高 33 / 25 px，比值 1.32 只与 38 / 28 自洽（50 / 38 会要求 Music 单行高 56.5 pt，
+  与抓取里的 45 pt 冲突）。
+- **修法**：`NowPlayingLyricsLayoutPolicy` 增加 `lyricsViewPanelWidthFraction = 533.5 / 1176` 与
+  `steppedFontReferenceWidth(panelWidth:lyricsColumnWidth:)`，取两者较小值；`LyricsPanelViewController` 的
+  `adaptiveMainFontSize` 改用面板宽度。面板自身的分栏、封面尺寸一律没动。
+- **回归**：`NowPlayingLyricsLayoutPolicyTests` 新增 5 个窗口宽度的同字号断言与「歌词列比 Music 份额还窄时
+  以歌词列为准」一条；旧的 546 pt → 38 pt 断言正是修复前的行为，可作红→绿对照。
+
+### 2026-09-13 修正：行距不再照抄 Music 的常量
+
+- **现象**：用户看过 Music 自己的全屏后说「AM 的全屏也是很挤，行距就不抄它的了，跟不是全屏那种计算吧」。
+- **判断**：这不是移植错误——`sub_1001D0A1C` 里 `lineSpacing` 确实是与字号无关的常量 50，Music 全屏下
+  行距 / 字号只有 0.69，而一般大小的窗口（28 pt 档）是 1.79。照抄就会复现同一个观感问题。
+- **修法**：`lineSpacing(forMainFontSize:)` 改成 `50 × 主字号 / 28`，把一般窗口的疏密带到每一档；
+  `SyncedLyricsLineView.verticalPadding` 从常量 25 改成这个值的一半的计算属性。Music 的常量保留为
+  `musicConstantLineSpacing`，只作对照与文档。锚点取 28 pt 是因为用户满意的那个窗口就落在这一档，
+  改动不会动到他已经看过的画面。
+- **未动**：行内 `mainToTranslationSpacing` 仍是 4 pt 常量，没有跟着字号放大；如果大字号下主歌词与翻译
+  贴得太近，再单独处理。
 
 ## 验证记录
 

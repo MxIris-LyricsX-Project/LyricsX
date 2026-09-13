@@ -52,12 +52,26 @@ extension AppleMusicLyrics {
         private var pendingInteractiveTargetOriginalIndex: Int?
         private var lastLineTransitionTime: CFTimeInterval?
         private var lineTransitionTimeProvider: () -> CFTimeInterval = CACurrentMediaTime
-        /// Apple Music ends the upper fade 70 points into its flipped lyrics
-        /// container and starts the lower fade halfway through the viewport. This
-        /// container is not flipped, so the gradient vector is reversed below while
-        /// retaining Apple's recovered stop locations.
-        private let viewportTopEdgeFadeDistance: CGFloat = 70
-        private let viewportBottomFadeStartLocation: CGFloat = 0.5
+        /// Where the selected line settles in the viewport. The panel hands over
+        /// the cover's centre once its chrome is laid out — Music's
+        /// `activeBaseline`, which the Now Playing player pins to
+        /// `primaryArtworkCenterY` (`sub_100132638`). Until then, and in the
+        /// narrow layout without a cover, the project's 40% baseline applies.
+        var selectedLineAnchor: SelectedLineAnchor = .baselineViewportFraction(
+            LineTransitionPlan.selectedLineBaselineViewportFraction
+        ) {
+            didSet {
+                guard selectedLineAnchor != oldValue else { return }
+                relayout()
+                if interactionState?.isFollowing ?? true, let highlighted = highlightedOriginalIndex {
+                    centerLine(originalIndex: highlighted, animated: false)
+                }
+            }
+        }
+
+        /// The fade distance the mask currently shows, so a following-state
+        /// change only touches the layer when the distance actually flips.
+        private var appliedEdgeFadeDistance: CGFloat?
         /// The lyrics display time resolved once per display-link frame; drives the
         /// karaoke fill and the intro/interlude indicators together.
         private var resolvedPlaybackTime: TimeInterval = 0
@@ -80,7 +94,6 @@ extension AppleMusicLyrics {
         /// A line advance further than this (e.g. a seek) snaps instantly instead of
         /// springing across the whole song.
         private let scrollJumpThreshold = 5
-        // The active main-vocal baseline uses Apple Music's `.topRelative(40)` anchor.
 
         // Intro "•••" instrumental indicator. Additive: nil unless the first
         // vocal line starts after `introGapThreshold`, in which case the engine
@@ -168,26 +181,36 @@ extension AppleMusicLyrics {
             updateViewportMaskGeometry()
         }
 
-        private func updateViewportMaskGeometry() {
+        /// Music's outer mask (`sub_1001284F8`) fades both edges over 128 points
+        /// while the lyrics follow playback and over 30 while the user scrolls
+        /// through them. Music installs it on a flipped container; this one is
+        /// not flipped, so the gradient vector runs the other way and the
+        /// locations keep their meaning. Size changes set the values outright;
+        /// the following-state flip keeps the layer's implicit animation, as
+        /// Music does.
+        private func updateViewportMaskGeometry(animated: Bool = false) {
+            let fadeDistance = NowPlayingLyricsLayoutPolicy.edgeFadeDistance(
+                isFollowing: interactionState?.isFollowing ?? true
+            )
+            let locations = NowPlayingLyricsLayoutPolicy.edgeFadeLocations(
+                viewportHeight: bounds.height,
+                fadeDistance: fadeDistance
+            )
             CATransaction.begin()
-            CATransaction.setDisableActions(true)
+            CATransaction.setDisableActions(!animated)
             viewportMaskLayer.frame = bounds
-            let topFadeEndLocation: CGFloat
-            if bounds.height > 0 {
-                topFadeEndLocation = min(
-                    viewportBottomFadeStartLocation,
-                    viewportTopEdgeFadeDistance / bounds.height
-                )
-            } else {
-                topFadeEndLocation = viewportBottomFadeStartLocation
-            }
-            viewportMaskLayer.locations = [
-                0,
-                NSNumber(value: Double(topFadeEndLocation)),
-                NSNumber(value: Double(viewportBottomFadeStartLocation)),
-                1,
-            ]
+            viewportMaskLayer.locations = locations.map { NSNumber(value: Double($0)) }
             CATransaction.commit()
+            appliedEdgeFadeDistance = fadeDistance
+        }
+
+        /// Re-derives the fade after the following state may have changed.
+        private func refreshEdgeFadeForFollowingState() {
+            let fadeDistance = NowPlayingLyricsLayoutPolicy.edgeFadeDistance(
+                isFollowing: interactionState?.isFollowing ?? true
+            )
+            guard fadeDistance != appliedEdgeFadeDistance else { return }
+            updateViewportMaskGeometry(animated: true)
         }
 
         override func viewDidMoveToWindow() {
@@ -260,6 +283,7 @@ extension AppleMusicLyrics {
                 centerLine(originalIndex: highlighted, animated: true)
             }
             wasFollowing = isFollowing
+            refreshEdgeFadeForFollowingState()
         }
 
         /// Re-center when the interaction state returns to following outside of a
@@ -272,6 +296,7 @@ extension AppleMusicLyrics {
                 centerLine(originalIndex: highlighted, animated: true)
             }
             wasFollowing = isFollowing
+            refreshEdgeFadeForFollowingState()
         }
 
         /// Maps an original `lyrics.lines` index (which AppController computes
@@ -398,12 +423,12 @@ extension AppleMusicLyrics {
             guard width > 0 else { return }
 
             let topContentInset = enabledLineViews.first.map { lineView in
-                selectedLineTopInset(for: lineView)
+                selectedLineTopInset(for: lineView, layoutWidth: width)
             } ?? 0
             var cursorY = topContentInset
             if let instrumentalView {
                 let dotsHeight = instrumentalView.preferredHeight
-                cursorY = max(topContentInset, (clipHeight - dotsHeight) / 2)
+                cursorY = max(topContentInset, anchorCenterY(visibleHeight: clipHeight) - dotsHeight / 2)
                 instrumentalView.frame = NSRect(x: 0, y: cursorY, width: width, height: dotsHeight)
                 cursorY += dotsHeight
             }
@@ -716,25 +741,43 @@ extension AppleMusicLyrics {
             )
         }
 
+        /// The viewport y (down from its top) an instrumental indicator is
+        /// centred on: the anchor itself, or the viewport's middle under the
+        /// legacy fraction. Music runs its instrumental line through the same
+        /// `.center` path as a lyric line.
+        private func anchorCenterY(visibleHeight: CGFloat) -> CGFloat {
+            switch selectedLineAnchor {
+            case .baselineViewportFraction:
+                return visibleHeight / 2
+            case .contentCenter(let anchorY):
+                return anchorY
+            }
+        }
+
         private func clampedClipVerticalOrigin(forCenterVerticalPosition centerVerticalPosition: CGFloat) -> CGFloat {
             let visibleHeight = scrollView.contentView.bounds.height
             let maximumVerticalOrigin = max(0, documentView.frame.height - visibleHeight)
-            return min(max(0, centerVerticalPosition - visibleHeight / 2), maximumVerticalOrigin)
+            return min(
+                max(0, centerVerticalPosition - anchorCenterY(visibleHeight: visibleHeight)),
+                maximumVerticalOrigin
+            )
         }
 
         private func clampedClipVerticalOrigin(for lineView: SyncedLyricsLineView) -> CGFloat {
             let visibleHeight = scrollView.contentView.bounds.height
             let maximumVerticalOrigin = max(0, documentView.frame.height - visibleHeight)
-            let topInset = selectedLineTopInset(for: lineView)
+            let topInset = selectedLineTopInset(for: lineView, layoutWidth: lineView.bounds.width)
             return min(
                 max(0, lineView.frame.minY - topInset),
                 maximumVerticalOrigin
             )
         }
 
-        private func selectedLineTopInset(for lineView: SyncedLyricsLineView) -> CGFloat {
+        private func selectedLineTopInset(for lineView: SyncedLyricsLineView, layoutWidth: CGFloat) -> CGFloat {
             LineTransitionPlan.selectedLineTopInset(
+                anchor: selectedLineAnchor,
                 visibleHeight: scrollView.contentView.bounds.height,
+                contentCenterOffset: lineView.contentCenterOffset(forWidth: layoutWidth),
                 firstBaselineOffset: lineView.mainTextFirstBaselineOffset
             )
         }
@@ -744,6 +787,7 @@ extension AppleMusicLyrics {
             // does not keep moving content under the drag.
             lineTransitionCoordinator.cancel(scrollView: scrollView)
             interactionState?.userDidScroll()
+            refreshEdgeFadeForFollowingState()
             // The cascade that held a line change back is gone, and following is
             // off, so the held line only updates its highlight without scrolling.
             applyDeferredHighlightIfNeeded()
