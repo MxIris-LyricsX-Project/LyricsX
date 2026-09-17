@@ -99,16 +99,24 @@ extension AppleMusicLyrics {
     }
 
     enum ArtworkGradientRenderingPolicy {
+        /// Music draws its Now Playing backdrop at 30 FPS, and the backdrop is a
+        /// slow warp over a quarter-resolution canvas — doubling the rate buys no
+        /// visible smoothness, it just re-runs the whole blur chain twice as often
+        /// and blocks the main thread in `nextDrawable` against the compositor.
+        /// The motion itself is wall-clock driven (`ArtworkGradientAnimationClock`
+        /// plus `animationTimeScale`), so it runs at the same speed either way.
+        static let backdropFramesPerSecond = 30
+
         static func preferredFramesPerSecond(
             screenMaximumFramesPerSecond: Int?
         ) -> Int {
             guard let screenMaximumFramesPerSecond,
                   screenMaximumFramesPerSecond > 0
             else {
-                return 60
+                return backdropFramesPerSecond
             }
 
-            return min(60, screenMaximumFramesPerSecond)
+            return min(backdropFramesPerSecond, screenMaximumFramesPerSecond)
         }
 
         static func canRenderFrame(

@@ -134,10 +134,14 @@ LUT 的样本值做断言，不是回放实现公式。
 
 ### 节奏与时间
 
-Music 以 30 FPS 绘制，但每帧只给 `time` 加 1/60，所以旋转周期实际是 240 / 140 / 180 s，网格往返约 44 s。面板保留
-0008 的「跟随屏幕、最高 60 FPS」策略，把 wall-clock 动画时间乘以 `animationTimeScale = 0.5` 得到 `time`，运动速度
-与 Music 一致而画面更细。切歌过渡与 Reduce Motion 不受这个比例影响：前者按 wall-clock 0.8 s，后者沿用 0008 的
-「停止连续绘制、只在状态改变时画单帧」而不是 Music 的 1/600 慢放。
+Music 以 30 FPS 绘制，但每帧只给 `time` 加 1/60，所以旋转周期实际是 240 / 140 / 180 s，网格往返约 44 s。面板同样
+取 30 FPS（`ArtworkGradientRenderingPolicy.backdropFramesPerSecond`，屏幕上限更低时跟随屏幕），把 wall-clock 动画
+时间乘以 `animationTimeScale = 0.5` 得到 `time`，运动速度与 Music 一致。
+
+动画时间读的是 wall-clock（`ArtworkGradientAnimationClock` 累加时间戳差值），不是每帧累加固定步长，所以帧率只影响
+采样密度、不影响运动速度——`animationTimeScale` 不随帧率改变。曾经跟随屏幕取到 60 FPS，但每帧都要重跑整条模糊链，
+实测下来主线程会长时间卡在 `nextDrawable()` 上与合成器抢 GPU；见 0010 的决策日志。切歌过渡与 Reduce Motion 不受这个
+比例影响：前者按 wall-clock 0.8 s，后者沿用 0008 的「停止连续绘制、只在状态改变时画单帧」而不是 Music 的 1/600 慢放。
 
 ### 与 Music 实现的已知差异
 
@@ -147,7 +151,7 @@ Music 以 30 FPS 绘制，但每帧只给 `time` 加 1/60，所以旋转周期�
 | 频谱驱动的形变、对比、饱和 | 来自音频分析 | 固定 0 | 面板没有音频分析 |
 | 强度档 | exciting / subdued 随内容切换 | 固定 exciting | 面板只有歌词态 |
 | 模糊目标 | 每帧 ±1 pt 逼近 | 直接取值 | 不切档就没有过渡 |
-| 帧率与时间 | 30 FPS，`time += 1/60` | ≤ 60 FPS，`time = 0.5 × wall-clock` | 保留 0008 的节奏，速度对齐 |
+| 帧率与时间 | 30 FPS，`time += 1/60` | ≤ 30 FPS，`time = 0.5 × wall-clock` | 帧率对齐 Music，时间用 wall-clock 所以速度不随帧率变 |
 | Reduce Motion | `time += 1/600` | 停止连续绘制 | 沿用 0008 |
 | 无封面 | `systemGray` 占位 | 同色 2 × 2 贴图 | — |
 
@@ -171,8 +175,8 @@ sigma 为对角线 × 0.045394707 的模糊、6 × 6 控制点三级细分的网
 
 ## 生命周期、节奏与诊断（两条管线共用）
 
-- 连续绘制完全交给 `MTKView`：`preferredFramesPerSecond` 跟随屏幕、最高 60；`autoResizeDrawable` 关闭，拖动与 live resize
-  时冻结 drawable size；不创建自定义 timer，不直接调用 `nextDrawable()`。
+- 连续绘制完全交给 `MTKView`：`preferredFramesPerSecond` 取 Music 的 30，屏幕上限更低时跟随屏幕；`autoResizeDrawable`
+  关闭，拖动与 live resize 时冻结 drawable size；不创建自定义 timer，不直接调用 `nextDrawable()`。
 - `ArtworkGradientRenderingPolicy` 要求 view controller 已显示、view 附着在可见且未被遮挡的窗口、view 未隐藏、窗口不在
   自定义拖动、view 不在 live resize、Reduce Motion 未开启，才连续渲染；暂停时 `ArtworkGradientAnimationClock` 同时停止。
 - `#log` / `#signpost` 宏挂在面板诊断开关的 `backdrop` 组（`AppleMusicLyrics.PanelDiagnostics.isBackdropEnabled`）

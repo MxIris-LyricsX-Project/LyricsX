@@ -188,26 +188,36 @@ struct ArtworkBackdropImageProcessorTests {
 }
 
 struct ArtworkGradientRenderingPolicyTests {
-    @Test func frameRateFollowsTheCurrentScreenAndFallsBackToSixty() {
+    /// Music's own backdrop runs at 30 FPS. A faster screen must not pull the
+    /// backdrop up with it — the blur chain is re-encoded every frame, so the
+    /// rate is a cost, not a quality knob.
+    @Test func frameRateMatchesMusicAndNeverExceedsTheScreen() {
         #expect(
             AppleMusicLyrics.ArtworkGradientRenderingPolicy.preferredFramesPerSecond(
                 screenMaximumFramesPerSecond: nil
-            ) == 60
+            ) == 30
         )
         #expect(
             AppleMusicLyrics.ArtworkGradientRenderingPolicy.preferredFramesPerSecond(
                 screenMaximumFramesPerSecond: 0
-            ) == 60
+            ) == 30
         )
         #expect(
             AppleMusicLyrics.ArtworkGradientRenderingPolicy.preferredFramesPerSecond(
                 screenMaximumFramesPerSecond: 60
-            ) == 60
+            ) == 30
         )
         #expect(
             AppleMusicLyrics.ArtworkGradientRenderingPolicy.preferredFramesPerSecond(
                 screenMaximumFramesPerSecond: 120
-            ) == 60
+            ) == 30
+        )
+        // A display slower than Music's rate still caps the backdrop: asking for
+        // 30 on a 24 Hz screen only queues frames the compositor cannot show.
+        #expect(
+            AppleMusicLyrics.ArtworkGradientRenderingPolicy.preferredFramesPerSecond(
+                screenMaximumFramesPerSecond: 24
+            ) == 24
         )
     }
 
