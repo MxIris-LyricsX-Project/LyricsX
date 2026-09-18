@@ -55,6 +55,17 @@ jobs:
       - name: Install Sparkle tools
         run: bash Scripts/release/install-sparkle-tools.sh
 
+      - name: Ensure Metal toolchain
+        # AppleMusicLyricsPanel compiles a .metal shader, and from Xcode 26 the
+        # Metal toolchain is a separately downloadable component rather than
+        # part of Xcode itself. Whether a runner image ships with it depends on
+        # the Xcode version pinned in DEVELOPER_DIR, and actions/runner-images
+        # has had it come and go on macOS 26 images. Without it the archive
+        # fails with "cannot execute tool 'metal' due to missing Metal
+        # Toolchain". The check short-circuits when the component is present,
+        # so a runner that already has it pays nothing.
+        run: xcrun metal --version >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
+
       - name: Build
         run: bash Scripts/release/build.sh
 

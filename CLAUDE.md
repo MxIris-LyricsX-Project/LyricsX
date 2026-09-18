@@ -28,6 +28,15 @@ xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Release bui
 xcodebuild -project LyricsX.xcodeproj -scheme LyricsX -configuration Release archive
 ```
 
+**Building needs the Metal toolchain installed.** `AppleMusicLyricsPanel`
+compiles `ArtworkGradientShaders.metal`, and from Xcode 26 the Metal toolchain
+is a separately downloadable component rather than part of Xcode itself, so a
+fresh machine fails with `cannot execute tool 'metal' due to missing Metal
+Toolchain`. Install it once with `xcodebuild -downloadComponent MetalToolchain`.
+`release.yml` does the same check before its build step, because the GitHub
+macOS runner images have had the component come and go depending on the pinned
+Xcode version.
+
 There are no automated tests configured in the Xcode scheme, and no GitHub
 Actions workflow runs on pull requests — `release.yml` is tag-triggered only, so
 the package tests below are the only automated gate and they have to be run by
