@@ -53,6 +53,13 @@ Apple Music 风格歌词面板的封面，什么时候会被一张联网找来�
 `supplyNowPlayingIfMissing(image:trackIdentifier:)` 就是来补这一刀的——不补的话，Apple Music
 用户（最大的一群）会全部掉到弱的元数据校验上。
 
+Spotify 是另一种缺封面：它的脚本字典把 `artwork` 标成已废弃、永远不会有值，正确来源是
+`artwork url`。在 MusicPlayer 接上这个 URL 之前（issue #195），Spotify 曲目从播放器那里一张图都拿不到，
+永远走 `.noReference`；而同一份适配器又把 Spotify 以毫秒计的 `duration` 当秒透传，时长差 1000 倍，
+3 秒的元数据容差把所有候选都拒了——面板上于是一张封面都没有。现在 MusicPlayer 的 Spotify 适配器换歌后
+异步下载 `artwork url` 指向的图，下载完把同一首曲目再发布一次，面板的 `refreshArtwork()` 和这里的
+指纹比对都能拿到播放器自己的封面，Spotify 用户不再依赖元数据校验。
+
 ## 两个具体的坑
 
 **像素不是点。** `NSImage.size` 是点，跟着图片声明的 DPI 走：一张 1200×1200、标了 144 dpi 的
