@@ -34,8 +34,8 @@ extension AppleMusicLyrics {
         }
     }
 
-    /// Playback scrubber: a thin track + fill with elapsed / remaining labels,
-    /// drag anywhere on it to seek.
+    /// Playback scrubber: a thin track + fill with elapsed / remaining labels.
+    /// Click or drag the bar to seek; the labels are inert.
     final class PlaybackProgressView: NSView {
         var onSeek: ((TimeInterval) -> Void)?
 
@@ -49,11 +49,31 @@ extension AppleMusicLyrics {
         private var fillWidthConstraint: NSLayoutConstraint!
 
         private let barHeight: CGFloat = 4
+        /// How far above and below the bar a click still counts as a scrub. The
+        /// bar itself is only `barHeight` tall; this gives it a strip to aim at
+        /// without reaching the labels underneath.
+        private let scrubberVerticalSlop: CGFloat = 6
 
         override init(frame frameRect: NSRect) {
             super.init(frame: frameRect)
             wantsLayer = true
             setup()
+        }
+
+        /// Only the bar and the strip around it take clicks. The two time labels
+        /// sit at the ends of the bar, and AppKit hands a click on a
+        /// non-selectable `NSTextField` to its next responder — this view — which
+        /// read the click's x as a scrub to the very start or the very end of the
+        /// track, so a click on a label skipped to the previous or next song.
+        /// Music's own time labels are inert; a click on them here now falls
+        /// through to the window-drag root view.
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            let localPoint = convert(point, from: superview)
+            return scrubberHitRect.contains(localPoint) ? self : nil
+        }
+
+        private var scrubberHitRect: NSRect {
+            track.frame.insetBy(dx: 0, dy: -scrubberVerticalSlop).intersection(bounds)
         }
 
         @available(*, unavailable)
