@@ -14,32 +14,24 @@
             <description><![CDATA[<h2>What's New</h2>
 <h3>New</h3>
 <ul>
-<li><strong>The Apple Music-style lyrics panel has been rebuilt against Music 26.</strong> The background used to be a hand-written shader that picked colours out of the cover and moved them around; Music does something else entirely, and now so does this — the cover itself is uploaded as a texture, blurred, and warped across a mesh, which is both closer to the real thing and far cheaper to draw. Line changes are no longer one block of text sliding up: each visible line now starts its own spring a beat after the one above it, the way Music staggers them. Type size steps between five fixed sizes at the same widths Music switches at, instead of scaling continuously with the window, so the panel no longer renders noticeably larger text than Music at the same size.</li>
-</ul>
-<ul>
-<li><strong>Sung words rise syllable by syllable and stay risen.</strong> Every word used to swell and drop back on its own, which read as a constant bobbing. Music only swells a word that is genuinely held — over a second, short, and in a language where that gesture applies — and otherwise just lifts each syllable as it is reached and leaves it there until the line changes. That is now what happens here, for Apple Music lyrics and for the inline-timed lyrics that come from Kugou, QQ Music and some NetEase results, whose per-word timing turns out to land within about a tenth of a second of Apple Music's for the same song.</li>
-</ul>
-<ul>
-<li><strong>The panel hides its title bar in full screen.</strong> Full screen used to leave a black strip across the top, because the window kept a title bar and the empty space around it showed the Space's black backdrop straight through.</li>
-</ul>
-<ul>
-<li><strong>A sharper cover in the panel.</strong> The panel stretches the cover to roughly 1400 pixels on a full-screen 5K display, while players usually publish one between 300 and 600, so it was blowing up a thumbnail. A larger copy of the same cover is now looked up in the background, and only used once it has been confirmed to be the same picture — a wrong cover is worse than a soft one.</li>
-</ul>
-<ul>
-<li><strong>The lyrics search window shows the score it sorts by.</strong> Results were ordered by a number nobody could see, so a result on top for a good reason looked identical to one that got there by accident. The new column shows the exact value the ordering compares, and spells out the cover-similarity bonus separately, since that is the part that arrives late and reshuffles the list.</li>
-</ul>
-<ul>
-<li><strong>Apple Music lyrics keep their per-word timing.</strong> The lyrics engine used to discard it while parsing, so lines that actually carried word-by-word timing were animated as whole lines.</li>
+<li><strong>The Apple Music-style lyrics panel has been rebuilt against Music 26</strong> — the backdrop is now built from the cover art itself, line changes cascade one row after another, and type size steps at the same widths Music switches at.</li>
+<li><strong>Sung words rise syllable by syllable and stay risen</strong>, instead of every word swelling and dropping back. Applies to Apple Music lyrics and to the inline-timed results from Kugou, QQ Music and some NetEase sources.</li>
+<li><strong>The panel hides its title bar in full screen</strong>, so there is no black strip across the top any more.</li>
+<li><strong>A sharper cover in the panel.</strong> A higher-resolution copy of the same cover is looked up in the background, and only used once it is confirmed to be the same picture.</li>
+<li><strong>The lyrics search window shows the score it sorts by</strong>, with the cover-similarity bonus spelled out separately.</li>
+<li><strong>Apple Music lyrics keep their per-word timing</strong>, which the parser used to discard.</li>
 </ul>
 <h3>Fixes</h3>
 <ul>
-<li>A lyric long enough to wrap rendered its second line above its first.</li>
-<li>Saturated cover art could turn the panel's background into a bright red wash.</li>
-<li>Word-timed lyrics lost their bounce on line changes, and the top two lines no longer start together.</li>
-<li>The karaoke sweep and its vertical mask drifted out of alignment with the text during partial repaints.</li>
-<li><strong>The panel no longer makes the whole system drop frames.</strong> It was redrawing its background twice as often as Music does, re-running the entire blur chain every time, and spending most of that time waiting on the display — 12% CPU with nothing happening. Drawing at Music's own rate costs nothing visually, because the animation reads the clock rather than counting frames.</li>
-<li><strong>Playback control no longer starts a process per command.</strong> Every play, pause or state check used to launch a fresh helper process, load a library into it and wait for it to exit — paid on every single playback-state change, which is most of what happens while music is playing. One long-lived process now handles all of them.</li>
-</ul>]]></description>
+<li>A lyric long enough to wrap showed its second line above its first.</li>
+<li>Saturated cover art could wash the panel's background bright red.</li>
+<li>Word-timed lyrics lost their bounce on line changes.</li>
+<li>The karaoke sweep drifted out of alignment with the text during partial repaints.</li>
+<li>The panel no longer drags the whole system's frame rate down, or sits at 12% CPU with nothing playing.</li>
+<li>Playback control no longer starts a new process for every play, pause or state check.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<p>Thanks to @garyyeap for (#192), the karaoke layout and vertical masking fix.</p>]]></description>
             <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.12/LyricsX_1.9.0-beta.12+10900112.zip" length="10194640" type="application/octet-stream" sparkle:edSignature="NWPzu+//mYav/BPoj6seGdr4ZrCScLJbgUQxGShoghTK80qxEr4TY+D75CCMvwS+XtOkAY0scoIa7UaS7I+HCA==" />
         </item>
         <item>
