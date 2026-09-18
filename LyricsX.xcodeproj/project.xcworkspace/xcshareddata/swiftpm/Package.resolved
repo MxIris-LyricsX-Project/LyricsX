@@ -1,5 +1,5 @@
 {
-  "originHash" : "76bc764fc0d83952a8cb104a6a787517d1d9b186da51fb7dc1ff838f2dcaf790",
+  "originHash" : "214c4a19cff898ae3dde1e6147eb232888e5140f6825a4f5c0317ea570f5a443",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "a78120d107c6396a9a15aaa579f960f364a4ac37",
-        "version" : "0.10.0"
+        "revision" : "9fa37fa0f6eb6c3eb22fa92aca55045b6508c6dc",
+        "version" : "0.12.0"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/LyricsKit",
       "state" : {
-        "revision" : "4dc0f4f5411af81289d09ed628e1238075f591bd",
-        "version" : "1.11.0"
+        "revision" : "ffd68cc2e7b9ffccdb96d5de61c4771c62904771",
+        "version" : "1.12.0"
       }
     },
     {
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/mediaremote-adapter",
       "state" : {
-        "revision" : "0fa7db9dea7cdb72bbb4090eaccf2355d8e4279e",
-        "version" : "0.1.5"
+        "revision" : "8a25c7c1b64b1693478d1dcfcd41f05474b76e81",
+        "version" : "0.1.7"
       }
     },
     {
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
       "state" : {
-        "revision" : "dca3d5eb7b019385c8a1c0adb7582c57b0b38075",
-        "version" : "1.9.0"
+        "revision" : "667c29c3024ffdf5166d6fe96105c159fb0cec93",
+        "version" : "1.10.0"
       }
     },
     {
@@ -231,8 +231,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/UIFoundation",
       "state" : {
-        "revision" : "959d48f336ef46f97d6d5093c7d456983f2259f7",
-        "version" : "0.12.0"
+        "revision" : "a073bb277d1655e49d6b5f362a9e2c64278cfc26",
+        "version" : "0.33.0"
       }
     }
   ],

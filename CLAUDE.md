@@ -101,7 +101,7 @@ swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkR
 
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
 
-Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. `AppleMusicLyricsPanel` currently needs the sibling `LyricsKit` (`SynchronizedTextTiming` is not in the pinned 1.11.0 tag), so package builds and tests of the panel must set that variable until LyricsKit is re-tagged. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.
+Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.
 
 ## Linting & Formatting
 
@@ -124,8 +124,8 @@ which fires `.github/workflows/release.yml`. CI sets
 from their **published tags**, not from local checkouts.
 
 All three are pinned to an **exact version**: `LyricsXPackage/Package.swift`
-carries `exact: "1.11.0"` for LyricsKit and `exact: "1.9.0"` for MusicPlayer,
-and MusicPlayer's own `Package.swift` carries `exact: "0.1.5"` for
+carries `exact: "1.12.0"` for LyricsKit and `exact: "1.10.0"` for MusicPlayer,
+and MusicPlayer's own `Package.swift` carries `exact: "0.1.7"` for
 mediaremote-adapter. So nothing moves underneath a release — a dependency
 changes only when someone edits one of those strings, which puts every
 dependency change in `git log`. They used to be `branch:` requirements, where
@@ -138,7 +138,7 @@ depends on mediaremote-adapter and LyricsX depends on both LyricsKit and
 MusicPlayer:
 
 1. **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`)
-   — default branch `master`; its tags carry **no** `v` prefix (`0.1.5`).
+   — default branch `master`; its tags carry **no** `v` prefix (`0.1.7`).
 2. **LyricsKit** (`MxIris-LyricsX-Project/LyricsKit`) — LyricsX tracks its
    `develop`, which runs ahead of `main`; tag from `develop`.
 3. **MusicPlayer** (`MxIris-LyricsX-Project/MusicPlayer`) — LyricsX tracks its
