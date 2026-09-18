@@ -212,6 +212,19 @@ Then in **this** repo:
   a single long line — let the renderer (GitHub Releases, the
   Sparkle update window) wrap visually. Only insert a line break
   between separate list items.
+- **One sentence per bullet, describing what changed — not why.** The
+  reasoning behind a change (what the reverse-engineering turned up,
+  what was measured, which approach lost) belongs in the commit, not
+  in front of someone deciding whether to install an update. If a
+  bullet needs a second sentence, it is usually two bullets or one
+  that is over-explaining.
+- **Credit contributors from the merged-PR list, not from `git log`.**
+  Squash merges here do not put the PR number in the commit subject —
+  across the 27 commits in `1.9.0-beta.12` not one mentioned a PR at
+  all, and #192 shipped uncredited because the notes were written off
+  the commit list. Run `gh pr list --state merged` over the release's
+  date range and add an `## Acknowledgements` / `## 致谢` section for
+  every author who is not the maintainer.
 - The two notes files are concatenated by
   `Scripts/release/compose-notes.sh` with a `---` separator, so the
   English file goes first.
