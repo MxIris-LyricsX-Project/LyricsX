@@ -5,6 +5,25 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-beta.13</title>
+            <pubDate>Mon, 28 Sep 2026 13:02:50 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900113</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-beta.13</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li>The app and its widget crashed at launch on macOS 26.3 and earlier, caused by a mistake in Apple's SDK that labels a logging API added in macOS 26.4 as available since macOS 11.</li>
+<li>Clicking the elapsed or remaining time under the lyrics panel's progress bar no longer skips to the previous or next song.</li>
+</ul>
+<h3>Upgrading</h3>
+<ul>
+<li>If the previous beta does not open on your Mac, download this version from the release page and replace the app by hand, because the broken build cannot update itself.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.13/LyricsX_1.9.0-beta.13+10900113.zip" length="10278086" type="application/octet-stream" sparkle:edSignature="VLZ6eNqUGNtf3UQsX7QgRbucnPfHH2z7RLKjs3t/EAxd1UOrSaZ55o+wX1swkTiYD5hStOqa1tCRCjubbXh9CA==" />
+        </item>
+        <item>
             <title>1.9.0-beta.12</title>
             <pubDate>Fri, 18 Sep 2026 02:25:35 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
