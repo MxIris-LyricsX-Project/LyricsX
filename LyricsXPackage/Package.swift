@@ -94,7 +94,9 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/Mx-Iris/FrameworkToolbox",
-            from: "0.12.0"
+            // 0.12.0 and 0.13.0 expand @Loggable to `Logger.disabled`, which
+            // dyld cannot find below the 26.4 releases: the app dies at launch.
+            from: "0.14.0"
         ),
         .package(
             url: "https://github.com/Mx-Iris/UIFoundation",
