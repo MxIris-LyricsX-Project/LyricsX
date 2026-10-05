@@ -93,6 +93,7 @@ extension UserDefaults.DefaultsKeys {
 
     // Menu
     static let desktopLyricsEnabled = Key<Bool>("DesktopLyricsEnabled")
+    static let menuBarLyricsFrameRate = Key<Int>("MenuBarLyricsFrameRate")
     static let menuBarLyricsEnabled = Key<Bool>("MenuBarLyricsEnabled")
     static let touchBarLyricsEnabled = Key<Bool>("TouchBarLyricsEnabled")
     static let menuBarPlaybackControlsEnabled = Key<Bool>("MenuBarPlaybackControlsEnabled")

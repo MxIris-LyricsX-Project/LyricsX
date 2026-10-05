@@ -25,7 +25,10 @@ final class MenuBarLyricsController {
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
     private var buttonlength: CGFloat = 30
 
-    private let marqueeLabel = MarqueeLabel(frame: .zero)
+    private let marqueeLabel: NSView = {
+        if #available(macOS 26, *) { return NativeMarqueeView(frame: .zero) }
+        return MarqueeLabel(frame: .zero)
+    }()
 
     private let previousButton = MenuBarControlButton()
     private let playPauseButton = MenuBarControlButton()
@@ -124,6 +127,21 @@ final class MenuBarLyricsController {
         ])
             .prepend()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
+            .store(in: &cancelBag)
+        defaults.publisher(for: .menuBarLyricsFrameRate)
+            .prepend(defaults[.menuBarLyricsFrameRate])
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] rate in
+                let supported = [0, 24, 30, 60, 90, 120]
+                (self?.marqueeLabel as? NativeMarqueeView)?.frameRate = Double(supported.contains(rate) ? rate : 30)
+            }
+            .store(in: &cancelBag)
+        (marqueeLabel as? NativeMarqueeView)?.setPlaybackPaused(!selectedPlayer.playbackState.isPlaying)
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                (self?.marqueeLabel as? NativeMarqueeView)?.setPlaybackPaused(!state.isPlaying)
+            }
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
             .signal()
@@ -282,7 +300,7 @@ final class MenuBarLyricsController {
             setupLyricStatusItem()
         }
         layoutLyricStatusItemContents()
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        updateMarqueeText()
     }
 
     private func updateCombinedStatusLyrics() {
@@ -291,7 +309,15 @@ final class MenuBarLyricsController {
             setupLyricStatusItem()
         }
         layoutLyricStatusItemContents()
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        updateMarqueeText()
+    }
+
+    private func updateMarqueeText() {
+        if let label = marqueeLabel as? NativeMarqueeView {
+            label.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        } else if let label = marqueeLabel as? MarqueeLabel {
+            label.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        }
     }
 
     private func setupLyricStatusItem() {

@@ -1,6 +1,121 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Menu Bar Lyrics" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu Bar Lyrics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "菜单栏歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選單列歌詞"
+          }
+        }
+      }
+    },
+    "Scroll frame rate:" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scroll frame rate:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滚动帧率："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捲動幀率："
+          }
+        }
+      }
+    },
+    "Static paging (low overhead)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Static paging (low overhead)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静态分页滚动(低开销)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "靜態分頁捲動(低負荷)"
+          }
+        }
+      }
+    },
+    "Sets menu bar behavior for long lyrics. Higher frame rates scroll more smoothly but may use more CPU. (macOS 26 and later)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sets menu bar behavior for long lyrics. Higher frame rates scroll more smoothly but may use more CPU. (macOS 26 and later)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词较长时，菜单栏歌词的行为。帧率越高，滚动越流畅，CPU 占用可能越高。（影响 macOS 26 及以后版本）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞較長時，選單列歌詞的行為。幀率越高，捲動越流暢，CPU 用量可能越高。（影響 macOS 26 及以後版本）"
+          }
+        }
+      }
+    },
+    "Requires macOS 26 or later." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires macOS 26 or later."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 26 或更高版本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 26 或以上版本。"
+          }
+        }
+      }
+    },
     "-%@" : {
       "extractionState" : "stale",
       "localizations" : {
