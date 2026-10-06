@@ -42,7 +42,7 @@ Actions workflow runs on pull requests — `release.yml` is tag-triggered only, 
 the package tests below are the only automated gate and they have to be run by
 hand.
 
-`LyricsXPackage` has two suites. `LyricsXFoundationTests` covers the pure
+`LyricsXPackage` has three suites. `LyricsXFoundationTests` covers the pure
 policies — lyrics storage destinations, editing eligibility, HUD window
 configuration, playback-position preservation, candidate-pool ordering, the
 manual-selection override table, and the source-ordering modes (including the
@@ -106,6 +106,29 @@ swift test --filter ScrollSpringProbes
 # tables and orientation table. LYRICSX_BACKDROP_PREVIEW_DIRECTORY dumps the
 # full-frame test's PNGs.
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
+```
+
+`MenuBarLyricsTests` guards the menu bar lyric line (`MenuBarMarqueeLabel`,
+which replaced MarqueeLabel's `NSTextField` on macOS 26+). Run them on any
+change to that view or to what sits in the lyrics status item; the reasons
+are in `Documentations/Internal/MenuBarLyricsRendering.md`:
+
+```bash
+# Pixel parity with MarqueeLabel's text field, snapshotted the way the menu
+# bar's replicants are, offscreen inside the probe host app (~5 s). Nothing in
+# MenuBarLyricsTests touches AppKit in the test process itself: a test process
+# that opens windows behaves unlike an app (its text field does not clip an
+# overhanging emoji), and on macOS 27.2 one launched from a terminal leaves a
+# Dock icon behind per run.
+swift test --filter StatusItemTextParityProbes
+
+# Real status items: these wrap StatusItemProbeHost in a throwaway .app,
+# launch it through Launch Services and put a test item in the menu bar for a
+# few seconds per launch (~105 s in all). Anything less than a bundled,
+# LS-launched app silently gets the old in-process window and reproduces
+# nothing. Idle: the line must stop drawing once settled. Scroll: it must move
+# as often and in steps as fine as MarqueeLabel's animation, for less CPU.
+swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 ```
 
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
@@ -281,7 +304,7 @@ Setting evaluation order (high overrides low): target xcconfig → project xccon
 - **LyricsKit** (`MxIris-LyricsX-Project/LyricsKit`, branch: main) — lyrics search/parsing engine
 - **MusicPlayer** (`MxIris-LyricsX-Project/MusicPlayer`, branch: master) — music player abstraction layer
 - **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`) — transitive dependency of MusicPlayer; provides the `MediaRemoteAdapter` product used by `SystemMedia` to bridge the private MediaRemote APIs
-- **LyricsXFoundation** (local package in `LyricsXPackage/`) — re-export wrapper (`@_exported import LyricsKit`) plus small shared extensions (`PlaybackState.lyricsDisplayTime`, `MusicTrack.resolvedArtwork`)
+- **LyricsXFoundation** (local package in `LyricsXPackage/`) — re-export wrapper (`@_exported import LyricsKit`) plus small shared extensions (`PlaybackState.lyricsDisplayTime`, `MusicTrack.resolvedArtwork`), the pure policies, and a few AppKit views the app uses — including `MenuBarMarqueeLabel`, the menu bar lyric line on macOS 26+
 - **AppleMusicLyricsPanel** (local package target in `LyricsXPackage/`) — the Apple Music-style lyrics panel: CALayer karaoke engine, panel view controller, gradient background. Extracted from the app target so it builds and probe-tests standalone (`swift test --filter LineEmphasisProbes`). All app coupling flows through one injection seam, `AppleMusicLyrics.HostEnvironment` (player, translation policy, lyric time delay), installed by the app-side glue
 
 ### App Internal Structure (`LyricsX/`)
@@ -290,7 +313,7 @@ The app uses a **Combine-driven reactive architecture** with shared singletons:
 
 - **`Component/`** — Core singletons: `AppController` (central lyrics search/management hub), `AppDelegate`, `SelectedPlayer` (player adapter). `AppController` listens for track changes via Combine publishers, runs async lyrics searches (`AsyncSequence`), and distributes results to display layers.
 - **`AppleMusicLyrics/`** — App-side glue for the `AppleMusicLyricsPanel` package target: just `AppleMusicLyricsWindowController`, which owns the panel window (frame autosave, pin button, HUD lifecycle), installs `AppleMusicLyrics.HostEnvironment`, and injects `AppController`'s lyrics publishers into the panel. The engine itself lives in `LyricsXPackage/Sources/AppleMusicLyricsPanel/`.
-- **`Controller/`** — Display controllers: `KaraokeLyricsController` (desktop karaoke overlay), `MenuBarLyricsController` (menu bar text), `TouchBarLyricsController`
+- **`Controller/`** — Display controllers: `KaraokeLyricsController` (desktop karaoke overlay), `MenuBarLyricsController` (menu bar text: `MenuBarMarqueeLabel` on macOS 26+, MarqueeLabel before), `TouchBarLyricsController`
 - **`LyricsHUD/`** — Floating lyrics panel (`LyricsHUDViewController`)
 - **`Preferences/`** — Preference pane ViewControllers (General, Display, Filter, Shortcut, Source, Lab)
 - **`View/`** — Custom views: `KaraokeLabel`, `KaraokeLyricsView`, `ScrollLyricsView`

@@ -96,6 +96,12 @@ extension UserDefaults.DefaultsKeys {
     static let menuBarLyricsEnabled = Key<Bool>("MenuBarLyricsEnabled")
     static let touchBarLyricsEnabled = Key<Bool>("TouchBarLyricsEnabled")
     static let menuBarPlaybackControlsEnabled = Key<Bool>("MenuBarPlaybackControlsEnabled")
+    /// Hidden, for comparing scroll smoothness against CPU by eye: the most
+    /// frames a second a long menu bar lyric moves at on macOS 26 and later.
+    /// Zero or absent means `MenuBarMarqueeLabel`'s default, 60; anything
+    /// above the display's refresh rate simply follows the display. Read at
+    /// runtime, so `defaults write` takes effect on the next frame.
+    static let menuBarLyricsScrollFramesPerSecond = Key<Int>("MenuBarLyricsScrollFramesPerSecond")
 
     // General
     static let preferredPlayerIndex = Key<Int>("PreferredPlayerIndex")

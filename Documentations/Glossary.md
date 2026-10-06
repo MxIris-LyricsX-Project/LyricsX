@@ -112,3 +112,12 @@ LyricsX **自己**保存歌词的那个目录（默认 `~/Music/LyricsX/`，或�
 
 放在音频文件同目录、同主文件名的 `.lrc` / `.lrcx`。**默认只读**：视为用户自有资产，
 除非显式开启 `WriteBackToLyricsBesideTrack`，否则 LyricsX 不写回。
+
+## 截图副本（replicant）
+
+AppKit 为状态栏条目渲染的截图。macOS 26 起，系统菜单栏显示的就是它，而不是 App 自己的状态栏窗口
+（那个窗口的窗口号是 2³²，不在屏幕上）。条目每变化一次，AppKit 就会重新截图：先把条目的外观切到截图外观，
+`cacheDisplay(in:to:)` 画一张位图，再把外观切回来。
+
+因此在条目里放什么、多久变一次，直接决定 CPU 开销；会对外观切换做出反应的视图（`NSTextField`）甚至能让截图停不下来。
+详见[菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md)。

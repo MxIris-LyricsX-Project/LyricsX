@@ -161,5 +161,22 @@ let package = Package(
             name: "LyricsXWidgetSharedTests",
             dependencies: ["LyricsXWidgetShared"]
         ),
+        .target(
+            name: "StatusItemProbeSupport",
+            dependencies: ["LyricsXFoundation"],
+            path: "Tests/StatusItemProbeSupport"
+        ),
+        .executableTarget(
+            name: "StatusItemProbeHost",
+            dependencies: ["StatusItemProbeSupport"],
+            path: "Tests/StatusItemProbeHost"
+        ),
+        .testTarget(
+            name: "MenuBarLyricsTests",
+            dependencies: [
+                "StatusItemProbeSupport",
+                "StatusItemProbeHost",
+            ]
+        ),
     ]
 )

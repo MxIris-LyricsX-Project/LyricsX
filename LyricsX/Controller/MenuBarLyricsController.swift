@@ -25,7 +25,15 @@ final class MenuBarLyricsController {
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
     private var buttonlength: CGFloat = 30
 
-    private let marqueeLabel = MarqueeLabel(frame: .zero)
+    /// `MenuBarMarqueeLabel` from macOS 26 on, where the menu bar shows the
+    /// item through snapshots and an `NSTextField` in it keeps them coming
+    /// forever; MarqueeLabel's text field before that, where it is fine.
+    private let marqueeLabel: MenuBarLyricsMarquee = {
+        if #available(macOS 26, *) {
+            return MenuBarMarqueeLabel(frame: .zero)
+        }
+        return MarqueeLabel(frame: .zero)
+    }()
 
     private let previousButton = MenuBarControlButton()
     private let playPauseButton = MenuBarControlButton()
@@ -41,7 +49,9 @@ final class MenuBarLyricsController {
         alignment: .center,
         spacing: 4
     ) {
-        marqueeLabel
+        // `.box` is generic over the view's own type, so it needs the view,
+        // not the protocol it is reached through.
+        (marqueeLabel as NSView)
             .box
             .size(width: MenuBarLyricsController.lyricsWidth, height: MenuBarLyricsController.lyricsHeight)
             .stackView
@@ -129,6 +139,18 @@ final class MenuBarLyricsController {
             .signal()
             .receive(on: DispatchQueue.main)
             .invoke(MenuBarLyricsController.updatePlayPauseIcon, weaklyOn: self)
+            .store(in: &cancelBag)
+        defaults.publisher(for: [.menuBarLyricsScrollFramesPerSecond])
+            .prepend()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updateScrollFrameRate, weaklyOn: self)
+            .store(in: &cancelBag)
+        marqueeLabel.setPlaybackPaused(!selectedPlayer.playbackState.isPlaying)
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] playbackState in
+                self?.marqueeLabel.setPlaybackPaused(!playbackState.isPlaying)
+            }
             .store(in: &cancelBag)
         selectedPlayer.currentTrackWillChange
             .signal()
@@ -282,7 +304,7 @@ final class MenuBarLyricsController {
             setupLyricStatusItem()
         }
         layoutLyricStatusItemContents()
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        updateMarqueeText()
     }
 
     private func updateCombinedStatusLyrics() {
@@ -291,6 +313,14 @@ final class MenuBarLyricsController {
             setupLyricStatusItem()
         }
         layoutLyricStatusItemContents()
+        updateMarqueeText()
+    }
+
+    private func updateScrollFrameRate() {
+        marqueeLabel.maximumScrollFramesPerSecond = Double(defaults[.menuBarLyricsScrollFramesPerSecond])
+    }
+
+    private func updateMarqueeText() {
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
     }
 
@@ -322,6 +352,31 @@ final class MenuBarLyricsController {
         } else {
             iconStatusItem?.menu = statusBarMenu
         }
+    }
+}
+
+// MARK: - Lyric Line
+
+/// What the lyrics status item needs from its scrolling line, whichever of
+/// the two hosts it.
+private protocol MenuBarLyricsMarquee: NSView {
+    func setStringValue(_ value: String, lineDisplayTime: TimeInterval)
+    func setPlaybackPaused(_ isPaused: Bool)
+    /// Zero or less means the line's own default.
+    var maximumScrollFramesPerSecond: Double { get set }
+}
+
+@available(macOS 26, *)
+extension MenuBarMarqueeLabel: MenuBarLyricsMarquee {}
+
+extension MarqueeLabel: MenuBarLyricsMarquee {
+    /// MarqueeLabel keeps scrolling through a pause, as it always has.
+    fileprivate func setPlaybackPaused(_ isPaused: Bool) {}
+
+    /// MarqueeLabel's animation runs at the display's rate and takes no cap.
+    fileprivate var maximumScrollFramesPerSecond: Double {
+        get { 0 }
+        set {}
     }
 }
 

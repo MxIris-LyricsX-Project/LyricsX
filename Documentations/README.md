@@ -47,6 +47,9 @@
   - [0016 重新评估 LSUIElement](Evolutions/0016-lsuielement-tradeoff.md)
     —— 这个 fork 已经有了正经的面板窗口，后台应用身份带来的隐式全屏缺失、标题栏唤出失效和多处
     手动 activate 是否还值得，三条路尚未选定。
+  - [0017 菜单栏歌词改为自绘，不再用 NSTextField](Evolutions/0017-menu-bar-lyrics-without-text-field.md)
+    —— macOS 26 起菜单栏靠截图副本显示条目，MarqueeLabel 的 `NSTextField` 会让截图停不下来（空闲 ~49% CPU）；
+    改用同一个 `NSTextFieldCell` 自绘，截图逐像素一致、静止时零开销。
 
 ## 实现说明
 
@@ -72,6 +75,9 @@
   `NSImage.size` 是点不是像素这个坑。
 - [歌词 HUD 窗口显示与关闭](Internal/LyricsHUDPresentation.md) —— 为什么菜单动作必须读取实际窗口可见性和
   应用前台状态，以及隐藏、后台和前台三种状态分别如何处理。
+- [菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md) —— 截图副本为什么让 `NSTextField` 间歇陷入每秒 300 次的
+  重画循环、调它的属性为什么没用、为什么用 cell 画字并按外观缓存位图、滚动开销为什么由帧率和条目里的按钮决定，
+  以及探针为什么必须打包成 App 并经 LaunchServices 启动。
 
 ## 术语
 
