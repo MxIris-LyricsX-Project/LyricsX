@@ -156,7 +156,7 @@ which fires `.github/workflows/release.yml`. CI sets
 from their **published tags**, not from local checkouts.
 
 All three are pinned to an **exact version**: `LyricsXPackage/Package.swift`
-carries `exact: "1.12.0"` for LyricsKit and `exact: "1.10.0"` for MusicPlayer,
+carries `exact: "1.12.0"` for LyricsKit and `exact: "1.10.1"` for MusicPlayer,
 and MusicPlayer's own `Package.swift` carries `exact: "0.1.7"` for
 mediaremote-adapter. So nothing moves underneath a release — a dependency
 changes only when someone edits one of those strings, which puts every

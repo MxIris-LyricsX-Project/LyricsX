@@ -89,7 +89,7 @@ let package = Package(
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
-                exact: "1.10.0"
+                exact: "1.10.1"
             )
         ),
         .package(
