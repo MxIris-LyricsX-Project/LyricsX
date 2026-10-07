@@ -248,6 +248,13 @@ Then in **this** repo:
   the commit list. Run `gh pr list --state merged` over the release's
   date range and add an `## Acknowledgements` / `## 致谢` section for
   every author who is not the maintainer.
+- **Also credit PRs that were closed but landed another way.** Work
+  cherry-picked into a maintainer's PR (#179, landed as #185) or
+  rewritten from a PR (#198, as `f0175be`) never shows up under its
+  contributor's name in the merged list — #179 shipped in
+  `1.9.0-beta.11` uncredited until a follow-up commit 20 minutes after
+  the tag. Also run `gh pr list --state closed` over the same range and
+  credit every unmerged PR whose closing comment says its work landed.
 - The two notes files are concatenated by
   `Scripts/release/compose-notes.sh` with a `---` separator, so the
   English file goes first.
