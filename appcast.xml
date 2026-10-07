@@ -5,6 +5,24 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-beta.14</title>
+            <pubDate>Wed, 07 Oct 2026 12:01:31 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900114</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-beta.14</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li>On macOS 26 and later, the menu bar lyrics no longer keep the CPU busy while the line sits still, and use less of it while scrolling.</li>
+<li>Songs playing in Spotify now show their cover in the lyrics panel.</li>
+<li>With Spotify, the lyrics panel no longer shows a nonsense remaining time or a progress bar stuck at the start, and lyrics search no longer misjudges the song's length.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<p>Thanks to @SmallSquare for (#198), which tracked down the menu bar's CPU cost and was the basis for its fix.</p>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-beta.14/LyricsX_1.9.0-beta.14+10900114.zip" length="10313348" type="application/octet-stream" sparkle:edSignature="QSpKSVaVwRg/rshbx6ach99HdCS/EbLHFJYTvBJpN852jjS/hfHBDTTpZYO66otNMImkDL8cIeYA28w+GMRmDQ==" />
+        </item>
+        <item>
             <title>1.9.0-beta.13</title>
             <pubDate>Mon, 28 Sep 2026 13:02:50 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
