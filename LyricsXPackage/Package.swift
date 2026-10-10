@@ -88,8 +88,10 @@ let package = Package(
                 isEnabled: useLocalDependency
             ),
             remote: .package(
-                url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
-                exact: "1.10.1"
+                // Temporary pin for the progress fix: MxIris-LyricsX-Project/MusicPlayer#4.
+                // Restore the upstream dependency after that fix is released.
+                url: "https://github.com/SmallSquare/MusicPlayer",
+                revision: "3a77cde1f3b880eed26e2b50e13f45fe70eca406"
             )
         ),
         .package(
