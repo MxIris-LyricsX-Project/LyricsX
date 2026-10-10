@@ -92,6 +92,7 @@ extension UserDefaults.DefaultsKeys {
     static let noSearchingAlbumNames = Key<[String]>("NoSearchingAlbumNames")
 
     // Menu
+    static let playbackControlsEnabled = Key<Bool>("PlaybackControlsEnabled")
     static let desktopLyricsEnabled = Key<Bool>("DesktopLyricsEnabled")
     static let menuBarLyricsEnabled = Key<Bool>("MenuBarLyricsEnabled")
     static let touchBarLyricsEnabled = Key<Bool>("TouchBarLyricsEnabled")

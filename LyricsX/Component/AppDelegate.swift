@@ -81,6 +81,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     lazy var preferencesWindowController: PreferenceWindowController = .create()
 
+    private let playbackSourceNameResolver = PlaybackPlayerLauncher()
+    private let playbackPlayerLauncher = PlaybackPlayerLauncher()
+
+    private lazy var playbackMenuView: PlaybackMenuView = {
+        let view = PlaybackMenuView(player: selectedPlayer, openPlayer: { [weak self] in self?.playbackPlayerLauncher.open($0) })
+        view.sourceIdentity = {
+            var source: MusicPlayerProtocol? = selectedPlayer
+            var visited = Set<ObjectIdentifier>()
+            while let agent = source as? MusicPlayers.Agent {
+                guard visited.insert(ObjectIdentifier(agent)).inserted else { return nil }
+                source = agent.designatedPlayer
+            }
+            return source.map(ObjectIdentifier.init)
+        }
+        view.resolveSourceName = { [weak self] player, completion in
+            self?.playbackSourceNameResolver.resolveName(player, completion: completion)
+        }
+        view.cancelSourceResolution = { [weak self] in self?.playbackSourceNameResolver.cancel() }
+        return view
+    }()
+
+    private lazy var playbackMenuItem: NSMenuItem = {
+        let item = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+        item.view = playbackMenuView
+        return item
+    }()
+    private let playbackMenuSeparator = NSMenuItem.separator()
+
+    private func updatePlaybackControlsVisibility() {
+        let enabled = defaults[.playbackControlsEnabled]
+        playbackMenuItem.isHidden = !enabled
+        playbackMenuSeparator.isHidden = !enabled
+        if !enabled { playbackMenuView.endTracking() }
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         UserDefaultsMigrator.shared.migrateFromSandboxIfNeeded()
         // Both migrations read raw persisted values, so they have to run before
@@ -95,6 +130,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
+        statusBarMenu.insertItem(playbackMenuItem, at: 0)
+        statusBarMenu.insertItem(playbackMenuSeparator, at: 1)
+        observeDefaults(key: .playbackControlsEnabled, options: [.new, .initial]) { [weak self] _, _ in
+            self?.updatePlaybackControlsVisibility()
+        }
 
         lyricsOffsetStepper.bind(
             .value,
@@ -502,6 +542,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     func menuWillOpen(_ menu: NSMenu) {
+        updatePlaybackControlsVisibility()
+        if defaults[.playbackControlsEnabled] { playbackMenuView.beginTracking() }
         if #available(macOS 11, *) {
             let menuHasOnState = statusBarMenu.items.filter { menuItem in
                 return menuItem.state == .on
@@ -514,6 +556,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 lyricsOffsetConstraint?.constant += 10
             }
         }
+    }
+    func menuDidClose(_ menu: NSMenu) {
+        playbackMenuView.endTracking()
     }
 }
 

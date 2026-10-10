@@ -343,15 +343,8 @@ final class MenuBarLyricsController {
     }
 
     private func setupStatusItemMenu() {
-        if defaults[.combinedMenubarLyrics] {
-            if defaults[.menuBarLyricsEnabled] {
-                lyricStatusItem?.menu = statusBarMenu
-            } else {
-                iconStatusItem?.menu = statusBarMenu
-            }
-        } else {
-            iconStatusItem?.menu = statusBarMenu
-        }
+        iconStatusItem?.menu = statusBarMenu
+        lyricStatusItem?.menu = statusBarMenu
     }
 }
 

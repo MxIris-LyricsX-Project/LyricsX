@@ -4,6 +4,7 @@ import MusicKit
 
 class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet var enableTouchBarLyricsButton: NSButton!
+    @IBOutlet private weak var menuBarPlaybackControlsButton: NSButton!
 
     @IBOutlet var musixmatchTokenField: NSTextField!
 
@@ -21,6 +22,7 @@ class PreferenceLabViewController: PreferenceViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupPlaybackControlsPreference()
 
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
         artworkSimilarityBoostButton.bind(.value, withDefaultName: .artworkSimilarityBoostEnabled)
@@ -61,6 +63,24 @@ class PreferenceLabViewController: PreferenceViewController {
         appleMusicMediaUserTokenField.stringValue = defaults[.appleMusicMediaUserToken] ?? ""
         appleMusicStorefrontField.stringValue = defaults[.appleMusicStorefront] ?? ""
         appleMusicLanguageField.stringValue = defaults[.appleMusicLanguage] ?? ""
+    }
+
+    private func setupPlaybackControlsPreference() {
+        guard let grid = view.subviews.compactMap({ $0 as? NSGridView }).first,
+              let index = (0..<grid.numberOfRows).first(where: {
+                  grid.cell(atColumnIndex: 1, rowIndex: $0).contentView === menuBarPlaybackControlsButton
+              }) else { return }
+        let toggle = NSButton(checkboxWithTitle: NSLocalizedString("Show playback controls in the dropdown menu", comment: "Playback preferences"), target: nil, action: nil)
+        toggle.bind(.value, withDefaultName: .playbackControlsEnabled)
+        let reference = grid.row(at: index)
+        let row = grid.insertRow(at: index, with: [NSGridCell.emptyContentView, toggle])
+        row.height = reference.height
+        row.yPlacement = reference.yPlacement
+        row.topPadding = reference.topPadding
+        row.bottomPadding = reference.bottomPadding
+        let height = view.frame.height + 30
+        view.heightAnchor.constraint(greaterThanOrEqualToConstant: height).isActive = true
+        preferredContentSize = NSSize(width: view.frame.width, height: height)
     }
 
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {
