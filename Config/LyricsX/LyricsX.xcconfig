@@ -11,3 +11,6 @@ INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.music
 MACOSX_DEPLOYMENT_TARGET = 12.0
 PROVISIONING_PROFILE_SPECIFIER =
 REGISTER_APP_GROUPS = YES
+
+// The bounded, worker-local Objective-C Bluetooth compatibility bridge.
+SWIFT_OBJC_BRIDGING_HEADER = $(SRCROOT)/LyricsX/Phone/PhoneBluetoothCompatibility.h

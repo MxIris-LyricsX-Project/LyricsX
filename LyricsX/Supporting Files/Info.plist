@@ -126,6 +126,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>LyricsX uses Bluetooth to read your selected phone’s song information and playback position, and control playback.</string>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>LyricsX needs to know what song you're currently playing, to show lyrics accordingly.</string>
 	<key>NSAppleMusicUsageDescription</key>

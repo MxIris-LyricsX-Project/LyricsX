@@ -116,7 +116,8 @@ extension AppleMusicLyrics {
         }
 
         private func requestArtworkUpgrade(for track: MusicTrack?, lyrics: Lyrics?) {
-            guard let track else { return }
+            // Phone artwork is resolved once by the Bluetooth-first coordinator.
+            guard !(selectedPlayer.activePlayer is PhonePlayer), let track else { return }
             let lyricsArtwork = lyrics?.metadata.artworkURL.map { artworkURL in
                 ArtworkCandidateSource(
                     url: artworkURL,

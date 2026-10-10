@@ -90,14 +90,16 @@ final class AppController: NSObject {
         // Dedup by track id (MusicTrack.Equatable compares ids) so that
         // SystemMedia's artwork-only updates within the same song do not
         // re-trigger lyrics search.
+        // Will-change publishers deliver the new track before the player's
+        // property is committed. Keep that snapshot; re-reading the player
+        // from another queue can load the previous song's cached lyrics.
         selectedPlayer.currentTrackWillChange
             .removeDuplicates()
-            .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
+            .receive(on: DispatchQueue.main)
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
             .store(in: &cancelBag)
         selectedPlayer.playbackStateWillChange
-            .receive(on: DispatchQueue.lyricsDisplay)
+            .receive(on: DispatchQueue.main)
             .invoke(AppController.playbackStateChanged, weaklyOn: self)
             .store(in: &cancelBag)
         // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` dynamically, so a
@@ -105,7 +107,7 @@ final class AppController: NSObject {
         // by the `lyricsOffset` setter; the global key has no setter path here.
         defaults.publisher(for: [.globalLyricsOffset])
             .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.scheduleCurrentLineCheck()
             }
@@ -200,7 +202,7 @@ final class AppController: NSObject {
             }
             .store(in: &cancelBag)
 
-        currentTrackChanged()
+        currentTrackChanged(selectedPlayer.currentTrack)
 
         Task { await updateLyricsManager() }
     }
@@ -293,7 +295,9 @@ final class AppController: NSObject {
         if currentLineIndex != index {
             currentLineIndex = index
         }
-        let q = DispatchQueue.lyricsDisplay
+        // Serialize line-state mutations with track changes, search results
+        // and user selections. Display rendering remains on its own queue.
+        let q = DispatchQueue.main
         if let next = next, resolvedPlaybackState.isPlaying {
             let dt = max(0, lyrics.lines[next].position - playbackTime - lyrics.adjustedTimeDelay)
             currentLineCheckSchedule = q.schedule(
@@ -382,15 +386,16 @@ final class AppController: NSObject {
         sbTrack.setValue(replaced, forKey: "lyrics")
     }
 
-    func currentTrackChanged() {
+    private func currentTrackChanged(_ track: MusicTrack?) {
         if currentLyrics?.metadata.needsPersist == true {
             currentLyrics?.persist()
         }
         currentLyrics = nil
         currentLineIndex = nil
         searchTask?.cancel()
+        searchRequest = nil
         resetLyricsCandidatePool()
-        guard let track = selectedPlayer.currentTrack else {
+        guard let track = track else {
             Task { await ArtworkSimilarityScorer.shared.updateNowPlaying(image: nil, trackId: nil) }
             return
         }
@@ -507,6 +512,8 @@ final class AppController: NSObject {
                 var collectionStart: Date?
 
                 for try await lyrics in lyricsManager.lyrics(for: request) {
+                    guard !Task.isCancelled, selectedPlayer.currentTrack?.id == track.id,
+                          searchRequest?.id == request.id else { return }
                     if !firstReceived {
                         lyricsReceived(lyrics: lyrics)
                         if let current = currentLyrics, current === lyrics {
@@ -625,7 +632,7 @@ final class AppController: NSObject {
         // terms but the same session id, and all of them belong here.
         guard let req = searchRequest,
               lyrics.metadata.request?.id == req.id,
-              let track = selectedPlayer.currentTrack else {
+              let track = selectedPlayer.currentTrack, candidatePoolTrackId == track.id else {
             return
         }
         if defaults[.strictSearchEnabled], !lyrics.isMatched() {
@@ -703,10 +710,6 @@ final class AppController: NSObject {
 
     /// Moves onto the next candidate for the current track, wrapping around at
     /// the end. Reports what happened through `lyricsCandidateSwitchOutcomes`.
-    ///
-    /// Left non-isolated to match the rest of this type: `currentLyrics` and
-    /// friends are already reached from both `DispatchQueue.lyricsDisplay`
-    /// (track changes) and the main queue (search results, user actions).
     func advanceToNextLyricsCandidate() {
         guard let track = selectedPlayer.currentTrack else {
             lyricsCandidateSwitchOutcomes.send(.unavailable)

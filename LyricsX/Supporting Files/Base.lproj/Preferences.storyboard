@@ -1950,6 +1950,7 @@
                         <outlet property="artworkSimilarityBoostButton" destination="ART-Bt-N01" id="ART-Ot-U01"/>
                         <outlet property="highResolutionArtworkButton" destination="HRA-Bt-N01" id="HRA-Ot-U01"/>
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
+                        <outlet property="menuBarPlaybackControlsButton" destination="MBP-Bt-N01" id="DPC-Ot-001"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
                         <outlet property="useAppleMusicLyricsWindowButton" destination="AML-Bt-N01" id="AML-Ot-U01"/>
                     </connections>

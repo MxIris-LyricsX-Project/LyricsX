@@ -245,12 +245,12 @@ final class MenuBarLyricsController {
     }
 
     private func handleLyricsDisplay(event: (lyrics: Lyrics?, index: Int?)) {
-        guard !defaults[.disableLyricsWhenPaused] || selectedPlayer.playbackState.isPlaying,
-              let lyrics = event.lyrics,
-              let index = event.index else {
-//            screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+        guard let lyrics = event.lyrics, let index = event.index else {
+            // A new song can need time to load. Never keep the previous song's line.
+            if screenLyrics.lyrics != Self.defaultLyric { screenLyrics = (Self.defaultLyric, 2) }
             return
         }
+        guard !defaults[.disableLyricsWhenPaused] || selectedPlayer.playbackState.isPlaying else { return }
         let currentLine = lyrics.lines[index]
         var newScreenLyrics = currentLine.content
         if let converter = ChineseConverter.shared, lyrics.metadata.language?.hasPrefix("zh") == true {

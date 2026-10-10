@@ -10,7 +10,6 @@ import Sparkle
 import Semver
 import FoundationToolbox
 
-@NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
     static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
 
@@ -79,6 +78,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         activeLyricsHUD = nil
     }
 
+    private var phoneArtworkFallback: PhoneArtworkFallback?
+
     lazy var preferencesWindowController: PreferenceWindowController = .create()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -95,6 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
+        phoneArtworkFallback = PhoneArtworkFallback()
 
         lyricsOffsetStepper.bind(
             .value,
@@ -162,6 +164,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
+        PhonePlayer.shared.disconnect()
         if AppController.shared.currentLyrics?.metadata.needsPersist == true {
             AppController.shared.currentLyrics?.persist()
         }
