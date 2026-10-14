@@ -575,6 +575,12 @@
       "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Enter usertoken\"; ObjectID = \"2Lo-TU-WWD\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل usertoken"
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2389,6 +2395,114 @@
         }
       }
     },
+    "AMB-Bx-001.title" : {
+      "comment" : "Class = \"NSBox\"; title = \"Apple Music\"; ObjectID = \"AMB-Bx-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apple Music"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music"
+          }
+        }
+      }
+    },
     "aMb-zX-bzP.title" : {
       "comment" : "Class = \"NSWindow\"; title = \"Preferences\"; ObjectID = \"aMb-zX-bzP\";",
       "extractionState" : "extracted_with_value",
@@ -2507,10 +2621,106 @@
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Lyrics Language:\"; ObjectID = \"AMG-Cl-L01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لغة الكلمات:"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtextsprache:"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Lyrics Language:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma de la letra:"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "زبان متن ترانه:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue des paroles :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bahasa lirik:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingua dei testi:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞の言語："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가사 언어:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taal van songtekst:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Język tekstu:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma da letra:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык текста:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мова тексту:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词语言："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞語言："
           }
         }
       }
@@ -2519,10 +2729,106 @@
       "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"System default (e.g. zh-Hans, ja-JP)\"; ObjectID = \"AMG-Cl-N01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لغة النظام (مثل zh-Hans وja-JP)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemsprache (z. B. zh-Hans, ja-JP)"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "System default (e.g. zh-Hans, ja-JP)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma del sistema (p. ej., zh-Hans, ja-JP)"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "زبان سیستم (مثلاً zh-Hans، ja-JP)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue du système (p. ex. zh-Hans, ja-JP)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bahasa sistem (mis. zh-Hans, ja-JP)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingua di sistema (es. zh-Hans, ja-JP)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムの言語（例：zh-Hans、ja-JP）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 언어 (예: zh-Hans, ja-JP)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeemtaal (bijv. zh-Hans, ja-JP)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Język systemu (np. zh-Hans, ja-JP)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma do sistema (ex.: zh-Hans, ja-JP)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык системы (напр. zh-Hans, ja-JP)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мова системи (напр. zh-Hans, ja-JP)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随系统（如 zh-Hans、ja-JP）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟隨系統（如 zh-Hans、ja-JP）"
           }
         }
       }
@@ -2639,10 +2945,106 @@
       "comment" : "Class = \"NSTextFieldCell\"; title = \"Storefront:\"; ObjectID = \"AMS-Cl-L01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المنطقة:"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region:"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Storefront:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Región:"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "منطقه:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Région :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wilayah:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regione:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地域："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지역:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regio:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Region:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Região:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регион:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регіон:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地区："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地區："
           }
         }
       }
@@ -2651,22 +3053,214 @@
       "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Auto-detect (e.g. cn, us, jp)\"; ObjectID = \"AMS-Cl-N01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اكتشاف تلقائي (مثل cn وus وjp)"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch erkennen (z. B. cn, us, jp)"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Auto-detect (e.g. cn, us, jp)"
           }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detección automática (p. ej., cn, us, jp)"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تشخیص خودکار (مثلاً cn، us، jp)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détection automatique (p. ex. cn, us, jp)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deteksi otomatis (mis. cn, us, jp)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilevamento automatico (es. cn, us, jp)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動検出（例：cn、us、jp）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동 감지 (예: cn, us, jp)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch detecteren (bijv. cn, us, jp)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykrywaj automatycznie (np. cn, us, jp)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detectar automaticamente (ex.: cn, us, jp)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Определять автоматически (напр. cn, us, jp)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Визначати автоматично (напр. cn, us, jp)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动检测（如 cn、us、jp）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動偵測（如 cn、us、jp）"
+          }
         }
       }
     },
     "AMT-Cl-L01.title" : {
-      "comment" : "Class = \"NSTextFieldCell\"; title = \"Apple Music Token:\"; ObjectID = \"AMT-Cl-L01\";",
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"User Token:\"; ObjectID = \"AMT-Cl-L01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز المستخدم:"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzer-Token:"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Apple Music Token:"
+            "value" : "User Token:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token de usuario:"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "توکن کاربر:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeton utilisateur :"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token pengguna:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token utente:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザートークン："
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용자 토큰:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruikerstoken:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token użytkownika:"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token de usuário:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токен пользователя:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токен користувача:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户令牌："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用者權杖："
           }
         }
       }
@@ -2675,10 +3269,106 @@
       "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Paste media-user-token from music.apple.com\"; ObjectID = \"AMT-Cl-N01\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الصق media-user-token من music.apple.com"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "media-user-token von music.apple.com einfügen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Paste media-user-token from music.apple.com"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegue el media-user-token de music.apple.com"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "media-user-token را از music.apple.com جای‌گذاری کنید"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collez le media-user-token de music.apple.com"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tempel media-user-token dari music.apple.com"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incolla il media-user-token da music.apple.com"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "music.apple.com の media-user-token を貼り付け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "music.apple.com의 media-user-token 붙여넣기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plak de media-user-token van music.apple.com"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wklej media-user-token z music.apple.com"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole o media-user-token do music.apple.com"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставьте media-user-token с music.apple.com"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставте media-user-token з music.apple.com"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴 music.apple.com 的 media-user-token"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼上 music.apple.com 的 media-user-token"
           }
         }
       }
@@ -3959,16 +4649,100 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Convert to plain LRC (no karaoke)\"; ObjectID = \"convertLRC-buttonCell-inner\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحويل إلى LRC عادي (بدون كاريوكي)"
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Convert to plain LRC (no karaoke)"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In einfaches LRC umwandeln (ohne Karaoke)"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Convert to plain LRC (no karaoke)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertir a LRC simple (sin karaoke)"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبدیل به LRC ساده (بدون کارائوکه)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertir en LRC simple (sans karaoké)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubah ke LRC biasa (tanpa karaoke)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converti in LRC semplice (senza karaoke)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレーンな LRC に変換（カラオケなし）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 LRC로 변환 (가라오케 없음)"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omzetten naar gewone LRC (zonder karaoke)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konwertuj na zwykły LRC (bez karaoke)"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Converter para LRC simples (sem karaokê)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Преобразовать в обычный LRC (без караоке)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетворити на звичайний LRC (без караоке)"
           }
         },
         "zh-Hans" : {
@@ -5843,10 +6617,106 @@
       "comment" : "Class = \"NSButtonCell\"; title = \"Use a higher-resolution cover in the Apple Music-style window\"; ObjectID = \"HRA-Cl-001\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدام صورة غلاف بدقة أعلى في النافذة بنمط Apple Music"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumcover in höherer Auflösung im Fenster im Apple Music-Stil verwenden"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Use a higher-resolution cover in the Apple Music-style window"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar una portada de mayor resolución en la ventana al estilo de Apple Music"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استفاده از تصویر جلد با وضوح بالاتر در پنجرهٔ به سبک Apple Music"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser une pochette en plus haute résolution dans la fenêtre façon Apple Music"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gunakan sampul album beresolusi lebih tinggi di jendela bergaya Apple Music"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa una copertina a risoluzione più alta nella finestra in stile Apple Music"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music スタイルのウインドウで高解像度のアートワークを使用"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music 스타일 윈도우에서 더 높은 해상도의 앨범 아트 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumhoes met hogere resolutie gebruiken in het venster in Apple Music-stijl"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj okładki w wyższej rozdzielczości w oknie w stylu Apple Music"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar uma capa de maior resolução na janela no estilo do Apple Music"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использовать обложку более высокого разрешения в окне в стиле Apple Music"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Використовувати обкладинку вищої роздільної здатності у вікні в стилі Apple Music"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Apple Music 风格的窗口中使用更高清的封面"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Apple Music 風格的視窗中使用更高解析度的封面"
           }
         }
       }
@@ -7514,7 +8384,7 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "كتابة كلمات الأغاني إلى iTunes:"
+            "value" : "كتابة الكلمات إلى iTunes:"
           }
         },
         "base" : {
@@ -7526,7 +8396,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Songtext in iTunes schreiben:"
+            "value" : "In iTunes schreiben:"
           }
         },
         "en" : {
@@ -7550,7 +8420,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Écrire les paroles sur iTunes :"
+            "value" : "Écrire dans iTunes :"
           }
         },
         "id" : {
@@ -7580,7 +8450,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schijf songteksten voor iTunes:"
+            "value" : "Naar iTunes schrijven:"
           }
         },
         "pl" : {
@@ -7592,7 +8462,7 @@
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escrever letras no iTunes:"
+            "value" : "Escrever no iTunes:"
           }
         },
         "ru" : {
@@ -7610,7 +8480,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "写入歌词到 iTunes:"
+            "value" : "写入歌词到 iTunes："
           }
         },
         "zh-Hant" : {
@@ -9668,19 +10538,103 @@
       }
     },
     "new-Romajin-Cell.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romajin for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Automatically generate romaji for Japanese lyrics\"; ObjectID = \"new-Romajin-Cell\";",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء روماجي تلقائياً للكلمات اليابانية"
+          }
+        },
         "base" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Automatically generate romajin for Japanese lyrics"
+            "value" : "Automatically generate romaji for Japanese lyrics"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch Romaji für japanische Songtexte erzeugen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Automatically generate romajin for Japanese lyrics"
+            "value" : "Automatically generate romaji for Japanese lyrics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generar automáticamente romaji para letras en japonés"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تولید خودکار روماجی برای متن ترانه‌های ژاپنی"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Générer automatiquement les romaji pour les paroles en japonais"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasilkan romaji untuk lirik berbahasa Jepang secara otomatis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genera automaticamente romaji per i testi giapponesi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語歌詞のローマ字を自動的に生成する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일본어 가사에 대해 자동으로 로마자 생성"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch romaji genereren voor Japanse songteksten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatycznie generuj romaji dla japońskich tekstów"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerar automaticamente romaji para letras em japonês"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматически генерировать ромадзи для японских текстов"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматично створювати ромадзі для японських текстів"
           }
         },
         "zh-Hans" : {
@@ -11358,7 +12312,7 @@
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "متن آهنگ‌های اسپاتیفای:"
+            "value" : "متن آهنگ Musixmatch:"
           }
         },
         "fr" : {
@@ -11382,7 +12336,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ミュージックスマッチの歌詞:"
+            "value" : "Musixmatch の歌詞："
           }
         },
         "ko" : {
@@ -11394,7 +12348,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Musixmatch Songteksten:"
+            "value" : "Musixmatch-teksten:"
           }
         },
         "pl" : {
@@ -11412,13 +12366,13 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Тексты песен Musixmatch:"
+            "value" : "Тексты Musixmatch:"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Тексти пісень Musixmatch:"
+            "value" : "Тексти Musixmatch:"
           }
         },
         "zh-Hans" : {

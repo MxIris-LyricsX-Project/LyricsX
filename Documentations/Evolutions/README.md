@@ -26,3 +26,4 @@
 | [0015](0015-high-resolution-panel-artwork.md) | 歌词面板封面改用联网取到的高清图 | In Progress |
 | [0016](0016-lsuielement-tradeoff.md) | 重新评估 LSUIElement：这个应用还算不算纯菜单栏应用 | Draft |
 | [0017](0017-menu-bar-lyrics-without-text-field.md) | 菜单栏歌词改为自绘，不再用 NSTextField | Implemented |
+| [0018](0018-lab-apple-music-group.md) | 实验室页的 Apple Music 设置归入一组并补齐翻译 | Implemented |

@@ -50,6 +50,9 @@
   - [0017 菜单栏歌词改为自绘，不再用 NSTextField](Evolutions/0017-menu-bar-lyrics-without-text-field.md)
     —— macOS 26 起菜单栏靠截图副本显示条目，MarqueeLabel 的 `NSTextField` 会让截图停不下来（空闲 ~49% CPU）；
     改用同一个 `NSTextFieldCell` 自绘，截图逐像素一致、静止时零开销。
+  - [0018 实验室页的 Apple Music 设置归入一组并补齐翻译](Evolutions/0018-lab-apple-music-group.md)
+    —— MusicKit 原名恢复、Token、Storefront、歌词语言四项收进一个 "Apple Music" 组框，页高不变；
+    这一页的翻译补齐并修到 16 种语言都能完整显示，输入框在从右到左的语言里不再塌成 0 宽。
 
 ## 实现说明
 
@@ -62,7 +65,8 @@
   （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前。
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
   尺寸，补的约束优先级为什么必须卡在 500 和 750 之间，量的为什么是选中页而不是 controller
-  自己的 view，以及切 tab 为什么没有动画（试过的三种写法各自怎么失败的）。
+  自己的 view，切 tab 为什么没有动画（试过的三种写法各自怎么失败的），grid 里的输入框为什么必须
+  给定宽度，以及怎么离屏检查一页的布局。
 - [Apple Music 26.6 歌词动画](Internal/AppleMusicLyricsAnimation.md) —— TTML 的 word/syllable timing
   如何经过 LRCX 保存，行内 factor 与可切换的结构化 emphasis 策略、Apple Music 真实的逐行 cascade 与
   可切换的两档参数、行 layer 光栅化、`.topRelative(40)`、多行坐标、contextual blur 与 viewport edge fade
