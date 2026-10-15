@@ -33,6 +33,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private var lastProbedOrigin: String?
     private var lastProbedOriginHasKey = false
 
+    /// The scroller's fixed height. Held so the validation row can grow the
+    /// sheet when it appears — the sheet is sized before that row has any text.
+    private var scrollerHeightConstraint: NSLayoutConstraint?
+
     private static let labelColumnWidth: CGFloat = 130
     private static let rowSpacing: CGFloat = 14
     private static let contentInset: CGFloat = 20
@@ -87,6 +91,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         problemLabel.textColor = .systemRed
         problemLabel.font = .systemFont(ofSize: 11)
         problemLabel.isHidden = true
+        problemLabel.lineBreakMode = .byWordWrapping
+        problemLabel.maximumNumberOfLines = 0
+        problemLabel.translatesAutoresizingMaskIntoConstraints = false
+        problemLabel.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
 
         let rows = NSStackView(views: [
             makeNoteRow(NSLocalizedString(
@@ -182,13 +190,17 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     /// Content above a fixed button row, inside a scroller so a short screen
     /// scrolls rather than clipping the bottom of the form.
     private func makeRoot(rows: NSStackView, buttons: NSStackView) -> NSView {
-        let documentView = NSView()
+        let documentView = FlippedDocumentView()
         documentView.translatesAutoresizingMaskIntoConstraints = false
         documentView.addSubview(rows)
 
         let scroller = NSScrollView()
         scroller.hasVerticalScroller = true
         scroller.drawsBackground = false
+        // Overlay scrollers take no width from the clip view, so the form keeps
+        // exactly the column width it was measured at. A legacy scroller would
+        // narrow the document and squeeze every row and its help text.
+        scroller.scrollerStyle = .overlay
         scroller.documentView = documentView
         scroller.translatesAutoresizingMaskIntoConstraints = false
 
@@ -198,6 +210,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
         let maxContentHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 160
         let contentHeight = rows.fittingSize.height + Self.contentInset * 2
+        let visibleContentHeight = min(contentHeight, maxContentHeight)
+        let buttonRowHeight = buttons.fittingSize.height
+        let scrollerHeight = scroller.heightAnchor.constraint(equalToConstant: visibleContentHeight)
+        scrollerHeightConstraint = scrollerHeight
 
         NSLayoutConstraint.activate([
             rows.topAnchor.constraint(equalTo: documentView.topAnchor, constant: Self.contentInset),
@@ -210,7 +226,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             scroller.topAnchor.constraint(equalTo: root.topAnchor),
             scroller.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             scroller.trailingAnchor.constraint(equalTo: root.trailingAnchor),
-            scroller.heightAnchor.constraint(equalToConstant: min(contentHeight, maxContentHeight)),
+            scrollerHeight,
 
             buttons.topAnchor.constraint(equalTo: scroller.bottomAnchor, constant: 12),
             buttons.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -Self.contentInset),
@@ -219,9 +235,25 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             root.widthAnchor.constraint(equalToConstant: Self.sheetWidth),
         ])
 
-        let rootHeight = min(contentHeight, maxContentHeight) + 12 + Self.contentInset * 2
-        preferredContentSize = NSSize(width: Self.sheetWidth, height: rootHeight)
+        // Exactly what the constraint chain needs: the scroller, the gap above
+        // the buttons, the button row itself, and the bottom inset. Counting a
+        // stand-in for the buttons leaves the chain 4pt short and Auto Layout
+        // breaks a required constraint on every presentation.
+        preferredContentSize = NSSize(
+            width: Self.sheetWidth,
+            height: visibleContentHeight + 12 + buttonRowHeight + Self.contentInset
+        )
         return root
+    }
+
+    /// A document view that reports `isFlipped`, so a form taller than the
+    /// scroller opens on its first row. With a non-flipped document, AppKit
+    /// leaves the clip view at coordinate zero — the bottom of the content —
+    /// and the sheet would open showing its last fields.
+    private final class FlippedDocumentView: NSView {
+        override var isFlipped: Bool {
+            true
+        }
     }
 
     // MARK: - Building blocks
@@ -284,7 +316,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
         let row = NSStackView(views: [label, column])
         row.orientation = .horizontal
-        row.alignment = .top
+        // Baseline, not top: the label is plain text against a bezeled field
+        // whose text sits a few points below its edge, and top-alignment leaves
+        // every label floating above the value it names.
+        row.alignment = .firstBaseline
         row.spacing = 10
         return row
     }
@@ -439,8 +474,24 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     }
 
     private func present(problem: String) {
+        let wasHidden = problemLabel.isHidden
         problemLabel.stringValue = problem
         problemLabel.isHidden = false
+        guard wasHidden else { return }
+        // The sheet was sized while this row was collapsed, so it has to grow by
+        // the row it just revealed. Without that the message the sheet exists to
+        // show is laid out past the bottom edge of the window. The growth is
+        // capped at the screen: once the form is taller than it can be, the
+        // scroller is already showing and the row is reachable by scrolling.
+        view.layoutSubtreeIfNeeded()
+        let screenLimitedHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 160
+        let allowedGrowth = max(0, screenLimitedHeight - (scrollerHeightConstraint?.constant ?? 0))
+        let growth = min(problemLabel.fittingSize.height + Self.rowSpacing, allowedGrowth)
+        scrollerHeightConstraint?.constant += growth
+        preferredContentSize = NSSize(
+            width: preferredContentSize.width,
+            height: preferredContentSize.height + growth
+        )
     }
 
     private static func message(for error: Error) -> String {
@@ -470,11 +521,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             return NSLocalizedString(
                 "Enter a language tag such as zh-Hans or ja.",
                 comment: "Error shown when the AI translation target language is not a valid language tag."
-            )
-        case .missingPrompt:
-            return NSLocalizedString(
-                "The prompt cannot be empty.",
-                comment: "Error shown when the AI translation prompt is empty."
             )
         case .configurationTooLarge:
             return NSLocalizedString(

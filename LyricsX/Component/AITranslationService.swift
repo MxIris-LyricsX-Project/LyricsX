@@ -525,8 +525,8 @@ final class OpenAICompatibleLyricsTranslator {
         return false
     }
 
-    /// Sends the same request shape the translator sends, capped to a token or
-    /// two so a "Save and Test" costs nothing, and requires a usable
+    /// Sends the same request shape the translator sends, with the small token
+    /// cap below so a "Save and Test" stays cheap, and requires a usable
     /// translation back for the one line it asked about.
     ///
     /// Settling for a non-empty body is not enough: an endpoint that ignores

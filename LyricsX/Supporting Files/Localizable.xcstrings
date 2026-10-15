@@ -3091,6 +3091,7 @@
     },
     "The prompt cannot be empty." : {
       "comment" : "Error shown when the AI translation prompt is empty.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {

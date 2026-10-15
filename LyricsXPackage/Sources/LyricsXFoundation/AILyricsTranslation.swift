@@ -67,7 +67,6 @@ public enum AILyricsTranslationError: Error, Equatable {
     case missingModel
     case missingTargetLanguage
     case invalidTargetLanguage
-    case missingPrompt
     case configurationTooLarge
     case lyricsTooLarge
     case invalidResponse
@@ -110,6 +109,18 @@ public enum AILyricsTranslationPolicy {
     /// default reach the installs that had already opened the sheet once.
     private static let supersededDefaultPrompts: Set<String> = [
         "Translate every lyric line into natural, concise $targetLanguage. Preserve the song's tone, imagery, names, and repeated phrases. Do not add explanations or commentary.",
+        """
+        Translate every lyric line into $targetLanguage, one output line per input line.
+
+        Write it the way a native speaker would sing it rather than word for word:
+        - Keep the meaning, imagery, and emotional register of the original.
+        - Prefer the most natural phrasing over the most literal one, so the line still fits the melody it is sung to.
+        - Keep names, song titles, and interjections as they are unless they have a settled translation.
+        - Render a line that repeats identically the same way every time it occurs.
+        - Return a line that is already in $targetLanguage unchanged.
+
+        Never merge, split, reorder, or skip lines, and never add notes, romanization, or alternative readings.
+        """,
     ]
 
     /// The prompt to send. An empty stored value means the user never
@@ -256,9 +267,11 @@ public enum AILyricsTranslationPolicy {
         guard let targetLanguage = normalizedLanguageIdentifier(targetLanguage) else {
             throw AILyricsTranslationError.invalidTargetLanguage
         }
-        guard !prompt.isEmpty else {
-            throw AILyricsTranslationError.missingPrompt
-        }
+        // An empty prompt is not an error: it means the user has not customised
+        // it, and `resolvedPrompt` supplies the current default. Every caller
+        // resolves before it gets here, so a bare empty string cannot arrive
+        // from the app — and if one did, `missingPrompt` would be no more help
+        // than the default it should have resolved to.
         return AILyricsTranslationConfiguration(
             endpoint: url,
             model: model,
