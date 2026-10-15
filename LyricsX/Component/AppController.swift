@@ -579,6 +579,24 @@ final class AppController: NSObject {
         }
     }
 
+    /// The pane's status while a request is in flight, kept in one place so the
+    /// "nothing to translate" path can tell a transient status apart from a
+    /// finished one. A failure message is the only place some problems are ever
+    /// reported, and blanking it on the next track change would lose it.
+    private var aiLyricsTranslationInProgressStatus: String {
+        NSLocalizedString(
+            "Translating lyrics…",
+            comment: "Status shown while AI lyric translation is in progress."
+        )
+    }
+
+    private func reportAILyricsTranslationFailure() {
+        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+            "Translation failed; existing lyrics were kept.",
+            comment: "Status shown when AI lyric translation fails."
+        )
+    }
+
     private func startAITranslation(for lyrics: Lyrics?) {
         guard defaults[.aiLyricsTranslationEnabled] else {
             // The Lab pane owns the wording while the switch is off, so the
@@ -592,10 +610,12 @@ final class AppController: NSObject {
             aiLyricsTranslationTask?.cancel()
             aiLyricsTranslationTask = nil
             lastAITranslationKey = nil
-            // Nothing is on screen to translate. Leaving the last message up
-            // would strand a "Translating lyrics…" in the pane for the rest of
-            // the session, because no retry is coming.
-            defaults[.aiLyricsTranslationStatus] = ""
+            // Nothing is on screen to translate. Clear the in-progress line,
+            // which would otherwise sit in the pane for the rest of the session
+            // with no retry coming — but leave a finished message alone.
+            if defaults[.aiLyricsTranslationStatus] == aiLyricsTranslationInProgressStatus {
+                defaults[.aiLyricsTranslationStatus] = ""
+            }
             return
         }
 
@@ -642,17 +662,16 @@ final class AppController: NSObject {
             )
             return
         }
-        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-            "Translating lyrics…",
-            comment: "Status shown while AI lyric translation is in progress."
-        )
+        defaults[.aiLyricsTranslationStatus] = aiLyricsTranslationInProgressStatus
 
         let trackID = track.id
         // `Lyrics` is a reference type, and the display queue keeps mutating the
         // displayed instance while a request is in flight — the offset setter
         // writes `idTags[.offset]`, and picking a candidate swaps `lines` and
         // `metadata`. The task runs off this queue, so hand it a private copy
-        // built here; the original is kept only for the identity check below.
+        // built here. The original stays the object of record: the identity
+        // check below compares against it, and the translations are applied to
+        // whatever it holds by the time the answer lands.
         let translationSource = Lyrics(
             lines: lyrics.lines,
             idTags: lyrics.idTags,
@@ -719,9 +738,27 @@ final class AppController: NSObject {
                         return
                     }
 
-                    result.lyrics.metadata.needsPersist = true
-                    currentLyrics = result.lyrics
-                    if result.lyrics.persist() {
+                    // Applied to the lyrics on screen *now*, not to the copy the
+                    // request started from: the user may have nudged the offset
+                    // or flipped a line's switch while the request was in
+                    // flight, and swapping in the older object would revert
+                    // both — and `persist()` would then write the reverted
+                    // offset back to the file.
+                    let translatedLyrics: Lyrics
+                    do {
+                        translatedLyrics = try AILyricsTranslationPolicy.applying(
+                            result.translations,
+                            to: displayedLyrics,
+                            targetLanguage: configuration.targetLanguage
+                        )
+                    } catch {
+                        reportAILyricsTranslationFailure()
+                        return
+                    }
+
+                    translatedLyrics.metadata.needsPersist = true
+                    currentLyrics = translatedLyrics
+                    if translatedLyrics.persist() {
                         defaults[.aiLyricsTranslationStatus] = result.failedLineCount == 0
                             ? NSLocalizedString(
                                 "Lyrics translated.",
@@ -732,7 +769,7 @@ final class AppController: NSObject {
                                     "Translated %d lines; %d lines could not be translated.",
                                     comment: "Status shown when AI lyric translation was partially successful."
                                 ),
-                                result.translatedLineCount,
+                                result.translations.count,
                                 result.failedLineCount
                             )
                     } else {
@@ -748,10 +785,7 @@ final class AppController: NSObject {
                 return
             } catch {
                 guard !Task.isCancelled else { return }
-                defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-                    "Translation failed; existing lyrics were kept.",
-                    comment: "Status shown when AI lyric translation fails."
-                )
+                reportAILyricsTranslationFailure()
             }
         }
     }

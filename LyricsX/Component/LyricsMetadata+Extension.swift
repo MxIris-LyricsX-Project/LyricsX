@@ -35,19 +35,36 @@ extension Lyrics.Metadata {
         set { data[.language] = newValue }
     }
 
-    /// Sorted because `attachmentTags` is a `Set`: without an order, the
-    /// "no preferred language" fallbacks below would pick a different
-    /// translation on every launch once a file carries more than one language
-    /// — a provider's `tr:zh-Hant` against a freshly added `tr:zh-Hans`, for
-    /// instance, would leave most lines showing no translation at all.
+    /// Sorted, because `attachmentTags` is a `Set` and its order changes from
+    /// one process to the next; an unsorted list would make the fallback below
+    /// pick a different translation on every launch.
     var translationLanguages: [String] {
         return attachmentTags.compactMap { $0.translationLanguageCode }.sorted()
+    }
+
+    /// Which language to show when the user has not named one.
+    ///
+    /// The AI translation's target language comes first: that is the
+    /// translation this app was asked to produce, so it is the one that covers
+    /// the whole file. A provider tag on a handful of lines must not outrank a
+    /// complete translation merely because its code sorts earlier — choosing
+    /// zh-Hans over a full zh-Hant would leave every line the provider missed
+    /// showing nothing at all.
+    private var defaultTranslationLanguage: String? {
+        let availableLanguages = translationLanguages
+        let targetLanguage = defaults[.aiLyricsTranslationTargetLanguage]
+        guard !targetLanguage.isEmpty else {
+            return availableLanguages.first
+        }
+        return availableLanguages.first {
+            AILyricsTranslationPolicy.languageIdentifiersMatch($0, targetLanguage)
+        } ?? availableLanguages.first
     }
 
     var displayTranslationLanguage: String? {
         let availableLanguages = translationLanguages
         guard let preferredLanguage = defaults[.preferredLyricsTranslationLanguage] else {
-            return availableLanguages.first
+            return defaultTranslationLanguage
         }
         return availableLanguages.first {
             AILyricsTranslationPolicy.languageIdentifiersMatch($0, preferredLanguage)
@@ -65,7 +82,7 @@ extension Lyrics.Metadata {
             }
             language = matchingLanguage
         } else {
-            language = translationLanguages.first
+            language = defaultTranslationLanguage
         }
 
         var candidates = language.map { [Optional.some($0)] } ?? []

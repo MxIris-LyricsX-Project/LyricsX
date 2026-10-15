@@ -27,6 +27,12 @@ class PreferenceLabViewController: PreferenceViewController {
     private var aiConnectionTestTask: Task<Void, Never>?
     private var defaultsObservation: AnyCancellable?
 
+    /// Last endpoint origin the API-key placeholder was resolved against, and
+    /// what that resolution found. Keeps the probe to one Keychain read per
+    /// host instead of one per keystroke while the endpoint field is edited.
+    private var lastProbedAIKeyOrigin: String?
+    private var lastProbedAIKeyOriginHasKey = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -130,23 +136,22 @@ class PreferenceLabViewController: PreferenceViewController {
             ? AILyricsTranslationPolicy.defaultTargetLanguage
             : savedTargetLanguage
         // A key is bound to its endpoint's origin, so "leave blank" only means
-        // "keep the saved key" when this host actually has one. Promising it
-        // otherwise sends the user hunting for a blank field while the real
-        // cause is that their key belongs to the host they just moved off.
-        let savedEndpointURL = savedEndpoint.isEmpty ? nil : URL(string: savedEndpoint)
-        let hasSavedKeyForEndpoint = savedEndpointURL.map {
-            (try? AILyricsTranslationCredentialStore.hasAccessibleAPIKey(for: $0)) ?? false
-        } ?? false
+        // "keep the saved key" while the endpoint names a host that has one.
+        // The placeholder is recomputed as the endpoint field is edited, since
+        // promising a keep the save path will not honour sends the user hunting
+        // for a blank field while the real cause is that their key belongs to
+        // the host they just moved off.
         let apiKeyField = NSSecureTextField(string: "")
-        apiKeyField.placeholderString = hasSavedKeyForEndpoint
-            ? NSLocalizedString(
-                "Leave blank to keep the saved key",
-                comment: "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
-            )
-            : NSLocalizedString(
-                "API key",
-                comment: "Placeholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
-            )
+        lastProbedAIKeyOrigin = nil
+        updateAIAPIKeyPlaceholder(forEndpoint: endpointField.stringValue, field: apiKeyField)
+        let placeholderObservation = NotificationCenter.default.addObserver(
+            forName: NSControl.textDidChangeNotification,
+            object: endpointField,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            updateAIAPIKeyPlaceholder(forEndpoint: endpointField.stringValue, field: apiKeyField)
+        }
         let removeKeyButton = NSButton(
             checkboxWithTitle: NSLocalizedString(
                 "Remove saved API key",
@@ -199,6 +204,7 @@ class PreferenceLabViewController: PreferenceViewController {
         alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Cancel AI lyrics translation settings."))
 
         let response = alert.runModal()
+        NotificationCenter.default.removeObserver(placeholderObservation)
         guard response == .alertFirstButtonReturn || response == .alertSecondButtonReturn else {
             return
         }
@@ -282,6 +288,29 @@ class PreferenceLabViewController: PreferenceViewController {
     private func updateAILyricsTranslationStatus(_ message: String) {
         defaults[.aiLyricsTranslationStatus] = message
         aiLyricsTranslationStatusField.stringValue = message
+    }
+
+    /// Resolves what the API-key placeholder should say for `endpoint`. The
+    /// Keychain is only read when the host actually changed, so typing an
+    /// endpoint does not turn into one Keychain round trip per keystroke.
+    private func updateAIAPIKeyPlaceholder(forEndpoint endpoint: String, field: NSSecureTextField) {
+        let endpointURL = URL(string: endpoint)
+        let origin = endpointURL.flatMap { AILyricsTranslationPolicy.endpointOrigin($0) }
+        if origin != lastProbedAIKeyOrigin {
+            lastProbedAIKeyOrigin = origin
+            lastProbedAIKeyOriginHasKey = origin == nil ? false : endpointURL.map {
+                (try? AILyricsTranslationCredentialStore.hasAccessibleAPIKey(for: $0)) ?? false
+            } ?? false
+        }
+        field.placeholderString = lastProbedAIKeyOriginHasKey
+            ? NSLocalizedString(
+                "Leave blank to keep the saved key",
+                comment: "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
+            )
+            : NSLocalizedString(
+                "API key",
+                comment: "Placeholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
+            )
     }
 
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {

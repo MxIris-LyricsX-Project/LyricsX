@@ -211,8 +211,12 @@ enum OpenAICompatibleLyricsTranslatorError: Error {
 }
 
 struct AILyricsTranslationResult {
-    let lyrics: Lyrics
-    let translatedLineCount: Int
+    /// Line index → translated text, for every line the endpoint answered.
+    /// Returned as data rather than as a merged `Lyrics` so the caller applies
+    /// it to the lyrics on screen when the answer lands, instead of replacing
+    /// them with a snapshot taken before the request went out.
+    let translations: [Int: String]
+    /// Lines that never came back: dropped for size, or unanswered after every retry.
     let failedLineCount: Int
 }
 
@@ -221,6 +225,8 @@ final class OpenAICompatibleLyricsTranslator {
     private static let maximumResponseBytes = 2_097_152
     private static let maximumAttempts = 3
     private static let connectionTestMaxTokens = 32
+    private static let connectionTestLineIndex = 0
+    private static let connectionTestLineText = "Connection test."
 
     private final class BoundedResponseLoader: NSObject, URLSessionDataDelegate {
         private let configuration: URLSessionConfiguration
@@ -382,12 +388,12 @@ final class OpenAICompatibleLyricsTranslator {
             targetLanguage: configuration.targetLanguage
         )
         guard !sourceLines.isEmpty else {
-            return AILyricsTranslationResult(lyrics: lyrics, translatedLineCount: 0, failedLineCount: 0)
+            return AILyricsTranslationResult(translations: [:], failedLineCount: 0)
         }
 
         let batches = try AILyricsTranslationBatchPolicy.batches(sourceLines)
-        var translated = lyrics
-        var translatedIndices = Set<Int>()
+        let sourceLanguage = lyrics.metadata.language
+        var translations: [Int: String] = [:]
         // The policy drops any line too large to batch on its own. Those never
         // reach a request, so nothing further down would report them — without
         // this they would be silently missing from the failure count too.
@@ -396,32 +402,24 @@ final class OpenAICompatibleLyricsTranslator {
             try Task.checkCancellation()
             let result = try await translateBatch(
                 batch,
-                into: translated,
                 configuration: configuration,
-                sourceLanguage: lyrics.metadata.language,
+                sourceLanguage: sourceLanguage,
                 apiKey: apiKey
             )
-            translated = result.lyrics
-            translatedIndices.formUnion(result.translatedIndices)
+            translations.merge(result.translations) { _, new in new }
             failedLineCount += result.failedIndices.count
         }
-        return AILyricsTranslationResult(
-            lyrics: translated,
-            translatedLineCount: translatedIndices.count,
-            failedLineCount: failedLineCount
-        )
+        return AILyricsTranslationResult(translations: translations, failedLineCount: failedLineCount)
     }
 
     private func translateBatch(
         _ lines: [AILyricsTranslationInputLine],
-        into lyrics: Lyrics,
         configuration: AILyricsTranslationConfiguration,
         sourceLanguage: String?,
         apiKey: String
-    ) async throws -> (lyrics: Lyrics, translatedIndices: [Int], failedIndices: [Int]) {
+    ) async throws -> (translations: [Int: String], failedIndices: [Int]) {
         var remaining = lines
-        var resultLyrics = lyrics
-        var translatedIndices: [Int] = []
+        var translations: [Int: String] = [:]
 
         for attempt in 0 ..< Self.maximumAttempts where !remaining.isEmpty {
             try Task.checkCancellation()
@@ -438,15 +436,12 @@ final class OpenAICompatibleLyricsTranslator {
                 )
                 let data = try await responseData(for: request)
                 let content = try OpenAICompatibleChatResponse.content(from: data)
-                let merged = try AILyricsTranslationPolicy.mergingAvailable(
+                let parsed = try AILyricsTranslationPolicy.parsedTranslations(
                     response: content,
-                    into: resultLyrics,
-                    targetLanguage: configuration.targetLanguage,
                     expectedIndices: remaining.map(\.index)
                 )
-                resultLyrics = merged.lyrics
-                translatedIndices.append(contentsOf: merged.translatedIndices)
-                remaining = remaining.filter { merged.missingIndices.contains($0.index) }
+                translations.merge(parsed.translations) { _, new in new }
+                remaining = remaining.filter { parsed.translations[$0.index] == nil }
             } catch is CancellationError {
                 throw CancellationError()
             } catch let error as URLError where error.code == .cancelled {
@@ -456,33 +451,32 @@ final class OpenAICompatibleLyricsTranslator {
                     let midpoint = remaining.count / 2
                     let first = try await translateBatch(
                         Array(remaining[..<midpoint]),
-                        into: resultLyrics,
                         configuration: configuration,
                         sourceLanguage: sourceLanguage,
                         apiKey: apiKey
                     )
                     let second = try await translateBatch(
                         Array(remaining[midpoint...]),
-                        into: first.lyrics,
                         configuration: configuration,
                         sourceLanguage: sourceLanguage,
                         apiKey: apiKey
                     )
                     return (
-                        second.lyrics,
-                        translatedIndices + first.translatedIndices + second.translatedIndices,
+                        translations
+                            .merging(first.translations) { _, new in new }
+                            .merging(second.translations) { _, new in new },
                         first.failedIndices + second.failedIndices
                     )
                 }
 
                 guard attempt + 1 < Self.maximumAttempts, shouldRetry(error) else {
-                    return (resultLyrics, translatedIndices, remaining.map(\.index))
+                    return (translations, remaining.map(\.index))
                 }
                 try await Task.sleep(nanoseconds: UInt64(pow(2, Double(attempt)) * 1_000_000_000))
             }
         }
 
-        return (resultLyrics, translatedIndices, remaining.map(\.index))
+        return (translations, remaining.map(\.index))
     }
 
     private func shouldSplit(_ error: Error) -> Bool {
@@ -528,17 +522,24 @@ final class OpenAICompatibleLyricsTranslator {
     }
 
     /// Sends the same request shape the translator sends, capped to a token or
-    /// two so a "Save and Test" costs nothing. A hand-rolled probe body would
-    /// drift from the real one and report success for a shape that cannot
-    /// actually translate.
+    /// two so a "Save and Test" costs nothing, and requires a usable
+    /// translation back for the one line it asked about.
+    ///
+    /// Settling for a non-empty body is not enough: an endpoint that ignores
+    /// `response_format: json_object` answers with prose, passes that check,
+    /// and then fails every real request behind a green "Connection succeeded."
     func testConnection(
         configuration: AILyricsTranslationConfiguration,
         apiKey: String
     ) async throws {
+        let probeLine = AILyricsTranslationInputLine(
+            index: Self.connectionTestLineIndex,
+            text: Self.connectionTestLineText
+        )
         let payload = try OpenAICompatibleChatRequest(
             configuration: configuration,
             sourceLanguage: nil,
-            sourceLines: [AILyricsTranslationInputLine(index: 0, text: "OK")],
+            sourceLines: [probeLine],
             maxTokens: Self.connectionTestMaxTokens
         )
         let request = try request(
@@ -547,9 +548,17 @@ final class OpenAICompatibleLyricsTranslator {
             payload: payload
         )
         let data = try await responseData(for: request)
+        let content: String
         do {
-            _ = try OpenAICompatibleChatResponse.content(from: data)
+            content = try OpenAICompatibleChatResponse.content(from: data)
         } catch {
+            throw OpenAICompatibleLyricsTranslatorError.invalidResponse
+        }
+        let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+            response: content,
+            expectedIndices: [probeLine.index]
+        )
+        guard parsed.translations[probeLine.index] != nil else {
             throw OpenAICompatibleLyricsTranslatorError.invalidResponse
         }
     }

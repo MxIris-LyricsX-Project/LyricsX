@@ -315,6 +315,41 @@ func aiLyricsTranslationRequestHonoursACustomTokenCap() throws {
 }
 
 @Test
+func aiLyricsTranslationAppliesOntoTheCurrentLyricsAndKeepsTheirOtherState() throws {
+    // Stands in for the lyrics on screen when an answer lands: the user nudged
+    // the offset and switched a line off while the request was in flight, and
+    // both have to survive the merge.
+    let source = try #require(Lyrics("[offset:1500]\n[00:01.000]first\n[00:02.000]second"))
+    source.lines[1].enabled = false
+
+    let translated = try AILyricsTranslationPolicy.applying([0: "erste"], to: source, targetLanguage: "de")
+
+    #expect(translated.offset == 1500)
+    #expect(translated.lines[1].enabled == false)
+    #expect(translated.lines[0].attachments.translation(languageCodeCandidate: ["de"]) == "erste")
+    #expect(translated.lines[1].attachments.translation(languageCodeCandidate: ["de"]) == nil)
+    #expect(translated.metadata.attachmentTags.contains(.translation(languageCode: "de")))
+    #expect(source.lines[0].attachments.translation(languageCodeCandidate: ["de"]) == nil)
+}
+
+@Test
+func aiLyricsTranslationAcceptsAnIPv6LoopbackEndpointOverPlainHTTP() throws {
+    // `URLComponents.host` keeps IPv6 literals bracketed, so the loopback
+    // allowance has to unwrap them — `[::1]` never compares equal to `::1`,
+    // and an un-unwrapped check silently rejects every IPv6 loopback endpoint.
+    let loopback = try AILyricsTranslationPolicy.validatedEndpoint("http://[::1]:8080/v1/chat/completions")
+    #expect(loopback.host != nil)
+
+    var rejectedNonLoopback = false
+    do {
+        _ = try AILyricsTranslationPolicy.validatedEndpoint("http://[2001:db8::1]:8080/v1/chat/completions")
+    } catch {
+        rejectedNonLoopback = true
+    }
+    #expect(rejectedNonLoopback, "a routable IPv6 literal must still be refused over plain http")
+}
+
+@Test
 func aiLyricsTranslationKeepsValidPartialResponseEntries() throws {
     let response = """
     {"translations":[{"index":4,"text":"bonjour"},{"index":6,"text":"hola"},{"index":7,"text":""}]}
