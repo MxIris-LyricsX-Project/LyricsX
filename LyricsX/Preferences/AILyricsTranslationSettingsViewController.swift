@@ -8,6 +8,12 @@ import LyricsXFoundation
 /// one and a place to say *which* field is wrong. An alert gives neither — it
 /// would have to close itself and report the failure somewhere else, which is
 /// what it used to do.
+///
+/// Every control and every help label gets an explicit width. A sheet cannot be
+/// resized by the user, so the width has to be decided here: left to their
+/// intrinsic size, the help labels lay out on one unbroken line and push the
+/// sheet past the edge of the screen. `preferredMaxLayoutWidth` alone does not
+/// prevent that — it only takes effect once the label already has a width.
 final class AILyricsTranslationSettingsViewController: NSViewController {
     /// Called once the fields validate, the key is stored and the preferences
     /// are written. `shouldTest` is true for the Save and Test button.
@@ -27,8 +33,22 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private var lastProbedOrigin: String?
     private var lastProbedOriginHasKey = false
 
-    private static let fieldWidth: CGFloat = 380
-    private static let labelWidth: CGFloat = 120
+    private static let labelColumnWidth: CGFloat = 130
+    private static let rowSpacing: CGFloat = 14
+    private static let contentInset: CGFloat = 20
+
+    /// The widest the sheet is allowed to get, narrowed further when the screen
+    /// cannot take it. A sheet wider than its window is simply clipped, and a
+    /// sheet cannot be resized by the user, so there is no floor here: a
+    /// minimum width would be the one thing that can still overflow.
+    private static var sheetWidth: CGFloat {
+        let available = (NSScreen.main?.visibleFrame.width ?? 1_200) - 80
+        return min(620, available)
+    }
+
+    private static var columnWidth: CGFloat {
+        sheetWidth - contentInset * 2 - labelColumnWidth - 10
+    }
 
     // MARK: - Presentation
 
@@ -54,8 +74,25 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         promptTextView.isRichText = false
         promptTextView.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
 
+        removeKeyButton.title = NSLocalizedString(
+            "Remove saved key",
+            comment: "Button that deletes the stored AI translation API key from the Keychain."
+        )
+        removeKeyButton.bezelStyle = .rounded
+        removeKeyButton.target = self
+        removeKeyButton.action = #selector(removeStoredAPIKey)
+        removeKeyButton.controlSize = .small
+        removeKeyButton.font = .systemFont(ofSize: 11)
+
+        problemLabel.textColor = .systemRed
+        problemLabel.font = .systemFont(ofSize: 11)
+        problemLabel.isHidden = true
+
         let rows = NSStackView(views: [
-            makePrivacyNote(),
+            makeNoteRow(NSLocalizedString(
+                "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives.",
+                comment: "Privacy and cost notice for AI lyrics translation."
+            )),
             makeFieldRow(
                 title: NSLocalizedString(
                     "Endpoint",
@@ -100,23 +137,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         ])
         rows.orientation = .vertical
         rows.alignment = .leading
-        rows.spacing = 14
-
-        problemLabel.textColor = .systemRed
-        problemLabel.font = .systemFont(ofSize: 11)
-        problemLabel.isHidden = true
-        problemLabel.lineBreakMode = .byWordWrapping
-        problemLabel.preferredMaxLayoutWidth = Self.labelWidth + Self.fieldWidth
-
-        removeKeyButton.title = NSLocalizedString(
-            "Remove saved key",
-            comment: "Button that deletes the stored AI translation API key from the Keychain."
-        )
-        removeKeyButton.bezelStyle = .rounded
-        removeKeyButton.target = self
-        removeKeyButton.action = #selector(removeStoredAPIKey)
-        removeKeyButton.controlSize = .small
-        removeKeyButton.font = .systemFont(ofSize: 11)
+        rows.spacing = Self.rowSpacing
+        rows.translatesAutoresizingMaskIntoConstraints = false
 
         let buttons = NSStackView(views: [
             makeButton(
@@ -134,28 +156,9 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         ])
         buttons.orientation = .horizontal
         buttons.spacing = 12
+        buttons.translatesAutoresizingMaskIntoConstraints = false
 
-        let content = NSStackView(views: [rows, buttons])
-        content.orientation = .vertical
-        content.alignment = .leading
-        content.spacing = 20
-        content.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
-        content.translatesAutoresizingMaskIntoConstraints = false
-
-        let root = NSView()
-        root.addSubview(content)
-        NSLayoutConstraint.activate([
-            content.leadingAnchor.constraint(equalTo: root.leadingAnchor),
-            content.trailingAnchor.constraint(equalTo: root.trailingAnchor),
-            content.topAnchor.constraint(equalTo: root.topAnchor),
-            content.bottomAnchor.constraint(equalTo: root.bottomAnchor),
-            buttons.trailingAnchor.constraint(equalTo: rows.trailingAnchor),
-        ])
-        view = root
-        preferredContentSize = NSSize(
-            width: Self.labelWidth + Self.fieldWidth + 40,
-            height: root.fittingSize.height
-        )
+        view = makeRoot(rows: rows, buttons: buttons)
 
         // A key is bound to its endpoint's origin, so "leave blank" only means
         // "keep the saved key" while the endpoint names a host that has one.
@@ -176,17 +179,75 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         NotificationCenter.default.removeObserver(self)
     }
 
+    /// Content above a fixed button row, inside a scroller so a short screen
+    /// scrolls rather than clipping the bottom of the form.
+    private func makeRoot(rows: NSStackView, buttons: NSStackView) -> NSView {
+        let documentView = NSView()
+        documentView.translatesAutoresizingMaskIntoConstraints = false
+        documentView.addSubview(rows)
+
+        let scroller = NSScrollView()
+        scroller.hasVerticalScroller = true
+        scroller.drawsBackground = false
+        scroller.documentView = documentView
+        scroller.translatesAutoresizingMaskIntoConstraints = false
+
+        let root = NSView()
+        root.addSubview(scroller)
+        root.addSubview(buttons)
+
+        let maxContentHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 160
+        let contentHeight = rows.fittingSize.height + Self.contentInset * 2
+
+        NSLayoutConstraint.activate([
+            rows.topAnchor.constraint(equalTo: documentView.topAnchor, constant: Self.contentInset),
+            rows.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: Self.contentInset),
+            rows.trailingAnchor.constraint(lessThanOrEqualTo: documentView.trailingAnchor, constant: -Self.contentInset),
+            rows.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -Self.contentInset),
+
+            documentView.widthAnchor.constraint(equalTo: scroller.contentView.widthAnchor),
+
+            scroller.topAnchor.constraint(equalTo: root.topAnchor),
+            scroller.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            scroller.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            scroller.heightAnchor.constraint(equalToConstant: min(contentHeight, maxContentHeight)),
+
+            buttons.topAnchor.constraint(equalTo: scroller.bottomAnchor, constant: 12),
+            buttons.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -Self.contentInset),
+            buttons.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -Self.contentInset),
+
+            root.widthAnchor.constraint(equalToConstant: Self.sheetWidth),
+        ])
+
+        let rootHeight = min(contentHeight, maxContentHeight) + 12 + Self.contentInset * 2
+        preferredContentSize = NSSize(width: Self.sheetWidth, height: rootHeight)
+        return root
+    }
+
     // MARK: - Building blocks
 
-    private func makePrivacyNote() -> NSTextField {
-        let note = NSTextField(wrappingLabelWithString: NSLocalizedString(
-            "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives.",
-            comment: "Privacy and cost notice for AI lyrics translation."
-        ))
-        note.font = .systemFont(ofSize: 11)
-        note.textColor = .secondaryLabelColor
-        note.preferredMaxLayoutWidth = Self.labelWidth + Self.fieldWidth
-        return note
+    private func makeWrappingLabel(_ text: String) -> NSTextField {
+        let label = NSTextField(wrappingLabelWithString: text)
+        label.font = .systemFont(ofSize: 11)
+        label.textColor = .secondaryLabelColor
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
+        return label
+    }
+
+    /// A paragraph that belongs to the form rather than to the window: it is
+    /// indented past the label column so it lines up with the fields, instead
+    /// of starting at the sheet's edge with everything else stepped in.
+    private func makeNoteRow(_ text: String) -> NSStackView {
+        let spacer = NSView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        spacer.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
+
+        let row = NSStackView(views: [spacer, makeWrappingLabel(text)])
+        row.orientation = .horizontal
+        row.alignment = .top
+        row.spacing = 10
+        return row
     }
 
     private func makeFieldRow(
@@ -198,46 +259,45 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let label = NSTextField(labelWithString: title)
         label.alignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: Self.labelWidth).isActive = true
+        label.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
+        label.setContentHuggingPriority(.required, for: .horizontal)
 
         control.translatesAutoresizingMaskIntoConstraints = false
-        control.widthAnchor.constraint(equalToConstant: Self.fieldWidth).isActive = true
+        control.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
 
-        let helpLabel = NSTextField(wrappingLabelWithString: help)
-        helpLabel.font = .systemFont(ofSize: 11)
-        helpLabel.textColor = .secondaryLabelColor
-        helpLabel.preferredMaxLayoutWidth = Self.fieldWidth
-
-        var inputViews: [NSView] = [control]
+        // The destructive action sits under its field rather than beside it:
+        // one column of fixed width, so nothing here can widen the sheet.
+        var columnViews: [NSView] = [control]
         if let accessory {
             accessory.translatesAutoresizingMaskIntoConstraints = false
-            inputViews.append(accessory)
+            let accessoryRow = NSStackView(views: [accessory])
+            accessoryRow.orientation = .horizontal
+            accessoryRow.alignment = .leading
+            columnViews.append(accessoryRow)
         }
-        let input = NSStackView(views: inputViews)
-        input.orientation = .horizontal
-        input.spacing = 8
+        columnViews.append(makeWrappingLabel(help))
 
-        let column = NSStackView(views: [input, helpLabel])
+        let column = NSStackView(views: columnViews)
         column.orientation = .vertical
         column.alignment = .leading
         column.spacing = 3
 
         let row = NSStackView(views: [label, column])
         row.orientation = .horizontal
-        row.alignment = .firstBaseline
+        row.alignment = .top
         row.spacing = 10
         return row
     }
 
     private func makePromptRow() -> NSStackView {
-        let scrollView = NSScrollView()
-        scrollView.borderType = .bezelBorder
-        scrollView.hasVerticalScroller = true
-        scrollView.documentView = promptTextView
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        let scroller = NSScrollView()
+        scroller.borderType = .bezelBorder
+        scroller.hasVerticalScroller = true
+        scroller.documentView = promptTextView
+        scroller.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            scrollView.widthAnchor.constraint(equalToConstant: Self.fieldWidth),
-            scrollView.heightAnchor.constraint(equalToConstant: 150),
+            scroller.widthAnchor.constraint(equalToConstant: Self.columnWidth),
+            scroller.heightAnchor.constraint(equalToConstant: 130),
         ])
 
         let label = NSTextField(labelWithString: NSLocalizedString(
@@ -246,17 +306,15 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         ))
         label.alignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: Self.labelWidth).isActive = true
+        label.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
 
-        let helpLabel = NSTextField(wrappingLabelWithString: NSLocalizedString(
-            "$targetLanguage is replaced with the target language's name before the request is sent.",
-            comment: "Help text under the AI translation prompt setting."
-        ))
-        helpLabel.font = .systemFont(ofSize: 11)
-        helpLabel.textColor = .secondaryLabelColor
-        helpLabel.preferredMaxLayoutWidth = Self.fieldWidth
-
-        let column = NSStackView(views: [scrollView, helpLabel])
+        let column = NSStackView(views: [
+            scroller,
+            makeWrappingLabel(NSLocalizedString(
+                "$targetLanguage is replaced with the target language's name before the request is sent.",
+                comment: "Help text under the AI translation prompt setting."
+            )),
+        ])
         column.orientation = .vertical
         column.alignment = .leading
         column.spacing = 3
