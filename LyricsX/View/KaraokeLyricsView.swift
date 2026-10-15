@@ -6,6 +6,31 @@ class KaraokeLyricsView: NSView {
     private let backgroundView: NSView
     private let contentStackView: NSStackView
 
+    var preferredSizeDidChange: (() -> Void)?
+    private var sizeUpdatePending = false
+
+    /// Size the existing desktop window to its content, not the entire display.
+    var preferredWindowSize: NSSize {
+        let sizes = contentStackView.arrangedSubviews.filter { !$0.isHidden }.map { $0.intrinsicContentSize }
+        let spacing = CGFloat(max(0, sizes.count - 1)) * contentStackView.spacing
+        let width = isVertical ? sizes.reduce(0) { $0 + max(0, $1.width) } + spacing : sizes.map(\.width).max() ?? 0
+        let height = isVertical ? sizes.map(\.height).max() ?? 0 : sizes.reduce(0) { $0 + max(0, $1.height) } + spacing
+        let horizontalInset = isVertical ? font.pointSize / 3 : font.pointSize
+        let verticalInset = isVertical ? font.pointSize : font.pointSize / 3
+        return NSSize(width: ceil(width + horizontalInset * 2), height: ceil(height + verticalInset * 2))
+    }
+
+    private func scheduleSizeUpdate() {
+        guard !sizeUpdatePending else { return }
+        sizeUpdatePending = true
+        // Let KVO bindings update the labels' font/orientation before measuring.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.sizeUpdatePending = false
+            self.preferredSizeDidChange?()
+        }
+    }
+
     @objc dynamic var isVertical = false {
         didSet {
             contentStackView.orientation = isVertical ? .horizontal : .vertical
@@ -14,9 +39,9 @@ class KaraokeLyricsView: NSView {
         }
     }
 
-    @objc dynamic var drawFurigana = false
-    @objc dynamic var useSourceFurigana = true
-    @objc dynamic var drawRomajin = false
+    @objc dynamic var drawFurigana = false { didSet { scheduleSizeUpdate() } }
+    @objc dynamic var useSourceFurigana = true { didSet { scheduleSizeUpdate() } }
+    @objc dynamic var drawRomajin = false { didSet { scheduleSizeUpdate() } }
 
     @objc dynamic var font = NSFont.labelFont(ofSize: 24) { didSet { updateFontSize() } }
     @objc dynamic var textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
@@ -67,6 +92,7 @@ class KaraokeLyricsView: NSView {
         }
         contentStackView.spacing = font.pointSize / 3
         backgroundView.layer?.cornerRadius = font.pointSize / 2
+        scheduleSizeUpdate()
     }
 
     private func lyricsLabel(_ content: String, sourceFurigana: LyricsLine.Attachments.RangeAttribute?) -> KaraokeLabel {
@@ -144,6 +170,7 @@ class KaraokeLyricsView: NSView {
                 $0.alphaValue = 1
             }
             isHidden = shouldHideAll
+            scheduleSizeUpdate()
             layoutSubtreeIfNeeded()
         }, completionHandler: {
             self.mouseTest()
