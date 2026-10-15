@@ -225,13 +225,11 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let scroller = NSScrollView()
         scroller.hasVerticalScroller = true
         scroller.drawsBackground = false
-        // Visible whenever there is anything to scroll, rather than only while
-        // the user is already scrolling — otherwise a form that runs past the
-        // bottom of the sheet gives no sign that there is more of it.
-        scroller.autohidesScrollers = false
-        // Overlay, so the bar it just made permanent floats over the content
-        // instead of taking width from the clip view. A legacy scroller would
-        // narrow the document and re-wrap every help label.
+        // Overlay, so the bar floats over the content instead of taking width
+        // from the clip view. A legacy scroller would narrow the document and
+        // re-wrap every help label. Autohiding is left at its default: turning
+        // it off draws a scrollbar even when the form fits and there is nothing
+        // to scroll, which reads as "there is more below" when there is not.
         scroller.scrollerStyle = .overlay
         scroller.documentView = documentView
         scroller.translatesAutoresizingMaskIntoConstraints = false
@@ -266,16 +264,23 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             root.widthAnchor.constraint(equalToConstant: Self.sheetWidth),
         ])
 
-        // Measure at the width it will actually be shown at, then take the
-        // height from what came back rather than from a running total.
         root.layoutSubtreeIfNeeded()
-        let contentHeight = rows.fittingSize.height + Self.contentInset * 2
-        let screenLimitedHeight = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
-        scrollerHeight.constant = min(contentHeight, screenLimitedHeight)
-        root.layoutSubtreeIfNeeded()
-
-        preferredContentSize = root.fittingSize
+        sizeSheetToContent()
         return root
+    }
+
+    /// Sizes the sheet to the form as it stands: the scroller takes the
+    /// content's height up to whatever the screen can spare, and the sheet
+    /// takes the root's fitting size. One rule, so the initial layout and the
+    /// path that runs when a validation message appears cannot drift apart.
+    private func sizeSheetToContent() {
+        view.layoutSubtreeIfNeeded()
+        guard let scrollerHeightConstraint, let rowsStack else { return }
+        let contentHeight = rowsStack.fittingSize.height + Self.contentInset * 2
+        let screenLimited = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
+        scrollerHeightConstraint.constant = min(contentHeight, screenLimited)
+        view.layoutSubtreeIfNeeded()
+        preferredContentSize = view.fittingSize
     }
 
     /// A document view that reports `isFlipped`, so a form taller than the
@@ -510,16 +515,11 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         problemLabel.stringValue = problem
         problemRow?.isHidden = false
         // Re-measured, not grown by a number worked out here. The row brings
-        // its own height and the stack's spacing with it — and a later message
-        // may wrap to more lines than the one before — so any amount added by
-        // hand is either short, and the message lands below the fold of a
-        // scroller, or long, and leaves the sheet with a band to spare.
-        view.layoutSubtreeIfNeeded()
-        let contentHeight = (rowsStack?.fittingSize.height ?? 0) + Self.contentInset * 2
-        let screenLimited = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
-        scrollerHeightConstraint?.constant = min(contentHeight, screenLimited)
-        view.layoutSubtreeIfNeeded()
-        preferredContentSize = view.fittingSize
+        // its own height and the stack's spacing with it, and a later message
+        // may wrap to more lines than the one before, so any amount added by
+        // hand is either short and puts the message below the fold, or long and
+        // leaves the sheet with a band to spare.
+        sizeSheetToContent()
     }
 
     private static func message(for error: Error) -> String {

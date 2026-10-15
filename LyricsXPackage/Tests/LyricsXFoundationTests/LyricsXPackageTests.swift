@@ -350,23 +350,39 @@ func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
 func aiLyricsTranslationNeverCarriesABlankPrompt() throws {
     // An empty prompt still builds a well-formed request — one whose
     // instruction block is blank — so nothing downstream fails; it just
-    // translates nothing. Both ways of building a configuration have to close
-    // that, not one of them and a convention.
-    let factory = try AILyricsTranslationPolicy.configuration(
-        endpoint: "https://example.com/v1/chat/completions",
-        model: "test-model",
-        targetLanguage: "ja",
-        prompt: ""
-    )
-    #expect(factory.prompt == AILyricsTranslationPolicy.defaultPrompt)
-
-    let direct = AILyricsTranslationConfiguration(
+    // translates nothing. The default is substituted where that block is
+    // built, and the configuration keeps reporting what it was given.
+    let configuration = AILyricsTranslationConfiguration(
         endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
         model: "test-model",
         targetLanguage: "ja",
         prompt: "   "
     )
-    #expect(direct.prompt == AILyricsTranslationPolicy.defaultPrompt)
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: "en",
+        sourceLines: [AILyricsTranslationInputLine(index: 0, text: "A lyric")]
+    )
+    let payload = try #require(
+        JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+    )
+    let messages = try #require(payload["messages"] as? [[String: String]])
+    let userMessage = try #require(messages.last?["content"])
+
+    #expect(userMessage.contains("Translate every lyric line into"))
+    #expect(configuration.prompt == "   ")
+}
+
+@Test
+func aiLyricsTranslationConfigurationReportsThePromptItWasGiven() throws {
+    let configuration = try AILyricsTranslationPolicy.configuration(
+        endpoint: "https://example.com/v1/chat/completions",
+        model: "test-model",
+        targetLanguage: "ja",
+        prompt: ""
+    )
+
+    #expect(configuration.prompt.isEmpty)
 }
 
 @Test

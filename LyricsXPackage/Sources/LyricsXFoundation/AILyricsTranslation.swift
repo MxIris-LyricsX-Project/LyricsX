@@ -11,12 +11,11 @@ public struct AILyricsTranslationConfiguration: Equatable, Sendable {
         self.endpoint = endpoint
         self.model = model
         self.targetLanguage = targetLanguage
-        // Resolved on the type rather than left to the callers. An empty
-        // prompt still builds a well-formed request — one whose instruction
-        // block is blank — so nothing downstream fails; it just translates
-        // nothing. Every path that can build a configuration goes through
-        // here, which is the only place that can promise otherwise.
-        self.prompt = AILyricsTranslationPolicy.resolvedPrompt(prompt)
+        // Stored as given. Substituting the default here would make the type
+        // hand back a prompt the caller never supplied, and leave no way to ask
+        // for a minimal one. The substitution belongs where the instruction
+        // block is actually built — see `AILyricsTranslationPolicy.userMessage`.
+        self.prompt = prompt
     }
 }
 
@@ -253,10 +252,8 @@ public enum AILyricsTranslationPolicy {
         let endpoint = endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
         let model = model.trimmingCharacters(in: .whitespacesAndNewlines)
         let targetLanguage = targetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Resolved before the size check so the limit is applied to the prompt
-        // that will actually be sent; the configuration resolves it again on
-        // the way in, which is where the guarantee lives.
-        let prompt = resolvedPrompt(prompt)
+        // Sized as given: an empty prompt stays empty here and is filled in by
+        // `userMessage`, so `configuration.prompt` still reports what came in.
 
         guard endpoint.utf8.count <= maximumEndpointBytes,
               model.utf8.count <= maximumModelBytes,
@@ -276,10 +273,7 @@ public enum AILyricsTranslationPolicy {
             throw AILyricsTranslationError.invalidTargetLanguage
         }
         // An empty prompt is not an error: it means the user has not customised
-        // it. This function substitutes the default for anything that arrives
-        // through the validated factory; `AILyricsTranslationConfiguration`
-        // applies the same substitution again, so a configuration built
-        // directly cannot carry a blank instruction block either.
+        // it, and `userMessage` supplies the default when the request is built.
         return AILyricsTranslationConfiguration(
             endpoint: url,
             model: model,
@@ -326,7 +320,11 @@ public enum AILyricsTranslationPolicy {
     ) throws -> String {
         let sourceLanguageDescription = languageDescription(sourceLanguage) ?? "Auto-detect"
         let targetLanguageDescription = languageDescription(targetLanguage) ?? targetLanguage
-        let expandedPrompt = prompt.replacingOccurrences(
+        // Where the empty-prompt invariant is kept: an empty one substitutes
+        // the current default, so a request can never go out with a blank
+        // instruction block. It is kept here rather than on the configuration
+        // so that type stays a faithful carrier of what it was given.
+        let expandedPrompt = resolvedPrompt(prompt).replacingOccurrences(
             of: "$targetLanguage",
             with: targetLanguageDescription
         )

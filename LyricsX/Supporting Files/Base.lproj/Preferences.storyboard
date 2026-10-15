@@ -1857,7 +1857,7 @@
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="AIT-DL-001">
-                                                        <rect key="frame" x="0.0" y="51" width="76" height="16"/>
+                                                        <rect key="frame" x="0.0" y="51" width="110" height="16"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Display language:" id="AIT-DL-C01">
                                                             <font key="font" usesAppearanceFont="YES"/>
@@ -1866,7 +1866,7 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <textField focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" id="AIT-DL-T01">
-                                                        <rect key="frame" x="84" y="48" width="266" height="22"/>
+                                                        <rect key="frame" x="118" y="48" width="232" height="22"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Optional language tag; blank uses first available" usesSingleLineMode="YES" bezelStyle="round" id="AIT-DL-TC1">
                                                             <font key="font" usesAppearanceFont="YES"/>
@@ -1905,15 +1905,15 @@
                                         </box>
                                     </gridCell>
                                     <gridCell row="AIT-Ro-W01" column="8ba-lF-U7s" id="AIT-Ce-R01"/>
-                                    <gridCell row="AIT-SR-001" column="8ba-lF-U7s" headOfMergedCell="AIT-SC-001" xPlacement="fill" id="AIT-SC-001">
+                                    <gridCell row="AIT-SR-001" column="4uA-B7-Dvh" xPlacement="fill" id="AIT-SC-001">
                                         <box key="contentView" title="Translation status" translatesAutoresizingMaskIntoConstraints="NO" id="AIT-SB-001">
-                                            <rect key="frame" x="0.0" y="0.0" width="520" height="50"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="350" height="50"/>
                                             <view key="contentView" id="AIT-SV-001">
-                                                <rect key="frame" x="0.0" y="0.0" width="520" height="38"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="350" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="AIT-ST-T01">
-                                                                                                    <rect key="frame" x="12" y="9" width="496" height="20"/>
+                                                                                                    <rect key="frame" x="0.0" y="9" width="350" height="20"/>
                                                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" id="AIT-ST-C01">
                                                                                                         <font key="font" usesAppearanceFont="YES"/>
@@ -1925,7 +1925,7 @@
                                             </view>
                                         </box>
                                     </gridCell>
-                                    <gridCell row="AIT-SR-001" column="4uA-B7-Dvh" headOfMergedCell="AIT-SC-001" id="AIT-SC-R01"/>
+                                    <gridCell row="AIT-SR-001" column="8ba-lF-U7s" id="AIT-SC-R01"/>
 
                                     <gridCell row="AMB-Ro-W01" column="8ba-lF-U7s" headOfMergedCell="AMB-Ce-L01" xPlacement="fill" id="AMB-Ce-L01">
                                         <box key="contentView" title="Apple Music" translatesAutoresizingMaskIntoConstraints="NO" id="AMB-Bx-001">

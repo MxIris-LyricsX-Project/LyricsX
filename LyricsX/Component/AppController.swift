@@ -733,10 +733,12 @@ final class AppController: NSObject {
                           defaults[.aiLyricsTranslationEndpoint] == configuration.endpoint.absoluteString,
                           defaults[.aiLyricsTranslationModel] == configuration.model,
                           defaults[.aiLyricsTranslationTargetLanguage] == configuration.targetLanguage,
-                          // Compared resolved, not raw: an untouched prompt is
-                          // stored empty, and "" != the default it resolves to.
+                          // Compared resolved on both sides: an untouched
+                          // prompt is stored empty, and the configuration
+                          // carries whatever the sheet saved rather than the
+                          // default that empty resolves to.
                           AILyricsTranslationPolicy.resolvedPrompt(defaults[.aiLyricsTranslationPrompt])
-                              == configuration.prompt,
+                              == AILyricsTranslationPolicy.resolvedPrompt(configuration.prompt),
                           let displayedLyrics = currentLyrics,
                           displayedLyrics === lyrics,
                           lyricsContentFingerprint(displayedLyrics) == sourceFingerprint else {
