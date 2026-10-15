@@ -580,12 +580,22 @@ final class AppController: NSObject {
     }
 
     private func startAITranslation(for lyrics: Lyrics?) {
-        guard defaults[.aiLyricsTranslationEnabled],
-              let lyrics,
-              let track = selectedPlayer.currentTrack else {
+        guard defaults[.aiLyricsTranslationEnabled] else {
+            // The Lab pane owns the wording while the switch is off, so the
+            // task is cancelled without rewriting the status.
             aiLyricsTranslationTask?.cancel()
             aiLyricsTranslationTask = nil
             lastAITranslationKey = nil
+            return
+        }
+        guard let lyrics, let track = selectedPlayer.currentTrack else {
+            aiLyricsTranslationTask?.cancel()
+            aiLyricsTranslationTask = nil
+            lastAITranslationKey = nil
+            // Nothing is on screen to translate. Leaving the last message up
+            // would strand a "Translating lyrics…" in the pane for the rest of
+            // the session, because no retry is coming.
+            defaults[.aiLyricsTranslationStatus] = ""
             return
         }
 
@@ -638,6 +648,16 @@ final class AppController: NSObject {
         )
 
         let trackID = track.id
+        // `Lyrics` is a reference type, and the display queue keeps mutating the
+        // displayed instance while a request is in flight — the offset setter
+        // writes `idTags[.offset]`, and picking a candidate swaps `lines` and
+        // `metadata`. The task runs off this queue, so hand it a private copy
+        // built here; the original is kept only for the identity check below.
+        let translationSource = Lyrics(
+            lines: lyrics.lines,
+            idTags: lyrics.idTags,
+            metadata: lyrics.metadata
+        )
         aiLyricsTranslationTask = Task { [weak self] in
             guard let self = self else { return }
             var apiKey: String?
@@ -680,7 +700,7 @@ final class AppController: NSObject {
 
             do {
                 let result = try await aiLyricsTranslator.translate(
-                    lyrics: lyrics,
+                    lyrics: translationSource,
                     configuration: configuration,
                     apiKey: apiKey
                 )
@@ -1178,11 +1198,12 @@ final class AppController: NSObject {
         var availableTranslationLanguages: [String] = []
 
         if let lyrics = currentLyrics {
+            // A bare `tr` tag carries a translation with no language to name,
+            // so it contributes nothing here: an empty entry would only add an
+            // unnamed row to the widget's language picker whose `""` id then
+            // matches whatever the user had configured before. The line's
+            // translation still reaches the widget through `displayTranslation`.
             availableTranslationLanguages = lyrics.metadata.displayTranslationLanguage.map { [$0] } ?? []
-            if availableTranslationLanguages.isEmpty,
-               lyrics.metadata.attachmentTags.contains(where: { $0.rawValue.lowercased() == "tr" }) {
-                availableTranslationLanguages = [""]
-            }
             let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
             let contextRadius = 50
             let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]

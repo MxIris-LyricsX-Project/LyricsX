@@ -102,6 +102,9 @@
         }
       }
     },
+    "Add an API key in AI translation settings." : {
+      "comment" : "Status shown when no API key is stored for AI lyric translation."
+    },
     "Add Current Playing" : {
       "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote.",
       "localizations" : {
@@ -203,6 +206,18 @@
         }
       }
     },
+    "AI lyrics translation" : {
+      "comment" : "AI lyrics translation settings dialog title."
+    },
+    "AI translation is disabled." : {
+      "comment" : "Status shown when AI lyric translation is turned off."
+    },
+    "AI translation settings are incomplete or invalid." : {
+      "comment" : "Status for AI lyric translation when its configuration is invalid."
+    },
+    "API key" : {
+      "comment" : "AI lyrics translation API-key setting.\nPlaceholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
+    },
     "Apple Music access is required to recover original song and artist names." : {
       "comment" : "Alert title when MusicAuthorization is denied or restricted for the MusicKit name recovery toggle.",
       "localizations" : {
@@ -303,6 +318,18 @@
           }
         }
       }
+    },
+    "Cancel" : {
+      "comment" : "Cancel AI lyrics translation settings."
+    },
+    "Connection failed. Check the endpoint, model, and API key." : {
+      "comment" : "Generic status shown when the AI lyrics translation endpoint test fails."
+    },
+    "Connection succeeded." : {
+      "comment" : "Status shown when the AI lyrics translation endpoint test succeeds."
+    },
+    "Display language must be a valid language tag, such as zh-Hans or ja." : {
+      "comment" : "Validation feedback for the preferred lyric display language."
     },
     "Download" : {
       "comment" : "title of download button on the update alert. Download new version of the app.",
@@ -519,6 +546,9 @@
         }
       }
     },
+    "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests; the API key is stored in Keychain for this endpoint's host." : {
+      "comment" : "Privacy and cost notice for AI lyrics translation."
+    },
     "Embedded lyrics cannot be edited." : {
       "comment" : "Disabled Edit menu explanation",
       "localizations" : {
@@ -625,6 +655,9 @@
           }
         }
       }
+    },
+    "Endpoint" : {
+      "comment" : "AI lyrics translation endpoint setting."
     },
     "Font Fallback: %@" : {
       "localizations" : {
@@ -833,6 +866,9 @@
         }
       }
     },
+    "Leave blank to keep the saved key" : {
+      "comment" : "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
+    },
     "Lyrics %1$d of %2$d" : {
       "comment" : "Transient message after switching to another lyrics candidate, when the source is unknown. %1$d is the 1-based position, %2$d the number of candidates.",
       "localizations" : {
@@ -866,6 +902,9 @@
           }
         }
       }
+    },
+    "Lyrics translated." : {
+      "comment" : "Status shown when all eligible lyric lines were translated."
     },
     "Lyrics Window" : {
       "extractionState" : "manual",
@@ -973,6 +1012,9 @@
           }
         }
       }
+    },
+    "Model" : {
+      "comment" : "AI lyrics translation model setting."
     },
     "Next Track" : {
       "comment" : "Menu bar playback next button",
@@ -1176,6 +1218,9 @@
         }
       }
     },
+    "No API key is saved for this endpoint." : {
+      "comment" : "Status shown when endpoint testing finds no stored API key."
+    },
     "No Lyrics" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1293,6 +1338,9 @@
           }
         }
       }
+    },
+    "No untranslated lines need this target language." : {
+      "comment" : "Status shown when lyrics are already in the AI translation target language."
     },
     "OK" : {
       "extractionState" : "manual",
@@ -1804,6 +1852,12 @@
         }
       }
     },
+    "Prompt" : {
+      "comment" : "AI lyrics translation prompt setting."
+    },
+    "Remove saved API key" : {
+      "comment" : "Checkbox to delete the saved AI translation API key from Keychain."
+    },
     "Requires macOS 12 or later" : {
       "comment" : "Tooltip on the Apple Music name recovery toggle when the OS is too old.",
       "localizations" : {
@@ -2012,6 +2066,12 @@
           }
         }
       }
+    },
+    "Save" : {
+      "comment" : "Save AI lyrics translation settings."
+    },
+    "Save and Test" : {
+      "comment" : "Save settings and test the AI lyrics translation endpoint."
     },
     "Search" : {
       "comment" : "Lyrics window context menu",
@@ -2243,6 +2303,9 @@
           }
         }
       }
+    },
+    "Settings could not be saved. Check the endpoint, language, prompt, and Keychain access." : {
+      "comment" : "Status shown when AI lyrics translation settings cannot be saved."
     },
     "Skip to next track" : {
       "localizations" : {
@@ -2545,6 +2608,18 @@
         }
       }
     },
+    "Target language" : {
+      "comment" : "AI lyrics translation target language setting."
+    },
+    "Testing connection…" : {
+      "comment" : "Status shown while testing the AI lyrics translation endpoint."
+    },
+    "The keychain is temporarily unavailable; translation can be retried later." : {
+      "comment" : "Status for a temporary Keychain failure during AI translation."
+    },
+    "The saved API key could not be read. Check its access in Keychain." : {
+      "comment" : "Status for a permanent Keychain failure during AI translation."
+    },
     "Toggle music playback" : {
       "localizations" : {
         "ar" : {
@@ -2751,6 +2826,26 @@
           }
         }
       }
+    },
+    "Translated %d lines; %d lines could not be translated." : {
+      "comment" : "Status shown when AI lyric translation was partially successful.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Translated %1$d lines; %2$d lines could not be translated."
+          }
+        }
+      }
+    },
+    "Translating lyrics…" : {
+      "comment" : "Status shown while AI lyric translation is in progress."
+    },
+    "Translation failed; existing lyrics were kept." : {
+      "comment" : "Status shown when AI lyric translation fails."
+    },
+    "Translations are displayed but could not be saved." : {
+      "comment" : "Status shown when translated lyrics could not be persisted."
     },
     "Unable to enable Touch Bar lyrics." : {
       "comment" : "alert title",

@@ -163,17 +163,6 @@ extension AppleMusicLyrics {
 
         // MARK: Configuration
 
-        func configure(line: LyricsLine, originalIndex: Int, enabledPosition: Int, mainFontSize: CGFloat, translationFontSize: CGFloat) {
-            configure(
-                line: line,
-                translation: line.attachments.translation(),
-                originalIndex: originalIndex,
-                enabledPosition: enabledPosition,
-                mainFontSize: mainFontSize,
-                translationFontSize: translationFontSize
-            )
-        }
-
         func configure(
             line: LyricsLine,
             translation: String?,
@@ -200,12 +189,9 @@ extension AppleMusicLyrics {
 
         /// Re-reads the bilingual / Chinese-conversion preferences and rebuilds
         /// the attributed strings. Called when those preferences change while a
-        /// track is already displayed.
-        func refreshTranslation() {
-            guard let line else { return }
-            refreshTranslation(line.attachments.translation())
-        }
-
+        /// track is already displayed. The translation is passed in rather than
+        /// re-read from the line, so it goes through the host's language choice
+        /// instead of the file's first translation.
         func refreshTranslation(_ translation: String?) {
             displayTranslation = translation
             rebuildAttributedStrings()

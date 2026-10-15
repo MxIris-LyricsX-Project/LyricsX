@@ -272,6 +272,49 @@ func aiLyricsTranslationBatchesRespectLineAndByteLimits() throws {
 }
 
 @Test
+func aiLyricsTranslationDropsALineTooLargeToBatchOnItsOwn() throws {
+    // A whole verse pasted into one timestamp. It cannot fit in any batch, so
+    // it is dropped here and counted as a failed line by the caller — it must
+    // not take the rest of the track's translation down with it.
+    let oversized = AILyricsTranslationInputLine(
+        index: 1,
+        text: String(repeating: "x", count: AILyricsTranslationBatchPolicy.maximumSourceBytes + 1)
+    )
+    let lines = [
+        AILyricsTranslationInputLine(index: 0, text: "first"),
+        oversized,
+        AILyricsTranslationInputLine(index: 2, text: "third"),
+    ]
+
+    let batches = try AILyricsTranslationBatchPolicy.batches(lines)
+
+    #expect(batches.flatMap { $0.map(\.index) } == [0, 2])
+}
+
+@Test
+func aiLyricsTranslationRequestHonoursACustomTokenCap() throws {
+    let configuration = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "zh-Hans",
+        prompt: "Translate to $targetLanguage"
+    )
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: nil,
+        sourceLines: [AILyricsTranslationInputLine(index: 0, text: "OK")],
+        maxTokens: 32
+    )
+
+    let payload = try #require(
+        JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+    )
+
+    #expect(payload["max_tokens"] as? Int == 32)
+    #expect((payload["messages"] as? [[String: String]])?.count == 2)
+}
+
+@Test
 func aiLyricsTranslationKeepsValidPartialResponseEntries() throws {
     let response = """
     {"translations":[{"index":4,"text":"bonjour"},{"index":6,"text":"hola"},{"index":7,"text":""}]}

@@ -29,6 +29,12 @@ public enum AILyricsTranslationBatchPolicy {
     public static let maximumLines = 24
     public static let maximumSourceBytes = 32_768
 
+    /// Splits `lines` into request-sized batches. A line that cannot fit on its
+    /// own is dropped rather than signalled: one pathological line (a whole
+    /// verse pasted into a single timestamp) would otherwise throw here and
+    /// fail the entire track, when every other line is perfectly translatable.
+    /// Callers count what is missing from the returned batches and report it as
+    /// a failed line.
     public static func batches(
         _ lines: [AILyricsTranslationInputLine]
     ) throws -> [[AILyricsTranslationInputLine]] {
@@ -37,7 +43,7 @@ public enum AILyricsTranslationBatchPolicy {
         for line in lines {
             let encodedLine = try JSONEncoder().encode([line])
             guard encodedLine.count <= maximumSourceBytes else {
-                throw AILyricsTranslationError.lyricsTooLarge
+                continue
             }
             let currentSize = try JSONEncoder().encode(batch + [line]).count
             if !batch.isEmpty,
@@ -65,7 +71,6 @@ public enum AILyricsTranslationError: Error, Equatable {
     case configurationTooLarge
     case lyricsTooLarge
     case invalidResponse
-    case missingTranslation(Int)
 }
 
 public struct AILyricsTranslationMergeResult {
@@ -256,30 +261,6 @@ public enum AILyricsTranslationPolicy {
         Untrusted source lyric lines begin after this line:
         \(sourceJSON)
         """
-    }
-
-    public static func merging(
-        response: String,
-        into source: Lyrics,
-        targetLanguage: String,
-        expectedIndices: [Int]
-    ) throws -> Lyrics {
-        let json = strippingMarkdownFence(from: response)
-        guard let data = json.data(using: .utf8),
-              let payload = try? JSONDecoder().decode(TranslationResponse.self, from: data),
-              payload.translations.count == expectedIndices.count else {
-            throw AILyricsTranslationError.invalidResponse
-        }
-        let result = try mergingAvailable(
-            response: json,
-            into: source,
-            targetLanguage: targetLanguage,
-            expectedIndices: expectedIndices
-        )
-        guard let missingIndex = result.missingIndices.first else {
-            return result.lyrics
-        }
-        throw AILyricsTranslationError.missingTranslation(missingIndex)
     }
 
     public static func mergingAvailable(
@@ -555,9 +536,13 @@ public struct OpenAICompatibleChatRequest: Encodable, Equatable, Sendable {
         }
     }
 
+    /// Enough for a full batch of translated lines; a caller that only wants to
+    /// prove the endpoint answers overrides it with something cheaper.
+    public static let defaultMaxTokens = 4_096
+
     public let model: String
     public let messages: [Message]
-    private let maxTokens = 4_096
+    private let maxTokens: Int
     private let responseFormat = JSONResponseFormat()
 
     private struct JSONResponseFormat: Encodable, Equatable, Sendable {
@@ -574,9 +559,11 @@ public struct OpenAICompatibleChatRequest: Encodable, Equatable, Sendable {
     public init(
         configuration: AILyricsTranslationConfiguration,
         sourceLanguage: String?,
-        sourceLines: [AILyricsTranslationInputLine]
+        sourceLines: [AILyricsTranslationInputLine],
+        maxTokens: Int = OpenAICompatibleChatRequest.defaultMaxTokens
     ) throws {
         model = configuration.model
+        self.maxTokens = maxTokens
         messages = [
             Message(role: "system", content: AILyricsTranslationPolicy.systemPrompt),
             Message(

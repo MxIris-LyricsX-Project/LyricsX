@@ -129,11 +129,24 @@ class PreferenceLabViewController: PreferenceViewController {
         targetLanguageField.stringValue = savedTargetLanguage.isEmpty
             ? AILyricsTranslationPolicy.defaultTargetLanguage
             : savedTargetLanguage
+        // A key is bound to its endpoint's origin, so "leave blank" only means
+        // "keep the saved key" when this host actually has one. Promising it
+        // otherwise sends the user hunting for a blank field while the real
+        // cause is that their key belongs to the host they just moved off.
+        let savedEndpointURL = savedEndpoint.isEmpty ? nil : URL(string: savedEndpoint)
+        let hasSavedKeyForEndpoint = savedEndpointURL.map {
+            (try? AILyricsTranslationCredentialStore.hasAccessibleAPIKey(for: $0)) ?? false
+        } ?? false
         let apiKeyField = NSSecureTextField(string: "")
-        apiKeyField.placeholderString = NSLocalizedString(
-            "Leave blank to keep the saved key",
-            comment: "Placeholder for the secure AI translation API-key field."
-        )
+        apiKeyField.placeholderString = hasSavedKeyForEndpoint
+            ? NSLocalizedString(
+                "Leave blank to keep the saved key",
+                comment: "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
+            )
+            : NSLocalizedString(
+                "API key",
+                comment: "Placeholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
+            )
         let removeKeyButton = NSButton(
             checkboxWithTitle: NSLocalizedString(
                 "Remove saved API key",
@@ -177,7 +190,7 @@ class PreferenceLabViewController: PreferenceViewController {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("AI lyrics translation", comment: "AI lyrics translation settings dialog title.")
         alert.informativeText = NSLocalizedString(
-            "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests; the API key is stored in Keychain.",
+            "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests; the API key is stored in Keychain for this endpoint's host.",
             comment: "Privacy and cost notice for AI lyrics translation."
         )
         alert.accessoryView = accessory
@@ -244,8 +257,7 @@ class PreferenceLabViewController: PreferenceViewController {
                     return
                 }
                 try await aiLyricsTranslator.testConnection(
-                    endpoint: configuration.endpoint,
-                    model: configuration.model,
+                    configuration: configuration,
                     apiKey: apiKey
                 )
                 guard !Task.isCancelled else { return }

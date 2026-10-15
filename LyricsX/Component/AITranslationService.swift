@@ -97,6 +97,10 @@ enum AILyricsTranslationCredentialStore {
         return apiKey
     }
 
+    /// Whether a key is stored for this endpoint's origin, without disclosing
+    /// it. The cache is deliberately bypassed: the point of asking is to tell
+    /// the user what the Keychain actually holds, so a key removed out of band
+    /// must not keep reporting as present for the rest of the session.
     static func hasAccessibleAPIKey(
         for endpoint: URL,
         allowingAuthenticationUI: Bool = false
@@ -175,10 +179,6 @@ enum AILyricsTranslationCredentialStore {
         }
     }
 
-    static func clearSessionCache() {
-        cacheCredential(nil)
-    }
-
     static func validatedAPIKey(_ value: String) throws -> String {
         let value = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty,
@@ -220,34 +220,7 @@ final class OpenAICompatibleLyricsTranslator {
     private static let maximumRequestBytes = 2_097_152
     private static let maximumResponseBytes = 2_097_152
     private static let maximumAttempts = 3
-
-    private struct ConnectionTestPayload: Encodable {
-        let model: String
-        let messages: [OpenAICompatibleChatRequest.Message]
-        let maxTokens = 32
-        let responseFormat = JSONResponseFormat()
-
-        enum CodingKeys: String, CodingKey {
-            case model
-            case messages
-            case maxTokens = "max_tokens"
-            case responseFormat = "response_format"
-        }
-
-        init(model: String) {
-            self.model = model
-            messages = [
-                OpenAICompatibleChatRequest.Message(
-                    role: "user",
-                    content: "Reply with OK."
-                ),
-            ]
-        }
-    }
-
-    private struct JSONResponseFormat: Encodable {
-        let type = "json_object"
-    }
+    private static let connectionTestMaxTokens = 32
 
     private final class BoundedResponseLoader: NSObject, URLSessionDataDelegate {
         private let configuration: URLSessionConfiguration
@@ -412,10 +385,14 @@ final class OpenAICompatibleLyricsTranslator {
             return AILyricsTranslationResult(lyrics: lyrics, translatedLineCount: 0, failedLineCount: 0)
         }
 
+        let batches = try AILyricsTranslationBatchPolicy.batches(sourceLines)
         var translated = lyrics
         var translatedIndices = Set<Int>()
-        var failedLineCount = 0
-        for batch in try AILyricsTranslationBatchPolicy.batches(sourceLines) {
+        // The policy drops any line too large to batch on its own. Those never
+        // reach a request, so nothing further down would report them — without
+        // this they would be silently missing from the failure count too.
+        var failedLineCount = sourceLines.count - batches.reduce(0) { $0 + $1.count }
+        for batch in batches {
             try Task.checkCancellation()
             let result = try await translateBatch(
                 batch,
@@ -550,15 +527,24 @@ final class OpenAICompatibleLyricsTranslator {
         return false
     }
 
+    /// Sends the same request shape the translator sends, capped to a token or
+    /// two so a "Save and Test" costs nothing. A hand-rolled probe body would
+    /// drift from the real one and report success for a shape that cannot
+    /// actually translate.
     func testConnection(
-        endpoint: URL,
-        model: String,
+        configuration: AILyricsTranslationConfiguration,
         apiKey: String
     ) async throws {
+        let payload = try OpenAICompatibleChatRequest(
+            configuration: configuration,
+            sourceLanguage: nil,
+            sourceLines: [AILyricsTranslationInputLine(index: 0, text: "OK")],
+            maxTokens: Self.connectionTestMaxTokens
+        )
         let request = try request(
-            endpoint: endpoint,
+            endpoint: configuration.endpoint,
             apiKey: apiKey,
-            payload: ConnectionTestPayload(model: model)
+            payload: payload
         )
         let data = try await responseData(for: request)
         do {

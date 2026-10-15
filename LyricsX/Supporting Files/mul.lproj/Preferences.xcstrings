@@ -2395,6 +2395,66 @@
         }
       }
     },
+    "AIT-Bx-001.title" : {
+      "comment" : "Class = \"NSBox\"; title = \"Lyrics translation\"; ObjectID = \"AIT-Bx-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lyrics translation"
+          }
+        }
+      }
+    },
+    "AIT-CF-C01.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Configure…\"; ObjectID = \"AIT-CF-C01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Configure…"
+          }
+        }
+      }
+    },
+    "AIT-DL-C01.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"Display language:\"; ObjectID = \"AIT-DL-C01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Display language:"
+          }
+        }
+      }
+    },
+    "AIT-DL-TC1.placeholderString" : {
+      "comment" : "Class = \"NSTextFieldCell\"; placeholderString = \"Optional language tag; blank uses first available\"; ObjectID = \"AIT-DL-TC1\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Optional language tag; blank uses first available"
+          }
+        }
+      }
+    },
+    "AIT-EN-C01.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Enable AI translation\"; ObjectID = \"AIT-EN-C01\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enable AI translation"
+          }
+        }
+      }
+    },
     "AMB-Bx-001.title" : {
       "comment" : "Class = \"NSBox\"; title = \"Apple Music\"; ObjectID = \"AMB-Bx-001\";",
       "extractionState" : "extracted_with_value",

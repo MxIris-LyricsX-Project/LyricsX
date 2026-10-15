@@ -35,8 +35,13 @@ extension Lyrics.Metadata {
         set { data[.language] = newValue }
     }
 
+    /// Sorted because `attachmentTags` is a `Set`: without an order, the
+    /// "no preferred language" fallbacks below would pick a different
+    /// translation on every launch once a file carries more than one language
+    /// — a provider's `tr:zh-Hant` against a freshly added `tr:zh-Hans`, for
+    /// instance, would leave most lines showing no translation at all.
     var translationLanguages: [String] {
-        return attachmentTags.compactMap { $0.translationLanguageCode }
+        return attachmentTags.compactMap { $0.translationLanguageCode }.sorted()
     }
 
     var displayTranslationLanguage: String? {
