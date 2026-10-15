@@ -11,7 +11,12 @@ public struct AILyricsTranslationConfiguration: Equatable, Sendable {
         self.endpoint = endpoint
         self.model = model
         self.targetLanguage = targetLanguage
-        self.prompt = prompt
+        // Resolved on the type rather than left to the callers. An empty
+        // prompt still builds a well-formed request — one whose instruction
+        // block is blank — so nothing downstream fails; it just translates
+        // nothing. Every path that can build a configuration goes through
+        // here, which is the only place that can promise otherwise.
+        self.prompt = AILyricsTranslationPolicy.resolvedPrompt(prompt)
     }
 }
 
@@ -248,10 +253,9 @@ public enum AILyricsTranslationPolicy {
         let endpoint = endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
         let model = model.trimmingCharacters(in: .whitespacesAndNewlines)
         let targetLanguage = targetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Resolved here rather than at each call site, so a configuration can
-        // never carry an empty prompt: the request would go out with an empty
-        // instruction block and no error, which is the one way this could look
-        // well-formed and translate nothing.
+        // Resolved before the size check so the limit is applied to the prompt
+        // that will actually be sent; the configuration resolves it again on
+        // the way in, which is where the guarantee lives.
         let prompt = resolvedPrompt(prompt)
 
         guard endpoint.utf8.count <= maximumEndpointBytes,
@@ -272,10 +276,10 @@ public enum AILyricsTranslationPolicy {
             throw AILyricsTranslationError.invalidTargetLanguage
         }
         // An empty prompt is not an error: it means the user has not customised
-        // it, and `resolvedPrompt` supplies the current default. Every caller
-        // resolves before it gets here, so a bare empty string cannot arrive
-        // from the app — and if one did, `missingPrompt` would be no more help
-        // than the default it should have resolved to.
+        // it. This function substitutes the default for anything that arrives
+        // through the validated factory; `AILyricsTranslationConfiguration`
+        // applies the same substitution again, so a configuration built
+        // directly cannot carry a blank instruction block either.
         return AILyricsTranslationConfiguration(
             endpoint: url,
             model: model,

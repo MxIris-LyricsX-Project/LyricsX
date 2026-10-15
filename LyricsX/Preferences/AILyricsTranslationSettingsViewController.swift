@@ -41,10 +41,14 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     /// when it appears — the sheet is sized before that row has any text.
     private var scrollerHeightConstraint: NSLayoutConstraint?
 
-    /// How much height the validation row has already been given, so a second
-    /// message grows the sheet by the difference rather than by its full
-    /// height again.
-    private var appliedProblemGrowth: CGFloat = 0
+    /// The form, held so the sheet can be re-measured when the validation row
+    /// appears rather than grown by an amount worked out by hand.
+    private var rowsStack: NSStackView?
+
+    /// The validation row, hidden as a whole. Hiding only the label inside it
+    /// would leave the row in the stack, contributing its own height and the
+    /// stack's spacing to a sheet that has nothing to validate.
+    private var problemRow: NSStackView?
 
     private static let rowSpacing: CGFloat = 14
     private static let contentInset: CGFloat = 20
@@ -95,7 +99,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
         problemLabel.textColor = .systemRed
         problemLabel.font = .systemFont(ofSize: 11)
-        problemLabel.isHidden = true
 
         // Measured, not assumed: the labels are localized, so the column they
         // sit in is as wide as the longest one actually is in this language.
@@ -107,6 +110,14 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             NSLocalizedString("Prompt", comment: "AI lyrics translation prompt setting."),
         ]
         let labelColumnWidth = Self.widestLabelWidth(titles)
+
+        // Indented like everything else, so the message is read as belonging
+        // to the field it names rather than to the window. Hidden as a whole
+        // row: hiding the label alone leaves the row's height and the stack's
+        // spacing in the sheet.
+        let problemRow = makeIndentedRow(problemLabel, labelColumnWidth: labelColumnWidth)
+        problemRow.isHidden = true
+        self.problemRow = problemRow
 
         let rows = NSStackView(views: [
             makeIndentedRow(
@@ -154,9 +165,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 accessory: removeKeyButton
             ),
             makePromptRow(title: titles[4], labelColumnWidth: labelColumnWidth),
-            // Indented like everything else, so the message is read as
-            // belonging to the field it names rather than to the window.
-            makeIndentedRow(problemLabel, labelColumnWidth: labelColumnWidth),
+            problemRow,
         ])
         rows.orientation = .vertical
         // Every row is the stack's width, so each row's field column resolves
@@ -165,6 +174,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         rows.alignment = .width
         rows.spacing = Self.rowSpacing
         rows.translatesAutoresizingMaskIntoConstraints = false
+        rowsStack = rows
 
         let buttons = NSStackView(views: [
             makeButton(
@@ -498,25 +508,18 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
     private func present(problem: String) {
         problemLabel.stringValue = problem
-        problemLabel.isHidden = false
-        // The sheet was sized while this row was collapsed, so it has to grow by
-        // the row it just revealed. Grown by what it needs *now* rather than by
-        // what the first message needed: a later one can wrap to more lines, and
-        // the shortfall would land below the fold of a scroller that draws no
-        // scrollbar — a rejected Save that looks like nothing happened. The
-        // growth is capped at the screen, where the scroller takes over.
+        problemRow?.isHidden = false
+        // Re-measured, not grown by a number worked out here. The row brings
+        // its own height and the stack's spacing with it — and a later message
+        // may wrap to more lines than the one before — so any amount added by
+        // hand is either short, and the message lands below the fold of a
+        // scroller, or long, and leaves the sheet with a band to spare.
         view.layoutSubtreeIfNeeded()
-        let required = problemLabel.fittingSize.height + Self.rowSpacing
-        let additional = required - appliedProblemGrowth
-        guard additional > 0 else { return }
-        let available = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
-        let growth = min(additional, max(0, available - (scrollerHeightConstraint?.constant ?? 0)))
-        appliedProblemGrowth += growth
-        scrollerHeightConstraint?.constant += growth
-        preferredContentSize = NSSize(
-            width: preferredContentSize.width,
-            height: preferredContentSize.height + growth
-        )
+        let contentHeight = (rowsStack?.fittingSize.height ?? 0) + Self.contentInset * 2
+        let screenLimited = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
+        scrollerHeightConstraint?.constant = min(contentHeight, screenLimited)
+        view.layoutSubtreeIfNeeded()
+        preferredContentSize = view.fittingSize
     }
 
     private static func message(for error: Error) -> String {

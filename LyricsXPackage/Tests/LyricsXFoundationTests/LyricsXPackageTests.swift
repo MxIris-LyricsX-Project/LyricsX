@@ -347,6 +347,29 @@ func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
 }
 
 @Test
+func aiLyricsTranslationNeverCarriesABlankPrompt() throws {
+    // An empty prompt still builds a well-formed request — one whose
+    // instruction block is blank — so nothing downstream fails; it just
+    // translates nothing. Both ways of building a configuration have to close
+    // that, not one of them and a convention.
+    let factory = try AILyricsTranslationPolicy.configuration(
+        endpoint: "https://example.com/v1/chat/completions",
+        model: "test-model",
+        targetLanguage: "ja",
+        prompt: ""
+    )
+    #expect(factory.prompt == AILyricsTranslationPolicy.defaultPrompt)
+
+    let direct = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "ja",
+        prompt: "   "
+    )
+    #expect(direct.prompt == AILyricsTranslationPolicy.defaultPrompt)
+}
+
+@Test
 func aiLyricsTranslationResolvesLoopbackEndpointsByAddress() {
     // The address decides, not the spelling. `URLComponents.host` keeps an
     // IPv6 literal bracketed, so `[::1]` never equals `::1`; and the same
