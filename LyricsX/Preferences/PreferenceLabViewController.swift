@@ -71,13 +71,16 @@ class PreferenceLabViewController: PreferenceViewController {
         appleMusicLanguageField.stringValue = defaults[.appleMusicLanguage] ?? ""
         preferredLyricsTranslationLanguageField.stringValue = defaults[.preferredLyricsTranslationLanguage] ?? ""
         aiLyricsTranslationEnabledButton.state = defaults[.aiLyricsTranslationEnabled] ? .on : .off
-        aiLyricsTranslationStatusField.stringValue = defaults[.aiLyricsTranslationStatus]
-        aiLyricsTranslationStatusField.cell?.wraps = true
-        aiLyricsTranslationStatusField.cell?.usesSingleLineMode = false
+        // One line, truncating: the box reserves exactly one line for the
+        // status, so a wrapping field would make the status area grow and
+        // shrink with every message.
+        aiLyricsTranslationStatusField.cell?.wraps = false
+        aiLyricsTranslationStatusField.cell?.usesSingleLineMode = true
+        refreshAILyricsTranslationStatusField()
         defaultsObservation = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.aiLyricsTranslationStatusField.stringValue = defaults[.aiLyricsTranslationStatus]
+                self?.refreshAILyricsTranslationStatusField()
             }
     }
 
@@ -168,7 +171,15 @@ class PreferenceLabViewController: PreferenceViewController {
 
     private func updateAILyricsTranslationStatus(_ message: String) {
         defaults[.aiLyricsTranslationStatus] = message
-        aiLyricsTranslationStatusField.stringValue = message
+        refreshAILyricsTranslationStatusField()
+    }
+
+    private func refreshAILyricsTranslationStatusField() {
+        let status = defaults[.aiLyricsTranslationStatus]
+        aiLyricsTranslationStatusField.stringValue = status
+        // The field is one line, so the tooltip carries the whole message for
+        // whichever translation is too long to fit.
+        aiLyricsTranslationStatusField.toolTip = status.isEmpty ? nil : status
     }
 
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {
