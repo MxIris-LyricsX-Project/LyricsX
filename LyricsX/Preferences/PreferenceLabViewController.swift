@@ -27,12 +27,6 @@ class PreferenceLabViewController: PreferenceViewController {
     private var aiConnectionTestTask: Task<Void, Never>?
     private var defaultsObservation: AnyCancellable?
 
-    /// Last endpoint origin the API-key placeholder was resolved against, and
-    /// what that resolution found. Keeps the probe to one Keychain read per
-    /// host instead of one per keystroke while the endpoint field is edited.
-    private var lastProbedAIKeyOrigin: String?
-    private var lastProbedAIKeyOriginHasKey = false
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -122,128 +116,15 @@ class PreferenceLabViewController: PreferenceViewController {
     }
 
     @IBAction func configureAILyricsTranslation(_ sender: NSButton) {
-        let savedEndpoint = defaults[.aiLyricsTranslationEndpoint]
-        let endpointField = NSTextField(
-            frame: NSRect(x: 0, y: 0, width: 354, height: 24)
-        )
-        endpointField.stringValue = savedEndpoint.isEmpty ? AILyricsTranslationPolicy.defaultEndpoint : savedEndpoint
-        let savedModel = defaults[.aiLyricsTranslationModel]
-        let modelField = NSTextField(frame: NSRect(x: 0, y: 0, width: 354, height: 24))
-        modelField.stringValue = savedModel.isEmpty ? AILyricsTranslationPolicy.defaultModel : savedModel
-        let savedTargetLanguage = defaults[.aiLyricsTranslationTargetLanguage]
-        let targetLanguageField = NSTextField(frame: NSRect(x: 0, y: 0, width: 354, height: 24))
-        targetLanguageField.stringValue = savedTargetLanguage.isEmpty
-            ? AILyricsTranslationPolicy.defaultTargetLanguage
-            : savedTargetLanguage
-        // A key is bound to its endpoint's origin, so "leave blank" only means
-        // "keep the saved key" while the endpoint names a host that has one.
-        // The placeholder is recomputed as the endpoint field is edited, since
-        // promising a keep the save path will not honour sends the user hunting
-        // for a blank field while the real cause is that their key belongs to
-        // the host they just moved off.
-        let apiKeyField = NSSecureTextField(string: "")
-        lastProbedAIKeyOrigin = nil
-        updateAIAPIKeyPlaceholder(forEndpoint: endpointField.stringValue, field: apiKeyField)
-        let placeholderObservation = NotificationCenter.default.addObserver(
-            forName: NSControl.textDidChangeNotification,
-            object: endpointField,
-            queue: .main
-        ) { [weak self] _ in
-            guard let self else { return }
-            updateAIAPIKeyPlaceholder(forEndpoint: endpointField.stringValue, field: apiKeyField)
-        }
-        let removeKeyButton = NSButton(
-            checkboxWithTitle: NSLocalizedString(
-                "Remove saved API key",
-                comment: "Checkbox to delete the saved AI translation API key from Keychain."
-            ),
-            target: nil,
-            action: nil
-        )
-        let promptView = NSTextView()
-        promptView.string = defaults[.aiLyricsTranslationPrompt].isEmpty
-            ? AILyricsTranslationPolicy.defaultPrompt
-            : defaults[.aiLyricsTranslationPrompt]
-        promptView.isRichText = false
-        let promptScrollView = NSScrollView(frame: NSRect(x: 126, y: 0, width: 354, height: 82))
-        promptScrollView.borderType = .bezelBorder
-        promptScrollView.hasVerticalScroller = true
-        promptScrollView.documentView = promptView
-
-        let accessory = NSView(frame: NSRect(x: 0, y: 0, width: 480, height: 270))
-        func addFieldRow(_ title: String, field: NSTextField, y: CGFloat) {
-            let label = NSTextField(labelWithString: title)
-            label.frame = NSRect(x: 0, y: y + 3, width: 118, height: 18)
-            field.frame = NSRect(x: 126, y: y, width: 354, height: 24)
-            accessory.addSubview(label)
-            accessory.addSubview(field)
-        }
-        addFieldRow(NSLocalizedString("Endpoint", comment: "AI lyrics translation endpoint setting."), field: endpointField, y: 238)
-        addFieldRow(NSLocalizedString("Model", comment: "AI lyrics translation model setting."), field: modelField, y: 206)
-        addFieldRow(NSLocalizedString("Target language", comment: "AI lyrics translation target language setting."), field: targetLanguageField, y: 174)
-        addFieldRow(NSLocalizedString("API key", comment: "AI lyrics translation API-key setting."), field: apiKeyField, y: 142)
-        removeKeyButton.frame = NSRect(x: 126, y: 112, width: 220, height: 18)
-        accessory.addSubview(removeKeyButton)
-        let promptLabel = NSTextField(labelWithString: NSLocalizedString(
-            "Prompt",
-            comment: "AI lyrics translation prompt setting."
-        ))
-        promptLabel.frame = NSRect(x: 0, y: 62, width: 118, height: 18)
-        accessory.addSubview(promptLabel)
-        accessory.addSubview(promptScrollView)
-
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString("AI lyrics translation", comment: "AI lyrics translation settings dialog title.")
-        alert.informativeText = NSLocalizedString(
-            "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests; the API key is stored in Keychain for this endpoint's host.",
-            comment: "Privacy and cost notice for AI lyrics translation."
-        )
-        alert.accessoryView = accessory
-        alert.addButton(withTitle: NSLocalizedString("Save", comment: "Save AI lyrics translation settings."))
-        alert.addButton(withTitle: NSLocalizedString("Save and Test", comment: "Save settings and test the AI lyrics translation endpoint."))
-        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Cancel AI lyrics translation settings."))
-
-        let response = alert.runModal()
-        NotificationCenter.default.removeObserver(placeholderObservation)
-        guard response == .alertFirstButtonReturn || response == .alertSecondButtonReturn else {
-            return
-        }
-
-        do {
-            let configuration = try AILyricsTranslationPolicy.configuration(
-                endpoint: endpointField.stringValue,
-                model: modelField.stringValue.isEmpty ? AILyricsTranslationPolicy.defaultModel : modelField.stringValue,
-                targetLanguage: targetLanguageField.stringValue.isEmpty
-                    ? AILyricsTranslationPolicy.defaultTargetLanguage
-                    : targetLanguageField.stringValue,
-                prompt: promptView.string.isEmpty ? AILyricsTranslationPolicy.defaultPrompt : promptView.string
-            )
-            if removeKeyButton.state == .on {
-                try AILyricsTranslationCredentialStore.removeAPIKey()
-            } else if !apiKeyField.stringValue.isEmpty {
-                try AILyricsTranslationCredentialStore.store(
-                    apiKey: apiKeyField.stringValue,
-                    for: configuration.endpoint
-                )
-            }
-
-            defaults[.aiLyricsTranslationEndpoint] = configuration.endpoint.absoluteString
-            defaults[.aiLyricsTranslationModel] = configuration.model
-            defaults[.aiLyricsTranslationTargetLanguage] = configuration.targetLanguage
-            defaults[.aiLyricsTranslationPrompt] = promptView.string.isEmpty
-                ? AILyricsTranslationPolicy.defaultPrompt
-                : promptView.string
+        let settings = AILyricsTranslationSettingsViewController()
+        settings.onSave = { [weak self] configuration, shouldTest in
             AppController.shared.retryAILyricsTranslation()
 
-            if response == .alertSecondButtonReturn {
-                testAITranslationConnection(configuration: configuration)
+            if shouldTest {
+                self?.testAITranslationConnection(configuration: configuration)
             }
-        } catch {
-            updateAILyricsTranslationStatus(NSLocalizedString(
-                "Settings could not be saved. Check the endpoint, language, prompt, and Keychain access.",
-                comment: "Status shown when AI lyrics translation settings cannot be saved."
-            ))
         }
+        presentAsSheet(settings)
     }
 
     private func testAITranslationConnection(configuration: AILyricsTranslationConfiguration) {
@@ -288,29 +169,6 @@ class PreferenceLabViewController: PreferenceViewController {
     private func updateAILyricsTranslationStatus(_ message: String) {
         defaults[.aiLyricsTranslationStatus] = message
         aiLyricsTranslationStatusField.stringValue = message
-    }
-
-    /// Resolves what the API-key placeholder should say for `endpoint`. The
-    /// Keychain is only read when the host actually changed, so typing an
-    /// endpoint does not turn into one Keychain round trip per keystroke.
-    private func updateAIAPIKeyPlaceholder(forEndpoint endpoint: String, field: NSSecureTextField) {
-        let endpointURL = URL(string: endpoint)
-        let origin = endpointURL.flatMap { AILyricsTranslationPolicy.endpointOrigin($0) }
-        if origin != lastProbedAIKeyOrigin {
-            lastProbedAIKeyOrigin = origin
-            lastProbedAIKeyOriginHasKey = origin == nil ? false : endpointURL.map {
-                (try? AILyricsTranslationCredentialStore.hasAccessibleAPIKey(for: $0)) ?? false
-            } ?? false
-        }
-        field.placeholderString = lastProbedAIKeyOriginHasKey
-            ? NSLocalizedString(
-                "Leave blank to keep the saved key",
-                comment: "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
-            )
-            : NSLocalizedString(
-                "API key",
-                comment: "Placeholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
-            )
     }
 
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {

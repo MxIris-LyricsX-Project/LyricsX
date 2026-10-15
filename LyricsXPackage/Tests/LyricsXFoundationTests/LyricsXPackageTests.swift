@@ -333,20 +333,44 @@ func aiLyricsTranslationAppliesOntoTheCurrentLyricsAndKeepsTheirOtherState() thr
 }
 
 @Test
-func aiLyricsTranslationAcceptsAnIPv6LoopbackEndpointOverPlainHTTP() throws {
-    // `URLComponents.host` keeps IPv6 literals bracketed, so the loopback
-    // allowance has to unwrap them — `[::1]` never compares equal to `::1`,
-    // and an un-unwrapped check silently rejects every IPv6 loopback endpoint.
-    let loopback = try AILyricsTranslationPolicy.validatedEndpoint("http://[::1]:8080/v1/chat/completions")
-    #expect(loopback.host != nil)
+func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
+    // The settings sheet used to write its pre-filled field back verbatim, so
+    // an install that saved once holds the old default looking exactly like a
+    // prompt the user wrote. Left alone, a rewritten default reaches nobody.
+    let superseded = "Translate every lyric line into natural, concise $targetLanguage. Preserve the song's tone, imagery, names, and repeated phrases. Do not add explanations or commentary."
+    let custom = "Translate into $targetLanguage and keep it terse."
 
-    var rejectedNonLoopback = false
-    do {
-        _ = try AILyricsTranslationPolicy.validatedEndpoint("http://[2001:db8::1]:8080/v1/chat/completions")
-    } catch {
-        rejectedNonLoopback = true
+    #expect(AILyricsTranslationPolicy.resolvedPrompt("") == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt("   ") == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt(superseded) == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt(custom) == custom)
+}
+
+@Test
+func aiLyricsTranslationResolvesLoopbackEndpointsByAddress() {
+    // The address decides, not the spelling. `URLComponents.host` keeps an
+    // IPv6 literal bracketed, so `[::1]` never equals `::1`; and the same
+    // interfaces have longer spellings too. Every one of these is loopback.
+    func accepted(_ endpoint: String) -> Bool {
+        do {
+            _ = try AILyricsTranslationPolicy.validatedEndpoint(endpoint)
+            return true
+        } catch {
+            return false
+        }
     }
-    #expect(rejectedNonLoopback, "a routable IPv6 literal must still be refused over plain http")
+
+    #expect(accepted("http://localhost:8080/v1/chat/completions"))
+    #expect(accepted("http://127.0.0.1:8080/v1/chat/completions"))
+    #expect(accepted("http://[127.0.0.1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[localhost]:8080/v1/chat/completions"))
+    #expect(accepted("http://[::1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[0:0:0:0:0:0:0:1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[::ffff:127.0.0.1]:8080/v1/chat/completions"))
+
+    #expect(!accepted("http://192.168.1.10:8080/v1/chat/completions"))
+    #expect(!accepted("http://[2001:db8::1]:8080/v1/chat/completions"))
+    #expect(!accepted("http://api.example.com/v1/chat/completions"))
 }
 
 @Test

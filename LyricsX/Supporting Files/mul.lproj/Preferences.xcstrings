@@ -2404,6 +2404,18 @@
             "state" : "new",
             "value" : "Lyrics translation"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词翻译"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞翻譯"
+          }
         }
       }
     },
@@ -2415,6 +2427,18 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Configure…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配置…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定…"
           }
         }
       }
@@ -2428,6 +2452,18 @@
             "state" : "new",
             "value" : "Display language:"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示语言："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示語言："
+          }
         }
       }
     },
@@ -2440,6 +2476,18 @@
             "state" : "new",
             "value" : "Optional language tag; blank uses first available"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可选的语言标签；留空则使用第一个可用的"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可選的語言標籤；留空則使用第一個可用的"
+          }
         }
       }
     },
@@ -2451,6 +2499,18 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Enable AI translation"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用 AI 翻译"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用 AI 翻譯"
           }
         }
       }
@@ -14976,7 +15036,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允许将修改写回音轨同目录歌词文件"
+            "value" : "允许将更改写回歌曲旁的歌词文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許將變更寫回歌曲旁的歌詞檔案"
           }
         }
       }

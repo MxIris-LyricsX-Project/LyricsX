@@ -203,7 +203,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         let next = lyrics.lines[(index + 1)...].first { $0.enabled }
         let firstLineFurigana = lrc.attachments.furigana
 
-        let languageCode = lyrics.metadata.displayTranslationLanguage
+        let languageCode = lyrics.displayTranslationLanguage
 
         var firstLine = lrc.content
         var secondLine: String
@@ -212,7 +212,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         if defaults[.desktopLyricsOneLineMode] {
             secondLine = ""
         } else if defaults[.preferBilingualLyrics],
-                  let translation = lyrics.metadata.displayTranslation(for: lrc) {
+                  let translation = lyrics.displayTranslation(for: lrc) {
             secondLine = translation
             secondLineIsTranslation = true
         } else {

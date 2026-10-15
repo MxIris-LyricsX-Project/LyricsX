@@ -393,7 +393,7 @@ final class AppController: NSObject {
                 }
                 if defaults[.writeiTunesWithTranslation] {
                     // TODO: tagged translation
-                    if var translation = currentLyrics.metadata.displayTranslation(for: line) {
+                    if var translation = currentLyrics.displayTranslation(for: line) {
                         if let converter = ChineseConverter.shared {
                             translation = converter.convert(translation)
                         }
@@ -625,7 +625,7 @@ final class AppController: NSObject {
                 endpoint: defaults[.aiLyricsTranslationEndpoint],
                 model: defaults[.aiLyricsTranslationModel],
                 targetLanguage: defaults[.aiLyricsTranslationTargetLanguage],
-                prompt: defaults[.aiLyricsTranslationPrompt]
+                prompt: AILyricsTranslationPolicy.resolvedPrompt(defaults[.aiLyricsTranslationPrompt])
             )
         } catch {
             aiLyricsTranslationTask?.cancel()
@@ -1237,7 +1237,7 @@ final class AppController: NSObject {
             // unnamed row to the widget's language picker whose `""` id then
             // matches whatever the user had configured before. The line's
             // translation still reaches the widget through `displayTranslation`.
-            availableTranslationLanguages = lyrics.metadata.displayTranslationLanguage.map { [$0] } ?? []
+            availableTranslationLanguages = lyrics.displayTranslationLanguage.map { [$0] } ?? []
             let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
             let contextRadius = 50
             let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
@@ -1260,7 +1260,7 @@ final class AppController: NSObject {
                         : nil
 
                     // Collect translations for all available languages
-                    let translation = lyrics.metadata.displayTranslation(for: line)
+                    let translation = lyrics.displayTranslation(for: line)
 
                     return LyricsLineEntry(
                         text: line.content,

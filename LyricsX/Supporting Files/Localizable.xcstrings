@@ -102,8 +102,56 @@
         }
       }
     },
+    "$targetLanguage is replaced with the target language's name before the request is sent." : {
+      "comment" : "Help text under the AI translation prompt setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送请求前，$targetLanguage 会被替换为目标语言的名称。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送出請求前，$targetLanguage 會替換為目標語言的名稱。"
+          }
+        }
+      }
+    },
+    "A language tag such as zh-Hans, zh-Hant or ja. Lines already in this language are not sent." : {
+      "comment" : "Help text under the AI translation target language setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言标签，例如 zh-Hans、zh-Hant 或 ja。已经是该语言的行不会发送。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語言標籤，例如 zh-Hans、zh-Hant 或 ja。已經是該語言的行不會送出。"
+          }
+        }
+      }
+    },
     "Add an API key in AI translation settings." : {
-      "comment" : "Status shown when no API key is stored for AI lyric translation."
+      "comment" : "Status shown when no API key is stored for AI lyric translation.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在 AI 翻译设置中添加 API 密钥。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請在 AI 翻譯設定中加入 API 金鑰。"
+          }
+        }
+      }
     },
     "Add Current Playing" : {
       "comment" : "Button on the NowPlaying whitelist editor that captures the currently playing app's bundle id from MediaRemote.",
@@ -206,17 +254,56 @@
         }
       }
     },
-    "AI lyrics translation" : {
-      "comment" : "AI lyrics translation settings dialog title."
-    },
     "AI translation is disabled." : {
-      "comment" : "Status shown when AI lyric translation is turned off."
+      "comment" : "Status shown when AI lyric translation is turned off.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 翻译已关闭。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 翻譯已關閉。"
+          }
+        }
+      }
     },
     "AI translation settings are incomplete or invalid." : {
-      "comment" : "Status for AI lyric translation when its configuration is invalid."
+      "comment" : "Status for AI lyric translation when its configuration is invalid.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 翻译设置不完整或无效。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 翻譯設定不完整或無效。"
+          }
+        }
+      }
     },
     "API key" : {
-      "comment" : "AI lyrics translation API-key setting.\nPlaceholder for the secure AI translation API-key field when no key is stored for this endpoint yet."
+      "comment" : "AI lyrics translation API-key setting.\nPlaceholder for the secure AI translation API-key field when no key is stored for this endpoint yet.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API 密钥"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API 金鑰"
+          }
+        }
+      }
     },
     "Apple Music access is required to recover original song and artist names." : {
       "comment" : "Alert title when MusicAuthorization is denied or restricted for the MusicKit name recovery toggle.",
@@ -320,16 +407,72 @@
       }
     },
     "Cancel" : {
-      "comment" : "Cancel AI lyrics translation settings."
+      "comment" : "Cancel AI lyrics translation settings.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
     },
     "Connection failed. Check the endpoint, model, and API key." : {
-      "comment" : "Generic status shown when the AI lyrics translation endpoint test fails."
+      "comment" : "Generic status shown when the AI lyrics translation endpoint test fails.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接失败。请检查端点、模型和 API 密钥。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線失敗。請檢查端點、模型與 API 金鑰。"
+          }
+        }
+      }
     },
     "Connection succeeded." : {
-      "comment" : "Status shown when the AI lyrics translation endpoint test succeeds."
+      "comment" : "Status shown when the AI lyrics translation endpoint test succeeds.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接成功。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線成功。"
+          }
+        }
+      }
     },
     "Display language must be a valid language tag, such as zh-Hans or ja." : {
-      "comment" : "Validation feedback for the preferred lyric display language."
+      "comment" : "Validation feedback for the preferred lyric display language.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示语言必须是有效的语言标签，例如 zh-Hans 或 ja。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示語言必須是有效的語言標籤，例如 zh-Hans 或 ja。"
+          }
+        }
+      }
     },
     "Download" : {
       "comment" : "title of download button on the update alert. Download new version of the app.",
@@ -546,8 +689,22 @@
         }
       }
     },
-    "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests; the API key is stored in Keychain for this endpoint's host." : {
-      "comment" : "Privacy and cost notice for AI lyrics translation."
+    "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives." : {
+      "comment" : "Privacy and cost notice for AI lyrics translation.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "符合条件的歌词行会发送到该端点进行翻译。服务方可能对请求收费，也可能保留收到的内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "符合條件的歌詞行會傳送到該端點進行翻譯。服務方可能對請求收費，也可能保留收到的內容。"
+          }
+        }
+      }
     },
     "Embedded lyrics cannot be edited." : {
       "comment" : "Disabled Edit menu explanation",
@@ -657,7 +814,55 @@
       }
     },
     "Endpoint" : {
-      "comment" : "AI lyrics translation endpoint setting."
+      "comment" : "AI lyrics translation endpoint setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端點"
+          }
+        }
+      }
+    },
+    "Enter a language tag such as zh-Hans or ja." : {
+      "comment" : "Error shown when the AI translation target language is not a valid language tag.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入语言标签，例如 zh-Hans 或 ja。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入語言標籤，例如 zh-Hans 或 ja。"
+          }
+        }
+      }
+    },
+    "Enter a model name." : {
+      "comment" : "Error shown when no AI translation model is given.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入模型名称。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入模型名稱。"
+          }
+        }
+      }
     },
     "Font Fallback: %@" : {
       "localizations" : {
@@ -866,8 +1071,39 @@
         }
       }
     },
+    "Kept in the Keychain and bound to this endpoint's host, so changing the host means saving the key again." : {
+      "comment" : "Help text under the AI translation API-key setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存在钥匙串中，并与该端点的主机关联，因此更换主机后需要重新保存密钥。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存在鑰匙串中，並與該端點的主機關聯，因此更換主機後需要重新儲存金鑰。"
+          }
+        }
+      }
+    },
     "Leave blank to keep the saved key" : {
-      "comment" : "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint."
+      "comment" : "Placeholder for the secure AI translation API-key field when a key is already stored for this endpoint.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留空以保留已保存的密钥"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留空以保留已儲存的金鑰"
+          }
+        }
+      }
     },
     "Lyrics %1$d of %2$d" : {
       "comment" : "Transient message after switching to another lyrics candidate, when the source is unknown. %1$d is the 1-based position, %2$d the number of candidates.",
@@ -904,7 +1140,21 @@
       }
     },
     "Lyrics translated." : {
-      "comment" : "Status shown when all eligible lyric lines were translated."
+      "comment" : "Status shown when all eligible lyric lines were translated.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词已翻译。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞已翻譯。"
+          }
+        }
+      }
     },
     "Lyrics Window" : {
       "extractionState" : "manual",
@@ -1014,7 +1264,21 @@
       }
     },
     "Model" : {
-      "comment" : "AI lyrics translation model setting."
+      "comment" : "AI lyrics translation model setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模型"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模型"
+          }
+        }
+      }
     },
     "Next Track" : {
       "comment" : "Menu bar playback next button",
@@ -1219,7 +1483,21 @@
       }
     },
     "No API key is saved for this endpoint." : {
-      "comment" : "Status shown when endpoint testing finds no stored API key."
+      "comment" : "Status shown when endpoint testing finds no stored API key.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该端点尚未保存 API 密钥。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該端點尚未儲存 API 金鑰。"
+          }
+        }
+      }
     },
     "No Lyrics" : {
       "extractionState" : "stale",
@@ -1340,7 +1618,21 @@
       }
     },
     "No untranslated lines need this target language." : {
-      "comment" : "Status shown when lyrics are already in the AI translation target language."
+      "comment" : "Status shown when lyrics are already in the AI translation target language.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有需要翻译成该目标语言的行。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有需要翻譯成該目標語言的行。"
+          }
+        }
+      }
     },
     "OK" : {
       "extractionState" : "manual",
@@ -1445,6 +1737,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確定"
+          }
+        }
+      }
+    },
+    "One of these values is too long." : {
+      "comment" : "Error shown when an AI translation setting exceeds its size limit.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其中一项内容过长。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其中一項內容過長。"
           }
         }
       }
@@ -1853,10 +2162,38 @@
       }
     },
     "Prompt" : {
-      "comment" : "AI lyrics translation prompt setting."
+      "comment" : "AI lyrics translation prompt setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示詞"
+          }
+        }
+      }
     },
-    "Remove saved API key" : {
-      "comment" : "Checkbox to delete the saved AI translation API key from Keychain."
+    "Remove saved key" : {
+      "comment" : "Button that deletes the stored AI translation API key from the Keychain.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已保存的密钥"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除已儲存的金鑰"
+          }
+        }
+      }
     },
     "Requires macOS 12 or later" : {
       "comment" : "Tooltip on the Apple Music name recovery toggle when the OS is too old.",
@@ -2068,10 +2405,38 @@
       }
     },
     "Save" : {
-      "comment" : "Save AI lyrics translation settings."
+      "comment" : "Save AI lyrics translation settings.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存"
+          }
+        }
+      }
     },
     "Save and Test" : {
-      "comment" : "Save settings and test the AI lyrics translation endpoint."
+      "comment" : "Save settings and test the AI lyrics translation endpoint.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存并测试"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存並測試"
+          }
+        }
+      }
     },
     "Search" : {
       "comment" : "Lyrics window context menu",
@@ -2303,9 +2668,6 @@
           }
         }
       }
-    },
-    "Settings could not be saved. Check the endpoint, language, prompt, and Keychain access." : {
-      "comment" : "Status shown when AI lyrics translation settings cannot be saved."
     },
     "Skip to next track" : {
       "localizations" : {
@@ -2609,16 +2971,191 @@
       }
     },
     "Target language" : {
-      "comment" : "AI lyrics translation target language setting."
+      "comment" : "AI lyrics translation target language setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标语言"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標語言"
+          }
+        }
+      }
     },
     "Testing connection…" : {
-      "comment" : "Status shown while testing the AI lyrics translation endpoint."
+      "comment" : "Status shown while testing the AI lyrics translation endpoint.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在测试连接…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在測試連線…"
+          }
+        }
+      }
+    },
+    "The API key could not be stored in the Keychain." : {
+      "comment" : "Error shown when a new AI translation API key cannot be saved.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API 密钥无法存入钥匙串。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API 金鑰無法存入鑰匙串。"
+          }
+        }
+      }
+    },
+    "The chat-completions URL that receives the lines. HTTPS is required, except for a loopback address such as http://localhost." : {
+      "comment" : "Help text under the AI translation endpoint setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收歌词行的 chat-completions 地址。必须使用 HTTPS，回环地址（例如 http://localhost）除外。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收歌詞行的 chat-completions 網址。必須使用 HTTPS，回環位址（例如 http://localhost）除外。"
+          }
+        }
+      }
+    },
+    "The endpoint is not a valid URL." : {
+      "comment" : "Error shown when the AI translation endpoint is malformed.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点不是有效的 URL。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端點不是有效的 URL。"
+          }
+        }
+      }
     },
     "The keychain is temporarily unavailable; translation can be retried later." : {
-      "comment" : "Status for a temporary Keychain failure during AI translation."
+      "comment" : "Status for a temporary Keychain failure during AI translation.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "钥匙串暂时不可用，稍后可以重试翻译。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鑰匙串暫時無法使用，稍後可以重試翻譯。"
+          }
+        }
+      }
+    },
+    "The model name this endpoint expects, for example gpt-4o-mini." : {
+      "comment" : "Help text under the AI translation model setting.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该端点要求的模型名称，例如 gpt-4o-mini。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該端點要求的模型名稱，例如 gpt-4o-mini。"
+          }
+        }
+      }
+    },
+    "The prompt cannot be empty." : {
+      "comment" : "Error shown when the AI translation prompt is empty.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示词不能为空。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提示詞不能為空。"
+          }
+        }
+      }
     },
     "The saved API key could not be read. Check its access in Keychain." : {
-      "comment" : "Status for a permanent Keychain failure during AI translation."
+      "comment" : "Status for a permanent Keychain failure during AI translation.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取已保存的 API 密钥。请在钥匙串中检查它的访问权限。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取已儲存的 API 金鑰。請在鑰匙串中檢查它的存取權限。"
+          }
+        }
+      }
+    },
+    "The saved key could not be removed from the Keychain." : {
+      "comment" : "Error shown when the stored AI translation API key cannot be deleted.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法从钥匙串中移除已保存的密钥。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法從鑰匙串移除已儲存的金鑰。"
+          }
+        }
+      }
+    },
+    "These settings could not be used." : {
+      "comment" : "Generic error for invalid AI translation settings.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些设置无法使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些設定無法使用。"
+          }
+        }
+      }
     },
     "Toggle music playback" : {
       "localizations" : {
@@ -2835,17 +3372,71 @@
             "state" : "new",
             "value" : "Translated %1$d lines; %2$d lines could not be translated."
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已翻译 %1$d 行；%2$d 行无法翻译。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已翻譯 %1$d 行；%2$d 行無法翻譯。"
+          }
         }
       }
     },
     "Translating lyrics…" : {
-      "comment" : "Status shown while AI lyric translation is in progress."
+      "comment" : "Status shown while AI lyric translation is in progress.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在翻译歌词…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在翻譯歌詞…"
+          }
+        }
+      }
     },
     "Translation failed; existing lyrics were kept." : {
-      "comment" : "Status shown when AI lyric translation fails."
+      "comment" : "Status shown when AI lyric translation fails.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译失败，已保留原有歌词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻譯失敗，已保留原有歌詞。"
+          }
+        }
+      }
     },
     "Translations are displayed but could not be saved." : {
-      "comment" : "Status shown when translated lyrics could not be persisted."
+      "comment" : "Status shown when translated lyrics could not be persisted.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "译文已显示，但无法保存。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "譯文已顯示，但無法儲存。"
+          }
+        }
+      }
     },
     "Unable to enable Touch Bar lyrics." : {
       "comment" : "alert title",
@@ -2951,6 +3542,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法啟用 Touch Bar 歌詞"
+          }
+        }
+      }
+    },
+    "Use HTTPS, or a loopback address such as http://localhost." : {
+      "comment" : "Error shown when the AI translation endpoint is plaintext and not loopback.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请使用 HTTPS，或 http://localhost 这类回环地址。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請使用 HTTPS，或 http://localhost 這類回環位址。"
           }
         }
       }

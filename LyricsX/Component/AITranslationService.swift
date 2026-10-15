@@ -224,7 +224,11 @@ final class OpenAICompatibleLyricsTranslator {
     private static let maximumRequestBytes = 2_097_152
     private static let maximumResponseBytes = 2_097_152
     private static let maximumAttempts = 3
-    private static let connectionTestMaxTokens = 32
+    /// Enough for a one-line answer plus whatever a reasoning model spends
+    /// before it: the probe now has to come back as parseable JSON with the
+    /// translation in it, so a cap tight enough to truncate would report a
+    /// working endpoint as broken.
+    private static let connectionTestMaxTokens = 512
     private static let connectionTestLineIndex = 0
     private static let connectionTestLineText = "Connection test."
 
@@ -441,7 +445,7 @@ final class OpenAICompatibleLyricsTranslator {
                     expectedIndices: remaining.map(\.index)
                 )
                 translations.merge(parsed.translations) { _, new in new }
-                remaining = remaining.filter { parsed.translations[$0.index] == nil }
+                remaining = remaining.filter { parsed.missingIndices.contains($0.index) }
             } catch is CancellationError {
                 throw CancellationError()
             } catch let error as URLError where error.code == .cancelled {
