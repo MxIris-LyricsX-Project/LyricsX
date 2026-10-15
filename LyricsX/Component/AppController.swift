@@ -625,7 +625,9 @@ final class AppController: NSObject {
                 endpoint: defaults[.aiLyricsTranslationEndpoint],
                 model: defaults[.aiLyricsTranslationModel],
                 targetLanguage: defaults[.aiLyricsTranslationTargetLanguage],
-                prompt: AILyricsTranslationPolicy.resolvedPrompt(defaults[.aiLyricsTranslationPrompt])
+                // Passed raw: `configuration(...)` resolves it, so an untouched
+                // prompt still reaches the endpoint as the current default.
+                prompt: defaults[.aiLyricsTranslationPrompt]
             )
         } catch {
             aiLyricsTranslationTask?.cancel()

@@ -248,7 +248,11 @@ public enum AILyricsTranslationPolicy {
         let endpoint = endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
         let model = model.trimmingCharacters(in: .whitespacesAndNewlines)
         let targetLanguage = targetLanguage.trimmingCharacters(in: .whitespacesAndNewlines)
-        let prompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Resolved here rather than at each call site, so a configuration can
+        // never carry an empty prompt: the request would go out with an empty
+        // instruction block and no error, which is the one way this could look
+        // well-formed and translate nothing.
+        let prompt = resolvedPrompt(prompt)
 
         guard endpoint.utf8.count <= maximumEndpointBytes,
               model.utf8.count <= maximumModelBytes,

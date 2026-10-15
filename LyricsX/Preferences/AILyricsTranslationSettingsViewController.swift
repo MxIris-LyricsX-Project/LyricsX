@@ -26,7 +26,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private let apiKeyField = NSSecureTextField()
     private let removeKeyButton = NSButton()
     private let promptTextView = NSTextView()
-    private let problemLabel = NSTextField(labelWithString: "")
+    /// Built as a wrapping label, not a plain one: `maximumNumberOfLines = 0`
+    /// on its own leaves the cell clipping, and a validation message cut off
+    /// mid-sentence is exactly the thing this sheet was built to show.
+    private lazy var problemLabel = NSTextField(wrappingLabelWithString: "")
 
     /// Last endpoint origin the API-key placeholder was resolved against, and
     /// what that resolution found. Keeps the probe to one Keychain read per
@@ -37,6 +40,11 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     /// The scroller's height, held so the validation row can grow the sheet
     /// when it appears — the sheet is sized before that row has any text.
     private var scrollerHeightConstraint: NSLayoutConstraint?
+
+    /// How much height the validation row has already been given, so a second
+    /// message grows the sheet by the difference rather than by its full
+    /// height again.
+    private var appliedProblemGrowth: CGFloat = 0
 
     private static let rowSpacing: CGFloat = 14
     private static let contentInset: CGFloat = 20
@@ -88,7 +96,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         problemLabel.textColor = .systemRed
         problemLabel.font = .systemFont(ofSize: 11)
         problemLabel.isHidden = true
-        problemLabel.maximumNumberOfLines = 0
 
         // Measured, not assumed: the labels are localized, so the column they
         // sit in is as wide as the longest one actually is in this language.
@@ -102,11 +109,11 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let labelColumnWidth = Self.widestLabelWidth(titles)
 
         let rows = NSStackView(views: [
-            makeNoteRow(
-                NSLocalizedString(
+            makeIndentedRow(
+                makeWrappingLabel(NSLocalizedString(
                     "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives.",
                     comment: "Privacy and cost notice for AI lyrics translation."
-                ),
+                )),
                 labelColumnWidth: labelColumnWidth
             ),
             makeFieldRow(
@@ -147,7 +154,9 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 accessory: removeKeyButton
             ),
             makePromptRow(title: titles[4], labelColumnWidth: labelColumnWidth),
-            problemLabel,
+            // Indented like everything else, so the message is read as
+            // belonging to the field it names rather than to the window.
+            makeIndentedRow(problemLabel, labelColumnWidth: labelColumnWidth),
         ])
         rows.orientation = .vertical
         // Every row is the stack's width, so each row's field column resolves
@@ -273,15 +282,16 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         }
     }
 
-    /// A paragraph that belongs to the form rather than to the window: it is
-    /// indented past the label column so it lines up with the fields, instead
-    /// of starting at the sheet's edge with everything else stepped in.
-    private func makeNoteRow(_ text: String, labelColumnWidth: CGFloat) -> NSStackView {
+    /// A row that belongs to the form rather than to the window: indented past
+    /// the label column so it lines up with the fields, instead of starting at
+    /// the sheet's edge with everything else stepped in.
+    private func makeIndentedRow(_ content: NSView, labelColumnWidth: CGFloat) -> NSStackView {
         let spacer = NSView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
         spacer.widthAnchor.constraint(equalToConstant: labelColumnWidth).isActive = true
 
-        let row = NSStackView(views: [spacer, makeWrappingLabel(text)])
+        content.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        let row = NSStackView(views: [spacer, content])
         row.orientation = .horizontal
         row.alignment = .top
         row.spacing = Self.labelSpacing
@@ -446,7 +456,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 targetLanguage: targetLanguageField.stringValue.isEmpty
                     ? AILyricsTranslationPolicy.defaultTargetLanguage
                     : targetLanguageField.stringValue,
-                prompt: AILyricsTranslationPolicy.resolvedPrompt(promptTextView.string)
+                prompt: promptTextView.string
             )
         } catch {
             present(problem: Self.message(for: error))
@@ -483,19 +493,21 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     }
 
     private func present(problem: String) {
-        let wasHidden = problemLabel.isHidden
         problemLabel.stringValue = problem
         problemLabel.isHidden = false
-        guard wasHidden else { return }
         // The sheet was sized while this row was collapsed, so it has to grow by
-        // the row it just revealed. Without that the message the sheet exists to
-        // show is laid out past the bottom edge of the window. The growth is
-        // capped at the screen: once the form is taller than it can be, the
-        // scroller is already showing and the row is reachable by scrolling.
+        // the row it just revealed. Grown by what it needs *now* rather than by
+        // what the first message needed: a later one can wrap to more lines, and
+        // the shortfall would land below the fold of a scroller that draws no
+        // scrollbar — a rejected Save that looks like nothing happened. The
+        // growth is capped at the screen, where the scroller takes over.
         view.layoutSubtreeIfNeeded()
+        let required = problemLabel.fittingSize.height + Self.rowSpacing
+        let additional = required - appliedProblemGrowth
+        guard additional > 0 else { return }
         let available = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
-        let allowedGrowth = max(0, available - (scrollerHeightConstraint?.constant ?? 0))
-        let growth = min(problemLabel.fittingSize.height + Self.rowSpacing, allowedGrowth)
+        let growth = min(additional, max(0, available - (scrollerHeightConstraint?.constant ?? 0)))
+        appliedProblemGrowth += growth
         scrollerHeightConstraint?.constant += growth
         preferredContentSize = NSSize(
             width: preferredContentSize.width,
