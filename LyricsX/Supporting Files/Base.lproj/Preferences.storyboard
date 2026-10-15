@@ -1848,15 +1848,15 @@
                                             </connections>
                                         </textField>
                                     </gridCell>
-                                    <gridCell row="AIT-Ro-W01" column="8ba-lF-U7s" headOfMergedCell="AIT-Ce-L01" xPlacement="fill" id="AIT-Ce-L01">
+                                    <gridCell row="AIT-Ro-W01" column="4uA-B7-Dvh" xPlacement="fill" id="AIT-Ce-L01">
                                         <box key="contentView" title="Lyrics translation" translatesAutoresizingMaskIntoConstraints="NO" id="AIT-Bx-001">
-                                            <rect key="frame" x="0.0" y="175" width="520" height="118"/>
+                                            <rect key="frame" x="170" y="175" width="350" height="118"/>
                                             <view key="contentView" id="AIT-Cv-001">
-                                                <rect key="frame" x="0.0" y="0.0" width="520" height="106"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="350" height="106"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="AIT-DL-001">
-                                                        <rect key="frame" x="32" y="77" width="120" height="16"/>
+                                                        <rect key="frame" x="0.0" y="77" width="76" height="16"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Display language:" id="AIT-DL-C01">
                                                             <font key="font" usesAppearanceFont="YES"/>
@@ -1865,7 +1865,7 @@
                                                         </textFieldCell>
                                                     </textField>
                                                     <textField focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" id="AIT-DL-T01">
-                                                        <rect key="frame" x="170" y="74" width="350" height="22"/>
+                                                        <rect key="frame" x="84" y="74" width="266" height="22"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Optional language tag; blank uses first available" usesSingleLineMode="YES" bezelStyle="round" id="AIT-DL-TC1">
                                                             <font key="font" usesAppearanceFont="YES"/>
@@ -1877,7 +1877,7 @@
                                                         </connections>
                                                     </textField>
                                                     <button verticalHuggingPriority="750" id="AIT-EN-B01">
-                                                        <rect key="frame" x="170" y="39" width="210" height="18"/>
+                                                        <rect key="frame" x="0.0" y="39" width="200" height="18"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <buttonCell key="cell" type="check" title="Enable AI translation" bezelStyle="regularSquare" imagePosition="left" inset="2" id="AIT-EN-C01">
                                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -1888,7 +1888,7 @@
                                                         </connections>
                                                     </button>
                                                     <button verticalHuggingPriority="750" id="AIT-CF-B01">
-                                                        <rect key="frame" x="383" y="36" width="137" height="24"/>
+                                                        <rect key="frame" x="213" y="36" width="137" height="24"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <buttonCell key="cell" type="push" title="Configure…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="AIT-CF-C01">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1899,7 +1899,7 @@
                                                         </connections>
                                                     </button>
                                                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="AIT-ST-T01">
-                                                        <rect key="frame" x="32" y="8" width="488" height="20"/>
+                                                        <rect key="frame" x="0.0" y="8" width="350" height="20"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" id="AIT-ST-C01">
                                                             <font key="font" usesAppearanceFont="YES"/>
@@ -1911,7 +1911,7 @@
                                             </view>
                                         </box>
                                     </gridCell>
-                                    <gridCell row="AIT-Ro-W01" column="4uA-B7-Dvh" headOfMergedCell="AIT-Ce-L01" id="AIT-Ce-R01"/>
+                                    <gridCell row="AIT-Ro-W01" column="8ba-lF-U7s" id="AIT-Ce-R01"/>
                                     <gridCell row="AMB-Ro-W01" column="8ba-lF-U7s" headOfMergedCell="AMB-Ce-L01" xPlacement="fill" id="AMB-Ce-L01">
                                         <box key="contentView" title="Apple Music" translatesAutoresizingMaskIntoConstraints="NO" id="AMB-Bx-001">
                                             <rect key="frame" x="441" y="0.0" width="79" height="162"/>
@@ -2066,7 +2066,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-q01" userLabel="Rank by quality only">
-                                <rect key="frame" x="20" y="320" width="178" height="16"/>
+                                <rect key="frame" x="20" y="208" width="178" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score only" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="sop-Bc-q02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2076,7 +2076,7 @@
                                 </connections>
                             </button>
                             <button tag="1" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-s01" userLabel="Rank by source first">
-                                <rect key="frame" x="20" y="298" width="179" height="16"/>
+                                <rect key="frame" x="20" y="186" width="179" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by source order first" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-s02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2086,7 +2086,7 @@
                                 </connections>
                             </button>
                             <button tag="2" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-t01" userLabel="Rank by quality, source breaks ties">
-                                <rect key="frame" x="20" y="276" width="315" height="16"/>
+                                <rect key="frame" x="20" y="164" width="315" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score, break ties by source order" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-t02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2096,7 +2096,7 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
-                                <rect key="frame" x="18" y="256" width="413" height="12"/>
+                                <rect key="frame" x="18" y="144" width="413" height="12"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Drag rows to reorder source priority. Scores within 0.02 of each other count as tied." id="sop-Tc-d01">
                                     <font key="font" size="11" name="HelveticaNeue"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -2104,13 +2104,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="460" height="216"/>
+                                <rect key="frame" x="20" y="24" width="460" height="104"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="458" height="214"/>
+                                    <rect key="frame" x="1" y="1" width="458" height="102"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="458" height="186"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="458" height="74"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2202,7 +2202,7 @@
                                     <constraint firstAttribute="width" priority="700" constant="560" id="src-sv-wid"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Cq9-fY-Mad">
-                                    <rect key="frame" x="1" y="30" width="441" height="17"/>
+                                    <rect key="frame" x="1" y="142" width="458" height="17"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-hy-YBN">
