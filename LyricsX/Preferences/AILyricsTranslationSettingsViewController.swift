@@ -215,9 +215,13 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let scroller = NSScrollView()
         scroller.hasVerticalScroller = true
         scroller.drawsBackground = false
-        // Overlay scrollers take no width from the clip view, so the form keeps
-        // the width it was laid out for. A legacy scroller would narrow the
-        // document and re-wrap every help label on the short-screen path.
+        // Visible whenever there is anything to scroll, rather than only while
+        // the user is already scrolling — otherwise a form that runs past the
+        // bottom of the sheet gives no sign that there is more of it.
+        scroller.autohidesScrollers = false
+        // Overlay, so the bar it just made permanent floats over the content
+        // instead of taking width from the clip view. A legacy scroller would
+        // narrow the document and re-wrap every help label.
         scroller.scrollerStyle = .overlay
         scroller.documentView = documentView
         scroller.translatesAutoresizingMaskIntoConstraints = false
