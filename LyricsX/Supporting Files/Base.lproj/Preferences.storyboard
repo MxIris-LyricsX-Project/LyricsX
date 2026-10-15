@@ -1858,7 +1858,7 @@
                                                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="AIT-DL-001">
                                                         <rect key="frame" x="32" y="77" width="120" height="16"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                        <textFieldCell key="cell" lineBreakMode="clipping" title="Display language:" id="AIT-DL-C01">
+                                                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Display language:" id="AIT-DL-C01">
                                                             <font key="font" usesAppearanceFont="YES"/>
                                                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2066,7 +2066,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-q01" userLabel="Rank by quality only">
-                                <rect key="frame" x="20" y="208" width="178" height="16"/>
+                                <rect key="frame" x="20" y="320" width="178" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score only" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="sop-Bc-q02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2076,7 +2076,7 @@
                                 </connections>
                             </button>
                             <button tag="1" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-s01" userLabel="Rank by source first">
-                                <rect key="frame" x="20" y="186" width="179" height="16"/>
+                                <rect key="frame" x="20" y="298" width="179" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by source order first" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-s02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2086,7 +2086,7 @@
                                 </connections>
                             </button>
                             <button tag="2" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-t01" userLabel="Rank by quality, source breaks ties">
-                                <rect key="frame" x="20" y="164" width="315" height="16"/>
+                                <rect key="frame" x="20" y="276" width="315" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score, break ties by source order" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-t02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2096,7 +2096,7 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
-                                <rect key="frame" x="18" y="144" width="413" height="12"/>
+                                <rect key="frame" x="18" y="256" width="413" height="12"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Drag rows to reorder source priority. Scores within 0.02 of each other count as tied." id="sop-Tc-d01">
                                     <font key="font" size="11" name="HelveticaNeue"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -2104,13 +2104,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="460" height="104"/>
+                                <rect key="frame" x="20" y="24" width="460" height="216"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="458" height="102"/>
+                                    <rect key="frame" x="1" y="1" width="458" height="214"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="458" height="74"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="458" height="186"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2202,11 +2202,11 @@
                                     <constraint firstAttribute="width" priority="700" constant="560" id="src-sv-wid"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Cq9-fY-Mad">
-                                    <rect key="frame" x="1" y="142" width="458" height="17"/>
+                                    <rect key="frame" x="1" y="30" width="441" height="17"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-hy-YBN">
-                                    <rect key="frame" x="482" y="29" width="17" height="1"/>
+                                    <rect key="frame" x="442" y="29" width="17" height="1"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="Kzd-3h-xxb">
