@@ -87,11 +87,15 @@ final class AppController: NSObject {
     private override init() {
         self.lyricsManager = LyricsProviders.Group()
         super.init()
-        // Dedup by track id (MusicTrack.Equatable compares ids) so that
-        // SystemMedia's artwork-only updates within the same song do not
-        // re-trigger lyrics search.
+        // Ignore artwork-only changes, but restart when incomplete metadata
+        // is filled in. An exact-song task must not keep a stale identity.
         selectedPlayer.currentTrackWillChange
-            .removeDuplicates()
+            .removeDuplicates(by: { previous, current in
+                if let previous, let current {
+                    return previous.hasSameLyricsLookupIdentity(as: current)
+                }
+                return previous == nil && current == nil
+            })
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.currentTrackChanged, weaklyOn: self)
@@ -422,6 +426,11 @@ final class AppController: NSObject {
             return
         }
 
+        if NetEaseClientTrackResolver.isNetEase(clientIdentity(for: track)) || QQMusicClientTrackResolver.isQQMusic(clientIdentity(for: track)) {
+            startClientLyrics(for: track)
+            return
+        }
+
         var candidateLyricsFiles: [LyricsLookupCandidateFile] = []
 
         if defaults[.loadLyricsBesideTrack] {
@@ -495,8 +504,23 @@ final class AppController: NSObject {
             return
         }
 
-        let request = makeLyricsSearchRequest(for: track)
+        startPublicLyricsSearch(for: track)
+    }
+
+    /// The same configured public-source search serves normal playback and
+    /// fallback from a client's exact lookup. It never carries an exact token.
+    private func startPublicLyricsSearch(for track: MusicTrack) {
+        guard let current = selectedPlayer.currentTrack,
+              current.hasSameLyricsLookupIdentity(as: track),
+              !defaults[.noSearchingTrackIds].contains(track.id),
+              !defaults[.noSearchingAlbumNames].contains(track.album ?? "") else { return }
+        let title = track.title ?? ""
+        let artist = track.artist ?? ""
+        let identity = clientIdentity(for: track)
+        let titleOnly = NetEaseClientTrackResolver.isNetEase(identity) || QQMusicClientTrackResolver.isQQMusic(identity)
+        let request = makeLyricsSearchRequest(for: track, titleOnly: titleOnly)
         searchRequest = request
+        log("Public lyrics lookup: \(title) / \(artist); duration=\(track.duration ?? 0)")
         searchTask = Task { @MainActor in
             do {
                 // Accept the first arrived lyrics immediately,
@@ -610,6 +634,10 @@ final class AppController: NSObject {
                 title: title,
                 artist: artist
             ) {
+                let identity = clientIdentity(for: track)
+                if NetEaseClientTrackResolver.isNetEase(identity) || QQMusicClientTrackResolver.isQQMusic(identity) {
+                    guard lyrics.isReliableClientFallbackMatch(for: makeLyricsSearchRequest(for: track)) else { continue }
+                }
                 currentLyrics = lyrics
                 adoptAsSoleLyricsCandidate(lyrics)
                 return
@@ -627,6 +655,13 @@ final class AppController: NSObject {
               lyrics.metadata.request?.id == req.id,
               let track = selectedPlayer.currentTrack else {
             return
+        }
+        let identity = clientIdentity(for: track)
+        if NetEaseClientTrackResolver.isNetEase(identity) || QQMusicClientTrackResolver.isQQMusic(identity) {
+            guard lyrics.isReliableClientFallbackMatch(for: makeLyricsSearchRequest(for: track)) else {
+                log("Client fallback rejected mismatched lyrics: \(lyrics.idTags[.title] ?? "missing title") / \(lyrics.idTags[.artist] ?? "missing artist")")
+                return
+            }
         }
         if defaults[.strictSearchEnabled], !lyrics.isMatched() {
             return
@@ -724,6 +759,118 @@ final class AppController: NSObject {
         ))
     }
 
+    private func clientIdentity(for track: MusicTrack) -> ClientPlaybackIdentity {
+        ClientPlaybackIdentity(
+            sourceBundleIdentifier: (track.originalTrack as? NSDictionary)?["bundleIdentifier"] as? String,
+            title: track.title, album: track.album, artist: track.artist, duration: track.duration
+        )
+    }
+
+    /// The client record is authoritative. Polling also detects distinct song
+    /// IDs whose system Now Playing metadata is identical, without relying on
+    /// MusicTrack's title-derived ID to announce every edition change.
+    private func startClientLyrics(for track: MusicTrack) {
+        let identity = clientIdentity(for: track)
+        searchTask = Task { @MainActor [weak self] in
+            let isQQ = QQMusicClientTrackResolver.isQQMusic(identity)
+            let provider = (isQQ ? LyricsProviders.Service.qq : .netease).create()
+            let exactKey = isQQ ? QQMusicClientTrackResolver.exactSongKey : NetEaseClientTrackResolver.exactSongKey
+            let sourceName = isQQ ? "QQMusic" : "NetEase"
+            var missingSince: Date?
+            var attemptedSong: String?
+            var verifiedLyrics: Lyrics?
+            while !Task.isCancelled {
+                guard let self, let currentTrack = selectedPlayer.currentTrack,
+                      self.clientIdentity(for: currentTrack) == identity else { return }
+                let song = await Task.detached(priority: .utility) {
+                    isQQ ? QQMusicClientTrackResolver.currentSong(matching: identity) : NetEaseClientTrackResolver.currentSong(matching: identity)
+                }.value
+                guard !Task.isCancelled, let currentTrack = selectedPlayer.currentTrack,
+                      self.clientIdentity(for: currentTrack) == identity else { return }
+                if let song {
+                    missingSince = nil
+                    if song != attemptedSong {
+                        if self.currentLyrics?.metadata.needsPersist == true { self.currentLyrics?.persist() }
+                        self.currentLyrics = nil
+                        self.resetLyricsCandidatePool()
+                        self.candidatePoolTrackId = track.id
+                        attemptedSong = song
+                        verifiedLyrics = nil
+                        let request = LyricsSearchRequest(
+                            searchTerm: .info(title: identity.title ?? "", artist: identity.artist ?? ""),
+                            duration: identity.duration ?? 0, limit: 1,
+                            userInfo: [exactKey: song]
+                        )
+                        self.searchRequest = request
+                        do {
+                            for try await lyrics in provider.lyrics(for: request) {
+                                guard !Task.isCancelled,
+                                      let current = selectedPlayer.currentTrack,
+                                      self.clientIdentity(for: current) == identity else { return }
+                                // A delayed response must not attach to the next
+                                // song, including two songs with identical names.
+                                let confirmed = await Task.detached(priority: .utility) {
+                                    isQQ ? QQMusicClientTrackResolver.currentSong(matching: identity) : NetEaseClientTrackResolver.currentSong(matching: identity)
+                                }.value
+                                guard !Task.isCancelled, confirmed == song,
+                                      let current = selectedPlayer.currentTrack,
+                                      self.clientIdentity(for: current) == identity else { break }
+                                lyrics.associateWithTrack(current)
+                                lyrics.applyQQMusicKanaFurigana()
+                                lyrics.filtrate()
+                                lyrics.recognizeLanguage()
+                                lyrics.metadata.needsPersist = true
+                                self.currentLyrics = lyrics
+                                self.adoptAsSoleLyricsCandidate(lyrics)
+                                verifiedLyrics = lyrics
+                                log("\(sourceName) exact client song ID=\(lyrics.metadata.serviceToken ?? "unknown"); title search bypassed")
+                            }
+                        } catch is CancellationError {
+                            return
+                        } catch {
+                            log("\(sourceName) exact lyrics unavailable: \(error.localizedDescription)")
+                        }
+                        if verifiedLyrics == nil {
+                            let latestSong = await Task.detached(priority: .utility) {
+                                isQQ ? QQMusicClientTrackResolver.currentSong(matching: identity) : NetEaseClientTrackResolver.currentSong(matching: identity)
+                            }.value
+                            if let latestSong, latestSong != song {
+                                attemptedSong = nil
+                                continue
+                            }
+                            guard let current = selectedPlayer.currentTrack,
+                                  self.clientIdentity(for: current) == identity, !Task.isCancelled else { return }
+                            log("\(sourceName) exact lookup failed or returned no lyrics; searching public sources")
+                            self.resetLyricsCandidatePool()
+                            self.candidatePoolTrackId = current.id
+                            self.startPublicLyricsSearch(for: current)
+                            return
+                        }
+                    } else if self.currentLyrics == nil, let verifiedLyrics {
+                        self.currentLyrics = verifiedLyrics
+                        self.adoptAsSoleLyricsCandidate(verifiedLyrics)
+                    }
+                } else {
+                    // The client can briefly lag Now Playing during a switch.
+                    // Allow a short grace period before public-source fallback.
+                    if self.currentLyrics?.metadata.needsPersist == true { self.currentLyrics?.persist() }
+                    self.currentLyrics = nil
+                    if missingSince == nil { missingSince = Date() }
+                    if Date().timeIntervalSince(missingSince!) >= 3 {
+                        guard let current = selectedPlayer.currentTrack,
+                              self.clientIdentity(for: current) == identity, !Task.isCancelled else { return }
+                        log("\(sourceName) client record unavailable; searching public sources")
+                        self.resetLyricsCandidatePool()
+                        self.candidatePoolTrackId = current.id
+                        self.startPublicLyricsSearch(for: current)
+                        return
+                    }
+                }
+                do { try await Task.sleep(nanoseconds: 1_000_000_000) } catch { return }
+            }
+        }
+    }
+
     /// The pool holds at most what is already on screen. That is the normal
     /// state for a track served from the local cache — that path returns before
     /// any search runs — so run one now to have something to switch to.
@@ -739,7 +886,9 @@ final class AppController: NSObject {
             lyricsCandidatePool.selectCandidate(identicalTo: onScreenLyrics)
         }
         let onScreenFingerprint = onScreenLyrics.map(lyricsContentFingerprint)
-        let request = makeLyricsSearchRequest(for: track)
+        let identity = clientIdentity(for: track)
+        let titleOnly = NetEaseClientTrackResolver.isNetEase(identity) || QQMusicClientTrackResolver.isQQMusic(identity)
+        let request = makeLyricsSearchRequest(for: track, titleOnly: titleOnly)
         searchRequest = request
         lyricsCandidateSwitchOutcomes.send(.searching)
 
@@ -882,7 +1031,7 @@ final class AppController: NSObject {
         return lyrics
     }
 
-    private func makeLyricsSearchRequest(for track: MusicTrack) -> LyricsSearchRequest {
+    private func makeLyricsSearchRequest(for track: MusicTrack, titleOnly: Bool = false) -> LyricsSearchRequest {
         let title = track.title ?? ""
         let artist = track.artist ?? ""
         // Strip bracketed suffixes ("(feat. X)", "[Explicit]", "(Remix)", "【现场版】" …)
@@ -891,7 +1040,7 @@ final class AppController: NSObject {
         // cache lookup and the lyrics metadata association.
         let searchTitle = defaults[.stripSearchTitleBracketsEnabled] ? title.strippingBrackets : title
         return LyricsSearchRequest(
-            searchTerm: .info(title: searchTitle, artist: artist),
+            searchTerm: .info(title: searchTitle, artist: titleOnly ? "" : artist),
             duration: track.duration ?? 0,
             limit: 5,
             userInfo: [:]
