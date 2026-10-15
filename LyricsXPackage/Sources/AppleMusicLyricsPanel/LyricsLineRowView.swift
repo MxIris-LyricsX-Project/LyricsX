@@ -33,6 +33,7 @@ extension AppleMusicLyrics {
 
         private(set) var line: LyricsLine?
         private(set) var originalIndex: Int = -1
+        private var displayTranslation: String?
         /// Position among the *enabled* lines (used for distance-based fading).
         var enabledPosition: Int = 0
 
@@ -163,7 +164,26 @@ extension AppleMusicLyrics {
         // MARK: Configuration
 
         func configure(line: LyricsLine, originalIndex: Int, enabledPosition: Int, mainFontSize: CGFloat, translationFontSize: CGFloat) {
+            configure(
+                line: line,
+                translation: line.attachments.translation(),
+                originalIndex: originalIndex,
+                enabledPosition: enabledPosition,
+                mainFontSize: mainFontSize,
+                translationFontSize: translationFontSize
+            )
+        }
+
+        func configure(
+            line: LyricsLine,
+            translation: String?,
+            originalIndex: Int,
+            enabledPosition: Int,
+            mainFontSize: CGFloat,
+            translationFontSize: CGFloat
+        ) {
             self.line = line
+            displayTranslation = translation
             self.originalIndex = originalIndex
             self.enabledPosition = enabledPosition
             self.mainFontSize = mainFontSize
@@ -182,6 +202,12 @@ extension AppleMusicLyrics {
         /// the attributed strings. Called when those preferences change while a
         /// track is already displayed.
         func refreshTranslation() {
+            guard let line else { return }
+            refreshTranslation(line.attachments.translation())
+        }
+
+        func refreshTranslation(_ translation: String?) {
+            displayTranslation = translation
             rebuildAttributedStrings()
         }
 
@@ -206,7 +232,7 @@ extension AppleMusicLyrics {
             )
 
             translationAttributed = Self.makeTranslationAttributedString(
-                for: line,
+                translation: displayTranslation,
                 fontSize: translationFontSize,
                 paragraph: paragraph
             )
@@ -216,9 +242,13 @@ extension AppleMusicLyrics {
             needsDisplay = true
         }
 
-        private static func makeTranslationAttributedString(for line: LyricsLine, fontSize: CGFloat, paragraph: NSParagraphStyle) -> NSAttributedString? {
+        private static func makeTranslationAttributedString(
+            translation: String?,
+            fontSize: CGFloat,
+            paragraph: NSParagraphStyle
+        ) -> NSAttributedString? {
             guard AppleMusicLyrics.hostEnvironment.isBilingualPreferred(),
-                  let translation = line.attachments.translation() else {
+                  let translation else {
                 return nil
             }
             let displayText = AppleMusicLyrics.hostEnvironment.transformTranslation(translation)

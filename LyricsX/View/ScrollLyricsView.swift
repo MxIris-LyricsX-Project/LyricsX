@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import LyricsXFoundation
 import OpenCC
 
@@ -54,6 +55,8 @@ class ScrollLyricsView: NSScrollView {
 
     private var ranges: [(TimeInterval, NSRange)] = []
     private var highlightedRange: NSRange?
+    private var displayedLyrics: Lyrics?
+    private var preferenceObservers: Set<AnyCancellable> = []
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -67,9 +70,21 @@ class ScrollLyricsView: NSScrollView {
             }
             return menu
         }
+        defaults.publisher(for: [
+            .preferredLyricsTranslationLanguage,
+            .preferBilingualLyrics,
+            .chineseConversionIndex,
+        ])
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] in
+            guard let self else { return }
+            setupTextContents(lyrics: displayedLyrics)
+        }
+        .store(in: &preferenceObservers)
     }
 
     func setupTextContents(lyrics: Lyrics?) {
+        displayedLyrics = lyrics
         guard let lyrics = lyrics else {
             ranges = []
             textView.string = ""
@@ -80,11 +95,11 @@ class ScrollLyricsView: NSScrollView {
         var lrcContent = ""
         var newRanges: [(TimeInterval, NSRange)] = []
         let enabledLrc = lyrics.lines.filter { $0.enabled && !$0.content.isEmpty }
-        let languageCode = lyrics.metadata.translationLanguages.first
+        let languageCode = lyrics.metadata.displayTranslationLanguage
 
         for line in enabledLrc {
             var lineStr = line.content
-            if var trans = line.attachments[.translation(languageCode: languageCode)], defaults[.preferBilingualLyrics],
+            if var trans = lyrics.metadata.displayTranslation(for: line), defaults[.preferBilingualLyrics],
                languageCode?.hasPrefix("zh") == true {
                 if let converter = ChineseConverter.shared {
                     trans = converter.convert(trans)

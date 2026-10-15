@@ -38,6 +38,40 @@ extension Lyrics.Metadata {
     var translationLanguages: [String] {
         return attachmentTags.compactMap { $0.translationLanguageCode }
     }
+
+    var displayTranslationLanguage: String? {
+        let availableLanguages = translationLanguages
+        guard let preferredLanguage = defaults[.preferredLyricsTranslationLanguage] else {
+            return availableLanguages.first
+        }
+        return availableLanguages.first {
+            AILyricsTranslationPolicy.languageIdentifiersMatch($0, preferredLanguage)
+        }
+    }
+
+    func displayTranslation(for line: LyricsLine) -> String? {
+        let preferredLanguage = defaults[.preferredLyricsTranslationLanguage]
+        let language: String?
+        if let preferredLanguage {
+            guard let matchingLanguage = translationLanguages.first(where: {
+                AILyricsTranslationPolicy.languageIdentifiersMatch($0, preferredLanguage)
+            }) else {
+                return nil
+            }
+            language = matchingLanguage
+        } else {
+            language = translationLanguages.first
+        }
+
+        var candidates = language.map { [Optional.some($0)] } ?? []
+        if preferredLanguage == nil {
+            if attachmentTags.contains(where: { $0.rawValue.lowercased() == "tr" }) {
+                candidates.append(nil)
+            }
+        }
+        guard !candidates.isEmpty else { return nil }
+        return line.attachments.translation(languageCodeCandidate: candidates)
+    }
 }
 
 extension LyricsLine.Attachments.Tag {

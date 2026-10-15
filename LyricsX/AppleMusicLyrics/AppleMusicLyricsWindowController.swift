@@ -17,9 +17,14 @@ extension AppleMusicLyrics {
                 player: MusicPlayers.Selected.shared,
                 isBilingualPreferred: { defaults[.preferBilingualLyrics] },
                 transformTranslation: { ChineseConverter.shared?.convert($0) ?? $0 },
+                displayTranslation: { lyrics, line in lyrics.metadata.displayTranslation(for: line) },
                 lyricsTimeDelay: { $0.adjustedTimeDelay },
                 translationSettingsDidChange: defaults
-                    .publisher(for: [.preferBilingualLyrics, .chineseConversionIndex])
+                    .publisher(for: [
+                        .preferBilingualLyrics,
+                        .chineseConversionIndex,
+                        .preferredLyricsTranslationLanguage,
+                    ])
                     .map { _ in }
                     .eraseToAnyPublisher(),
                 artworkUpgrades: HighResolutionArtworkService.shared.artworkPublisher

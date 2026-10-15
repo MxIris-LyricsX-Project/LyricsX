@@ -315,7 +315,17 @@ extension AppleMusicLyrics {
         private func refreshTranslations() {
             guard !enabledLineViews.isEmpty else { return }
             for view in enabledLineViews {
-                view.refreshTranslation()
+                guard let lyrics,
+                      lyrics.lines.indices.contains(view.originalIndex) else {
+                    view.refreshTranslation(nil)
+                    continue
+                }
+                view.refreshTranslation(
+                    AppleMusicLyrics.hostEnvironment.displayTranslation(
+                        lyrics,
+                        lyrics.lines[view.originalIndex]
+                    )
+                )
             }
             relayout()
             if let highlighted = highlightedOriginalIndex {
@@ -347,6 +357,7 @@ extension AppleMusicLyrics {
                 let view = SyncedLyricsLineView()
                 view.configure(
                     line: line,
+                    translation: AppleMusicLyrics.hostEnvironment.displayTranslation(lyrics, line),
                     originalIndex: originalIndex,
                     enabledPosition: enabledPosition,
                     mainFontSize: mainFontSize,
@@ -971,7 +982,7 @@ extension AppleMusicLyrics {
                     hasher.combine(timetag?.tags.count ?? -1)
                     hasher.combine(timetag?.duration ?? -1)
                     hasher.combine(line.attachments.synchronizedTextTiming?.description ?? "")
-                    hasher.combine(line.attachments.translation() ?? "")
+                    hasher.combine(AppleMusicLyrics.hostEnvironment.displayTranslation(lyrics, line) ?? "")
                 }
                 self.count = enabledCount
                 self.contentHash = hasher.finalize()

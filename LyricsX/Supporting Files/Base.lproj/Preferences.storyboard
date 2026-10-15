@@ -1600,6 +1600,7 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="HRA-Ro-W01"/>
                                     <gridRow yPlacement="fill" height="30" topPadding="5" id="lp0-JX-wTa"/>
+                                    <gridRow yPlacement="fill" height="160" topPadding="5" id="AIT-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="AMB-Ro-W01"/>
                                 </rows>
                                 <columns>
@@ -1847,6 +1848,65 @@
                                             </connections>
                                         </textField>
                                     </gridCell>
+                                    <gridCell row="AIT-Ro-W01" column="8ba-lF-U7s" headOfMergedCell="AIT-Ce-L01" xPlacement="fill" id="AIT-Ce-L01">
+                                        <box key="contentView" title="Lyrics translation" translatesAutoresizingMaskIntoConstraints="NO" id="AIT-Bx-001">
+                                            <rect key="frame" x="0.0" y="0.0" width="520" height="150"/>
+                                            <view key="contentView" id="AIT-Cv-001">
+                                                <rect key="frame" x="0.0" y="0.0" width="520" height="138"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="YES" id="AIT-DL-001">
+                                                        <rect key="frame" x="12" y="106" width="145" height="16"/>
+                                                        <textFieldCell key="cell" lineBreakMode="clipping" title="Display language:" id="AIT-DL-C01">
+                                                            <font key="font" usesAppearanceFont="YES"/>
+                                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                    </textField>
+                                                    <textField focusRingType="none" verticalHuggingPriority="750" placeholderIntrinsicWidth="200" placeholderIntrinsicHeight="22" translatesAutoresizingMaskIntoConstraints="YES" id="AIT-DL-T01">
+                                                        <rect key="frame" x="162" y="103" width="338" height="22"/>
+                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" refusesFirstResponder="NO" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="Optional language tag; blank uses first available" usesSingleLineMode="YES" bezelStyle="round" id="AIT-DL-TC1">
+                                                            <font key="font" usesAppearanceFont="YES"/>
+                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                        <connections>
+                                                            <action selector="preferredLyricsTranslationLanguageChanged:" target="JPs-hn-m7d" id="AIT-DL-A01"/>
+                                                        </connections>
+                                                    </textField>
+                                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="YES" id="AIT-EN-B01">
+                                                        <rect key="frame" x="12" y="68" width="210" height="18"/>
+                                                        <buttonCell key="cell" type="check" title="Enable AI translation" bezelStyle="regularSquare" imagePosition="left" inset="2" id="AIT-EN-C01">
+                                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="aiLyricsTranslationEnabledChanged:" target="JPs-hn-m7d" id="AIT-EN-A01"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="YES" id="AIT-CF-B01">
+                                                        <rect key="frame" x="363" y="65" width="137" height="24"/>
+                                                        <buttonCell key="cell" type="push" title="Configure…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="AIT-CF-C01">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="configureAILyricsTranslation:" target="JPs-hn-m7d" id="AIT-CF-A01"/>
+                                                        </connections>
+                                                    </button>
+                                                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="YES" id="AIT-ST-T01">
+                                                        <rect key="frame" x="12" y="15" width="488" height="38"/>
+                                                        <textFieldCell key="cell" selectable="YES" title="" id="AIT-ST-C01">
+                                                            <font key="font" usesAppearanceFont="YES"/>
+                                                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                    </textField>
+                                                </subviews>
+                                            </view>
+                                        </box>
+                                    </gridCell>
+                                    <gridCell row="AIT-Ro-W01" column="4uA-B7-Dvh" headOfMergedCell="AIT-Ce-L01" id="AIT-Ce-R01"/>
                                     <gridCell row="AMB-Ro-W01" column="8ba-lF-U7s" headOfMergedCell="AMB-Ce-L01" xPlacement="fill" id="AMB-Ce-L01">
                                         <box key="contentView" title="Apple Music" translatesAutoresizingMaskIntoConstraints="NO" id="AMB-Bx-001">
                                             <rect key="frame" x="0.0" y="0.0" width="520" height="162"/>
@@ -1974,6 +2034,9 @@
                     </view>
                     <connections>
                         <outlet property="appleMusicLanguageField" destination="AMG-Tf-N01" id="AMG-Ot-U01"/>
+                        <outlet property="preferredLyricsTranslationLanguageField" destination="AIT-DL-T01" id="AIT-Ot-DL1"/>
+                        <outlet property="aiLyricsTranslationEnabledButton" destination="AIT-EN-B01" id="AIT-Ot-EN1"/>
+                        <outlet property="aiLyricsTranslationStatusField" destination="AIT-ST-T01" id="AIT-Ot-ST1"/>
                         <outlet property="appleMusicMediaUserTokenField" destination="AMT-Tf-N01" id="AMT-Ot-U01"/>
                         <outlet property="appleMusicNameRecoveryButton" destination="ANR-Bt-N01" id="ANR-Ot-U01"/>
                         <outlet property="appleMusicStorefrontField" destination="AMS-Tf-N01" id="AMS-Ot-U01"/>

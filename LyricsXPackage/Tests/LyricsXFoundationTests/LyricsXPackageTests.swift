@@ -227,3 +227,91 @@ func lyricsStorageKeepsUserBesideTrackFilesReadOnlyByDefault() throws {
     #expect(managedPersist.fileURL == managedCustom)
     #expect(managedPersist.securityScopedDirectoryURL == custom)
 }
+
+@Test
+func aiLyricsTranslationRequestUsesBoundedJSONMode() throws {
+    let configuration = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "zh-Hans",
+        prompt: "Translate to $targetLanguage"
+    )
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: "en",
+        sourceLines: [AILyricsTranslationInputLine(index: 3, text: "A lyric")]
+    )
+    let data = try JSONEncoder().encode(request)
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let responseFormat = try #require(payload["response_format"] as? [String: String])
+
+    #expect(payload["max_tokens"] as? Int == 4_096)
+    #expect(responseFormat["type"] == "json_object")
+    #expect(payload["model"] as? String == "test-model")
+}
+
+@Test
+func aiLyricsTranslationBatchesRespectLineAndByteLimits() throws {
+    let lines = (0 ..< 25).map {
+        AILyricsTranslationInputLine(index: $0, text: "Line \($0)")
+    }
+    let lineLimitedBatches = try AILyricsTranslationBatchPolicy.batches(lines)
+
+    #expect(lineLimitedBatches.map(\.count) == [24, 1])
+    #expect(lineLimitedBatches.allSatisfy { $0.count <= AILyricsTranslationBatchPolicy.maximumLines })
+
+    let byteLimitedLines = (0 ..< 24).map {
+        AILyricsTranslationInputLine(index: $0, text: String(repeating: "x", count: 2_000))
+    }
+    let byteLimitedBatches = try AILyricsTranslationBatchPolicy.batches(byteLimitedLines)
+
+    #expect(byteLimitedBatches.count > 1)
+    for batch in byteLimitedBatches {
+        #expect(try JSONEncoder().encode(batch).count <= AILyricsTranslationBatchPolicy.maximumSourceBytes)
+    }
+}
+
+@Test
+func aiLyricsTranslationKeepsValidPartialResponseEntries() throws {
+    let response = """
+    {"translations":[{"index":4,"text":"bonjour"},{"index":6,"text":"hola"},{"index":7,"text":""}]}
+    """
+    let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+        response: response,
+        expectedIndices: [4, 5, 6, 7]
+    )
+
+    #expect(parsed.translations == [4: "bonjour", 6: "hola"])
+    #expect(parsed.missingIndices == [5, 7])
+}
+
+@Test
+func aiLyricsTranslationDiscardsAmbiguousDuplicateIndices() throws {
+    let response = """
+    {"translations":[{"index":2,"text":"first"},{"index":2,"text":"second"},{"index":3,"text":"valid"}]}
+    """
+    let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+        response: response,
+        expectedIndices: [2, 3]
+    )
+
+    #expect(parsed.translations == [3: "valid"])
+    #expect(parsed.missingIndices == [2])
+}
+
+@Test
+func aiLyricsTranslationRecognizesBareAndLanguageQualifiedTranslationTags() {
+    let bareTagCandidates = AILyricsTranslationPolicy.translationLanguageCandidates(
+        attachmentTagRawValues: ["tr"],
+        targetLanguage: "zh-Hans"
+    )
+    let qualifiedTagCandidates = AILyricsTranslationPolicy.translationLanguageCandidates(
+        attachmentTagRawValues: ["tr:zh-Hans", "tr:ja"],
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(bareTagCandidates.count == 2)
+    #expect(bareTagCandidates[0] == "zh-Hans")
+    #expect(bareTagCandidates[1] == nil)
+    #expect(qualifiedTagCandidates == ["zh-Hans"])
+}

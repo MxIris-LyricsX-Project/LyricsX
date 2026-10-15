@@ -25,6 +25,11 @@ extension AppleMusicLyrics {
         /// through its Chinese-conversion preference.
         public var transformTranslation: (String) -> String
 
+        /// Selects the translation attachment the host wants displayed for a
+        /// line. The default preserves the panel's original first-translation
+        /// behavior.
+        public var displayTranslation: (Lyrics, LyricsLine) -> String?
+
         /// The delay added to raw playback time before it is compared against
         /// lyric timestamps. The app folds its global user-set offset in here;
         /// the default is just the lyrics file's own `[offset:]` tag.
@@ -46,6 +51,9 @@ extension AppleMusicLyrics {
             player: MusicPlayerProtocol = MusicPlayers.Virtual(),
             isBilingualPreferred: @escaping () -> Bool = { true },
             transformTranslation: @escaping (String) -> String = { $0 },
+            displayTranslation: @escaping (Lyrics, LyricsLine) -> String? = { _, line in
+                line.attachments.translation()
+            },
             lyricsTimeDelay: @escaping (Lyrics) -> TimeInterval = { TimeInterval($0.offset) / 1000 },
             translationSettingsDidChange: AnyPublisher<Void, Never> = Empty(completeImmediately: false).eraseToAnyPublisher(),
             artworkUpgrades: AnyPublisher<ArtworkUpgrade, Never> = Empty(completeImmediately: false).eraseToAnyPublisher()
@@ -53,6 +61,7 @@ extension AppleMusicLyrics {
             self.player = player
             self.isBilingualPreferred = isBilingualPreferred
             self.transformTranslation = transformTranslation
+            self.displayTranslation = displayTranslation
             self.lyricsTimeDelay = lyricsTimeDelay
             self.translationSettingsDidChange = translationSettingsDidChange
             self.artworkUpgrades = artworkUpgrades

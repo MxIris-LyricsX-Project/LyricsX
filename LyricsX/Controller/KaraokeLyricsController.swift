@@ -120,6 +120,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         .desktopLyricsEnabled,
         .disableLyricsWhenPaused,
         .preferBilingualLyrics,
+        .preferredLyricsTranslationLanguage,
         .desktopLyricsOneLineMode,
         .chineseConversionIndex,
         .globalLyricsOffset,
@@ -155,7 +156,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         // turn. Refresh after the main-thread bindings have invalidated
         // KaraokeLabel caches so the newly installed progress animation is not
         // immediately removed by font/color/layout updates.
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
             DispatchQueue.lyricsDisplay.async { [weak self] in
                 guard let self = self else { return }
                 self.pendingDisplayPreferenceRefresh = false
@@ -202,7 +203,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         let next = lyrics.lines[(index + 1)...].first { $0.enabled }
         let firstLineFurigana = lrc.attachments.furigana
 
-        let languageCode = lyrics.metadata.translationLanguages.first
+        let languageCode = lyrics.metadata.displayTranslationLanguage
 
         var firstLine = lrc.content
         var secondLine: String
@@ -211,7 +212,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         if defaults[.desktopLyricsOneLineMode] {
             secondLine = ""
         } else if defaults[.preferBilingualLyrics],
-                  let translation = lrc.attachments[.translation(languageCode: languageCode)] {
+                  let translation = lyrics.metadata.displayTranslation(for: lrc) {
             secondLine = translation
             secondLineIsTranslation = true
         } else {
