@@ -9,11 +9,12 @@ import LyricsXFoundation
 /// would have to close itself and report the failure somewhere else, which is
 /// what it used to do.
 ///
-/// Every control and every help label gets an explicit width. A sheet cannot be
-/// resized by the user, so the width has to be decided here: left to their
-/// intrinsic size, the help labels lay out on one unbroken line and push the
-/// sheet past the edge of the screen. `preferredMaxLayoutWidth` alone does not
-/// prevent that — it only takes effect once the label already has a width.
+/// Neither dimension is guessed at. The width is what the screen can take, the
+/// label column is as wide as the longest label actually measures, and the
+/// height is the form's own fitting size. A sheet cannot be resized by the
+/// user, so a number written here that does not match reality is a number that
+/// clips: a help label laid out at its unwrapped length is what pushed the last
+/// version past the edge of the screen.
 final class AILyricsTranslationSettingsViewController: NSViewController {
     /// Called once the fields validate, the key is stored and the preferences
     /// are written. `shouldTest` is true for the Save and Test button.
@@ -33,44 +34,40 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private var lastProbedOrigin: String?
     private var lastProbedOriginHasKey = false
 
-    /// The scroller's fixed height. Held so the validation row can grow the
-    /// sheet when it appears — the sheet is sized before that row has any text.
+    /// The scroller's height, held so the validation row can grow the sheet
+    /// when it appears — the sheet is sized before that row has any text.
     private var scrollerHeightConstraint: NSLayoutConstraint?
 
-    private static let labelColumnWidth: CGFloat = 130
     private static let rowSpacing: CGFloat = 14
     private static let contentInset: CGFloat = 20
+    private static let labelSpacing: CGFloat = 10
+    private static let buttonGap: CGFloat = 12
 
-    /// The widest the sheet is allowed to get, narrowed further when the screen
-    /// cannot take it. A sheet wider than its window is simply clipped, and a
-    /// sheet cannot be resized by the user, so there is no floor here: a
-    /// minimum width would be the one thing that can still overflow.
+    /// The width the form would like, and the room left around it for the
+    /// screen. Whichever is smaller wins.
+    private static let preferredWidth: CGFloat = 620
+    private static let screenMargin: CGFloat = 80
+    private static let screenVerticalMargin: CGFloat = 160
+
     private static var sheetWidth: CGFloat {
-        let available = (NSScreen.main?.visibleFrame.width ?? 1_200) - 80
-        return min(620, available)
-    }
-
-    private static var columnWidth: CGFloat {
-        sheetWidth - contentInset * 2 - labelColumnWidth - 10
+        let available = (NSScreen.main?.visibleFrame.width ?? 1_200) - screenMargin
+        return min(preferredWidth, available)
     }
 
     // MARK: - Presentation
 
     override func loadView() {
-        let endpointValue = defaults[.aiLyricsTranslationEndpoint]
-        endpointField.stringValue = endpointValue.isEmpty
+        endpointField.stringValue = defaults[.aiLyricsTranslationEndpoint].isEmpty
             ? AILyricsTranslationPolicy.defaultEndpoint
-            : endpointValue
+            : defaults[.aiLyricsTranslationEndpoint]
 
-        let modelValue = defaults[.aiLyricsTranslationModel]
-        modelField.stringValue = modelValue.isEmpty
+        modelField.stringValue = defaults[.aiLyricsTranslationModel].isEmpty
             ? AILyricsTranslationPolicy.defaultModel
-            : modelValue
+            : defaults[.aiLyricsTranslationModel]
 
-        let targetLanguageValue = defaults[.aiLyricsTranslationTargetLanguage]
-        targetLanguageField.stringValue = targetLanguageValue.isEmpty
+        targetLanguageField.stringValue = defaults[.aiLyricsTranslationTargetLanguage].isEmpty
             ? AILyricsTranslationPolicy.defaultTargetLanguage
-            : targetLanguageValue
+            : defaults[.aiLyricsTranslationTargetLanguage]
 
         promptTextView.string = AILyricsTranslationPolicy.resolvedPrompt(
             defaults[.aiLyricsTranslationPrompt]
@@ -91,21 +88,30 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         problemLabel.textColor = .systemRed
         problemLabel.font = .systemFont(ofSize: 11)
         problemLabel.isHidden = true
-        problemLabel.lineBreakMode = .byWordWrapping
         problemLabel.maximumNumberOfLines = 0
-        problemLabel.translatesAutoresizingMaskIntoConstraints = false
-        problemLabel.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
+
+        // Measured, not assumed: the labels are localized, so the column they
+        // sit in is as wide as the longest one actually is in this language.
+        let titles = [
+            NSLocalizedString("Endpoint", comment: "AI lyrics translation endpoint setting."),
+            NSLocalizedString("Model", comment: "AI lyrics translation model setting."),
+            NSLocalizedString("Target language", comment: "AI lyrics translation target language setting."),
+            NSLocalizedString("API key", comment: "AI lyrics translation API-key setting."),
+            NSLocalizedString("Prompt", comment: "AI lyrics translation prompt setting."),
+        ]
+        let labelColumnWidth = Self.widestLabelWidth(titles)
 
         let rows = NSStackView(views: [
-            makeNoteRow(NSLocalizedString(
-                "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives.",
-                comment: "Privacy and cost notice for AI lyrics translation."
-            )),
-            makeFieldRow(
-                title: NSLocalizedString(
-                    "Endpoint",
-                    comment: "AI lyrics translation endpoint setting."
+            makeNoteRow(
+                NSLocalizedString(
+                    "Eligible lyric lines are sent to this endpoint for translation. The provider may charge for requests, and may keep what it receives.",
+                    comment: "Privacy and cost notice for AI lyrics translation."
                 ),
+                labelColumnWidth: labelColumnWidth
+            ),
+            makeFieldRow(
+                title: titles[0],
+                labelColumnWidth: labelColumnWidth,
                 control: endpointField,
                 help: NSLocalizedString(
                     "The chat-completions URL that receives the lines. HTTPS is required, except for a loopback address such as http://localhost.",
@@ -113,7 +119,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 )
             ),
             makeFieldRow(
-                title: NSLocalizedString("Model", comment: "AI lyrics translation model setting."),
+                title: titles[1],
+                labelColumnWidth: labelColumnWidth,
                 control: modelField,
                 help: NSLocalizedString(
                     "The model name this endpoint expects, for example gpt-4o-mini.",
@@ -121,10 +128,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 )
             ),
             makeFieldRow(
-                title: NSLocalizedString(
-                    "Target language",
-                    comment: "AI lyrics translation target language setting."
-                ),
+                title: titles[2],
+                labelColumnWidth: labelColumnWidth,
                 control: targetLanguageField,
                 help: NSLocalizedString(
                     "A language tag such as zh-Hans, zh-Hant or ja. Lines already in this language are not sent.",
@@ -132,7 +137,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 )
             ),
             makeFieldRow(
-                title: NSLocalizedString("API key", comment: "AI lyrics translation API-key setting."),
+                title: titles[3],
+                labelColumnWidth: labelColumnWidth,
                 control: apiKeyField,
                 help: NSLocalizedString(
                     "Kept in the Keychain and bound to this endpoint's host, so changing the host means saving the key again.",
@@ -140,11 +146,14 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 ),
                 accessory: removeKeyButton
             ),
-            makePromptRow(),
-            problemLabel
+            makePromptRow(title: titles[4], labelColumnWidth: labelColumnWidth),
+            problemLabel,
         ])
         rows.orientation = .vertical
-        rows.alignment = .leading
+        // Every row is the stack's width, so each row's field column resolves
+        // to the same width and the text inside wraps to it rather than
+        // deciding the sheet's width by being long.
+        rows.alignment = .width
         rows.spacing = Self.rowSpacing
         rows.translatesAutoresizingMaskIntoConstraints = false
 
@@ -163,7 +172,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             ),
         ])
         buttons.orientation = .horizontal
-        buttons.spacing = 12
+        buttons.spacing = Self.buttonGap
         buttons.translatesAutoresizingMaskIntoConstraints = false
 
         view = makeRoot(rows: rows, buttons: buttons)
@@ -198,8 +207,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         scroller.hasVerticalScroller = true
         scroller.drawsBackground = false
         // Overlay scrollers take no width from the clip view, so the form keeps
-        // exactly the column width it was measured at. A legacy scroller would
-        // narrow the document and squeeze every row and its help text.
+        // the width it was laid out for. A legacy scroller would narrow the
+        // document and re-wrap every help label on the short-screen path.
         scroller.scrollerStyle = .overlay
         scroller.documentView = documentView
         scroller.translatesAutoresizingMaskIntoConstraints = false
@@ -208,17 +217,16 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         root.addSubview(scroller)
         root.addSubview(buttons)
 
-        let maxContentHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 160
-        let contentHeight = rows.fittingSize.height + Self.contentInset * 2
-        let visibleContentHeight = min(contentHeight, maxContentHeight)
-        let buttonRowHeight = buttons.fittingSize.height
-        let scrollerHeight = scroller.heightAnchor.constraint(equalToConstant: visibleContentHeight)
+        // The scroller's height is the one thing that cannot come from the
+        // content, so it starts empty and is filled in once the form has been
+        // measured at its real width.
+        let scrollerHeight = scroller.heightAnchor.constraint(equalToConstant: 0)
         scrollerHeightConstraint = scrollerHeight
 
         NSLayoutConstraint.activate([
             rows.topAnchor.constraint(equalTo: documentView.topAnchor, constant: Self.contentInset),
             rows.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: Self.contentInset),
-            rows.trailingAnchor.constraint(lessThanOrEqualTo: documentView.trailingAnchor, constant: -Self.contentInset),
+            rows.trailingAnchor.constraint(equalTo: documentView.trailingAnchor, constant: -Self.contentInset),
             rows.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -Self.contentInset),
 
             documentView.widthAnchor.constraint(equalTo: scroller.contentView.widthAnchor),
@@ -228,21 +236,22 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             scroller.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             scrollerHeight,
 
-            buttons.topAnchor.constraint(equalTo: scroller.bottomAnchor, constant: 12),
+            buttons.topAnchor.constraint(equalTo: scroller.bottomAnchor, constant: Self.buttonGap),
             buttons.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -Self.contentInset),
             buttons.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -Self.contentInset),
 
             root.widthAnchor.constraint(equalToConstant: Self.sheetWidth),
         ])
 
-        // Exactly what the constraint chain needs: the scroller, the gap above
-        // the buttons, the button row itself, and the bottom inset. Counting a
-        // stand-in for the buttons leaves the chain 4pt short and Auto Layout
-        // breaks a required constraint on every presentation.
-        preferredContentSize = NSSize(
-            width: Self.sheetWidth,
-            height: visibleContentHeight + 12 + buttonRowHeight + Self.contentInset
-        )
+        // Measure at the width it will actually be shown at, then take the
+        // height from what came back rather than from a running total.
+        root.layoutSubtreeIfNeeded()
+        let contentHeight = rows.fittingSize.height + Self.contentInset * 2
+        let screenLimitedHeight = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
+        scrollerHeight.constant = min(contentHeight, screenLimitedHeight)
+        root.layoutSubtreeIfNeeded()
+
+        preferredContentSize = root.fittingSize
         return root
     }
 
@@ -258,32 +267,41 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
     // MARK: - Building blocks
 
-    private func makeWrappingLabel(_ text: String) -> NSTextField {
-        let label = NSTextField(wrappingLabelWithString: text)
-        label.font = .systemFont(ofSize: 11)
-        label.textColor = .secondaryLabelColor
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
-        return label
+    private static func widestLabelWidth(_ titles: [String]) -> CGFloat {
+        return titles.reduce(0) { width, title in
+            max(width, NSTextField(labelWithString: title).intrinsicContentSize.width)
+        }
     }
 
     /// A paragraph that belongs to the form rather than to the window: it is
     /// indented past the label column so it lines up with the fields, instead
     /// of starting at the sheet's edge with everything else stepped in.
-    private func makeNoteRow(_ text: String) -> NSStackView {
+    private func makeNoteRow(_ text: String, labelColumnWidth: CGFloat) -> NSStackView {
         let spacer = NSView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
-        spacer.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
+        spacer.widthAnchor.constraint(equalToConstant: labelColumnWidth).isActive = true
 
         let row = NSStackView(views: [spacer, makeWrappingLabel(text)])
         row.orientation = .horizontal
         row.alignment = .top
-        row.spacing = 10
+        row.spacing = Self.labelSpacing
         return row
+    }
+
+    private func makeWrappingLabel(_ text: String) -> NSTextField {
+        let label = NSTextField(wrappingLabelWithString: text)
+        label.font = .systemFont(ofSize: 11)
+        label.textColor = .secondaryLabelColor
+        // The column decides the width; this label takes what it is given and
+        // wraps. Left to its own intrinsic width it would be one unbroken line
+        // and set the sheet's width from its own length.
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return label
     }
 
     private func makeFieldRow(
         title: String,
+        labelColumnWidth: CGFloat,
         control: NSView,
         help: String,
         accessory: NSView? = nil
@@ -291,17 +309,13 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let label = NSTextField(labelWithString: title)
         label.alignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
+        label.widthAnchor.constraint(equalToConstant: labelColumnWidth).isActive = true
         label.setContentHuggingPriority(.required, for: .horizontal)
 
-        control.translatesAutoresizingMaskIntoConstraints = false
-        control.widthAnchor.constraint(equalToConstant: Self.columnWidth).isActive = true
-
-        // The destructive action sits under its field rather than beside it:
-        // one column of fixed width, so nothing here can widen the sheet.
         var columnViews: [NSView] = [control]
         if let accessory {
-            accessory.translatesAutoresizingMaskIntoConstraints = false
+            // The destructive action sits under its field rather than beside
+            // it, so the field column is the same width on every row.
             let accessoryRow = NSStackView(views: [accessory])
             accessoryRow.orientation = .horizontal
             accessoryRow.alignment = .leading
@@ -311,7 +325,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
         let column = NSStackView(views: columnViews)
         column.orientation = .vertical
-        column.alignment = .leading
+        column.alignment = .width
         column.spacing = 3
 
         let row = NSStackView(views: [label, column])
@@ -320,28 +334,23 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         // whose text sits a few points below its edge, and top-alignment leaves
         // every label floating above the value it names.
         row.alignment = .firstBaseline
-        row.spacing = 10
+        row.spacing = Self.labelSpacing
         return row
     }
 
-    private func makePromptRow() -> NSStackView {
+    private func makePromptRow(title: String, labelColumnWidth: CGFloat) -> NSStackView {
         let scroller = NSScrollView()
         scroller.borderType = .bezelBorder
         scroller.hasVerticalScroller = true
         scroller.documentView = promptTextView
         scroller.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            scroller.widthAnchor.constraint(equalToConstant: Self.columnWidth),
-            scroller.heightAnchor.constraint(equalToConstant: 130),
-        ])
+        scroller.heightAnchor.constraint(equalToConstant: 130).isActive = true
 
-        let label = NSTextField(labelWithString: NSLocalizedString(
-            "Prompt",
-            comment: "AI lyrics translation prompt setting."
-        ))
+        let label = NSTextField(labelWithString: title)
         label.alignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.widthAnchor.constraint(equalToConstant: Self.labelColumnWidth).isActive = true
+        label.widthAnchor.constraint(equalToConstant: labelColumnWidth).isActive = true
+        label.setContentHuggingPriority(.required, for: .horizontal)
 
         let column = NSStackView(views: [
             scroller,
@@ -351,13 +360,13 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             )),
         ])
         column.orientation = .vertical
-        column.alignment = .leading
+        column.alignment = .width
         column.spacing = 3
 
         let row = NSStackView(views: [label, column])
         row.orientation = .horizontal
         row.alignment = .top
-        row.spacing = 10
+        row.spacing = Self.labelSpacing
         return row
     }
 
@@ -484,8 +493,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         // capped at the screen: once the form is taller than it can be, the
         // scroller is already showing and the row is reachable by scrolling.
         view.layoutSubtreeIfNeeded()
-        let screenLimitedHeight = (NSScreen.main?.visibleFrame.height ?? 900) - 160
-        let allowedGrowth = max(0, screenLimitedHeight - (scrollerHeightConstraint?.constant ?? 0))
+        let available = (NSScreen.main?.visibleFrame.height ?? 900) - Self.screenVerticalMargin
+        let allowedGrowth = max(0, available - (scrollerHeightConstraint?.constant ?? 0))
         let growth = min(problemLabel.fittingSize.height + Self.rowSpacing, allowedGrowth)
         scrollerHeightConstraint?.constant += growth
         preferredContentSize = NSSize(
