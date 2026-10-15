@@ -2515,6 +2515,30 @@
         }
       }
     },
+    "AIT-SB-001.title" : {
+      "comment" : "Class = \"NSBox\"; title = \"Translation status\"; ObjectID = \"AIT-SB-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Translation status"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译状态"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻譯狀態"
+          }
+        }
+      }
+    },
     "AMB-Bx-001.title" : {
       "comment" : "Class = \"NSBox\"; title = \"Apple Music\"; ObjectID = \"AMB-Bx-001\";",
       "extractionState" : "extracted_with_value",
