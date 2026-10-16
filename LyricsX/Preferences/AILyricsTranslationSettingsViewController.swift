@@ -195,6 +195,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         buttons.translatesAutoresizingMaskIntoConstraints = false
 
         view = makeRoot(rows: rows, buttons: buttons)
+        // Sized only now that `view` exists.
+        sizeSheetToContent()
 
         // A key is bound to its endpoint's origin, so "leave blank" only means
         // "keep the saved key" while the endpoint names a host that has one.
@@ -265,7 +267,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         ])
 
         root.layoutSubtreeIfNeeded()
-        sizeSheetToContent()
         return root
     }
 
@@ -273,7 +274,12 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     /// content's height up to whatever the screen can spare, and the sheet
     /// takes the root's fitting size. One rule, so the initial layout and the
     /// path that runs when a validation message appears cannot drift apart.
+    ///
+    /// It reads `view`, so it must not be called while `loadView` is still
+    /// building that view: `view` is not assigned until `loadView` returns, and
+    /// reading it re-enters `_loadViewIfRequired` for another `loadView`.
     private func sizeSheetToContent() {
+        guard isViewLoaded else { return }
         view.layoutSubtreeIfNeeded()
         guard let scrollerHeightConstraint, let rowsStack else { return }
         let contentHeight = rowsStack.fittingSize.height + Self.contentInset * 2
