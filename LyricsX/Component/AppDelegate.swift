@@ -162,8 +162,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        if AppController.shared.currentLyrics?.metadata.needsPersist == true {
-            AppController.shared.currentLyrics?.persist()
+        performOnLyricsDisplayQueue {
+            if AppController.shared.currentLyrics?.metadata.needsPersist == true {
+                AppController.shared.currentLyrics?.persist()
+            }
         }
         if defaults[.launchAndQuitWithPlayer] {
             let url = Bundle.main.bundleURL
@@ -285,15 +287,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     @IBAction func showCurrentLyricsInFinder(_ sender: Any?) {
-        guard let lyrics = AppController.shared.currentLyrics else {
+        let localURL = performOnLyricsDisplayQueue { () -> URL? in
+            guard let lyrics = AppController.shared.currentLyrics else {
+                return nil
+            }
+            if lyrics.metadata.needsPersist {
+                lyrics.persist()
+            }
+            return lyrics.metadata.localURL
+        }
+        guard let localURL else {
             return
         }
-        if lyrics.metadata.needsPersist {
-            lyrics.persist()
-        }
-        if let url = lyrics.metadata.localURL {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
-        }
+        NSWorkspace.shared.activateFileViewerSelecting([localURL])
     }
 
     @IBAction func writeToiTunes(_ sender: Any?) {
@@ -327,19 +333,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             return
         }
 
-        let url: URL
-        let securityScopedDirectoryURL: URL?
-        if let lyrics = AppController.shared.currentLyrics {
-            // The mark has to be in the file before the editor gets it: the
-            // saving is done by the user in another app from here on, and
-            // LyricsX never sees the result to mark it afterwards.
-            //
-            // Only when the write lands on the file about to be opened, though.
-            // Lyrics that came from beside the track are read-only by default,
-            // so persisting them produces a library copy — and the user would
-            // then be editing a file the lookup never reaches, since the
-            // beside-track original still wins. Those files are not the switch's
-            // business anyway, so leaving them unmarked costs nothing.
+        enum ExistingLyricsEditTarget {
+            case noLyrics
+            case file(URL, URL?)
+            case unavailable
+        }
+
+        let existingLyricsTarget = performOnLyricsDisplayQueue { () -> ExistingLyricsEditTarget in
+            guard let lyrics = AppController.shared.currentLyrics else {
+                return .noLyrics
+            }
+            guard selectedPlayer.currentTrack?.id == track.id else {
+                return .unavailable
+            }
+
             if let localURL = lyrics.metadata.localURL {
                 if defaults.lyricsPersistRewritesFileInPlace(localURL) {
                     lyrics.markAsUserPicked(origin: .edit)
@@ -347,19 +354,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                     lyrics.persist()
                 }
             } else if lyrics.metadata.needsPersist {
-                // Never written anywhere yet, so this creates the library file
-                // and the mark rides along with it.
                 lyrics.markAsUserPicked(origin: .edit)
                 lyrics.persist()
             }
             guard let localURL = lyrics.metadata.localURL else {
-                return
+                return .unavailable
             }
+            return (
+                .file(
+                    localURL,
+                    defaults.lyricsSecurityScopedDirectory(containing: localURL)
+                )
+            )
+        }
+
+        let url: URL
+        let securityScopedDirectoryURL: URL?
+        switch existingLyricsTarget {
+        case .file(let localURL, let scopedDirectoryURL):
             url = localURL
-            // Opening should work for every local lyrics file, including user-owned
-            // beside-track files. Only the custom lyrics library needs a security scope.
-            securityScopedDirectoryURL = defaults.lyricsSecurityScopedDirectory(containing: localURL)
-        } else {
+            securityScopedDirectoryURL = scopedDirectoryURL
+        case .unavailable:
+            return
+        case .noLyrics:
             guard let destination = defaults.lyricsSavingDestination(
                 title: track.title,
                 artist: track.artist
@@ -388,24 +405,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             NSSound.beep()
             return
         }
-        if #available(macOS 10.15, *),
-           let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") {
-            workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
-                securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
-                if error != nil {
-                    DispatchQueue.main.async {
-                        NSSound.beep()
-                    }
-                }
-            }
+        guard let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") else {
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+            NSSound.beep()
             return
         }
-
-        defer {
+        workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
             securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
-        }
-        if !workspace.openFile(url.path, withApplication: "TextEdit") {
-            NSSound.beep()
+            if error != nil {
+                DispatchQueue.main.async {
+                    NSSound.beep()
+                }
+            }
         }
     }
 

@@ -44,8 +44,10 @@ struct WrappedRowOrderProbes {
         let hostView = try #require(window.contentView)
         hostView.wantsLayer = true
         let rowView = AppleMusicLyrics.SyncedLyricsLineView(frame: NSRect(x: 0, y: 0, width: 520, height: 100))
+        let line = try #require(lyrics.lines.first)
         try rowView.configure(
-            line: #require(lyrics.lines.first),
+            line: line,
+            translation: line.attachments.translation(),
             originalIndex: 0,
             enabledPosition: 0,
             mainFontSize: 30,

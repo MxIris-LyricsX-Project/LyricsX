@@ -114,7 +114,14 @@ struct TranslatedLineEmphasisProbes {
         )
         window.isReleasedWhenClosed = false
         let rowView = AppleMusicLyrics.SyncedLyricsLineView(frame: NSRect(x: 0, y: 0, width: 640, height: 100))
-        rowView.configure(line: line, originalIndex: 0, enabledPosition: 0, mainFontSize: 30, translationFontSize: 16)
+        rowView.configure(
+            line: line,
+            translation: line.attachments.translation(),
+            originalIndex: 0,
+            enabledPosition: 0,
+            mainFontSize: 30,
+            translationFontSize: 16
+        )
         window.contentView?.addSubview(rowView)
         let rowHeight = rowView.preferredHeight(forWidth: 640)
         rowView.frame = NSRect(x: 0, y: 0, width: 640, height: rowHeight)
