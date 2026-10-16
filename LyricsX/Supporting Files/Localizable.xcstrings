@@ -425,6 +425,7 @@
     },
     "Connection failed. Check the endpoint, model, and API key." : {
       "comment" : "Generic status shown when the AI lyrics translation endpoint test fails.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3038,6 +3039,40 @@
         }
       }
     },
+    "The endpoint answered HTTP %d." : {
+      "comment" : "Status shown when the AI translation endpoint test gets a non-2xx answer; %d is the HTTP status code.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点返回了 HTTP %d。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端點回應了 HTTP %d。"
+          }
+        }
+      }
+    },
+    "The endpoint did not answer with a translation. It may not support JSON mode." : {
+      "comment" : "Status shown when the AI translation endpoint test gets a well-formed HTTP answer that is not a translation.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点没有返回译文,可能不支持 JSON 模式。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端點沒有回傳譯文,可能不支援 JSON 模式。"
+          }
+        }
+      }
+    },
     "The endpoint is not a valid URL." : {
       "comment" : "Error shown when the AI translation endpoint is malformed.",
       "localizations" : {
@@ -3051,6 +3086,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "端點不是有效的 URL。"
+          }
+        }
+      }
+    },
+    "The endpoint's answer was too large to read." : {
+      "comment" : "Status shown when the AI translation endpoint test gets an oversized answer.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点的响应过大,无法读取。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端點的回應過大,無法讀取。"
           }
         }
       }
@@ -3103,6 +3155,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "提示詞不能為空。"
+          }
+        }
+      }
+    },
+    "The request failed: %@" : {
+      "comment" : "Status shown when the AI translation endpoint test fails at the network layer; %@ is the system's description.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请求失败:%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求失敗:%@"
           }
         }
       }
