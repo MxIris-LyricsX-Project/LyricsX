@@ -347,6 +347,27 @@ func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
 }
 
 @Test
+func aiLyricsTranslationCompletesABaseEndpoint() throws {
+    // Providers document a base_url, and copying it out of the docs is the
+    // obvious thing to do. Both of these look like a finished endpoint and
+    // both answer a request with a 404 that says nothing about the path it
+    // wanted, so the path is appended for them.
+    func endpoint(_ string: String) throws -> String {
+        try AILyricsTranslationPolicy.validatedEndpoint(string).absoluteString
+    }
+
+    #expect(try endpoint("https://api.deepseek.com") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://api.deepseek.com/") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://api.deepseek.com/v1") == "https://api.deepseek.com/v1/chat/completions")
+    #expect(try endpoint("http://localhost:8080") == "http://localhost:8080/chat/completions")
+
+    // A path of its own is left exactly as given: a proxy or a provider that
+    // answers somewhere else is not ours to correct.
+    #expect(try endpoint("https://api.deepseek.com/chat/completions") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://proxy.example.com/openai/v1/chat/completions") == "https://proxy.example.com/openai/v1/chat/completions")
+}
+
+@Test
 func aiLyricsTranslationNeverCarriesABlankPrompt() throws {
     // An empty prompt still builds a well-formed request — one whose
     // instruction block is blank — so nothing downstream fails; it just

@@ -203,7 +203,30 @@ public enum AILyricsTranslationPolicy {
                 throw AILyricsTranslationError.insecureEndpoint
             }
         }
-        return url
+        return appendingChatCompletionsPathIfBase(url)
+    }
+
+    /// Completes an endpoint that was given as a base URL.
+    ///
+    /// Providers document a `base_url`, and copying that out of the docs is the
+    /// obvious thing to do: `https://api.deepseek.com` and
+    /// `https://api.deepseek.com/v1` are both base URLs, both look finished, and
+    /// both answer a request to them with a 404 that says nothing about the
+    /// missing path. Nothing on this side can recover from that except the
+    /// rewrite itself, so the shapes that are unambiguously a base get the
+    /// chat-completions path appended.
+    ///
+    /// Anything else is left exactly as given. A proxy, or a provider that
+    /// answers somewhere of its own choosing, is not ours to correct.
+    private static func appendingChatCompletionsPathIfBase(_ url: URL) -> URL {
+        let path = url.path
+        guard ["", "/", "/v1", "/v1/"].contains(path),
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        let base = path.hasSuffix("/") ? String(path.dropLast()) : path
+        components.path = base + "/chat/completions"
+        return components.url ?? url
     }
 
     /// Whether `host` names the loopback interface.
