@@ -11,13 +11,17 @@ struct LargeWidgetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             VStack(spacing: 0) {
-                HStack {
-                    Text("\(entry.trackTitle) — \(entry.artist)")
-                        .font(.system(size: 12, weight: .medium))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.trackTitle)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    Text(entry.artist)
+                        .font(.system(size: 11))
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1)
-                    Spacer()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
 
