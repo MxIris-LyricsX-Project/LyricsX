@@ -82,6 +82,8 @@
 - [菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md) —— 截图副本为什么让 `NSTextField` 间歇陷入每秒 300 次的
   重画循环、调它的属性为什么没用、为什么用 cell 画字并按外观缓存位图、滚动开销为什么由帧率和条目里的按钮决定，
   以及探针为什么必须打包成 App 并经 LaunchServices 启动。
+- [桌面小组件](Internal/DesktopWidget.md) —— 播放按钮为什么走 `AudioPlaybackIntent` 而不是 `openAppWhenRun`
+  （后者每按一次就弹出设置窗口）。
 
 ## 术语
 
