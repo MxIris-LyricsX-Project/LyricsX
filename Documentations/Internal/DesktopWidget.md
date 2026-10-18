@@ -143,6 +143,16 @@ Apple 文档（*Adding interactivity to widgets and Live Activities*）写明：
 想不重新编译就试别的提前量，见 `LyricsTimelineProvider` 里 `defaultWidgetSchedulingCompensationMs` 的注释：
 要写进 App Group 容器里的那份偏好，也就是小组件读快照的同一个文件。
 
+### timeline 只排 60 秒，提前 15 秒要下一份
+
+播放中的 timeline 只排接下来 60 秒的行，用 `.after` 让 WidgetKit 到点再要一份新的，每次都从最新的快照重新对时，
+WidgetKit 计时和实际播放之间的误差就攒不起来。
+
+原来 `.after` 的时刻就是窗口的末尾，交接时会断档。`chronod` 在那个时刻之后约 4 秒才来要新的 timeline，再渲染
+1～2 秒才换上，这期间旧 timeline 已经没有下一行了。2026-10-18 录到一次：大号从 19:43:10 到 19:43:17 一行没换，
+窗口末尾之后才开始的那一行晚了好几秒，而且每分钟一次。现在 `.after` 定在窗口末尾前 15 秒，交接期间旧 timeline 里
+还有行可换。每次生成的条数不变，只是后台刷新从约每 64 秒一次变成约每 49 秒一次。
+
 ## 模块结构
 
 | 文件 | 内容 |
