@@ -24,6 +24,9 @@ public enum WidgetReloadPolicy {
         /// the reports that follow may still correct it; see
         /// `playbackChangeNeedsSettling(from:to:trackDuration:)`.
         case playbackStateChanged(needsSettling: Bool)
+        /// A setting in the app that changes how every widget shows the
+        /// lyrics, such as whether it shows their translation.
+        case displaySettingsChanged
     }
 
     /// Where playback stood at one moment, as the player reported it.
@@ -91,6 +94,9 @@ public enum WidgetReloadPolicy {
         /// How long a track change waits for its lyrics before the widget
         /// shows the track without them.
         public static let lyricsWaitAfterTrackChange: TimeInterval = 2.5
+        /// How long a change to a display setting waits, so that a setting
+        /// switched off and on again goes out in one reload.
+        public static let displaySettingsSettleInterval: TimeInterval = 0.3
         /// The longest any change waits, however many others keep arriving.
         public static let maximumHold: TimeInterval = 3
 
@@ -98,6 +104,7 @@ public enum WidgetReloadPolicy {
         private var playbackSettledDate: Date?
         private var lastLyricsChangeDate: Date?
         private var trackChangeAwaitingLyricsDate: Date?
+        private var lastDisplaySettingsChangeDate: Date?
 
         public init() {}
 
@@ -109,6 +116,7 @@ public enum WidgetReloadPolicy {
                 playbackSettledDate,
                 lastLyricsChangeDate?.addingTimeInterval(Self.lyricsSettleInterval),
                 trackChangeAwaitingLyricsDate?.addingTimeInterval(Self.lyricsWaitAfterTrackChange),
+                lastDisplaySettingsChangeDate?.addingTimeInterval(Self.displaySettingsSettleInterval),
             ].compactMap { $0 }
             let settledDate = settleDates.max() ?? firstPendingChangeDate
             return min(settledDate, firstPendingChangeDate.addingTimeInterval(Self.maximumHold))
@@ -132,6 +140,8 @@ public enum WidgetReloadPolicy {
                     needsSettling ? Self.playbackSettleInterval : Self.plainPlaybackChangeInterval
                 )
                 playbackSettledDate = max(playbackSettledDate ?? settledDate, settledDate)
+            case .displaySettingsChanged:
+                lastDisplaySettingsChangeDate = date
             }
         }
 
@@ -156,6 +166,7 @@ public enum WidgetReloadPolicy {
               delivered.albumName == current.albumName,
               delivered.backgroundColor == current.backgroundColor,
               delivered.lyricsLines == current.lyricsLines,
+              delivered.showsTranslation == current.showsTranslation,
               delivered.availableTranslationLanguages == current.availableTranslationLanguages,
               delivered.isPlaying == current.isPlaying
         else {
