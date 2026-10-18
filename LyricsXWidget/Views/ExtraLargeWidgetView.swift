@@ -12,9 +12,8 @@ struct ExtraLargeWidgetView: View {
         } else {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    if let coverURL = entry.coverImageURL,
-                       let nsImage = NSImage(contentsOf: coverURL) {
-                        Image(nsImage: nsImage)
+                    if let coverImage = entry.coverImage {
+                        Image(decorative: coverImage, scale: 1)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 60, height: 60)

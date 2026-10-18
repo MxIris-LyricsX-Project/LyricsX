@@ -1,3 +1,4 @@
+import CoreGraphics
 import WidgetKit
 import LyricsXWidgetShared
 
@@ -7,7 +8,8 @@ struct LyricsTimelineEntry: TimelineEntry {
     let artist: String
     let albumName: String?
     let backgroundColor: CodableColor?
-    let coverImageURL: URL?
+    /// Decoded once per timeline and shared by its entries.
+    let coverImage: CGImage?
     let lyricsLines: [LyricsLineEntry]
     let highlightedLineIndex: Int
     let isPlaying: Bool
@@ -22,7 +24,7 @@ struct LyricsTimelineEntry: TimelineEntry {
             artist: "",
             albumName: nil,
             backgroundColor: nil,
-            coverImageURL: nil,
+            coverImage: nil,
             lyricsLines: [],
             highlightedLineIndex: 0,
             isPlaying: false,

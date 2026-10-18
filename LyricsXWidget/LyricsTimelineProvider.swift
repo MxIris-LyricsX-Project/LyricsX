@@ -1,3 +1,4 @@
+import ImageIO
 import WidgetKit
 import LyricsXWidgetShared
 
@@ -52,7 +53,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             artist: "Artist",
             albumName: "Album",
             backgroundColor: CodableColor(red: 0.15, green: 0.15, blue: 0.25, alpha: 1.0),
-            coverImageURL: nil,
+            coverImage: nil,
             lyricsLines: [
                 LyricsLineEntry(text: "Lyrics will appear here", translation: nil, startTime: 0, endTime: nil),
             ],
@@ -82,7 +83,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         }
 
         // Build time-driven entries from lyrics lines
-        let coverURL = dataStore.coverURL
+        let coverImage = loadCoverImage()
         let showTranslation = configuration.showTranslation
         let translationLanguage = configuration.translationLanguage?.id
         let schedulingCompensation = Self.widgetSchedulingCompensation
@@ -132,7 +133,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
                 artist: widgetData.artist,
                 albumName: widgetData.albumName,
                 backgroundColor: widgetData.backgroundColor,
-                coverImageURL: coverURL,
+                coverImage: coverImage,
                 lyricsLines: widgetData.lyricsLines,
                 highlightedLineIndex: lineIndex,
                 isPlaying: widgetData.isPlaying,
@@ -183,6 +184,20 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         return Timeline(entries: entries, policy: .after(windowEnd))
     }
 
+    /// The album cover the app wrote, decoded once for a whole timeline. Every
+    /// entry used to read and decode the file again as it was rendered, and a
+    /// reload renders every entry of every widget size before any of them
+    /// shows.
+    private func loadCoverImage() -> CGImage? {
+        guard let coverURL = dataStore.coverURL,
+              let imageSource = CGImageSourceCreateWithURL(coverURL as CFURL, nil)
+        else {
+            return nil
+        }
+        let options = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
+        return CGImageSourceCreateImageAtIndex(imageSource, 0, options)
+    }
+
     private func buildCurrentEntry(for configuration: LyricsWidgetConfigurationIntent, at date: Date) -> LyricsTimelineEntry {
         guard let widgetData = dataStore.read() else {
             return .empty
@@ -194,7 +209,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             artist: widgetData.artist,
             albumName: widgetData.albumName,
             backgroundColor: widgetData.backgroundColor,
-            coverImageURL: dataStore.coverURL,
+            coverImage: loadCoverImage(),
             lyricsLines: widgetData.lyricsLines,
             highlightedLineIndex: widgetData.currentLineIndex,
             isPlaying: widgetData.isPlaying,

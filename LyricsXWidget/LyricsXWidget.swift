@@ -97,7 +97,7 @@ private struct DebugBuildBadge: ViewModifier {
         artist: "Queen",
         albumName: "A Night at the Opera",
         backgroundColor: CodableColor(red: 0.15, green: 0.1, blue: 0.25, alpha: 1.0),
-        coverImageURL: nil,
+        coverImage: nil,
         lyricsLines: [],
         highlightedLineIndex: 0,
         isPlaying: true,
@@ -116,7 +116,7 @@ private struct DebugBuildBadge: ViewModifier {
         artist: "Queen",
         albumName: "A Night at the Opera",
         backgroundColor: CodableColor(red: 0.15, green: 0.1, blue: 0.25, alpha: 1.0),
-        coverImageURL: nil,
+        coverImage: nil,
         lyricsLines: [
             LyricsLineEntry(text: "Is this the real life?", translation: nil, startTime: 0, endTime: 5),
             LyricsLineEntry(text: "Is this just fantasy?", translation: nil, startTime: 5, endTime: 10),
