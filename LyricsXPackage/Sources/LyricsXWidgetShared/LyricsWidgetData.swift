@@ -39,7 +39,7 @@ public struct LyricsWidgetData: Codable, Sendable {
     }
 }
 
-public struct LyricsLineEntry: Codable, Sendable {
+public struct LyricsLineEntry: Codable, Equatable, Sendable {
     public let text: String
     public let translation: String?
     public let startTime: TimeInterval
@@ -53,7 +53,7 @@ public struct LyricsLineEntry: Codable, Sendable {
     }
 }
 
-public struct CodableColor: Codable, Sendable {
+public struct CodableColor: Codable, Equatable, Sendable {
     public let red: Double
     public let green: Double
     public let blue: Double
