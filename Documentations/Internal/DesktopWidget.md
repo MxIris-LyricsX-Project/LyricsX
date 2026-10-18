@@ -130,6 +130,16 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
   写出新快照之前，小组件照样能读出旧快照。
 - 原来写给翻译语言选单的 `availableTranslationLanguages` 也删了。
 
+**升级时，桌面上已有的小组件不会自己并成一套。** 2026-10-18 实测：新描述 23:32 生效后，原来的小、中、大号仍在旧的
+默认配置里（`-367998910074015721`），编辑过的超大号仍自成一套（`7312778174216299536`）。app 每请求一次刷新，照样拆成
+两个请求，后一个晚 5 秒。之后新加的小组件进新的静态配置，日志里配置编号是空的，例如 `systemMedium::`。所以只有把
+旧的小组件删掉、重新添加，才会同在一套配置里。**发布说明要提示用户：更新后把桌面上的小组件全部删掉，再重新添加一次。**
+
+删掉的小组件留下的配置可能还挂在 `NotificationCenter` 里，见上一节。这次又遇到一次：删掉的是编辑过的超大号，它的
+live view 一直在刷新，占着立即刷新的名额，重新添加的四个小组件全被排到 5 秒后。重启 `chronod` 和 `NotificationCenter`
+之后才消失。两次残留的都是打开过编辑界面的小组件；现在小组件没有编辑界面了，以后应该不会再产生新的残留。用户那边，
+注销或重启一次也能清掉。
+
 ### 刷新的渲染开销
 
 一次刷新，WidgetKit 要先把新 timeline 的每一条 entry、按桌面上的每个尺寸都渲染存档，**全部做完才一起换上**。
@@ -244,6 +254,13 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metadata"
 ```
 
+**改了小组件的描述之后，先临时调高两个 Info.plist 的 `CFBundleVersion` 再构建，测完改回、不提交。** 描述指有没有
+设置项、支持哪些尺寸、显示名这类内容。`chronod` 按版本号缓存描述，版本号不变就判定 "No updates required -
+descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从缓存里读。Debug 构建的版本号恒为 2929，所以换成
+静态配置后，编辑菜单还在。改成 2930 后，日志里出现 "Refetching descriptors due to extension version change, from
+2929-2929-… to 2930-2930-…"，菜单才消失。正式发版时 CI 会改版本号，用户不受影响。只改视图或 timeline 的话不用调，
+它们每次刷新都会重新问小组件。
+
 下面这些只能在桌面上人工确认：
 
 - 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。播放/暂停的
@@ -251,8 +268,8 @@ jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metad
   `[LXWG][Provider] getTimeline(in:) called` 读到的就应该是新状态。
 - 超大号：在 app 的偏好设置里打开「Prefer bilingual lyrics」，放一首带翻译的歌，封面、标题和播放按钮都应留在小组件
   里，歌词区里没有被切掉半截的行。
-- 统一配置：放一首带翻译的歌，在 app 里切换「Prefer bilingual lyrics」，桌面上所有小组件应当在约 1 秒内一起显示或
-  收起译文。上面那条日志里，每次刷新的 `record reload` 只应出现一个配置编号，`Throttling additional refresh request`
+- 统一配置：先把桌面上的小组件全部删掉、重新添加（理由见「小组件没有自己的设置项」）。放一首带翻译的歌，在 app 里
+  切换「Prefer bilingual lyrics」，桌面上所有小组件应当在约 1 秒内一起显示或收起译文。上面那条日志里，每次刷新的 `record reload` 只应出现一个配置编号，`Throttling additional refresh request`
   不应紧跟在每次刷新后面出现。
 - 大号：放一首有长句的歌，折行的句子应当居中，当前行不再变成一行加省略号。
 
@@ -276,11 +293,14 @@ jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metad
   这是为了统一配置有意做的取舍，见「小组件没有自己的设置项」。
 - 小组件不做简繁转换：桌面歌词会按 app 的简繁设置转换中文歌词和译文，歌词面板会转换译文，小组件显示的都是原文。
 - 小组件删掉后残留的配置要重启 `chronod` 和 `NotificationCenter` 才清掉，见「节流按小组件种类算，请求按配置拆分」。
+- 升级之后要把小组件全部删掉、重新添加一次，才会同在一套配置里；没这样做的用户，一部分小组件仍晚 5 秒。见「小组件
+  没有自己的设置项」。
 
 ## 后续工作
 
-- **桌面实测**：换成静态配置之后，桌面上原来编辑过的小组件会不会并回同一套配置。并不回来的话，发布说明里要提示
-  用户把这些小组件删掉、重新添加一次。
+- 发版时，发布说明里写上「更新后把桌面上的小组件全部删掉，再重新添加一次」。
+- 也可以考虑由 app 自己发现还留着旧配置的小组件，提示用户重新添加。可以试试 `WidgetCenter.shared.currentConfigurations()`，
+  但它返回的 `WidgetInfo` 能不能分出新旧两种配置，还没验证。
 - 让用户选小组件显示哪种译文：等 AI 翻译那个 PR（#204）合进来，见「小组件没有自己的设置项」。
 - 小组件跟随 app 的简繁设置：照桌面歌词的做法，在 app 写快照时转换，经快照传过去。
 - 播放器不给封面时，小组件只显示音符占位图（#147）。歌词面板已经会联网找封面（`HighResolutionArtworkService`），
