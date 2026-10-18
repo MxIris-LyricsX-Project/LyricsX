@@ -1,3 +1,4 @@
+import ImageIO
 import WidgetKit
 import LyricsXWidgetShared
 
@@ -52,7 +53,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             artist: "Artist",
             albumName: "Album",
             backgroundColor: CodableColor(red: 0.15, green: 0.15, blue: 0.25, alpha: 1.0),
-            coverImageURL: nil,
+            coverImage: nil,
             lyricsLines: [
                 LyricsLineEntry(text: "Lyrics will appear here", translation: nil, startTime: 0, endTime: nil),
             ],
@@ -82,7 +83,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         }
 
         // Build time-driven entries from lyrics lines
-        let coverURL = dataStore.coverURL
+        let coverImage = loadCoverImage()
         let showTranslation = configuration.showTranslation
         let translationLanguage = configuration.translationLanguage?.id
         let schedulingCompensation = Self.widgetSchedulingCompensation
@@ -91,16 +92,25 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         let now = Date()
 
         // Only generate entries that fall inside a rolling window. With
-        // `policy: .after(windowEnd)` below, WidgetKit re-asks for a
-        // fresh timeline at the window's end — that keeps the widget's
+        // `policy: .after(refreshDate)` below, WidgetKit re-asks for a
+        // fresh timeline before the window ends — that keeps the widget's
         // displayed line continuously re-anchored to the current
         // (timestamp, playbackPosition), so accumulated drift between
         // WidgetKit's scheduler clock and actual playback can't grow
         // past the window length. Empirically a 60s window keeps the
         // visible line within a frame of the live track without
         // spending excessive WidgetKit refresh budget.
+        //
+        // The refresh comes `refreshLeadTime` before the window ends, so the
+        // old timeline still has lines while the new one is made. chronod
+        // asks for it about 4 s after the refresh date and renders it for
+        // 1–2 s more; refreshing at the window's very end left the widget on
+        // the last line for that long, once a minute (2026-10-18: the large
+        // widget changed no line from 19:43:10 to 19:43:17).
         let timelineWindow: TimeInterval = 60
+        let refreshLeadTime: TimeInterval = 15
         let windowEnd = now.addingTimeInterval(timelineWindow)
+        let refreshDate = windowEnd.addingTimeInterval(-refreshLeadTime)
 
         for (lineIndex, line) in widgetData.lyricsLines.enumerated() {
             // Calculate when this line should be displayed.
@@ -132,7 +142,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
                 artist: widgetData.artist,
                 albumName: widgetData.albumName,
                 backgroundColor: widgetData.backgroundColor,
-                coverImageURL: coverURL,
+                coverImage: coverImage,
                 lyricsLines: widgetData.lyricsLines,
                 highlightedLineIndex: lineIndex,
                 isPlaying: widgetData.isPlaying,
@@ -146,7 +156,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         if entries.isEmpty {
             let entry = buildCurrentEntry(for: configuration, at: now)
             #log(.info, "[LXWG][Provider] dynamic branch produced 0 entries → fallback static (1 entry, refresh after window)")
-            return Timeline(entries: [entry], policy: .after(windowEnd))
+            return Timeline(entries: [entry], policy: .after(refreshDate))
         }
 
         // Drop entries whose visible window would be too short to render.
@@ -180,7 +190,21 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             String(format: "@+%.2fs#%d", entry.date.timeIntervalSince(now), entry.highlightedLineIndex)
         }.joined(separator: " ")
         #log(.info, "[LXWG][Provider] dynamic branch → \(entries.count, privacy: .public) entries (dropped=\(droppedCount, privacy: .public) sub-\(minDisplayDuration, privacy: .public)s, window=\(timelineWindow, privacy: .public)s), first=+\(firstDate, privacy: .public)s last=+\(lastDate, privacy: .public)s, compensation=\(schedulingCompensation, privacy: .public)s, preview=\(preview, privacy: .public)")
-        return Timeline(entries: entries, policy: .after(windowEnd))
+        return Timeline(entries: entries, policy: .after(refreshDate))
+    }
+
+    /// The album cover the app wrote, decoded once for a whole timeline. Every
+    /// entry used to read and decode the file again as it was rendered, and a
+    /// reload renders every entry of every widget size before any of them
+    /// shows.
+    private func loadCoverImage() -> CGImage? {
+        guard let coverURL = dataStore.coverURL,
+              let imageSource = CGImageSourceCreateWithURL(coverURL as CFURL, nil)
+        else {
+            return nil
+        }
+        let options = [kCGImageSourceShouldCacheImmediately: true] as CFDictionary
+        return CGImageSourceCreateImageAtIndex(imageSource, 0, options)
     }
 
     private func buildCurrentEntry(for configuration: LyricsWidgetConfigurationIntent, at date: Date) -> LyricsTimelineEntry {
@@ -194,7 +218,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             artist: widgetData.artist,
             albumName: widgetData.albumName,
             backgroundColor: widgetData.backgroundColor,
-            coverImageURL: dataStore.coverURL,
+            coverImage: loadCoverImage(),
             lyricsLines: widgetData.lyricsLines,
             highlightedLineIndex: widgetData.currentLineIndex,
             isPlaying: widgetData.isPlaying,

@@ -11,9 +11,8 @@ struct SmallWidgetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ZStack(alignment: .bottomLeading) {
-                if let coverURL = entry.coverImageURL,
-                   let nsImage = NSImage(contentsOf: coverURL) {
-                    Image(nsImage: nsImage)
+                if let coverImage = entry.coverImage {
+                    Image(decorative: coverImage, scale: 1)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 }

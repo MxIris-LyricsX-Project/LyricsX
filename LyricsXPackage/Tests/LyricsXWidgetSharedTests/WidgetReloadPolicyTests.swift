@@ -17,10 +17,10 @@ struct WidgetReloadPolicyTests {
         // reloaded at the first of these, and the widget showed the previous
         // song's lyrics, paused, until the five seconds were up.
         let reloads = reloadTimes(for: [
-            (0, .playbackStateChanged),
+            (0, .playbackStateChanged(needsSettling: true)),
             (0.494, .trackChanged),
             (0.494, .lyricsChanged(hasLyrics: false)),
-            (1.007, .playbackStateChanged),
+            (1.007, .playbackStateChanged(needsSettling: true)),
             (1.821, .lyricsChanged(hasLyrics: true)),
         ])
 
@@ -54,19 +54,43 @@ struct WidgetReloadPolicyTests {
         #expect(abs(reload - 0.4) < 0.001)
     }
 
-    @Test("a pause on its own reaches the widget within a second")
-    func pauseReloadsWithinASecond() throws {
-        let reloads = reloadTimes(for: [(0, .playbackStateChanged)])
+    @Test("a playback change that may still be corrected waits past the track change that may follow it")
+    func unsettledPlaybackChangeWaitsForTheTrackChange() throws {
+        // The track change in the first test arrived half a second after the
+        // pause that opened it.
+        let reloads = reloadTimes(for: [(0, .playbackStateChanged(needsSettling: true))])
 
         #expect(reloads.count == 1)
         let reload = try #require(reloads.first)
+        #expect(reload > 0.5)
         #expect(reload <= 1)
+    }
+
+    @Test("a plain pause or resume reaches the widget almost at once")
+    func settledPlaybackChangeReloadsAlmostAtOnce() throws {
+        let reloads = reloadTimes(for: [(0, .playbackStateChanged(needsSettling: false))])
+
+        #expect(reloads.count == 1)
+        let reload = try #require(reloads.first)
+        #expect(reload <= 0.2)
+    }
+
+    @Test("a plain change does not cut short a change that is still settling")
+    func settledChangeKeepsTheEarlierWait() throws {
+        let reloads = reloadTimes(for: [
+            (0, .playbackStateChanged(needsSettling: true)),
+            (0.2, .playbackStateChanged(needsSettling: false)),
+        ])
+
+        #expect(reloads.count == 1)
+        let reload = try #require(reloads.first)
+        #expect(reload >= 1)
     }
 
     @Test("changes that keep coming hold the reload for three seconds at most")
     func changesThatKeepComingAreHeldThreeSecondsAtMost() {
         let changes = stride(from: 0.0, through: 4.5, by: 0.5).map { seconds in
-            (seconds: seconds, change: WidgetReloadPolicy.Change.playbackStateChanged)
+            (seconds: seconds, change: WidgetReloadPolicy.Change.playbackStateChanged(needsSettling: true))
         }
 
         let reloads = reloadTimes(for: changes)
@@ -88,6 +112,61 @@ struct WidgetReloadPolicyTests {
     @Test("a change the widget would show needs a reload", arguments: VisibleChange.allCases)
     func visibleChangeNeedsReload(_ change: VisibleChange) {
         #expect(WidgetReloadPolicy.snapshotNeedsReload(delivered: change.delivered, current: change.current))
+    }
+
+    @Test("a plain pause or resume needs no settling", arguments: PlaybackReport.plainChanges)
+    func plainPlaybackChangeNeedsNoSettling(_ report: PlaybackReport) {
+        #expect(!WidgetReloadPolicy.playbackChangeNeedsSettling(
+            from: report.previous,
+            to: report.current,
+            trackDuration: report.trackDuration
+        ))
+    }
+
+    @Test("a report that the next ones may still correct needs settling", arguments: PlaybackReport.correctableChanges)
+    func correctablePlaybackChangeNeedsSettling(_ report: PlaybackReport) {
+        #expect(WidgetReloadPolicy.playbackChangeNeedsSettling(
+            from: report.previous,
+            to: report.current,
+            trackDuration: report.trackDuration
+        ))
+    }
+}
+
+/// A playback report and the one before it, positions in seconds into a
+/// 240-second track, dates in seconds from the start.
+struct PlaybackReport: CustomTestStringConvertible, Sendable {
+    let name: String
+    let previous: WidgetReloadPolicy.PlaybackMoment?
+    let current: WidgetReloadPolicy.PlaybackMoment
+    let trackDuration: TimeInterval? = 240
+
+    var testDescription: String {
+        name
+    }
+
+    static let plainChanges = [
+        PlaybackReport(name: "pausing mid-track", previous: playing(at: 90, on: 0), current: paused(at: 95, on: 5)),
+        PlaybackReport(name: "resuming where it paused", previous: paused(at: 95, on: 5), current: playing(at: 95.2, on: 20)),
+        PlaybackReport(name: "reporting the same pause again", previous: paused(at: 95, on: 5), current: paused(at: 95, on: 5.1)),
+    ]
+
+    static let correctableChanges = [
+        PlaybackReport(name: "the first report", previous: nil, current: paused(at: 95, on: 0)),
+        // The player reports the next track as paused before the track change.
+        PlaybackReport(name: "a pause at the start of a track", previous: playing(at: 230, on: 0), current: paused(at: 0.155, on: 10.4)),
+        PlaybackReport(name: "a pause at the end of the track", previous: playing(at: 238, on: 0), current: paused(at: 239.5, on: 1.5)),
+        // Resuming through MediaRemote first reports a position seconds off.
+        PlaybackReport(name: "a resume reporting a stale position", previous: paused(at: 95, on: 5), current: playing(at: 88, on: 20)),
+        PlaybackReport(name: "a seek while playing", previous: playing(at: 60, on: 0), current: playing(at: 120, on: 1)),
+    ]
+
+    private static func playing(at position: TimeInterval, on seconds: TimeInterval) -> WidgetReloadPolicy.PlaybackMoment {
+        WidgetReloadPolicy.PlaybackMoment(isPlaying: true, position: position, date: Date(timeIntervalSinceReferenceDate: seconds))
+    }
+
+    private static func paused(at position: TimeInterval, on seconds: TimeInterval) -> WidgetReloadPolicy.PlaybackMoment {
+        WidgetReloadPolicy.PlaybackMoment(isPlaying: false, position: position, date: Date(timeIntervalSinceReferenceDate: seconds))
     }
 }
 

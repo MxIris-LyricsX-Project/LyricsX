@@ -154,9 +154,12 @@ final class AppController: NSObject {
         // not one reload each. WidgetKit runs one app-requested reload every
         // five seconds and holds the rest, and a track change alone is a
         // burst of changes; WidgetReloadPolicy has the rules and the reasons.
-        // The coordinator waits out the stale position that resuming through
-        // the SystemMedia/mediaremote-adapter backend reports first, which
-        // this bridge used to debounce on its own.
+        // A plain pause or resume goes out at once. A playback report the next
+        // ones may still correct waits for playback to settle: one at either
+        // end of a track, or one that does not carry on from the last report,
+        // like the stale position that resuming through the SystemMedia/
+        // mediaremote-adapter backend reports first, which this bridge used to
+        // debounce on its own.
         //
         // Line index change is handled separately and only refreshes the
         // dataStore — the timeline already contains future entries that
@@ -171,8 +174,12 @@ final class AppController: NSObject {
             .store(in: &cancelBag)
 
         selectedPlayer.playbackStateWillChange
-            .sink { [weak self] _ in
-                self?.widgetReloadCoordinator.note(.playbackStateChanged)
+            .sink { [weak self] playbackState in
+                self?.widgetReloadCoordinator.notePlaybackState(
+                    isPlaying: playbackState.isPlaying,
+                    position: playbackState.time,
+                    trackDuration: selectedPlayer.currentTrack?.duration
+                )
             }
             .store(in: &cancelBag)
 

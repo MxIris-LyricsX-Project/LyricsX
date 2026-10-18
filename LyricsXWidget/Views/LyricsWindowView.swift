@@ -17,9 +17,13 @@ struct LyricsWindowView: View {
     let showsTranslation: Bool
     let translationScope: TranslationScope
 
-    /// Further from the highlighted line than any widget has room for; lines
-    /// beyond it are not laid out at all.
-    private static let candidateLineRadius = 16
+    /// How many lines on each side of the highlighted line are laid out;
+    /// lines beyond are not laid out at all. At the smallest line height the
+    /// large widget shows about four lines on each side and the extra-large
+    /// about three, and one more on each side waits hidden to scroll in. Every
+    /// line laid out costs rendering time in every entry of every reload, all
+    /// of which WidgetKit renders before the reload shows.
+    private static let candidateLineRadius = 8
 
     var body: some View {
         if lines.indices.contains(highlightedLineIndex) {
