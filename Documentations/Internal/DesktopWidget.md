@@ -89,6 +89,23 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
 
 不等更久，是因为网络搜歌词可能要好几秒，等太久小组件就一直停在上一首。
 
+### 节流按小组件种类算，请求按配置拆分
+
+上面说的 5 秒节流，对象是「扩展 + 小组件 kind」（日志里写作 `dev.JH.LyricsX.LyricsWidget-com.JH.LyricsX.LyricsWidget`），
+而 app 调一次 `reloadAllTimelines()`，`chronod` 会**按小组件的配置拆成几个请求**，挨个过这同一道节流：第一套配置立即
+刷新，其余配置每次都排到 5 秒窗口结束。配置按 `record reload: [...:<配置编号>]` 末尾的数字区分。
+
+**配置不看设置的值，而看这个小组件有没有在编辑界面改过。**从没编辑过的小组件共用默认配置；改过一次的自成一套，
+改回原值也一样。2026-10-18 的实测：
+
+- 超大号开过翻译，自成一套，每次都是它立即刷新；小、中、大号共用默认配置，20:39 到 20:57 之间每次都排在后面，
+  比超大号晚 4.7～5.8 秒。
+- 把超大号关掉翻译，配置编号换了一个，仍然自成一套。删掉重新添加之后，新加的这个进了默认配置，但删掉的那个留下的
+  配置还在 `NotificationCenter` 里继续刷新、继续抢立即刷新的名额，直到重启 `chronod` 和 `NotificationCenter` 才消失。
+- 只剩一套配置之后，同样的操作：暂停从播放器回报到上屏 0.39～0.40 秒，切歌 2.07～2.45 秒。
+
+所以只要还有每个小组件自己的设置项，用户编辑过任意一个，就会让一部分小组件的每次更新都晚 5 秒。见「后续工作」。
+
 ### 刷新的渲染开销
 
 一次刷新，WidgetKit 要先把新 timeline 的每一条 entry、按桌面上的每个尺寸都渲染存档，**全部做完才一起换上**。
@@ -101,6 +118,8 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
   `LyricsTimelineProvider` 每生成一次 timeline 只用 ImageIO 解码一次，把 `CGImage` 放进 entry，各条共用。封面文件由
   `WidgetDataStore.writeCover` 原子写入，读的一方不会读到写了一半的文件。
 - 大号、超大号的歌词区每条排 33 行，现在是 17 行，见上一节。
+
+改完后同一种操作：切歌后 15～23 条的 timeline，从第一次调 `timeline(for:)` 到换上用 0.7～1.1 秒。
 
 ### 按钮的 intent 返回之前写好新状态
 
@@ -219,10 +238,15 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 - 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
 - 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
 - 每行换上的时刻前后有约半秒的抖动，来自系统合并计时器，app 这边消除不了；提前量只能让它的中位数对上歌词。
+- 小组件仍有每个实例自己的设置项（显示翻译、翻译语言）。用户编辑过任意一个，它就自成一套配置，其余配置的每次更新
+  都晚约 5 秒，见「节流按小组件种类算，请求按配置拆分」。小组件删掉后残留的配置要重启 `chronod` 和
+  `NotificationCenter` 才清掉。
 
 ## 后续工作
 
+- **把小组件的设置挪到主 app，经 App Group 传给小组件，所有小组件统一成一种配置**（2026-10-18 定下的方向）。
+  去掉 `LyricsWidgetConfigurationIntent` 的每实例设置项之后，所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
 - 小组件设置里的「翻译语言」不起作用：app 写数据时只取歌词的第一种翻译（`AppController` 里的
-  `availableTranslationLanguages.first`），小组件也没有用配置里的语言去挑。
+  `availableTranslationLanguages.first`），小组件也没有用配置里的语言去挑。上一条做完，这一项随之重新设计。
 - 播放器不给封面时，小组件只显示音符占位图（#147）。歌词面板已经会联网找封面（`HighResolutionArtworkService`），
   但它只在面板窗口开着时运行，结果也不写给小组件。
