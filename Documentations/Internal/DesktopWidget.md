@@ -84,6 +84,21 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
 
 不等更久，是因为网络搜歌词可能要好几秒，等太久小组件就一直停在上一首。
 
+### 按钮的 intent 返回之前写好新状态
+
+Apple 文档（*Adding interactivity to widgets and Live Activities*）写明：`perform()` 返回后，系统用 timeline provider
+重新加载被按的那个小组件，「Interactions with a toggle or button always guarantee a timeline reload」；刷新要用的数据
+必须在返回之前写好。原来三个 intent 发完命令就返回，这次一定会有的刷新读到的还是按下之前的状态。新状态要等 app
+自己请求的刷新，而那一次可能被上一节说的节流推迟到 5 秒后。
+
+现在三个 intent 调 `AppController` 里对应的方法，等快照写好才返回：
+
+- **播放/暂停**直接写入切换之后的状态：暂停就停在当前进度，播放就从当前进度接着走，不等播放器回报。之后照常记一次
+  播放状态变化，1 秒后拿播放器实际回报的状态和写进去的比一比，不一样才刷新。万一播放器没照做，小组件会改回来。
+- **上一首/下一首**等协调器为这次换歌刷新的那一刻再返回，那时新歌和它的歌词已经写进快照。最多等 4 秒：在一首歌
+  开头按「上一首」通常只是从头播放，不会换歌，这时等满 4 秒再返回。
+- 两种情况都顺带调一次 `reloadAllTimelines()`。Apple 没说按钮之后那次刷新会不会顾及桌面上其他尺寸的小组件。
+
 ## 模块结构
 
 | 文件 | 内容 |
@@ -92,7 +107,7 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetReloadPolicy.swift` | 纯规则：一串变化之后什么时候刷新，新快照值不值得刷新 |
 | `LyricsX/Component/WidgetReloadCoordinator.swift` | 在 `lyricsDisplay` 队列上执行上面的规则：记下变化、到点写快照、该刷新才刷新 |
 | `LyricsXWidget/Views/LyricsWindowView.swift` | 大号和超大号共用的歌词区，以及量高度、调用策略、摆放行的 `LyricsWindowLayout` |
-| `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件 |
+| `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件；在 app 里调 `AppController` 的 `togglePlaybackFromWidget()` 等方法 |
 
 ## 验证
 
@@ -126,7 +141,9 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 
 下面这些只能在桌面上人工确认：
 
-- 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。
+- 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。播放/暂停的
+  图标约 1 秒内就变；下一首约 2～3 秒内连同歌词一起换好。日志里，按下之后第一条
+  `[LXWG][Provider] timeline(for:) called` 读到的就应该是新状态。
 - 超大号：在小组件的编辑界面打开翻译，放一首带翻译的歌，封面、标题和播放按钮都应留在小组件里，歌词区里没有
   被切掉半截的行。
 - 大号：放一首有长句的歌，折行的句子应当居中，当前行不再变成一行加省略号。
@@ -143,6 +160,7 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 - 刷新攒着发的代价：换歌后歌名也要等到那一次刷新才换（约 1.5～2.5 秒，原来立刻换，但配着错的状态）；在音乐 app
   里暂停，小组件约 1 秒后才停（原来立即请求刷新）。小组件上的播放按钮不受影响。
 - 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
+- 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
 
 ## 后续工作
 

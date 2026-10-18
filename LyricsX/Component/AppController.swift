@@ -924,6 +924,45 @@ final class AppController: NSObject {
 
     // MARK: Widget Data Bridge
 
+    /// The widget's play/pause button. WidgetKit reloads the widget when the
+    /// button's intent returns, so the snapshot has to show the new state by
+    /// then, ahead of the player reporting it.
+    func togglePlaybackFromWidget() async {
+        let playbackStateBeforeToggle = await MainActor.run {
+            let playbackState = selectedPlayer.playbackState
+            selectedPlayer.playPause()
+            return playbackState
+        }
+        let expectedPlaybackState: PlaybackState = playbackStateBeforeToggle.isPlaying
+            ? .paused(time: playbackStateBeforeToggle.time)
+            : .playing(start: Date().addingTimeInterval(-playbackStateBeforeToggle.time))
+        await widgetReloadCoordinator.deliverPlaybackToggle(expectedPlaybackState: expectedPlaybackState)
+    }
+
+    /// The widget's next-track button. Returns once the next track and its
+    /// lyrics are in the snapshot that WidgetKit reloads the widget with when
+    /// the button's intent returns.
+    func skipToNextTrackFromWidget() async {
+        await MainActor.run {
+            selectedPlayer.skipToNextItem()
+        }
+        await widgetReloadCoordinator.waitForTrackChangeDelivery(timeout: Self.widgetTrackChangeTimeout)
+    }
+
+    /// The widget's previous-track button; see `skipToNextTrackFromWidget()`.
+    func skipToPreviousTrackFromWidget() async {
+        await MainActor.run {
+            selectedPlayer.skipToPreviousItem()
+        }
+        await widgetReloadCoordinator.waitForTrackChangeDelivery(timeout: Self.widgetTrackChangeTimeout)
+    }
+
+    /// How long a skip button waits for its track change. Past the longest a
+    /// change is held (`WidgetReloadPolicy.Schedule.maximumHold`), plus time
+    /// for the player to report the new track. A skip that restarts the same
+    /// track has no track change and returns when this runs out.
+    private static let widgetTrackChangeTimeout: TimeInterval = 4
+
     /// Persist the current snapshot without rebuilding the timeline.
     /// Use on lyric-line transitions: pre-generated future entries already
     /// drive the line change in the widget process, so a reload would only

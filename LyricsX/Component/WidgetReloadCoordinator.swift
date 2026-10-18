@@ -1,5 +1,5 @@
 import Foundation
-import MusicPlayer
+@preconcurrency import MusicPlayer
 import WidgetKit
 import LyricsXWidgetShared
 
@@ -7,8 +7,11 @@ import LyricsXWidgetShared
 /// everything that changed. The rules are `WidgetReloadPolicy`'s; this runs
 /// them on `DispatchQueue.lyricsDisplay`, where `AppController` writes the
 /// widget's snapshot.
+///
+/// `@unchecked Sendable` because every stored property is read and written on
+/// `DispatchQueue.lyricsDisplay` only, which is serial.
 @Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "WidgetReloadCoordinator")
-final class WidgetReloadCoordinator {
+final class WidgetReloadCoordinator: @unchecked Sendable {
     /// Writes the snapshot the widget reads and returns it, or `nil` when
     /// nothing is playing and the snapshot was cleared. A playback state
     /// passed in is used instead of the player's. Runs on
@@ -19,6 +22,10 @@ final class WidgetReloadCoordinator {
     private var scheduledReload: DispatchWorkItem?
     /// The snapshot the widget was last reloaded with.
     private var deliveredSnapshot: LyricsWidgetData?
+    /// Whether the changes waiting for the next reload include a track change.
+    private var pendingChangesIncludeTrackChange = false
+    /// Widget skip buttons waiting for their track change to reach the snapshot.
+    private var trackChangeWaiters: [UUID: CheckedContinuation<Void, Never>] = [:]
 
     init(writeSnapshot: @escaping (PlaybackState?) -> LyricsWidgetData?) {
         self.writeSnapshot = writeSnapshot
@@ -30,7 +37,45 @@ final class WidgetReloadCoordinator {
         let changeDate = Date()
         DispatchQueue.lyricsDisplay.async { [self] in
             schedule.note(change, at: changeDate)
+            if change == .trackChanged {
+                pendingChangesIncludeTrackChange = true
+            }
             scheduleReload()
+        }
+    }
+
+    // WidgetKit reloads the widget whose button was pressed when the button's
+    // intent returns, and reads the snapshot then. These two return once the
+    // snapshot shows what the button did. They also reload every widget, for
+    // the other sizes on the desktop: Apple does not say whether the reload
+    // after an intent covers them.
+
+    /// For the play/pause button: writes the state the player was just asked
+    /// for, ahead of the player reporting it.
+    func deliverPlaybackToggle(expectedPlaybackState: PlaybackState) async {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.lyricsDisplay.async { [self] in
+                deliver(writeSnapshot(expectedPlaybackState))
+                // Compare with what the player reports once it settles, and
+                // reload if it did not do what the button asked.
+                schedule.note(.playbackStateChanged, at: Date())
+                scheduleReload()
+                continuation.resume()
+            }
+        }
+    }
+
+    /// For the skip buttons: waits until the next track and its lyrics are
+    /// in the snapshot, or `timeout` if no track change comes.
+    func waitForTrackChangeDelivery(timeout: TimeInterval) async {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.lyricsDisplay.async { [self] in
+                let waiterIdentifier = UUID()
+                trackChangeWaiters[waiterIdentifier] = continuation
+                DispatchQueue.lyricsDisplay.asyncAfter(deadline: .now() + timeout) { [self] in
+                    trackChangeWaiters.removeValue(forKey: waiterIdentifier)?.resume()
+                }
+            }
         }
     }
 
@@ -48,12 +93,19 @@ final class WidgetReloadCoordinator {
     private func reload() {
         scheduledReload = nil
         schedule.noteReload()
+        let includesTrackChange = pendingChangesIncludeTrackChange
+        pendingChangesIncludeTrackChange = false
         let snapshot = writeSnapshot(nil)
         if let snapshot, !WidgetReloadPolicy.snapshotNeedsReload(delivered: deliveredSnapshot, current: snapshot) {
             #log(.info, "[LXWG][Reload] skipped: the widget already shows this snapshot")
-            return
+        } else {
+            deliver(snapshot)
         }
-        deliver(snapshot)
+        if includesTrackChange {
+            let waiters = trackChangeWaiters.values
+            trackChangeWaiters.removeAll()
+            waiters.forEach { $0.resume() }
+        }
     }
 
     private func deliver(_ snapshot: LyricsWidgetData?) {
