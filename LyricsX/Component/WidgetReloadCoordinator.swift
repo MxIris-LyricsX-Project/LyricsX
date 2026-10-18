@@ -26,6 +26,9 @@ final class WidgetReloadCoordinator: @unchecked Sendable {
     private var pendingChangesIncludeTrackChange = false
     /// Widget skip buttons waiting for their track change to reach the snapshot.
     private var trackChangeWaiters: [UUID: CheckedContinuation<Void, Never>] = [:]
+    /// The player's last report, to tell a plain pause or resume from a report
+    /// the next ones may still correct.
+    private var previousPlaybackMoment: WidgetReloadPolicy.PlaybackMoment?
 
     init(writeSnapshot: @escaping (PlaybackState?) -> LyricsWidgetData?) {
         self.writeSnapshot = writeSnapshot
@@ -44,6 +47,24 @@ final class WidgetReloadCoordinator: @unchecked Sendable {
         }
     }
 
+    /// A playback report from the player. Callable from any thread, as the
+    /// report arrives: a playing position is only meaningful at its moment.
+    func notePlaybackState(isPlaying: Bool, position: TimeInterval, trackDuration: TimeInterval?) {
+        guard #available(macOS 14, *) else { return }
+        let moment = WidgetReloadPolicy.PlaybackMoment(isPlaying: isPlaying, position: position, date: Date())
+        DispatchQueue.lyricsDisplay.async { [self] in
+            let needsSettling = WidgetReloadPolicy.playbackChangeNeedsSettling(
+                from: previousPlaybackMoment,
+                to: moment,
+                trackDuration: trackDuration
+            )
+            previousPlaybackMoment = moment
+            #log(.info, "[LXWG][Reload] playback report (isPlaying=\(isPlaying, privacy: .public), position=\(position, privacy: .public), needsSettling=\(needsSettling, privacy: .public))")
+            schedule.note(.playbackStateChanged(needsSettling: needsSettling), at: moment.date)
+            scheduleReload()
+        }
+    }
+
     // WidgetKit reloads the widget whose button was pressed when the button's
     // intent returns, and reads the snapshot then. These two return once the
     // snapshot shows what the button did. They also reload every widget, for
@@ -58,7 +79,7 @@ final class WidgetReloadCoordinator: @unchecked Sendable {
                 deliver(writeSnapshot(expectedPlaybackState))
                 // Compare with what the player reports once it settles, and
                 // reload if it did not do what the button asked.
-                schedule.note(.playbackStateChanged, at: Date())
+                schedule.note(.playbackStateChanged(needsSettling: true), at: Date())
                 scheduleReload()
                 continuation.resume()
             }

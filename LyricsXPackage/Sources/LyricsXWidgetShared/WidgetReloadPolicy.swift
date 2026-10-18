@@ -20,17 +20,71 @@ public enum WidgetReloadPolicy {
         case trackChanged
         /// The lyrics were replaced, or cleared when `hasLyrics` is false.
         case lyricsChanged(hasLyrics: Bool)
-        /// The player started, paused, stopped or jumped.
-        case playbackStateChanged
+        /// The player started, paused, stopped or jumped. `needsSettling` when
+        /// the reports that follow may still correct it; see
+        /// `playbackChangeNeedsSettling(from:to:trackDuration:)`.
+        case playbackStateChanged(needsSettling: Bool)
+    }
+
+    /// Where playback stood at one moment, as the player reported it.
+    public struct PlaybackMoment: Equatable, Sendable {
+        public let isPlaying: Bool
+        public let position: TimeInterval
+        public let date: Date
+
+        public init(isPlaying: Bool, position: TimeInterval, date: Date) {
+            self.isPlaying = isPlaying
+            self.position = position
+            self.date = date
+        }
+    }
+
+    /// How close to either end of the track a report counts as part of a track
+    /// change.
+    public static let trackBoundaryMargin: TimeInterval = 1.5
+    /// How far a report can stray from where playback should be and still
+    /// carry on from the report before it.
+    public static let playbackContinuityTolerance: TimeInterval = 1
+
+    /// Whether the reports that follow a playback change may still correct it,
+    /// so the widget should wait for playback to settle before reloading.
+    ///
+    /// A plain pause, a resume from where playback paused, or the same report
+    /// again needs no waiting. Everything else does:
+    /// - a report within `trackBoundaryMargin` of either end of the track,
+    ///   which may belong to a track change: the player reports the next track
+    ///   as paused half a second before the track change itself arrives;
+    /// - a report that does not carry on from the one before, such as a seek,
+    ///   or the stale position that resuming through MediaRemote reports first;
+    /// - the first report, with nothing to carry on from.
+    public static func playbackChangeNeedsSettling(
+        from previous: PlaybackMoment?,
+        to current: PlaybackMoment,
+        trackDuration: TimeInterval?
+    ) -> Bool {
+        guard let previous else { return true }
+        let isNearTrackStart = current.position < trackBoundaryMargin
+        let isNearTrackEnd = trackDuration.map { current.position > $0 - trackBoundaryMargin } ?? false
+        if isNearTrackStart || isNearTrackEnd {
+            return true
+        }
+        let expectedPosition = previous.isPlaying
+            ? previous.position + current.date.timeIntervalSince(previous.date)
+            : previous.position
+        return abs(current.position - expectedPosition) > playbackContinuityTolerance
     }
 
     /// Collects changes and says when to reload for them.
     public struct Schedule: Sendable {
-        /// How long playback has to stay put before a reload. A track change
-        /// opens with a pause half a second before the track change itself
-        /// arrives, and resuming through the MediaRemote backend reports a
-        /// stale position first and the real one up to 0.9 s later.
+        /// How long playback has to stay put after a change that may still be
+        /// corrected. A track change opens with a pause half a second before
+        /// the track change itself arrives, and resuming through the
+        /// MediaRemote backend reports a stale position first and the real one
+        /// up to 0.9 s later.
         public static let playbackSettleInterval: TimeInterval = 1
+        /// How long a plain pause or resume waits: just long enough to fold in
+        /// a second report of the same change.
+        public static let plainPlaybackChangeInterval: TimeInterval = 0.15
         /// How long a change to the lyrics waits, so that changes made
         /// together go out in one reload.
         public static let lyricsSettleInterval: TimeInterval = 0.3
@@ -41,7 +95,7 @@ public enum WidgetReloadPolicy {
         public static let maximumHold: TimeInterval = 3
 
         private var firstPendingChangeDate: Date?
-        private var lastPlaybackChangeDate: Date?
+        private var playbackSettledDate: Date?
         private var lastLyricsChangeDate: Date?
         private var trackChangeAwaitingLyricsDate: Date?
 
@@ -52,7 +106,7 @@ public enum WidgetReloadPolicy {
         public var reloadDate: Date? {
             guard let firstPendingChangeDate else { return nil }
             let settleDates = [
-                lastPlaybackChangeDate?.addingTimeInterval(Self.playbackSettleInterval),
+                playbackSettledDate,
                 lastLyricsChangeDate?.addingTimeInterval(Self.lyricsSettleInterval),
                 trackChangeAwaitingLyricsDate?.addingTimeInterval(Self.lyricsWaitAfterTrackChange),
             ].compactMap { $0 }
@@ -72,8 +126,12 @@ public enum WidgetReloadPolicy {
                 if hasLyrics {
                     trackChangeAwaitingLyricsDate = nil
                 }
-            case .playbackStateChanged:
-                lastPlaybackChangeDate = date
+            case .playbackStateChanged(let needsSettling):
+                // A plain change never shortens the wait for one still settling.
+                let settledDate = date.addingTimeInterval(
+                    needsSettling ? Self.playbackSettleInterval : Self.plainPlaybackChangeInterval
+                )
+                playbackSettledDate = max(playbackSettledDate ?? settledDate, settledDate)
             }
         }
 
