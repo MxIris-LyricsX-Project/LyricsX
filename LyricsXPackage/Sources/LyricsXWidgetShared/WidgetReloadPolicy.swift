@@ -167,7 +167,6 @@ public enum WidgetReloadPolicy {
               delivered.backgroundColor == current.backgroundColor,
               delivered.lyricsLines == current.lyricsLines,
               delivered.showsTranslation == current.showsTranslation,
-              delivered.availableTranslationLanguages == current.availableTranslationLanguages,
               delivered.isPlaying == current.isPlaying
         else {
             return true

@@ -105,12 +105,35 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
   配置还在 `NotificationCenter` 里继续刷新、继续抢立即刷新的名额，直到重启 `chronod` 和 `NotificationCenter` 才消失。
 - 只剩一套配置之后，同样的操作：暂停从播放器回报到上屏 0.39～0.40 秒，切歌 2.07～2.45 秒。
 
-所以只要还有每个小组件自己的设置项，用户编辑过任意一个，就会让一部分小组件的每次更新都晚 5 秒。见「后续工作」。
+所以只要还有每个小组件自己的设置项，用户编辑过任意一个，就会让一部分小组件的每次更新都晚 5 秒。现在小组件没有
+自己的设置项了，见下一节。
+
+### 小组件没有自己的设置项
+
+原来每个小组件有两个设置项：「显示翻译」和「翻译语言」（`AppIntentConfiguration` 加一个配置 intent）。上一节说了，
+编辑过的小组件自成一套配置，会让其余小组件每次更新都晚 5 秒。所以现在小组件是 `StaticConfiguration`，编辑小组件时
+没有设置项，桌面上所有小组件同属一套配置。提案见
+[小组件统一成一种配置](../Evolutions/draft-widget-single-configuration.md)。
+
+**以后要让小组件能用不同方式显示，也加在 app 里，经快照传过去**，不要再给小组件加配置 intent。
+
+- **显示不显示译文，跟随 app 的「Prefer bilingual lyrics」**（`PreferBilingualLyrics`），和桌面歌词、歌词面板一致。
+  app 写快照时把它写进 `LyricsWidgetData.showsTranslation`。改这个设置算一次「显示设置变了」，0.3 秒后刷新。中文
+  环境下这个设置默认开着（`AppDelegate` 注册默认值时按系统语言定），原来小组件默认不显示译文，所以这些用户升级后，
+  小组件会开始显示译文。
+- **显示哪一种译文，由 `AppController.widgetTranslation(of:in:)` 一处决定**，取法和桌面歌词一样：先取歌词里第一种带
+  语言代码的译文，没有就取不带代码的那份。原来只取带代码的，网易云、QQ 音乐、酷狗的译文都不带代码，小组件从来显示
+  不出来。原来的「翻译语言」设置项其实也不起作用：小组件没有拿它去挑译文。
+- **让用户选显示哪种译文**，留给 AI 翻译那个还在审的 PR（#204）。它加了「显示哪种译文」的设置和
+  `Lyrics.displayTranslation(for:)`，合进来时把 `widgetTranslation(of:in:)` 换成调它，小组件就跟着 app 选的语言走。
+- 旧版本写的快照里没有 `showsTranslation`，解码时按「不显示」处理（`LyricsWidgetData.init(from:)`），所以升级后、app
+  写出新快照之前，小组件照样能读出旧快照。
+- 原来写给翻译语言选单的 `availableTranslationLanguages` 也删了。
 
 ### 刷新的渲染开销
 
 一次刷新，WidgetKit 要先把新 timeline 的每一条 entry、按桌面上的每个尺寸都渲染存档，**全部做完才一起换上**。
-2026-10-18 测的一次切歌：每个尺寸 34～35 条，共约 140 份视图，从第一次调 `timeline(for:)` 到换上用了 2.0 秒；
+2026-10-18 测的一次切歌：每个尺寸 34～35 条，共约 140 份视图，从 WidgetKit 第一次向小组件要 timeline 到换上用了 2.0 秒；
 暂停只有 1 条，0.2 秒。所以播放、切歌之后的延迟，大头在渲染。
 
 当时每份视图有两处多余的开销：
@@ -120,7 +143,7 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
   `WidgetDataStore.writeCover` 原子写入，读的一方不会读到写了一半的文件。
 - 大号、超大号的歌词区每条排 33 行，现在是 17 行，见上一节。
 
-改完后同一种操作：切歌后 15～23 条的 timeline，从第一次调 `timeline(for:)` 到换上用 0.7～1.1 秒。
+改完后同一种操作：切歌后 15～23 条的 timeline，从 WidgetKit 第一次要 timeline 到换上用 0.7～1.1 秒。
 
 ### 按钮的 intent 返回之前写好新状态
 
@@ -177,6 +200,8 @@ WidgetKit 计时和实际播放之间的误差就攒不起来。
 
 | 文件 | 内容 |
 |---|---|
+| `LyricsXPackage/Sources/LyricsXWidgetShared/LyricsWidgetData.swift` | app 写给小组件的快照，包括显示设置（`showsTranslation`）；旧版本写的快照照样能解码 |
+| `LyricsXWidget/LyricsTimelineProvider.swift` | 静态配置的 timeline provider：从快照给每行生成一条 entry |
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetLyricsLayoutPolicy.swift` | 纯函数：给定每行高度，决定显示哪些行、每行的上边缘在哪 |
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetReloadPolicy.swift` | 纯规则：一串变化之后什么时候刷新，新快照值不值得刷新 |
 | `LyricsX/Component/WidgetReloadCoordinator.swift` | 在 `lyricsDisplay` 队列上执行上面的规则：记下变化、到点写快照、该刷新才刷新 |
@@ -194,6 +219,9 @@ cd LyricsXPackage && swift test --filter WidgetLyricsLayoutPolicyTests
 # 刷新 4 次，第一次在 0 秒，那时还是上一首的歌词。「单纯的暂停、恢复几乎立刻刷新」那几个在
 # 「播放状态一律等 1 秒」的行为上是红的
 cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
+
+# 快照的编码，3 个用例（<1 秒）。旧版本写的快照（没有 showsTranslation）应读成不显示译文
+cd LyricsXPackage && swift test --filter LyricsWidgetDataTests
 ```
 
 刷新实际怎么发生，要看系统日志。下面这条录下 app 的刷新决定（`[LXWG][Reload]`）、小组件每次生成 timeline
@@ -209,18 +237,23 @@ cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
 ```bash
 # 三个按钮 intent 的元数据：应为 openAppWhenRun false，且 systemProtocols 含 AudioStarting
 products=<DerivedData>/Build/Products/Debug
+metadata="$products/LyricsX-Debug.app/Contents/PlugIns/LyricsXWidget.appex/Contents/Resources/Metadata.appintents/extract.actionsdata"
 jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|PreviousTrack"))
-       | {intent: .key, openAppWhenRun: .value.openAppWhenRun, systemProtocols: .value.systemProtocols}' \
-   "$products/LyricsX-Debug.app/Contents/PlugIns/LyricsXWidget.appex/Contents/Resources/Metadata.appintents/extract.actionsdata"
+       | {intent: .key, openAppWhenRun: .value.openAppWhenRun, systemProtocols: .value.systemProtocols}' "$metadata"
+# 小组件没有配置 intent：actions 只有这三个，entities 为空
+jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metadata"
 ```
 
 下面这些只能在桌面上人工确认：
 
 - 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。播放/暂停的
   图标约 1 秒内就变；下一首约 2～3 秒内连同歌词一起换好。日志里，按下之后第一条
-  `[LXWG][Provider] timeline(for:) called` 读到的就应该是新状态。
-- 超大号：在小组件的编辑界面打开翻译，放一首带翻译的歌，封面、标题和播放按钮都应留在小组件里，歌词区里没有
-  被切掉半截的行。
+  `[LXWG][Provider] getTimeline(in:) called` 读到的就应该是新状态。
+- 超大号：在 app 的偏好设置里打开「Prefer bilingual lyrics」，放一首带翻译的歌，封面、标题和播放按钮都应留在小组件
+  里，歌词区里没有被切掉半截的行。
+- 统一配置：放一首带翻译的歌，在 app 里切换「Prefer bilingual lyrics」，桌面上所有小组件应当在约 1 秒内一起显示或
+  收起译文。上面那条日志里，每次刷新的 `record reload` 只应出现一个配置编号，`Throttling additional refresh request`
+  不应紧跟在每次刷新后面出现。
 - 大号：放一首有长句的歌，折行的句子应当居中，当前行不再变成一行加省略号。
 
 ## 已知降级
@@ -239,15 +272,16 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 - 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
 - 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
 - 每行换上的时刻前后有约半秒的抖动，来自系统合并计时器，app 这边消除不了；提前量只能让它的中位数对上歌词。
-- 小组件仍有每个实例自己的设置项（显示翻译、翻译语言）。用户编辑过任意一个，它就自成一套配置，其余配置的每次更新
-  都晚约 5 秒，见「节流按小组件种类算，请求按配置拆分」。小组件删掉后残留的配置要重启 `chronod` 和
-  `NotificationCenter` 才清掉。
+- 小组件不能各自设置：所有小组件显示不显示译文都跟着 app 的「Prefer bilingual lyrics」，不能一个显示、一个不显示。
+  这是为了统一配置有意做的取舍，见「小组件没有自己的设置项」。
+- 小组件不做简繁转换：桌面歌词会按 app 的简繁设置转换中文歌词和译文，歌词面板会转换译文，小组件显示的都是原文。
+- 小组件删掉后残留的配置要重启 `chronod` 和 `NotificationCenter` 才清掉，见「节流按小组件种类算，请求按配置拆分」。
 
 ## 后续工作
 
-- **把小组件的设置挪到主 app，经 App Group 传给小组件，所有小组件统一成一种配置**（2026-10-18 定下的方向）。
-  去掉 `LyricsWidgetConfigurationIntent` 的每实例设置项之后，所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
-- 小组件设置里的「翻译语言」不起作用：app 写数据时只取歌词的第一种翻译（`AppController` 里的
-  `availableTranslationLanguages.first`），小组件也没有用配置里的语言去挑。上一条做完，这一项随之重新设计。
+- **桌面实测**：换成静态配置之后，桌面上原来编辑过的小组件会不会并回同一套配置。并不回来的话，发布说明里要提示
+  用户把这些小组件删掉、重新添加一次。
+- 让用户选小组件显示哪种译文：等 AI 翻译那个 PR（#204）合进来，见「小组件没有自己的设置项」。
+- 小组件跟随 app 的简繁设置：照桌面歌词的做法，在 app 写快照时转换，经快照传过去。
 - 播放器不给封面时，小组件只显示音符占位图（#147）。歌词面板已经会联网找封面（`HighResolutionArtworkService`），
   但它只在面板窗口开着时运行，结果也不写给小组件。

@@ -35,7 +35,7 @@ struct LargeWidgetView: View {
                             lines: entry.lyricsLines,
                             highlightedLineIndex: entry.highlightedLineIndex,
                             lineSpacing: 6,
-                            showsTranslation: entry.showTranslation,
+                            showsTranslation: entry.showsTranslation,
                             translationScope: .highlightedLine
                         )
                     }

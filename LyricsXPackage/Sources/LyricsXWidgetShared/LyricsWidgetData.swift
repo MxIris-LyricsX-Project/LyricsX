@@ -16,7 +16,6 @@ public struct LyricsWidgetData: Codable, Sendable {
     /// Prefer bilingual lyrics setting. Every widget takes it from here, so
     /// none has a setting of its own, and all of them share one configuration.
     public let showsTranslation: Bool
-    public let availableTranslationLanguages: [String]
 
     public init(
         trackTitle: String,
@@ -28,8 +27,7 @@ public struct LyricsWidgetData: Codable, Sendable {
         isPlaying: Bool,
         timestamp: Date,
         playbackPosition: TimeInterval,
-        showsTranslation: Bool,
-        availableTranslationLanguages: [String]
+        showsTranslation: Bool
     ) {
         self.trackTitle = trackTitle
         self.artist = artist
@@ -41,7 +39,6 @@ public struct LyricsWidgetData: Codable, Sendable {
         self.timestamp = timestamp
         self.playbackPosition = playbackPosition
         self.showsTranslation = showsTranslation
-        self.availableTranslationLanguages = availableTranslationLanguages
     }
 
     public init(from decoder: any Decoder) throws {
@@ -58,7 +55,6 @@ public struct LyricsWidgetData: Codable, Sendable {
         // A snapshot an earlier version of the app left behind has no such
         // key: back then each widget had its own setting, off by default.
         self.showsTranslation = try container.decodeIfPresent(Bool.self, forKey: .showsTranslation) ?? false
-        self.availableTranslationLanguages = try container.decode([String].self, forKey: .availableTranslationLanguages)
     }
 }
 

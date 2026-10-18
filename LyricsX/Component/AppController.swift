@@ -984,8 +984,9 @@ final class AppController: NSObject {
     /// Use on lyric-line transitions: pre-generated future entries already
     /// drive the line change in the widget process, so a reload would only
     /// add WidgetKit scheduling latency. We still refresh the dataStore so
-    /// on-demand reads (placeholder, configuration UI) and the next reload
-    /// stay accurate.
+    /// what the widget reads on its own (a timeline WidgetKit asks for on its
+    /// schedule, the snapshot in the widget gallery) and the next reload stay
+    /// accurate.
     func updateWidgetSnapshot() {
         guard #available(macOS 14, *) else { return }
         writeWidgetSnapshot(playbackState: nil)
@@ -1011,10 +1012,8 @@ final class AppController: NSObject {
         // Build lyrics lines with context window
         var lyricsLines: [LyricsLineEntry] = []
         var widgetCurrentLineIndex = 0
-        var availableTranslationLanguages: [String] = []
 
         if let lyrics = currentLyrics {
-            availableTranslationLanguages = lyrics.metadata.translationLanguages
             let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
             let contextRadius = 50
             let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
@@ -1078,8 +1077,7 @@ final class AppController: NSObject {
             isPlaying: playbackState.isPlaying,
             timestamp: Date(),
             playbackPosition: playbackTime + lyricsTimeDelay,
-            showsTranslation: defaults[.preferBilingualLyrics],
-            availableTranslationLanguages: availableTranslationLanguages
+            showsTranslation: defaults[.preferBilingualLyrics]
         )
 
         do {

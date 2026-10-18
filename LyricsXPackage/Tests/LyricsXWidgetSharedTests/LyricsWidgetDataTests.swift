@@ -19,8 +19,7 @@ struct LyricsWidgetDataTests {
             isPlaying: true,
             timestamp: Date(timeIntervalSince1970: 1000),
             playbackPosition: 10.5,
-            showsTranslation: true,
-            availableTranslationLanguages: ["zh-Hans", "ja"]
+            showsTranslation: true
         )
 
         let encoded = try JSONEncoder().encode(original)
@@ -41,7 +40,6 @@ struct LyricsWidgetDataTests {
         #expect(decoded.isPlaying == true)
         #expect(decoded.playbackPosition == 10.5)
         #expect(decoded.showsTranslation == true)
-        #expect(decoded.availableTranslationLanguages == ["zh-Hans", "ja"])
     }
 
     @Test("Encode/decode with nil optional fields")
@@ -56,8 +54,7 @@ struct LyricsWidgetDataTests {
             isPlaying: false,
             timestamp: Date(),
             playbackPosition: 0,
-            showsTranslation: false,
-            availableTranslationLanguages: []
+            showsTranslation: false
         )
 
         let encoded = try JSONEncoder().encode(original)

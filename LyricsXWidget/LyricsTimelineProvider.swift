@@ -2,8 +2,16 @@ import ImageIO
 import WidgetKit
 import LyricsXWidgetShared
 
+/// Builds every widget's timeline from the snapshot the app writes.
+///
+/// The widget has no settings of its own, on purpose: anything it can show
+/// two ways, such as translations, follows a setting in the app that comes in
+/// the snapshot. WidgetKit splits a reload the app asks for into one request
+/// per widget configuration and runs one every five seconds, so each widget
+/// edited into a configuration of its own put the others five seconds behind.
+/// Documentations/Internal/DesktopWidget.md has the measurements.
 @Loggable(subsystem: "com.JH.LyricsX.diagnostics", category: "LyricsTimelineProvider")
-struct LyricsTimelineProvider: AppIntentTimelineProvider {
+struct LyricsTimelineProvider: TimelineProvider {
     #if DEBUG
     private static let groupIdentifier = "D5Q73692VW.group.dev.JH.LyricsX"
     #else
@@ -59,33 +67,34 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             ],
             highlightedLineIndex: 0,
             isPlaying: true,
-            showTranslation: false,
-            translationLanguage: nil,
+            showsTranslation: false,
             isEmpty: false
         )
     }
 
-    func snapshot(for configuration: LyricsWidgetConfigurationIntent, in context: Context) async -> LyricsTimelineEntry {
-        let entry = buildCurrentEntry(for: configuration, at: Date())
+    func getSnapshot(in context: Context, completion: @escaping @Sendable (LyricsTimelineEntry) -> Void) {
+        let entry = buildCurrentEntry(at: Date())
         #log(.info, "[LXWG][Provider] snapshot returned (isEmpty=\(entry.isEmpty, privacy: .public), isPlaying=\(entry.isPlaying, privacy: .public), highlight=\(entry.highlightedLineIndex, privacy: .public))")
-        return entry
+        completion(entry)
     }
 
-    func timeline(for configuration: LyricsWidgetConfigurationIntent, in context: Context) async -> Timeline<LyricsTimelineEntry> {
+    func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<LyricsTimelineEntry>) -> Void) {
+        completion(makeTimeline())
+    }
+
+    private func makeTimeline() -> Timeline<LyricsTimelineEntry> {
         let snapshot = dataStore.read()
-        #log(.info, "[LXWG][Provider] timeline(for:) called (hasData=\(snapshot != nil, privacy: .public), isPlaying=\(snapshot?.isPlaying ?? false, privacy: .public), playbackPosition=\(snapshot?.playbackPosition ?? -1, privacy: .public), lineIndex=\(snapshot?.currentLineIndex ?? -1, privacy: .public), lines=\(snapshot?.lyricsLines.count ?? 0, privacy: .public))")
+        #log(.info, "[LXWG][Provider] getTimeline(in:) called (hasData=\(snapshot != nil, privacy: .public), isPlaying=\(snapshot?.isPlaying ?? false, privacy: .public), playbackPosition=\(snapshot?.playbackPosition ?? -1, privacy: .public), lineIndex=\(snapshot?.currentLineIndex ?? -1, privacy: .public), lines=\(snapshot?.lyricsLines.count ?? 0, privacy: .public))")
 
         guard let widgetData = snapshot, widgetData.isPlaying else {
             // Not playing or no data: single static entry
-            let entry = buildCurrentEntry(for: configuration, at: Date())
+            let entry = buildCurrentEntry(at: Date())
             #log(.info, "[LXWG][Provider] static branch → 1 entry (reason=\(snapshot == nil ? "noData" : "paused", privacy: .public))")
             return Timeline(entries: [entry], policy: .never)
         }
 
         // Build time-driven entries from lyrics lines
         let coverImage = loadCoverImage()
-        let showTranslation = configuration.showTranslation
-        let translationLanguage = configuration.translationLanguage?.id
         let schedulingCompensation = Self.widgetSchedulingCompensation
 
         var entries: [LyricsTimelineEntry] = []
@@ -146,15 +155,14 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
                 lyricsLines: widgetData.lyricsLines,
                 highlightedLineIndex: lineIndex,
                 isPlaying: widgetData.isPlaying,
-                showTranslation: showTranslation,
-                translationLanguage: translationLanguage,
+                showsTranslation: widgetData.showsTranslation,
                 isEmpty: false
             )
             entries.append(entry)
         }
 
         if entries.isEmpty {
-            let entry = buildCurrentEntry(for: configuration, at: now)
+            let entry = buildCurrentEntry(at: now)
             #log(.info, "[LXWG][Provider] dynamic branch produced 0 entries → fallback static (1 entry, refresh after window)")
             return Timeline(entries: [entry], policy: .after(refreshDate))
         }
@@ -207,7 +215,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
         return CGImageSourceCreateImageAtIndex(imageSource, 0, options)
     }
 
-    private func buildCurrentEntry(for configuration: LyricsWidgetConfigurationIntent, at date: Date) -> LyricsTimelineEntry {
+    private func buildCurrentEntry(at date: Date) -> LyricsTimelineEntry {
         guard let widgetData = dataStore.read() else {
             return .empty
         }
@@ -222,8 +230,7 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
             lyricsLines: widgetData.lyricsLines,
             highlightedLineIndex: widgetData.currentLineIndex,
             isPlaying: widgetData.isPlaying,
-            showTranslation: configuration.showTranslation,
-            translationLanguage: configuration.translationLanguage?.id,
+            showsTranslation: widgetData.showsTranslation,
             isEmpty: false
         )
     }

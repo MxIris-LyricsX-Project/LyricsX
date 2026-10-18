@@ -49,7 +49,7 @@ struct MediumWidgetView: View {
                                     .foregroundStyle(.white.opacity(0.9))
                                     .lineLimit(1)
 
-                                if entry.showTranslation,
+                                if entry.showsTranslation,
                                    let translation = currentLine.translation,
                                    !translation.isEmpty {
                                     Text(translation)

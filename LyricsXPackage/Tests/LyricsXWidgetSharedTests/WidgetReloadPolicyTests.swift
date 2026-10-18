@@ -234,8 +234,7 @@ private func snapshot(
         isPlaying: isPlaying,
         timestamp: Date(timeIntervalSinceReferenceDate: seconds),
         playbackPosition: position,
-        showsTranslation: showsTranslation,
-        availableTranslationLanguages: []
+        showsTranslation: showsTranslation
     )
 }
 
