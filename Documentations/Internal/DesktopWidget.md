@@ -55,13 +55,85 @@
 timeline 里这个数组不会变；每 60 秒重新生成 timeline 时窗口起点会移动，位置对不上，那一次换行退化成淡入淡出，
 和改之前一样。
 
+### 刷新要攒着发：WidgetKit 每 5 秒只执行一次 app 发起的刷新
+
+app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小组件时间线的进程 `chronod` 并不保证立刻执行。
+它的 `externalRequestTimelineReloadFilter` 只让 5 秒内的第一次请求立即生效，其余请求记一条
+「Throttling additional refresh request while foreground」，再挂一个计时器，到 5 秒期满时执行一次。
+
+原来 app 每有一处变化就请求一次刷新，而换歌恰好是一串变化，结果每首歌开头约 5 秒，小组件显示的都是错的。
+2026-10-18 在 macOS 27.2 上录到的一次换歌（19:44:52）：
+
+- 第一次刷新立即执行，读到的快照是「暂停、新歌的第 0.15 秒、上一首的 51 行歌词」：播放器先报了暂停，大约半秒后
+  `currentTrackChanged()` 才清掉旧歌词。
+- 接下来 2 秒里，又有 13 次请求被推迟。
+- 正确的 timeline（播放中、新歌的 36 行）在 5.0 秒后才生成。
+
+现在 app 不再直接请求刷新。变化先交给 `WidgetReloadCoordinator`，它在 `DispatchQueue.lyricsDisplay` 上按
+`WidgetReloadPolicy.Schedule` 算出的时刻刷新一次：
+
+- **播放状态变化后要稳定 1 秒。** 换歌开头那次暂停比换歌通知早约半秒到；经 MediaRemote 恢复播放时，播放器先报一个
+  错的进度，0.16～0.9 秒后才报对的。原来恢复播放那条订阅的 1 秒防抖就是为了后者，现在并进了这条规则。
+- **歌词变化后等 0.3 秒**，把一起发生的变化（例如换候选歌词时先清空、再设新的）并成一次。
+- **换歌后等新歌的歌词，最多 2.5 秒。** 没等到，就先显示没有歌词的新歌。
+- **不管变化多么接连不断，最长等 3 秒。**
+
+刷新前，协调器把新快照和上次刷新用的快照比一比（`WidgetReloadPolicy.snapshotNeedsReload`）。歌名、歌词、配色、
+是否播放都相同时，播放中只要两份快照推出的「歌曲从 0 秒开始的时刻」相差不到 0.25 秒，暂停中只要当前行相同，就不刷新，
+把 5 秒一次的机会留给真正的变化。app 每换一行都会重写快照，这些快照之间只差在拍下的时刻。
+
+不等更久，是因为网络搜歌词可能要好几秒，等太久小组件就一直停在上一首。
+
+### 按钮的 intent 返回之前写好新状态
+
+Apple 文档（*Adding interactivity to widgets and Live Activities*）写明：`perform()` 返回后，系统用 timeline provider
+重新加载被按的那个小组件，「Interactions with a toggle or button always guarantee a timeline reload」；刷新要用的数据
+必须在返回之前写好。原来三个 intent 发完命令就返回，这次一定会有的刷新读到的还是按下之前的状态。新状态要等 app
+自己请求的刷新，而那一次可能被上一节说的节流推迟到 5 秒后。
+
+现在三个 intent 调 `AppController` 里对应的方法，等快照写好才返回：
+
+- **播放/暂停**直接写入切换之后的状态：暂停就停在当前进度，播放就从当前进度接着走，不等播放器回报。之后照常记一次
+  播放状态变化，1 秒后拿播放器实际回报的状态和写进去的比一比，不一样才刷新。万一播放器没照做，小组件会改回来。
+- **上一首/下一首**等协调器为这次换歌刷新的那一刻再返回，那时新歌和它的歌词已经写进快照。最多等 4 秒：在一首歌
+  开头按「上一首」通常只是从头播放，不会换歌，这时等满 4 秒再返回。
+- 两种情况都顺带调一次 `reloadAllTimelines()`。Apple 没说按钮之后那次刷新会不会顾及桌面上其他尺寸的小组件。
+
+### 每行提前 0.8 秒排进 timeline
+
+小组件不跑代码推进歌词，每一行是一条 timeline entry，`entry.date` 一到，桌面上的宿主进程 `NotificationCenter`
+换上这一条。实际换上的时刻比 `entry.date` 晚，而且每次晚得不一样，所以 `LyricsTimelineProvider` 把每一行的
+`entry.date` 提前一段（`WidgetSchedulingCompensationMs`）。
+
+2026-10-18 在 macOS 27.2 上量了一次：
+
+- 宿主换上每一条的时刻，比 `entry.date` 晚的中位数是 0.78 秒；大号、超大号各 36 次换行，九成落在 0.22～1.24 秒之间。
+- 原来提前 0.6 秒，相对歌词平均晚约 0.18 秒。改成 0.8 秒，中位数正好对上歌词。
+- 抖动消除不了：212 次换上的时刻里有 69 次落在整秒之后 0.1 秒以内（均匀分布应约 21 次）。宿主的计时器允许较大误差，
+  系统把它和别的计时器合并，常常凑到整秒才触发。
+
+量法：录下面这条日志，几分钟就够。小组件每次生成 timeline 都记一条 `preview=`，列出前 8 条 entry 相对这条日志的时刻
+（`@+秒数#行号`）；`NotificationCenter` 每换上一条，就给对应尺寸记一条 `Evaluated inner view`。把每条 entry 的时刻
+和它之后的第一次换上配对，相减就是延迟。刷新后 0.5 秒内的那次换上是新 timeline 本身，不算。
+
+```bash
+/usr/bin/log stream --level info --style compact --predicate '(subsystem == "com.JH.LyricsX.diagnostics" AND eventMessage CONTAINS "preview=")
+  OR (process == "NotificationCenter" AND category == "timelineLiveView" AND eventMessage CONTAINS "dev.JH.LyricsX"
+  AND eventMessage CONTAINS "Evaluated inner view")'
+```
+
+想不重新编译就试别的提前量，见 `LyricsTimelineProvider` 里 `defaultWidgetSchedulingCompensationMs` 的注释：
+要写进 App Group 容器里的那份偏好，也就是小组件读快照的同一个文件。
+
 ## 模块结构
 
 | 文件 | 内容 |
 |---|---|
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetLyricsLayoutPolicy.swift` | 纯函数：给定每行高度，决定显示哪些行、每行的上边缘在哪 |
+| `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetReloadPolicy.swift` | 纯规则：一串变化之后什么时候刷新，新快照值不值得刷新 |
+| `LyricsX/Component/WidgetReloadCoordinator.swift` | 在 `lyricsDisplay` 队列上执行上面的规则：记下变化、到点写快照、该刷新才刷新 |
 | `LyricsXWidget/Views/LyricsWindowView.swift` | 大号和超大号共用的歌词区，以及量高度、调用策略、摆放行的 `LyricsWindowLayout` |
-| `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件 |
+| `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件；在 app 里调 `AppController` 的 `togglePlaybackFromWidget()` 等方法 |
 
 ## 验证
 
@@ -69,6 +141,20 @@ timeline 里这个数组不会变；每 60 秒重新生成 timeline 时窗口起
 # 挑行策略，8 个用例（<1 秒）。第一个用例在原来的固定 9 行行为上是红的：
 # 它显示第 6–14 行，360 pt 塞进 200 pt
 cd LyricsXPackage && swift test --filter WidgetLyricsLayoutPolicyTests
+
+# 刷新规则，7 个用例（其中一个按 5 种变化参数化，<1 秒）。换歌那个用例在原来「有变化就立即刷新」的行为上是红的：
+# 刷新 4 次，第一次在 0 秒，那时还是上一首的歌词
+cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
+```
+
+刷新实际怎么发生，要看系统日志。下面这条录下 app 的刷新决定（`[LXWG][Reload]`）、小组件每次生成 timeline
+时读到的快照（`[LXWG][Provider]`），以及 `chronod` 对每次请求的处理：`record reload: … = externalRequest(`
+是立即执行，`Throttling additional refresh request` 是被推迟。
+
+```bash
+/usr/bin/log stream --level info --style compact --predicate '(subsystem == "com.JH.LyricsX.diagnostics")
+  OR (process == "chronod" AND (category == "externalRequestTimelineReloadFilter"
+  OR (category == "timeline.store" AND eventMessage CONTAINS "record reload" AND eventMessage CONTAINS "dev.JH.LyricsX")))'
 ```
 
 ```bash
@@ -81,7 +167,9 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 
 下面这些只能在桌面上人工确认：
 
-- 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。
+- 按钮：在桌面放一个大号或超大号小组件，点播放、上一首、下一首，播放器应当响应，且不弹出设置窗口。播放/暂停的
+  图标约 1 秒内就变；下一首约 2～3 秒内连同歌词一起换好。日志里，按下之后第一条
+  `[LXWG][Provider] timeline(for:) called` 读到的就应该是新状态。
 - 超大号：在小组件的编辑界面打开翻译，放一首带翻译的歌，封面、标题和播放按钮都应留在小组件里，歌词区里没有
   被切掉半截的行。
 - 大号：放一首有长句的歌，折行的句子应当居中，当前行不再变成一行加省略号。
@@ -95,6 +183,11 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
   预计随之消失，同样要在桌面上确认。
 - 三个 intent 的最低系统从 macOS 13 提到 14，这是 `AudioPlaybackIntent` 的要求。它们在快捷指令（Shortcuts）里
   也显示为 LyricsX 的动作，macOS 13 上不再有这三个动作。小组件本身最低 macOS 15，不受影响。
+- 刷新攒着发的代价：换歌后歌名也要等到那一次刷新才换（约 1.5～2.5 秒，原来立刻换，但配着错的状态）；在音乐 app
+  里暂停，小组件约 1 秒后才停（原来立即请求刷新）。小组件上的播放按钮不受影响。
+- 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
+- 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
+- 每行换上的时刻前后有约半秒的抖动，来自系统合并计时器，app 这边消除不了；提前量只能让它的中位数对上歌词。
 
 ## 后续工作
 

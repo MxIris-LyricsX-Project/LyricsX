@@ -73,6 +73,10 @@ final class AppController: NSObject {
 
     private let widgetDataStore = WidgetDataStore(groupIdentifier: lyricsXGroupIdentifier)
 
+    private lazy var widgetReloadCoordinator = WidgetReloadCoordinator { [unowned self] playbackState in
+        writeWidgetSnapshot(playbackState: playbackState)
+    }
+
     @objc dynamic var lyricsOffset: Int {
         get {
             return currentLyrics?.offset ?? 0
@@ -145,8 +149,14 @@ final class AppController: NSObject {
 
         // Widget data bridge.
         //
-        // Lyrics/track change and playback state change (play/pause/seek)
-        // alter the timeline structure, so they rebuild the timeline.
+        // Lyrics, track and playback state changes alter the timeline
+        // structure, so they rebuild it — but through WidgetReloadCoordinator,
+        // not one reload each. WidgetKit runs one app-requested reload every
+        // five seconds and holds the rest, and a track change alone is a
+        // burst of changes; WidgetReloadPolicy has the rules and the reasons.
+        // The coordinator waits out the stale position that resuming through
+        // the SystemMedia/mediaremote-adapter backend reports first, which
+        // this bridge used to debounce on its own.
         //
         // Line index change is handled separately and only refreshes the
         // dataStore — the timeline already contains future entries that
@@ -154,40 +164,15 @@ final class AppController: NSObject {
         // would only add WidgetKit scheduling latency (~hundreds of ms,
         // the visible "widget lyrics lag" before this change).
         $currentLyrics
-            .signal()
-            .receive(on: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] in
-                guard let self = self else { return }
-                reloadWidgetTimeline()
-            }
-            .store(in: &cancelBag)
-
-        // Pause is observed as a single, clean willChange event — react
-        // immediately. Resume from MusicPlayer's SystemMedia/mediaremote-
-        // adapter backend, in contrast, fires two willChange events
-        // 160ms–900ms apart: the first carries a stale `time` (off by
-        // several seconds), the second carries the real position. Naively
-        // reloading on the first event makes the widget fetch a timeline
-        // built from the wrong `time`, and WidgetKit's reload throttle
-        // can push the corrective fetch out by several seconds. So we
-        // route the two cases separately: the resume path is debounced
-        // long enough to absorb the longest jitter window we've measured,
-        // while the pause path stays on the fast `receive(on:)` route.
-        selectedPlayer.playbackStateWillChange
-            .filter { !$0.isPlaying }
-            .receive(on: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] state in
-                guard let self = self else { return }
-                reloadWidgetTimeline(playbackState: state)
+            .map { $0 != nil }
+            .sink { [weak self] hasLyrics in
+                self?.widgetReloadCoordinator.note(.lyricsChanged(hasLyrics: hasLyrics))
             }
             .store(in: &cancelBag)
 
         selectedPlayer.playbackStateWillChange
-            .filter { $0.isPlaying }
-            .debounce(for: .milliseconds(1000), scheduler: DispatchQueue.lyricsDisplay)
-            .sink { [weak self] state in
-                guard let self = self else { return }
-                reloadWidgetTimeline(playbackState: state)
+            .sink { [weak self] _ in
+                self?.widgetReloadCoordinator.note(.playbackStateChanged)
             }
             .store(in: &cancelBag)
 
@@ -383,6 +368,9 @@ final class AppController: NSObject {
     }
 
     func currentTrackChanged() {
+        // Ahead of clearing the lyrics below, so the widget knows to wait for
+        // the new track's.
+        widgetReloadCoordinator.note(.trackChanged)
         if currentLyrics?.metadata.needsPersist == true {
             currentLyrics?.persist()
         }
@@ -936,41 +924,72 @@ final class AppController: NSObject {
 
     // MARK: Widget Data Bridge
 
-    /// Persist the current snapshot and ask WidgetKit to rebuild the timeline.
-    /// Use when the timeline structure must change: track switch, lyrics
-    /// (re)load, play/pause toggle, or seek.
-    ///
-    /// Pass `playbackState` when responding to a `playbackStateWillChange`
-    /// emission so the snapshot uses the new value directly, instead of
-    /// re-reading `selectedPlayer.playbackState` (which can still hold the
-    /// pre-change value during the willSet phase).
-    func reloadWidgetTimeline(playbackState: PlaybackState? = nil) {
-        guard #available(macOS 14, *) else { return }
-        writeWidgetSnapshot(playbackState: playbackState, reloadOnSuccess: true)
+    /// The widget's play/pause button. WidgetKit reloads the widget when the
+    /// button's intent returns, so the snapshot has to show the new state by
+    /// then, ahead of the player reporting it.
+    func togglePlaybackFromWidget() async {
+        let playbackStateBeforeToggle = await MainActor.run {
+            let playbackState = selectedPlayer.playbackState
+            selectedPlayer.playPause()
+            return playbackState
+        }
+        let expectedPlaybackState: PlaybackState = playbackStateBeforeToggle.isPlaying
+            ? .paused(time: playbackStateBeforeToggle.time)
+            : .playing(start: Date().addingTimeInterval(-playbackStateBeforeToggle.time))
+        await widgetReloadCoordinator.deliverPlaybackToggle(expectedPlaybackState: expectedPlaybackState)
     }
+
+    /// The widget's next-track button. Returns once the next track and its
+    /// lyrics are in the snapshot that WidgetKit reloads the widget with when
+    /// the button's intent returns.
+    func skipToNextTrackFromWidget() async {
+        await MainActor.run {
+            selectedPlayer.skipToNextItem()
+        }
+        await widgetReloadCoordinator.waitForTrackChangeDelivery(timeout: Self.widgetTrackChangeTimeout)
+    }
+
+    /// The widget's previous-track button; see `skipToNextTrackFromWidget()`.
+    func skipToPreviousTrackFromWidget() async {
+        await MainActor.run {
+            selectedPlayer.skipToPreviousItem()
+        }
+        await widgetReloadCoordinator.waitForTrackChangeDelivery(timeout: Self.widgetTrackChangeTimeout)
+    }
+
+    /// How long a skip button waits for its track change. Past the longest a
+    /// change is held (`WidgetReloadPolicy.Schedule.maximumHold`), plus time
+    /// for the player to report the new track. A skip that restarts the same
+    /// track has no track change and returns when this runs out.
+    private static let widgetTrackChangeTimeout: TimeInterval = 4
 
     /// Persist the current snapshot without rebuilding the timeline.
     /// Use on lyric-line transitions: pre-generated future entries already
     /// drive the line change in the widget process, so a reload would only
     /// add WidgetKit scheduling latency. We still refresh the dataStore so
-    /// on-demand reads (placeholder, configuration UI) stay accurate.
+    /// on-demand reads (placeholder, configuration UI) and the next reload
+    /// stay accurate.
     func updateWidgetSnapshot() {
         guard #available(macOS 14, *) else { return }
-        writeWidgetSnapshot(playbackState: nil, reloadOnSuccess: false)
+        writeWidgetSnapshot(playbackState: nil)
     }
 
-    private func writeWidgetSnapshot(playbackState explicitPlaybackState: PlaybackState?, reloadOnSuccess: Bool) {
-        // let usedExplicit = explicitPlaybackState != nil
+    /// Writes the snapshot the widget reads and returns it, or clears it and
+    /// returns `nil` when nothing is playing. Never reloads the widget: that
+    /// is `WidgetReloadCoordinator`'s call.
+    ///
+    /// A `playbackState` passed in is used instead of the player's, for a
+    /// state the player has not reported yet.
+    @discardableResult
+    private func writeWidgetSnapshot(playbackState explicitPlaybackState: PlaybackState?) -> LyricsWidgetData? {
         guard let track = selectedPlayer.currentTrack else {
-            // #log(.info, "[LXWG][Write] no current track → clearing dataStore + reloading timelines (reloadOnSuccess=\(reloadOnSuccess, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public))")
             widgetDataStore.clear()
-            WidgetCenter.shared.reloadAllTimelines()
-            return
+            return nil
         }
 
         let playbackState = explicitPlaybackState ?? selectedPlayer.playbackState
         let playbackTime = playbackState.time
-        // #log(.info, "[LXWG][Write] enter (track=\(track.title ?? "nil", privacy: .public), isPlaying=\(playbackState.isPlaying, privacy: .public), time=\(playbackTime, privacy: .public), usedExplicit=\(usedExplicit, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
+        // #log(.info, "[LXWG][Write] enter (track=\(track.title ?? "nil", privacy: .public), isPlaying=\(playbackState.isPlaying, privacy: .public), time=\(playbackTime, privacy: .public), usedExplicit=\(explicitPlaybackState != nil, privacy: .public))")
 
         // Build lyrics lines with context window
         var lyricsLines: [LyricsLineEntry] = []
@@ -1053,14 +1072,11 @@ final class AppController: NSObject {
 
         do {
             try widgetDataStore.write(widgetData)
-            // #log(.info, "[LXWG][Write] wrote snapshot (isPlaying=\(widgetData.isPlaying, privacy: .public), playbackPosition=\(widgetData.playbackPosition, privacy: .public), lineIndex=\(widgetData.currentLineIndex, privacy: .public), lyricsLines=\(widgetData.lyricsLines.count, privacy: .public), reloadOnSuccess=\(reloadOnSuccess, privacy: .public))")
+            // #log(.info, "[LXWG][Write] wrote snapshot (isPlaying=\(widgetData.isPlaying, privacy: .public), playbackPosition=\(widgetData.playbackPosition, privacy: .public), lineIndex=\(widgetData.currentLineIndex, privacy: .public), lyricsLines=\(widgetData.lyricsLines.count, privacy: .public))")
         } catch {
             // #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
         }
-        if reloadOnSuccess {
-            // #log(.info, "[LXWG][Write] reloadAllTimelines()")
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        return widgetData
     }
 }
 

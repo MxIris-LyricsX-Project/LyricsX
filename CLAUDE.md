@@ -142,6 +142,16 @@ instead of showing a fixed count is in `Documentations/Internal/DesktopWidget.md
 cd LyricsXPackage && swift test --filter WidgetLyricsLayoutPolicyTests
 ```
 
+Its `WidgetReloadPolicyTests` pin down when the app asks WidgetKit to reload
+the widget. WidgetKit runs one app-requested reload every five seconds and
+holds the rest, so a track change — a burst of changes over about two seconds
+— has to reload once, after its lyrics arrive. Run them on any change to
+`WidgetReloadCoordinator` or to the widget data bridge in `AppController` (<1s):
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
+```
+
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
 
 Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.

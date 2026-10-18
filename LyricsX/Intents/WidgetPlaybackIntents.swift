@@ -1,13 +1,14 @@
 import AppIntents
-#if !WIDGET_EXTENSION
-import MusicPlayer
-#endif
 
 // The widget's playback buttons. The sandboxed widget extension cannot drive a
 // music player, so these have to run in the app. Adopting `AudioPlaybackIntent`
 // gets them there without opening the app. `openAppWhenRun` used to do it by
 // opening LyricsX, and opening an app that is already running is a reopen,
 // which `applicationShouldHandleReopen` answers with the preferences window.
+//
+// WidgetKit reloads the widget when `perform()` returns and reads whatever the
+// app has written for it by then, so each of these returns only once the
+// widget's snapshot shows what the button did.
 
 @available(macOS 14.0, *)
 struct PlayPauseIntent: AudioPlaybackIntent {
@@ -16,9 +17,7 @@ struct PlayPauseIntent: AudioPlaybackIntent {
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
-        await MainActor.run {
-            MusicPlayers.Selected.shared.playPause()
-        }
+        await AppController.shared.togglePlaybackFromWidget()
         #endif
         return .result()
     }
@@ -31,9 +30,7 @@ struct NextTrackIntent: AudioPlaybackIntent {
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
-        await MainActor.run {
-            MusicPlayers.Selected.shared.skipToNextItem()
-        }
+        await AppController.shared.skipToNextTrackFromWidget()
         #endif
         return .result()
     }
@@ -46,9 +43,7 @@ struct PreviousTrackIntent: AudioPlaybackIntent {
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
-        await MainActor.run {
-            MusicPlayers.Selected.shared.skipToPreviousItem()
-        }
+        await AppController.shared.skipToPreviousTrackFromWidget()
         #endif
         return .result()
     }
