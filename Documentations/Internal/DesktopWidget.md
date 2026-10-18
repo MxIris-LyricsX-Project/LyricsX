@@ -99,6 +99,32 @@ Apple 文档（*Adding interactivity to widgets and Live Activities*）写明：
   开头按「上一首」通常只是从头播放，不会换歌，这时等满 4 秒再返回。
 - 两种情况都顺带调一次 `reloadAllTimelines()`。Apple 没说按钮之后那次刷新会不会顾及桌面上其他尺寸的小组件。
 
+### 每行提前 0.8 秒排进 timeline
+
+小组件不跑代码推进歌词，每一行是一条 timeline entry，`entry.date` 一到，桌面上的宿主进程 `NotificationCenter`
+换上这一条。实际换上的时刻比 `entry.date` 晚，而且每次晚得不一样，所以 `LyricsTimelineProvider` 把每一行的
+`entry.date` 提前一段（`WidgetSchedulingCompensationMs`）。
+
+2026-10-18 在 macOS 27.2 上量了一次：
+
+- 宿主换上每一条的时刻，比 `entry.date` 晚的中位数是 0.78 秒；大号、超大号各 36 次换行，九成落在 0.22～1.24 秒之间。
+- 原来提前 0.6 秒，相对歌词平均晚约 0.18 秒。改成 0.8 秒，中位数正好对上歌词。
+- 抖动消除不了：212 次换上的时刻里有 69 次落在整秒之后 0.1 秒以内（均匀分布应约 21 次）。宿主的计时器允许较大误差，
+  系统把它和别的计时器合并，常常凑到整秒才触发。
+
+量法：录下面这条日志，几分钟就够。小组件每次生成 timeline 都记一条 `preview=`，列出前 8 条 entry 相对这条日志的时刻
+（`@+秒数#行号`）；`NotificationCenter` 每换上一条，就给对应尺寸记一条 `Evaluated inner view`。把每条 entry 的时刻
+和它之后的第一次换上配对，相减就是延迟。刷新后 0.5 秒内的那次换上是新 timeline 本身，不算。
+
+```bash
+/usr/bin/log stream --level info --style compact --predicate '(subsystem == "com.JH.LyricsX.diagnostics" AND eventMessage CONTAINS "preview=")
+  OR (process == "NotificationCenter" AND category == "timelineLiveView" AND eventMessage CONTAINS "dev.JH.LyricsX"
+  AND eventMessage CONTAINS "Evaluated inner view")'
+```
+
+想不重新编译就试别的提前量，见 `LyricsTimelineProvider` 里 `defaultWidgetSchedulingCompensationMs` 的注释：
+要写进 App Group 容器里的那份偏好，也就是小组件读快照的同一个文件。
+
 ## 模块结构
 
 | 文件 | 内容 |
@@ -161,6 +187,7 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
   里暂停，小组件约 1 秒后才停（原来立即请求刷新）。小组件上的播放按钮不受影响。
 - 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
 - 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
+- 每行换上的时刻前后有约半秒的抖动，来自系统合并计时器，app 这边消除不了；提前量只能让它的中位数对上歌词。
 
 ## 后续工作
 

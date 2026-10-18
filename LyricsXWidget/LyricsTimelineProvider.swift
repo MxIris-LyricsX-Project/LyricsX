@@ -15,13 +15,22 @@ struct LyricsTimelineProvider: AppIntentTimelineProvider {
     /// much so the visible line transition lands close to the actual
     /// lyric timing instead of trailing it.
     ///
-    /// Override at runtime without recompiling:
-    ///   defaults write D5Q73692VW.group.com.JH.LyricsX \
-    ///       WidgetSchedulingCompensationMs -int 800
-    /// (use the `dev.JH.LyricsX` suite for Debug builds)
+    /// On macOS 27.2 (2026-10-18) NotificationCenter switched to each entry
+    /// a median 0.78 s after its date: 36 line changes per widget size, nine
+    /// in ten between 0.22 s and 1.24 s. 0.8 s centres the line change on
+    /// the lyric. The spread is beyond any compensation: the host fires on
+    /// timers the system coalesces, often onto the next whole second.
+    ///
+    /// Override at runtime without recompiling, in the app group's
+    /// preferences inside its container, the file the widget reads its
+    /// snapshot from (a plain `defaults write <group>` writes to
+    /// ~/Library/Preferences, which the sandboxed widget never reads):
+    ///   defaults write ~/Library/Group\ Containers/D5Q73692VW.group.com.JH.LyricsX/Library/Preferences/D5Q73692VW.group.com.JH.LyricsX \
+    ///       WidgetSchedulingCompensationMs -int 900
+    /// (use the `dev.JH.LyricsX` group for Debug builds)
     /// then nudge the widget (re-add it, or toggle Apple Music) so
     /// WidgetKit pulls a fresh timeline.
-    private static let defaultWidgetSchedulingCompensationMs = 600
+    private static let defaultWidgetSchedulingCompensationMs = 800
     private static let compensationOverrideKey = "WidgetSchedulingCompensationMs"
 
     private static var widgetSchedulingCompensation: TimeInterval {
