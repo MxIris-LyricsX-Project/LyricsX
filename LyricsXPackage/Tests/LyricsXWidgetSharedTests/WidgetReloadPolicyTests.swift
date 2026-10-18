@@ -54,6 +54,15 @@ struct WidgetReloadPolicyTests {
         #expect(abs(reload - 0.4) < 0.001)
     }
 
+    @Test("a display setting change reloads the widget once, shortly after")
+    func displaySettingChangeReloadsShortlyAfter() {
+        // Every widget takes its settings from the app, so switching one in
+        // the app's preferences is the only way to change what they show.
+        let reloads = reloadTimes(for: [(0, .displaySettingsChanged)])
+
+        #expect(reloads == [0.3])
+    }
+
     @Test("a playback change that may still be corrected waits past the track change that may follow it")
     func unsettledPlaybackChangeWaitsForTheTrackChange() throws {
         // The track change in the first test arrived half a second after the
@@ -175,6 +184,7 @@ enum VisibleChange: CaseIterable {
     case pause
     case newLyrics
     case newTrack
+    case translationShown
     case nothingDeliveredYet
 
     var delivered: LyricsWidgetData? {
@@ -196,6 +206,8 @@ enum VisibleChange: CaseIterable {
             snapshot(takenAt: 101, position: 31, lines: ["Another first line", "Another second line"])
         case .newTrack:
             snapshot(takenAt: 101, position: 31, title: "Another Song")
+        case .translationShown:
+            snapshot(takenAt: 101, position: 31, showsTranslation: true)
         case .nothingDeliveredYet:
             snapshot(takenAt: 101, position: 31)
         }
@@ -207,7 +219,8 @@ private func snapshot(
     position: TimeInterval,
     isPlaying: Bool = true,
     title: String = "Song",
-    lines: [String] = ["First line", "Second line"]
+    lines: [String] = ["First line", "Second line"],
+    showsTranslation: Bool = false
 ) -> LyricsWidgetData {
     LyricsWidgetData(
         trackTitle: title,
@@ -215,13 +228,13 @@ private func snapshot(
         albumName: "Album",
         backgroundColor: CodableColor(red: 0.2, green: 0.3, blue: 0.4, alpha: 1),
         lyricsLines: lines.enumerated().map { lineIndex, text in
-            LyricsLineEntry(text: text, translation: nil, startTime: TimeInterval(lineIndex * 20), endTime: nil)
+            LyricsLineEntry(text: text, translation: "Translation \(lineIndex)", startTime: TimeInterval(lineIndex * 20), endTime: nil)
         },
         currentLineIndex: 1,
         isPlaying: isPlaying,
         timestamp: Date(timeIntervalSinceReferenceDate: seconds),
         playbackPosition: position,
-        availableTranslationLanguages: []
+        showsTranslation: showsTranslation
     )
 }
 

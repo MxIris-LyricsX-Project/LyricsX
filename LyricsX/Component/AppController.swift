@@ -183,6 +183,16 @@ final class AppController: NSObject {
             }
             .store(in: &cancelBag)
 
+        // The widgets have no settings of their own: they show translations
+        // when the app does, so they all share one configuration and every
+        // reload reaches all of them at once.
+        defaults.publisher(for: [.preferBilingualLyrics])
+            .signal()
+            .sink { [weak self] in
+                self?.widgetReloadCoordinator.note(.displaySettingsChanged)
+            }
+            .store(in: &cancelBag)
+
         $currentLineIndex
             .signal()
             .receive(on: DispatchQueue.lyricsDisplay)
@@ -974,8 +984,9 @@ final class AppController: NSObject {
     /// Use on lyric-line transitions: pre-generated future entries already
     /// drive the line change in the widget process, so a reload would only
     /// add WidgetKit scheduling latency. We still refresh the dataStore so
-    /// on-demand reads (placeholder, configuration UI) and the next reload
-    /// stay accurate.
+    /// what the widget reads on its own (a timeline WidgetKit asks for on its
+    /// schedule, the snapshot in the widget gallery) and the next reload stay
+    /// accurate.
     func updateWidgetSnapshot() {
         guard #available(macOS 14, *) else { return }
         writeWidgetSnapshot(playbackState: nil)
@@ -1001,10 +1012,8 @@ final class AppController: NSObject {
         // Build lyrics lines with context window
         var lyricsLines: [LyricsLineEntry] = []
         var widgetCurrentLineIndex = 0
-        var availableTranslationLanguages: [String] = []
 
         if let lyrics = currentLyrics {
-            availableTranslationLanguages = lyrics.metadata.translationLanguages
             let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
             let contextRadius = 50
             let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
@@ -1026,15 +1035,9 @@ final class AppController: NSObject {
                         ? sliceArray[windowIndex + 1].element.position
                         : nil
 
-                    // Collect translations for all available languages
-                    let firstTranslationLanguage = availableTranslationLanguages.first
-                    let translation = firstTranslationLanguage.flatMap {
-                        line.attachments[.translation(languageCode: $0)]
-                    }
-
                     return LyricsLineEntry(
                         text: line.content,
-                        translation: translation,
+                        translation: widgetTranslation(of: line, in: lyrics),
                         startTime: nextPosition,
                         endTime: endTime
                     )
@@ -1074,7 +1077,7 @@ final class AppController: NSObject {
             isPlaying: playbackState.isPlaying,
             timestamp: Date(),
             playbackPosition: playbackTime + lyricsTimeDelay,
-            availableTranslationLanguages: availableTranslationLanguages
+            showsTranslation: defaults[.preferBilingualLyrics]
         )
 
         do {
@@ -1084,6 +1087,17 @@ final class AppController: NSObject {
             // #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
         }
         return widgetData
+    }
+
+    /// The translation the widget shows under `line`, the one the desktop
+    /// lyrics show: in the first language the lyrics carry a translation in,
+    /// or the translation that names no language when they carry none, as
+    /// NetEase, QQ Music and Kugou translations do.
+    ///
+    /// The one place that picks it, so that once the app lets the user choose
+    /// which translation to show, the widget follows that choice from here.
+    private func widgetTranslation(of line: LyricsLine, in lyrics: Lyrics) -> String? {
+        line.attachments[.translation(languageCode: lyrics.metadata.translationLanguages.first)]
     }
 }
 

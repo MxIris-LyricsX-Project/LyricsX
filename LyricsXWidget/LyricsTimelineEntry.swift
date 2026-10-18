@@ -13,8 +13,8 @@ struct LyricsTimelineEntry: TimelineEntry {
     let lyricsLines: [LyricsLineEntry]
     let highlightedLineIndex: Int
     let isPlaying: Bool
-    let showTranslation: Bool
-    let translationLanguage: String?
+    /// The app's Prefer bilingual lyrics setting, from the snapshot.
+    let showsTranslation: Bool
     let isEmpty: Bool
 
     static var empty: LyricsTimelineEntry {
@@ -28,8 +28,7 @@ struct LyricsTimelineEntry: TimelineEntry {
             lyricsLines: [],
             highlightedLineIndex: 0,
             isPlaying: false,
-            showTranslation: false,
-            translationLanguage: nil,
+            showsTranslation: false,
             isEmpty: true
         )
     }

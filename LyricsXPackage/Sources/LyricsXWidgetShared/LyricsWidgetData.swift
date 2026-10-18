@@ -12,7 +12,10 @@ public struct LyricsWidgetData: Codable, Sendable {
     public let isPlaying: Bool
     public let timestamp: Date
     public let playbackPosition: TimeInterval
-    public let availableTranslationLanguages: [String]
+    /// Whether the widget shows each line's translation under it: the app's
+    /// Prefer bilingual lyrics setting. Every widget takes it from here, so
+    /// none has a setting of its own, and all of them share one configuration.
+    public let showsTranslation: Bool
 
     public init(
         trackTitle: String,
@@ -24,7 +27,7 @@ public struct LyricsWidgetData: Codable, Sendable {
         isPlaying: Bool,
         timestamp: Date,
         playbackPosition: TimeInterval,
-        availableTranslationLanguages: [String]
+        showsTranslation: Bool
     ) {
         self.trackTitle = trackTitle
         self.artist = artist
@@ -35,7 +38,23 @@ public struct LyricsWidgetData: Codable, Sendable {
         self.isPlaying = isPlaying
         self.timestamp = timestamp
         self.playbackPosition = playbackPosition
-        self.availableTranslationLanguages = availableTranslationLanguages
+        self.showsTranslation = showsTranslation
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.trackTitle = try container.decode(String.self, forKey: .trackTitle)
+        self.artist = try container.decode(String.self, forKey: .artist)
+        self.albumName = try container.decodeIfPresent(String.self, forKey: .albumName)
+        self.backgroundColor = try container.decodeIfPresent(CodableColor.self, forKey: .backgroundColor)
+        self.lyricsLines = try container.decode([LyricsLineEntry].self, forKey: .lyricsLines)
+        self.currentLineIndex = try container.decode(Int.self, forKey: .currentLineIndex)
+        self.isPlaying = try container.decode(Bool.self, forKey: .isPlaying)
+        self.timestamp = try container.decode(Date.self, forKey: .timestamp)
+        self.playbackPosition = try container.decode(TimeInterval.self, forKey: .playbackPosition)
+        // A snapshot an earlier version of the app left behind has no such
+        // key: back then each widget had its own setting, off by default.
+        self.showsTranslation = try container.decodeIfPresent(Bool.self, forKey: .showsTranslation) ?? false
     }
 }
 

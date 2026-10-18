@@ -54,7 +54,7 @@ struct ExtraLargeWidgetView: View {
                             lines: entry.lyricsLines,
                             highlightedLineIndex: entry.highlightedLineIndex,
                             lineSpacing: 8,
-                            showsTranslation: entry.showTranslation,
+                            showsTranslation: entry.showsTranslation,
                             translationScope: .everyLine
                         )
                     }

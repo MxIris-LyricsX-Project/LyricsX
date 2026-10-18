@@ -13,9 +13,9 @@ struct LyricsWidget: Widget {
     let kind = "com.JH.LyricsX.LyricsWidget"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(
+        // Static on purpose; see LyricsTimelineProvider.
+        StaticConfiguration(
             kind: kind,
-            intent: LyricsWidgetConfigurationIntent.self,
             provider: LyricsTimelineProvider()
         ) { entry in
             LyricsWidgetEntryView(entry: entry)
@@ -101,8 +101,7 @@ private struct DebugBuildBadge: ViewModifier {
         lyricsLines: [],
         highlightedLineIndex: 0,
         isPlaying: true,
-        showTranslation: false,
-        translationLanguage: nil,
+        showsTranslation: false,
         isEmpty: false
     )
 }
@@ -128,8 +127,7 @@ private struct DebugBuildBadge: ViewModifier {
         ],
         highlightedLineIndex: 3,
         isPlaying: true,
-        showTranslation: false,
-        translationLanguage: nil,
+        showsTranslation: false,
         isEmpty: false
     )
 }
