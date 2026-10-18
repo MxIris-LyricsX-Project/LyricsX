@@ -131,6 +131,17 @@ swift test --filter StatusItemTextParityProbes
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 ```
 
+`LyricsXWidgetSharedTests` covers the desktop widget's shared code. Its
+`WidgetLyricsLayoutPolicyTests` pin down which lyric lines the large and
+extra-large widgets show — whole lines that fit the space between the header
+and the playback controls, highlighted line centred — so run them on any change
+to the widget's lyrics area (<1s). Why the widget fits lines to the space
+instead of showing a fixed count is in `Documentations/Internal/DesktopWidget.md`:
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetLyricsLayoutPolicyTests
+```
+
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
 
 Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.

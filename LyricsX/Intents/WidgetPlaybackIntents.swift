@@ -3,11 +3,16 @@ import AppIntents
 import MusicPlayer
 #endif
 
-@available(macOS 13.0, *)
-struct PlayPauseIntent: AppIntent {
-    static var title: LocalizedStringResource = "Play/Pause"
-    static var description: IntentDescription = "Toggle music playback"
-    static var openAppWhenRun: Bool = true
+// The widget's playback buttons. The sandboxed widget extension cannot drive a
+// music player, so these have to run in the app. Adopting `AudioPlaybackIntent`
+// gets them there without opening the app. `openAppWhenRun` used to do it by
+// opening LyricsX, and opening an app that is already running is a reopen,
+// which `applicationShouldHandleReopen` answers with the preferences window.
+
+@available(macOS 14.0, *)
+struct PlayPauseIntent: AudioPlaybackIntent {
+    static let title: LocalizedStringResource = "Play/Pause"
+    static let description: IntentDescription = "Toggle music playback"
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
@@ -19,11 +24,10 @@ struct PlayPauseIntent: AppIntent {
     }
 }
 
-@available(macOS 13.0, *)
-struct NextTrackIntent: AppIntent {
-    static var title: LocalizedStringResource = "Next Track"
-    static var description: IntentDescription = "Skip to next track"
-    static var openAppWhenRun: Bool = true
+@available(macOS 14.0, *)
+struct NextTrackIntent: AudioPlaybackIntent {
+    static let title: LocalizedStringResource = "Next Track"
+    static let description: IntentDescription = "Skip to next track"
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION
@@ -35,11 +39,10 @@ struct NextTrackIntent: AppIntent {
     }
 }
 
-@available(macOS 13.0, *)
-struct PreviousTrackIntent: AppIntent {
-    static var title: LocalizedStringResource = "Previous Track"
-    static var description: IntentDescription = "Skip to previous track"
-    static var openAppWhenRun: Bool = true
+@available(macOS 14.0, *)
+struct PreviousTrackIntent: AudioPlaybackIntent {
+    static let title: LocalizedStringResource = "Previous Track"
+    static let description: IntentDescription = "Skip to previous track"
 
     func perform() async throws -> some IntentResult {
         #if !WIDGET_EXTENSION

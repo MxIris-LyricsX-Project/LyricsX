@@ -5,7 +5,6 @@ struct LyricsLineView: View {
     let line: LyricsLineEntry
     let isHighlighted: Bool
     let showTranslation: Bool
-    let translationLanguage: String?
 
     var body: some View {
         VStack(spacing: 2) {
