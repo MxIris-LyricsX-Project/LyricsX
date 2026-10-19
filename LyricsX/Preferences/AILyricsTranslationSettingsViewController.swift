@@ -25,7 +25,17 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private let targetLanguageField = NSTextField()
     private let apiKeyField = NSSecureTextField()
     private let removeKeyButton = NSButton()
-    private let promptTextView = NSTextView()
+    /// Made by `NSTextView.scrollableTextView()`, which sets the text view up
+    /// to follow its scroll view's width and grow with its text. A bare
+    /// `NSTextView()` set as a document view does neither, and stays as wide
+    /// as the zero frame it was created with.
+    private let promptScrollView = NSTextView.scrollableTextView()
+    private var promptTextView: NSTextView {
+        guard let textView = promptScrollView.documentView as? NSTextView else {
+            preconditionFailure("NSTextView.scrollableTextView() documents its scroll view with a text view.")
+        }
+        return textView
+    }
     /// Built as a wrapping label, not a plain one: `maximumNumberOfLines = 0`
     /// on its own leaves the cell clipping, and a validation message cut off
     /// mid-sentence is exactly the thing this sheet was built to show.
@@ -374,10 +384,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     }
 
     private func makePromptRow(title: String, labelColumnWidth: CGFloat) -> NSStackView {
-        let scroller = NSScrollView()
+        let scroller = promptScrollView
         scroller.borderType = .bezelBorder
-        scroller.hasVerticalScroller = true
-        scroller.documentView = promptTextView
         scroller.translatesAutoresizingMaskIntoConstraints = false
         scroller.heightAnchor.constraint(equalToConstant: 130).isActive = true
 
