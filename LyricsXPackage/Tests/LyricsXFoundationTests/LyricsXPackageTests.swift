@@ -315,6 +315,38 @@ func aiLyricsTranslationRequestHonoursACustomTokenCap() throws {
 }
 
 @Test
+func aiLyricsTranslationRequestUsesMaxCompletionTokensForOpenAI() throws {
+    // OpenAI's reasoning models answer `max_tokens` with a 400 and take only
+    // `max_completion_tokens`, which every OpenAI chat model accepts. Other
+    // OpenAI-compatible servers mostly know only `max_tokens`.
+    func payload(endpoint: String) throws -> [String: Any] {
+        let configuration = AILyricsTranslationConfiguration(
+            endpoint: try #require(URL(string: endpoint)),
+            model: "test-model",
+            targetLanguage: "ja",
+            prompt: ""
+        )
+        let request = try OpenAICompatibleChatRequest(
+            configuration: configuration,
+            sourceLanguage: nil,
+            sourceLines: [AILyricsTranslationInputLine(index: 0, text: "A lyric")],
+            maxTokens: 64
+        )
+        return try #require(
+            JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+        )
+    }
+
+    let openAIPayload = try payload(endpoint: "https://api.openai.com/v1/chat/completions")
+    #expect(openAIPayload["max_completion_tokens"] as? Int == 64)
+    #expect(openAIPayload["max_tokens"] == nil)
+
+    let compatiblePayload = try payload(endpoint: "https://api.deepseek.com/chat/completions")
+    #expect(compatiblePayload["max_tokens"] as? Int == 64)
+    #expect(compatiblePayload["max_completion_tokens"] == nil)
+}
+
+@Test
 func aiLyricsTranslationAppliesOntoTheCurrentLyricsAndKeepsTheirOtherState() throws {
     // Stands in for the lyrics on screen when an answer lands: the user nudged
     // the offset and switched a line off while the request was in flight, and

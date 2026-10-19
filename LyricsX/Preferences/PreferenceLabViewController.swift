@@ -368,46 +368,9 @@ class PreferenceLabViewController: PreferenceViewController {
                 return
             } catch {
                 guard !Task.isCancelled else { return }
-                updateAILyricsTranslationStatus(Self.connectionFailureMessage(for: error))
+                updateAILyricsTranslationStatus(OpenAICompatibleLyricsTranslator.failureDescription(for: error))
             }
         }
-    }
-
-    /// Says what actually failed. One generic sentence sent the user hunting
-    /// through three settings when the endpoint had answered 401.
-    private static func connectionFailureMessage(for error: Error) -> String {
-        if let error = error as? OpenAICompatibleLyricsTranslatorError {
-            switch error {
-            case .httpStatus(let status):
-                return String(
-                    format: NSLocalizedString(
-                        "The endpoint answered HTTP %d.",
-                        comment: "Status shown when the AI translation endpoint test gets a non-2xx answer; %d is the HTTP status code."
-                    ),
-                    status
-                )
-            case .responseTooLarge:
-                return NSLocalizedString(
-                    "The endpoint's answer was too large to read.",
-                    comment: "Status shown when the AI translation endpoint test gets an oversized answer."
-                )
-            case .invalidResponse:
-                return NSLocalizedString(
-                    "The endpoint did not answer with a translation. It may not support JSON mode.",
-                    comment: "Status shown when the AI translation endpoint test gets a well-formed HTTP answer that is not a translation."
-                )
-            }
-        }
-        if let error = error as? URLError {
-            return String(
-                format: NSLocalizedString(
-                    "The request failed: %@",
-                    comment: "Status shown when the AI translation endpoint test fails at the network layer; %@ is the system's description."
-                ),
-                error.localizedDescription
-            )
-        }
-        return error.localizedDescription
     }
 
     private func updateAILyricsTranslationStatus(_ message: String) {

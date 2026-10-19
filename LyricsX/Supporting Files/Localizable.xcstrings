@@ -153,6 +153,23 @@
         }
       }
     },
+    "A lyric line is too long to send." : {
+      "comment" : "Status shown when a lyric line is too long for an AI translation request.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有一行歌词太长，无法发送。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有一行歌詞太長，無法傳送。"
+          }
+        }
+      }
+    },
     "Add an API key in AI translation settings." : {
       "comment" : "Status shown when no API key is stored for AI lyric translation.",
       "localizations" : {
@@ -3055,6 +3072,23 @@
         }
       }
     },
+    "Stopped after too many requests for this song." : {
+      "comment" : "Status shown when AI translation used up the requests one song may make before every line was answered.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这首歌的请求次数已达上限，已停止。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這首歌的請求次數已達上限，已停止。"
+          }
+        }
+      }
+    },
     "Target language" : {
       "comment" : "AI lyrics translation target language setting.",
       "localizations" : {
@@ -3141,7 +3175,7 @@
       }
     },
     "The endpoint did not answer with a translation. It may not support JSON mode." : {
-      "comment" : "Status shown when the AI translation endpoint test gets a well-formed HTTP answer that is not a translation.",
+      "comment" : "Status shown when the AI translation endpoint gives a well-formed HTTP answer that is not a translation.",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3553,6 +3587,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "翻譯失敗，已保留原有歌詞。"
+          }
+        }
+      }
+    },
+    "Translation failed; existing lyrics were kept. %@" : {
+      "comment" : "Status shown when AI lyric translation fails; %@ says what failed, such as the HTTP status the endpoint answered.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译失败，已保留原有歌词。%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻譯失敗，已保留原有歌詞。%@"
           }
         }
       }

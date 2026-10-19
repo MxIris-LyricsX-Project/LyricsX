@@ -632,10 +632,23 @@ final class AppController: NSObject {
         )
     }
 
-    private func reportAILyricsTranslationFailure() {
-        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-            "Translation failed; existing lyrics were kept.",
-            comment: "Status shown when AI lyric translation fails."
+    /// Reports a translation that put nothing on screen, with what failed when
+    /// that is known: the pane is the only place a rejected key, a wrong model
+    /// name or a used-up request limit is ever reported.
+    private func reportAILyricsTranslationFailure(_ failure: Error?) {
+        guard let failure else {
+            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                "Translation failed; existing lyrics were kept.",
+                comment: "Status shown when AI lyric translation fails."
+            )
+            return
+        }
+        defaults[.aiLyricsTranslationStatus] = String(
+            format: NSLocalizedString(
+                "Translation failed; existing lyrics were kept. %@",
+                comment: "Status shown when AI lyric translation fails; %@ says what failed, such as the HTTP status the endpoint answered."
+            ),
+            OpenAICompatibleLyricsTranslator.failureDescription(for: failure)
         )
     }
 
@@ -816,6 +829,12 @@ final class AppController: NSObject {
                           lyricsContentFingerprint(displayedLyrics) == sourceFingerprint else {
                         return
                     }
+                    // Nothing came back, so there is nothing to show or save:
+                    // the lyrics on screen and in their file stay as they are.
+                    guard !result.translations.isEmpty else {
+                        reportAILyricsTranslationFailure(result.failure)
+                        return
+                    }
 
                     // Applied to the lyrics on screen *now*, not to the copy the
                     // request started from: the user may have nudged the offset
@@ -831,7 +850,7 @@ final class AppController: NSObject {
                             targetLanguage: configuration.targetLanguage
                         )
                     } catch {
-                        reportAILyricsTranslationFailure()
+                        reportAILyricsTranslationFailure(error)
                         return
                     }
 
@@ -867,7 +886,7 @@ final class AppController: NSObject {
                 return
             } catch {
                 guard !Task.isCancelled else { return }
-                reportAILyricsTranslationFailure()
+                reportAILyricsTranslationFailure(error)
             }
         }
     }

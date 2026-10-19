@@ -145,6 +145,17 @@ public enum AILyricsTranslationPolicy {
     Return exactly one entry for every input index, and keep each index exactly as it was given. Never add, omit, duplicate, or renumber an index.
     """
 
+    /// Whether `endpoint` takes the response's token cap as
+    /// `max_completion_tokens` rather than `max_tokens`.
+    ///
+    /// OpenAI renamed the parameter, and its reasoning models answer the old
+    /// name with a 400, while every OpenAI chat model accepts the new one. Most
+    /// other OpenAI-compatible servers still know only the old name, so the new
+    /// one goes to OpenAI's own host alone.
+    public static func usesMaxCompletionTokens(at endpoint: URL) -> Bool {
+        endpoint.host?.lowercased() == "api.openai.com"
+    }
+
     /// A canonical origin used to bind a credential to the server that may receive it.
     /// Paths, queries, fragments, and default ports do not affect the origin.
     public static func endpointOrigin(_ endpoint: URL) -> String? {
@@ -647,6 +658,9 @@ public struct OpenAICompatibleChatRequest: Encodable, Equatable, Sendable {
     public let model: String
     public let messages: [Message]
     private let maxTokens: Int
+    /// Whether `maxTokens` goes out as `max_completion_tokens`; see
+    /// `AILyricsTranslationPolicy.usesMaxCompletionTokens(at:)`.
+    private let usesMaxCompletionTokens: Bool
     private let responseFormat = JSONResponseFormat()
 
     private struct JSONResponseFormat: Encodable, Equatable, Sendable {
@@ -657,7 +671,16 @@ public struct OpenAICompatibleChatRequest: Encodable, Equatable, Sendable {
         case model
         case messages
         case maxTokens = "max_tokens"
+        case maxCompletionTokens = "max_completion_tokens"
         case responseFormat = "response_format"
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(model, forKey: .model)
+        try container.encode(messages, forKey: .messages)
+        try container.encode(maxTokens, forKey: usesMaxCompletionTokens ? .maxCompletionTokens : .maxTokens)
+        try container.encode(responseFormat, forKey: .responseFormat)
     }
 
     public init(
@@ -668,6 +691,7 @@ public struct OpenAICompatibleChatRequest: Encodable, Equatable, Sendable {
     ) throws {
         model = configuration.model
         self.maxTokens = maxTokens
+        usesMaxCompletionTokens = AILyricsTranslationPolicy.usesMaxCompletionTokens(at: configuration.endpoint)
         messages = [
             Message(role: "system", content: AILyricsTranslationPolicy.systemPrompt),
             Message(
