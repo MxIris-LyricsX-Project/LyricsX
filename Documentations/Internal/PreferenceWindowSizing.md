@@ -156,3 +156,14 @@ tab 的窗口尺寸与来源无关 —— 只切一两次很容易漏掉，因�
   storyboard 和各语言的 `.strings` 放进它自己的 `Resources`，`-AppleLanguages` 才生效。
 - 这样直接运行时，AppKit 不会因为语言是阿拉伯语就切成从右到左，还要另加
   `-AppleTextDirection YES -NSForceRightToLeftWritingDirection YES`。
+
+页面有一部分在代码里建（比如 Lab 页的滚动和「歌词翻译」组框）时，替身类就不够了，得把页面真实的 Swift 文件编进探针。
+2026-10-19 是这么做的：直接拿 Debug 构建里编好的 `Preferences.storyboardc` 和各语言的 `.strings`，把页面文件和几个替身
+编成一个可执行文件，在完全透明、鼠标穿透的窗口里走一遍真实的选 tab 流程，再量对齐、截断和含糊约束。又多了几个坑：
+- Debug 构建的 product 叫 `LyricsX-Debug`，storyboard 编进 nib 的类名是 `LyricsX_Debug.<类名>`，探针的模块必须也叫
+  `LyricsX_Debug`，否则载入 nib 时报「corrupt and unarchivable nib file」。
+- 替身类既要吞下 outlet（`setValue(_:forUndefinedKey:)`），也要让 binding 读到 nil（`value(forUndefinedKey:)`）：
+  窗口的 nib 里，过滤页的 array controller 一载入就读它。
+- 依赖编出来的动态库（例如 `libMediaRemoteAdapter.dylib`）要拷到可执行文件旁边。
+- 截图前把外观固定成浅色：深色模式下标签是透明底上的白字，截出来什么都看不见。
+- 对齐要拿同类视图比：文字标签的 frame 天生比输入框两边各宽 2 pt（文字的内边距），文字其实是对齐的。
