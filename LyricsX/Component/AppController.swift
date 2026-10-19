@@ -190,9 +190,10 @@ final class AppController: NSObject {
             .store(in: &cancelBag)
 
         // The widgets have no settings of their own: they show translations
-        // when the app does, so they all share one configuration and every
-        // reload reaches all of them at once.
-        defaults.publisher(for: [.preferBilingualLyrics])
+        // when the app does, in the language the app shows them in, so they
+        // all share one configuration and every reload reaches all of them at
+        // once.
+        defaults.publisher(for: [.preferBilingualLyrics, .preferredLyricsTranslationLanguage])
             .signal()
             .sink { [weak self] in
                 self?.widgetReloadCoordinator.note(.displaySettingsChanged)
@@ -1296,12 +1297,11 @@ final class AppController: NSObject {
                         ? sliceArray[windowIndex + 1].element.position
                         : nil
 
-                    // Collect translations for all available languages
-                    let translation = lyrics.displayTranslation(for: line)
-
                     return LyricsLineEntry(
                         text: line.content,
-                        translation: widgetTranslation(of: line, in: lyrics),
+                        // The translation the desktop lyrics show, so the
+                        // widget follows the display language too.
+                        translation: lyrics.displayTranslation(for: line),
                         startTime: nextPosition,
                         endTime: endTime
                     )
@@ -1351,17 +1351,6 @@ final class AppController: NSObject {
             // #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
         }
         return widgetData
-    }
-
-    /// The translation the widget shows under `line`, the one the desktop
-    /// lyrics show: in the first language the lyrics carry a translation in,
-    /// or the translation that names no language when they carry none, as
-    /// NetEase, QQ Music and Kugou translations do.
-    ///
-    /// The one place that picks it, so that once the app lets the user choose
-    /// which translation to show, the widget follows that choice from here.
-    private func widgetTranslation(of line: LyricsLine, in lyrics: Lyrics) -> String? {
-        line.attachments[.translation(languageCode: lyrics.metadata.translationLanguages.first)]
     }
 }
 
