@@ -227,3 +227,354 @@ func lyricsStorageKeepsUserBesideTrackFilesReadOnlyByDefault() throws {
     #expect(managedPersist.fileURL == managedCustom)
     #expect(managedPersist.securityScopedDirectoryURL == custom)
 }
+
+@Test
+func aiLyricsTranslationRequestUsesBoundedJSONMode() throws {
+    let configuration = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "zh-Hans",
+        prompt: "Translate to $targetLanguage"
+    )
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: "en",
+        sourceLines: [AILyricsTranslationInputLine(index: 3, text: "A lyric")]
+    )
+    let data = try JSONEncoder().encode(request)
+    let payload = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let responseFormat = try #require(payload["response_format"] as? [String: String])
+
+    #expect(payload["max_tokens"] as? Int == 4_096)
+    #expect(responseFormat["type"] == "json_object")
+    #expect(payload["model"] as? String == "test-model")
+}
+
+@Test
+func aiLyricsTranslationBatchesRespectLineAndByteLimits() throws {
+    let lines = (0 ..< 25).map {
+        AILyricsTranslationInputLine(index: $0, text: "Line \($0)")
+    }
+    let lineLimitedBatches = try AILyricsTranslationBatchPolicy.batches(lines)
+
+    #expect(lineLimitedBatches.map(\.count) == [24, 1])
+    #expect(lineLimitedBatches.allSatisfy { $0.count <= AILyricsTranslationBatchPolicy.maximumLines })
+
+    let byteLimitedLines = (0 ..< 24).map {
+        AILyricsTranslationInputLine(index: $0, text: String(repeating: "x", count: 2_000))
+    }
+    let byteLimitedBatches = try AILyricsTranslationBatchPolicy.batches(byteLimitedLines)
+
+    #expect(byteLimitedBatches.count > 1)
+    for batch in byteLimitedBatches {
+        #expect(try JSONEncoder().encode(batch).count <= AILyricsTranslationBatchPolicy.maximumSourceBytes)
+    }
+}
+
+@Test
+func aiLyricsTranslationDropsALineTooLargeToBatchOnItsOwn() throws {
+    // A whole verse pasted into one timestamp. It cannot fit in any batch, so
+    // it is dropped here and counted as a failed line by the caller — it must
+    // not take the rest of the track's translation down with it.
+    let oversized = AILyricsTranslationInputLine(
+        index: 1,
+        text: String(repeating: "x", count: AILyricsTranslationBatchPolicy.maximumSourceBytes + 1)
+    )
+    let lines = [
+        AILyricsTranslationInputLine(index: 0, text: "first"),
+        oversized,
+        AILyricsTranslationInputLine(index: 2, text: "third"),
+    ]
+
+    let batches = try AILyricsTranslationBatchPolicy.batches(lines)
+
+    #expect(batches.flatMap { $0.map(\.index) } == [0, 2])
+}
+
+@Test
+func aiLyricsTranslationRequestHonoursACustomTokenCap() throws {
+    let configuration = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "zh-Hans",
+        prompt: "Translate to $targetLanguage"
+    )
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: nil,
+        sourceLines: [AILyricsTranslationInputLine(index: 0, text: "OK")],
+        maxTokens: 32
+    )
+
+    let payload = try #require(
+        JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+    )
+
+    #expect(payload["max_tokens"] as? Int == 32)
+    #expect((payload["messages"] as? [[String: String]])?.count == 2)
+}
+
+@Test
+func aiLyricsTranslationRequestUsesMaxCompletionTokensForOpenAI() throws {
+    // OpenAI's reasoning models answer `max_tokens` with a 400 and take only
+    // `max_completion_tokens`, which every OpenAI chat model accepts. Other
+    // OpenAI-compatible servers mostly know only `max_tokens`.
+    func payload(endpoint: String) throws -> [String: Any] {
+        let configuration = AILyricsTranslationConfiguration(
+            endpoint: try #require(URL(string: endpoint)),
+            model: "test-model",
+            targetLanguage: "ja",
+            prompt: ""
+        )
+        let request = try OpenAICompatibleChatRequest(
+            configuration: configuration,
+            sourceLanguage: nil,
+            sourceLines: [AILyricsTranslationInputLine(index: 0, text: "A lyric")],
+            maxTokens: 64
+        )
+        return try #require(
+            JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+        )
+    }
+
+    let openAIPayload = try payload(endpoint: "https://api.openai.com/v1/chat/completions")
+    #expect(openAIPayload["max_completion_tokens"] as? Int == 64)
+    #expect(openAIPayload["max_tokens"] == nil)
+
+    let compatiblePayload = try payload(endpoint: "https://api.deepseek.com/chat/completions")
+    #expect(compatiblePayload["max_tokens"] as? Int == 64)
+    #expect(compatiblePayload["max_completion_tokens"] == nil)
+}
+
+@Test
+func aiLyricsTranslationAppliesOntoTheCurrentLyricsAndKeepsTheirOtherState() throws {
+    // Stands in for the lyrics on screen when an answer lands: the user nudged
+    // the offset and switched a line off while the request was in flight, and
+    // both have to survive the merge.
+    let source = try #require(Lyrics("[offset:1500]\n[00:01.000]first\n[00:02.000]second"))
+    source.lines[1].enabled = false
+
+    let translated = try AILyricsTranslationPolicy.applying([0: "erste"], to: source, targetLanguage: "de")
+
+    #expect(translated.offset == 1500)
+    #expect(translated.lines[1].enabled == false)
+    #expect(translated.lines[0].attachments.translation(languageCodeCandidate: ["de"]) == "erste")
+    #expect(translated.lines[1].attachments.translation(languageCodeCandidate: ["de"]) == nil)
+    #expect(translated.metadata.attachmentTags.contains(.translation(languageCode: "de")))
+    #expect(source.lines[0].attachments.translation(languageCodeCandidate: ["de"]) == nil)
+}
+
+@Test
+func aiLyricsTranslationReusesWhatASavedCopyOfTheSameLyricsHolds() throws {
+    // Lyrics embedded in a track are persisted to a library copy that the
+    // lookup never reads back. The copy goes through the file format here, as
+    // it does on disk, and its translation comes back for the line it covers.
+    let source = try #require(Lyrics("[00:01.000]first\n[00:02.000]second"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: source, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations == [0: "第一"])
+}
+
+@Test
+func aiLyricsTranslationReusesNothingFromACopyOfOtherLyrics() throws {
+    // A copy left over from lyrics that have since changed must not pin its
+    // translations onto lines they were not written for.
+    let source = try #require(Lyrics("[00:01.000]first\n[00:02.000]second"))
+    let changed = try #require(Lyrics("[00:01.000]first\n[00:02.500]second"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: changed, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationReusesOnlyTranslationsInTheTargetLanguage() throws {
+    let source = try #require(Lyrics("[00:01.000]first"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "最初"], to: source, targetLanguage: "ja")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationReusesNoTranslationThatNamesNoLanguage() throws {
+    // A translation without a language could be in any of them, so it is not
+    // taken for the target language.
+    let source = try #require(Lyrics("[00:01.000]first"))
+    let copy = try #require(Lyrics(source.description))
+    copy.lines[0].attachments[.translation()] = "第一"
+    let saved = try #require(Lyrics(copy.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
+    // The settings sheet used to write its pre-filled field back verbatim, so
+    // an install that saved once holds the old default looking exactly like a
+    // prompt the user wrote. Left alone, a rewritten default reaches nobody.
+    let superseded = "Translate every lyric line into natural, concise $targetLanguage. Preserve the song's tone, imagery, names, and repeated phrases. Do not add explanations or commentary."
+    let custom = "Translate into $targetLanguage and keep it terse."
+
+    #expect(AILyricsTranslationPolicy.resolvedPrompt("") == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt("   ") == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt(superseded) == AILyricsTranslationPolicy.defaultPrompt)
+    #expect(AILyricsTranslationPolicy.resolvedPrompt(custom) == custom)
+}
+
+@Test
+func aiLyricsTranslationCompletesABaseEndpoint() throws {
+    // Providers document a base_url, and copying it out of the docs is the
+    // obvious thing to do. Both of these look like a finished endpoint and
+    // both answer a request with a 404 that says nothing about the path it
+    // wanted, so the path is appended for them.
+    func endpoint(_ string: String) throws -> String {
+        try AILyricsTranslationPolicy.validatedEndpoint(string).absoluteString
+    }
+
+    #expect(try endpoint("https://api.deepseek.com") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://api.deepseek.com/") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://api.deepseek.com/v1") == "https://api.deepseek.com/v1/chat/completions")
+    #expect(try endpoint("http://localhost:8080") == "http://localhost:8080/chat/completions")
+
+    // A path of its own is left exactly as given: a proxy or a provider that
+    // answers somewhere else is not ours to correct.
+    #expect(try endpoint("https://api.deepseek.com/chat/completions") == "https://api.deepseek.com/chat/completions")
+    #expect(try endpoint("https://proxy.example.com/openai/v1/chat/completions") == "https://proxy.example.com/openai/v1/chat/completions")
+}
+
+@Test
+func aiLyricsTranslationNeverCarriesABlankPrompt() throws {
+    // An empty prompt still builds a well-formed request — one whose
+    // instruction block is blank — so nothing downstream fails; it just
+    // translates nothing. The default is substituted where that block is
+    // built, and the configuration keeps reporting what it was given.
+    let configuration = AILyricsTranslationConfiguration(
+        endpoint: try #require(URL(string: "https://example.com/v1/chat/completions")),
+        model: "test-model",
+        targetLanguage: "ja",
+        prompt: "   "
+    )
+    let request = try OpenAICompatibleChatRequest(
+        configuration: configuration,
+        sourceLanguage: "en",
+        sourceLines: [AILyricsTranslationInputLine(index: 0, text: "A lyric")]
+    )
+    let payload = try #require(
+        JSONSerialization.jsonObject(with: try JSONEncoder().encode(request)) as? [String: Any]
+    )
+    let messages = try #require(payload["messages"] as? [[String: String]])
+    let userMessage = try #require(messages.last?["content"])
+
+    #expect(userMessage.contains("Translate every lyric line into"))
+    #expect(configuration.prompt == "   ")
+}
+
+@Test
+func aiLyricsTranslationConfigurationReportsThePromptItWasGiven() throws {
+    let configuration = try AILyricsTranslationPolicy.configuration(
+        endpoint: "https://example.com/v1/chat/completions",
+        model: "test-model",
+        targetLanguage: "ja",
+        prompt: ""
+    )
+
+    #expect(configuration.prompt.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationResolvesLoopbackEndpointsByAddress() {
+    // The address decides, not the spelling. `URLComponents.host` keeps an
+    // IPv6 literal bracketed, so `[::1]` never equals `::1`; and the same
+    // interfaces have longer spellings too. Every one of these is loopback.
+    func accepted(_ endpoint: String) -> Bool {
+        do {
+            _ = try AILyricsTranslationPolicy.validatedEndpoint(endpoint)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    #expect(accepted("http://localhost:8080/v1/chat/completions"))
+    #expect(accepted("http://127.0.0.1:8080/v1/chat/completions"))
+    #expect(accepted("http://[127.0.0.1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[localhost]:8080/v1/chat/completions"))
+    #expect(accepted("http://[::1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[0:0:0:0:0:0:0:1]:8080/v1/chat/completions"))
+    #expect(accepted("http://[::ffff:127.0.0.1]:8080/v1/chat/completions"))
+
+    #expect(!accepted("http://192.168.1.10:8080/v1/chat/completions"))
+    #expect(!accepted("http://[2001:db8::1]:8080/v1/chat/completions"))
+    #expect(!accepted("http://api.example.com/v1/chat/completions"))
+}
+
+@Test
+func aiLyricsTranslationKeepsValidPartialResponseEntries() throws {
+    let response = """
+    {"translations":[{"index":4,"text":"bonjour"},{"index":6,"text":"hola"},{"index":7,"text":""}]}
+    """
+    let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+        response: response,
+        expectedIndices: [4, 5, 6, 7]
+    )
+
+    #expect(parsed.translations == [4: "bonjour", 6: "hola"])
+    #expect(parsed.missingIndices == [5, 7])
+}
+
+@Test
+func aiLyricsTranslationDiscardsAmbiguousDuplicateIndices() throws {
+    let response = """
+    {"translations":[{"index":2,"text":"first"},{"index":2,"text":"second"},{"index":3,"text":"valid"}]}
+    """
+    let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+        response: response,
+        expectedIndices: [2, 3]
+    )
+
+    #expect(parsed.translations == [3: "valid"])
+    #expect(parsed.missingIndices == [2])
+}
+
+@Test
+func aiLyricsTranslationRecognizesBareAndLanguageQualifiedTranslationTags() {
+    let bareTagCandidates = AILyricsTranslationPolicy.translationLanguageCandidates(
+        attachmentTagRawValues: ["tr"],
+        targetLanguage: "zh-Hans"
+    )
+    let qualifiedTagCandidates = AILyricsTranslationPolicy.translationLanguageCandidates(
+        attachmentTagRawValues: ["tr:zh-Hans", "tr:ja"],
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(bareTagCandidates.count == 2)
+    #expect(bareTagCandidates[0] == "zh-Hans")
+    #expect(bareTagCandidates[1] == nil)
+    #expect(qualifiedTagCandidates == ["zh-Hans"])
+}

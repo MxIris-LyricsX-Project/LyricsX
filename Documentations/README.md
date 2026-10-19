@@ -56,6 +56,14 @@
   - [0019 小组件统一成一种配置，显示翻译跟随「双语歌词」设置](Evolutions/0019-widget-single-configuration.md)
     —— 去掉小组件每个实例自己的设置项，显示翻译改由「Prefer bilingual lyrics」决定、经 App Group 的快照传给小组件，
     翻译语言留给 AI 翻译 PR #204 接入；所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
+  - [0020 实验室：用 OpenAI 兼容端点翻译歌词](Evolutions/0020-ai-lyrics-translation.md)
+    —— 默认关闭的实验功能：缺目标语言译文的行发给 OpenAI 兼容端点翻译，另加「显示语言」决定各处显示哪种译文；
+    优先级窗口内不发请求、每首歌请求数封顶、内嵌和旁置歌词复用歌词库副本里的译文。
+
+## 使用说明
+
+- [AI lyrics translation](AITranslation.md) —— 面向用户，英文，README 链到这里：实验室页的 AI 翻译怎么设置、
+  会把什么发给端点、API key 怎么保管、请求的限制与重试，以及显示语言怎么挑译文。
 
 ## 实现说明
 
@@ -69,7 +77,7 @@
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
   尺寸，补的约束优先级为什么必须卡在 500 和 750 之间，量的为什么是选中页而不是 controller
   自己的 view，切 tab 为什么没有动画（试过的三种写法各自怎么失败的），grid 里的输入框为什么必须
-  给定宽度，以及怎么离屏检查一页的布局。
+  给定宽度，Lab 页为什么改成可滚动、高度上限怎么定，以及怎么离屏检查一页的布局。
 - [Apple Music 26.6 歌词动画](Internal/AppleMusicLyricsAnimation.md) —— TTML 的 word/syllable timing
   如何经过 LRCX 保存，行内 factor 与可切换的结构化 emphasis 策略、Apple Music 真实的逐行 cascade 与
   可切换的两档参数、行 layer 光栅化、`.topRelative(40)`、多行坐标、contextual blur 与 viewport edge fade
@@ -93,7 +101,7 @@
 ## 术语
 
 - [项目术语表](Glossary.md) —— 候选池、钉住、补充搜索、覆盖表、优先级窗口、Route B、
-  歌词库缓存、手选标记、分数桶、同分容差等本项目自造词。
+  歌词库缓存、手选标记、分数桶、同分容差等本项目自造词，以及容易混淆的显示语言与目标语言。
 
 ## 工程实践
 

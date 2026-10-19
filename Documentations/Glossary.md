@@ -121,3 +121,15 @@ AppKit 为状态栏条目渲染的截图。macOS 26 起，系统菜单栏显示�
 
 因此在条目里放什么、多久变一次，直接决定 CPU 开销；会对外观切换做出反应的视图（`NSTextField`）甚至能让截图停不下来。
 详见[菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md)。
+
+## 显示语言与目标语言（display language / target language）
+
+实验室页上两个容易混的语言设置：
+
+- **显示语言**（`PreferredLyricsTranslationLanguage`）：歌词带着几种译文时，桌面歌词、歌词窗口、Apple Music 面板、
+  小组件和 iTunes 导出显示哪一种，由 `Lyrics.displayTranslation(for:)` 一处决定。留空就取覆盖行数最多的那种。
+  和 AI 翻译开没开无关。
+- **目标语言**（`AILyricsTranslationTargetLanguage`）：AI 翻译把缺译文的行**翻成**哪种语言，只在 AI 翻译里用。
+
+两者故意分开：目标语言在 AI 翻译设置面板保存时就会写入，哪怕用户从没打开过这个功能。拿它决定显示的话，只打开过
+一次面板的人，歌词就换了一种译文显示。详见 [AI 翻译的提案](Evolutions/0020-ai-lyrics-translation.md)。

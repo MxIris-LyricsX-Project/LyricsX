@@ -48,7 +48,23 @@ let isInSandbox = ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"
 let isFromMacAppStore = (try? Bundle.main.appStoreReceiptURL?.checkResourceIsReachable()) == true
 
 extension DispatchQueue {
-    static let lyricsDisplay = DispatchQueue(label: "LyricsDisplay")
+    private static let lyricsDisplayKey = DispatchSpecificKey<Bool>()
+    static let lyricsDisplay: DispatchQueue = {
+        let queue = DispatchQueue(label: "LyricsDisplay")
+        queue.setSpecific(key: lyricsDisplayKey, value: true)
+        return queue
+    }()
+
+    static var isOnLyricsDisplay: Bool {
+        return DispatchQueue.getSpecific(key: lyricsDisplayKey) == true
+    }
+}
+
+func performOnLyricsDisplayQueue<T>(_ action: () throws -> T) rethrows -> T {
+    if DispatchQueue.isOnLyricsDisplay {
+        return try action()
+    }
+    return try DispatchQueue.lyricsDisplay.sync(execute: action)
 }
 
 extension CAMediaTimingFunction {
@@ -187,6 +203,13 @@ extension UserDefaults.DefaultsKeys {
     static let writeiTunesWithTranslation = Key<Bool>("WriteiTunesWithTranslation")
     static let writeToiTunesAutomatically = Key<Bool>("WriteToiTunesAutomatically")
     static let writeiTunesConvertToPlainLRC = Key<Bool>("WriteiTunesConvertToPlainLRC")
+    static let preferredLyricsTranslationLanguage = Key<String?>("PreferredLyricsTranslationLanguage")
+    static let aiLyricsTranslationEnabled = Key<Bool>("AILyricsTranslationEnabled")
+    static let aiLyricsTranslationEndpoint = Key<String>("AILyricsTranslationEndpoint")
+    static let aiLyricsTranslationModel = Key<String>("AILyricsTranslationModel")
+    static let aiLyricsTranslationTargetLanguage = Key<String>("AILyricsTranslationTargetLanguage")
+    static let aiLyricsTranslationPrompt = Key<String>("AILyricsTranslationPrompt")
+    static let aiLyricsTranslationStatus = Key<String>("AILyricsTranslationStatus")
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
 

@@ -191,8 +191,10 @@ struct LineEmphasisStructureProbes {
         let lineView = AppleMusicLyrics.SyncedLyricsLineView(
             frame: NSRect(x: 0, y: 0, width: rowWidth, height: 300)
         )
+        let line = try #require(lyrics.lines.first)
         try lineView.configure(
-            line: #require(lyrics.lines.first),
+            line: line,
+            translation: line.attachments.translation(),
             originalIndex: 0,
             enabledPosition: 0,
             mainFontSize: mainFontSize,

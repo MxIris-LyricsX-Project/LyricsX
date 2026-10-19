@@ -28,3 +28,4 @@
 | [0017](0017-menu-bar-lyrics-without-text-field.md) | 菜单栏歌词改为自绘，不再用 NSTextField | Implemented |
 | [0018](0018-lab-apple-music-group.md) | 实验室页的 Apple Music 设置归入一组并补齐翻译 | Implemented |
 | [0019](0019-widget-single-configuration.md) | 小组件统一成一种配置，显示翻译跟随「双语歌词」设置 | Implemented |
+| [0020](0020-ai-lyrics-translation.md) | 实验室：用 OpenAI 兼容端点翻译歌词 | Implemented |

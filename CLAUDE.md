@@ -46,8 +46,9 @@ hand.
 policies — lyrics storage destinations, editing eligibility, HUD window
 configuration, playback-position preservation, candidate-pool ordering, the
 manual-selection override table, and the source-ordering modes (including the
-property tests that keep the ordering transitive) — and is fast and headless
-enough to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
+property tests that keep the ordering transitive), plus the AI translation
+policies (request encoding, batch boundaries, reusing a saved copy's
+translations) — and is fast and headless enough to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
 renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
 its animation geometry and karaoke colour (no clipping, bounded lift, sweep
 actually paints white, no position drift):
@@ -107,6 +108,9 @@ swift test --filter ScrollSpringProbes
 # full-frame test's PNGs.
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
+
+AI lyrics translation setup, privacy behavior, request limits, and retry
+semantics are documented in [Documentations/AITranslation.md](Documentations/AITranslation.md).
 
 `MenuBarLyricsTests` guards the menu bar lyric line (`MenuBarMarqueeLabel`,
 which replaced MarqueeLabel's `NSTextField` on macOS 26+). Run them on any
@@ -348,7 +352,7 @@ Setting evaluation order (high overrides low): target xcconfig → project xccon
 
 The app uses a **Combine-driven reactive architecture** with shared singletons:
 
-- **`Component/`** — Core singletons: `AppController` (central lyrics search/management hub), `AppDelegate`, `SelectedPlayer` (player adapter). `AppController` listens for track changes via Combine publishers, runs async lyrics searches (`AsyncSequence`), and distributes results to display layers.
+- **`Component/`** — Core singletons: `AppController` (central lyrics search/management hub), `AppDelegate`, `SelectedPlayer` (player adapter). `AppController` listens for track changes via Combine publishers, runs async lyrics searches (`AsyncSequence`), and distributes results to display layers. `AITranslationService` is the Labs AI translation client: the Keychain credential store and the OpenAI-compatible request loop; its pure policies are `AILyricsTranslationPolicy` in `LyricsXFoundation`.
 - **`AppleMusicLyrics/`** — App-side glue for the `AppleMusicLyricsPanel` package target: just `AppleMusicLyricsWindowController`, which owns the panel window (frame autosave, pin button, HUD lifecycle), installs `AppleMusicLyrics.HostEnvironment`, and injects `AppController`'s lyrics publishers into the panel. The engine itself lives in `LyricsXPackage/Sources/AppleMusicLyricsPanel/`.
 - **`Controller/`** — Display controllers: `KaraokeLyricsController` (desktop karaoke overlay), `MenuBarLyricsController` (menu bar text: `MenuBarMarqueeLabel` on macOS 26+, MarqueeLabel before), `TouchBarLyricsController`
 - **`LyricsHUD/`** — Floating lyrics panel (`LyricsHUDViewController`)
@@ -362,6 +366,12 @@ The app uses a **Combine-driven reactive architecture** with shared singletons:
 2. `AppController.shared` subscribes, triggers async lyrics search on track change
 3. Found lyrics stored as `@Published var currentLyrics`
 4. Display controllers (`KaraokeLyricsController`, `MenuBarLyricsController`, etc.) subscribe to lyrics + playback position to render synchronized output
+
+Lyrics are written (`Lyrics.persist()`) on `DispatchQueue.lyricsDisplay` only:
+a write from any other queue races one from there, so Debug builds trap on it.
+From the main thread, wrap the change and the write in
+`performOnLyricsDisplayQueue { … }`. Why it is an assertion and not a test is in
+`Documentations/ReviewDecisions.md`.
 
 ### Localization
 

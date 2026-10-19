@@ -36,6 +36,9 @@ final class AppController: NSObject {
         didSet {
             didChangeValue(forKey: "lyricsOffset")
             scheduleCurrentLineCheck()
+            performOnLyricsDisplayQueue {
+                startAITranslation(for: currentLyrics)
+            }
         }
     }
 
@@ -61,6 +64,17 @@ final class AppController: NSObject {
     private var candidateSelectionIsPinned = false
 
     private var candidateReplenishTask: Task<Void, Never>?
+    private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
+    private var aiLyricsTranslationTask: Task<Void, Never>?
+    private var lastAITranslationKey: String?
+    /// Until when the automatic search may still put other lyrics on screen:
+    /// the end of its priority window, or `.distantFuture` while it has not
+    /// shown a result yet. A translation request waits for it, so nothing is
+    /// paid for lyrics that a higher-priority result replaces seconds later.
+    /// Confined to the lyrics display queue, like the two above.
+    private var automaticLyricsReplacementDeadline: Date?
+    /// The translation put off until `automaticLyricsReplacementDeadline`.
+    private var deferredAITranslationStart: DispatchWorkItem?
 
     /// What a "next candidate" request ended up doing. Published rather than
     /// returned because the replenish path resolves asynchronously, and both
@@ -184,9 +198,10 @@ final class AppController: NSObject {
             .store(in: &cancelBag)
 
         // The widgets have no settings of their own: they show translations
-        // when the app does, so they all share one configuration and every
-        // reload reaches all of them at once.
-        defaults.publisher(for: [.preferBilingualLyrics])
+        // when the app does, in the language the app shows them in, so they
+        // all share one configuration and every reload reaches all of them at
+        // once.
+        defaults.publisher(for: [.preferBilingualLyrics, .preferredLyricsTranslationLanguage])
             .signal()
             .sink { [weak self] in
                 self?.widgetReloadCoordinator.note(.displaySettingsChanged)
@@ -201,6 +216,27 @@ final class AppController: NSObject {
                 updateWidgetSnapshot()
             }
             .store(in: &cancelBag)
+
+        Publishers.MergeMany(
+            defaults.publisher(for: [.aiLyricsTranslationEnabled]).signal().eraseToAnyPublisher(),
+            defaults.publisher(for: [
+                .aiLyricsTranslationEndpoint,
+                .aiLyricsTranslationModel,
+                .aiLyricsTranslationTargetLanguage,
+                .aiLyricsTranslationPrompt,
+            ]).signal().eraseToAnyPublisher()
+        )
+        .receive(on: DispatchQueue.lyricsDisplay)
+        .sink { [weak self] in
+            guard let self = self else { return }
+            lastAITranslationKey = nil
+            if defaults[.aiLyricsTranslationEnabled] {
+                startAITranslation(for: currentLyrics)
+            } else {
+                cancelAITranslation()
+            }
+        }
+        .store(in: &cancelBag)
 
         currentTrackChanged()
 
@@ -367,8 +403,7 @@ final class AppController: NSObject {
                 }
                 if defaults[.writeiTunesWithTranslation] {
                     // TODO: tagged translation
-                    let code = currentLyrics.metadata.translationLanguages.first
-                    if var translation = line.attachments[.translation(languageCode: code)] {
+                    if var translation = currentLyrics.displayTranslation(for: line) {
                         if let converter = ChineseConverter.shared {
                             translation = converter.convert(translation)
                         }
@@ -388,8 +423,12 @@ final class AppController: NSObject {
         // Ahead of clearing the lyrics below, so the widget knows to wait for
         // the new track's.
         widgetReloadCoordinator.note(.trackChanged)
-        if currentLyrics?.metadata.needsPersist == true {
-            currentLyrics?.persist()
+        cancelAITranslation()
+        automaticLyricsReplacementDeadline = nil
+        performOnLyricsDisplayQueue {
+            if currentLyrics?.metadata.needsPersist == true {
+                currentLyrics?.persist()
+            }
         }
         currentLyrics = nil
         currentLineIndex = nil
@@ -500,6 +539,13 @@ final class AppController: NSObject {
             return
         }
 
+        // The search may replace whatever is on screen — lyrics read from a
+        // plain LRC file, which does not end the lookup — so their translation,
+        // already started above, waits until the search has had its say.
+        automaticLyricsReplacementDeadline = .distantFuture
+        lastAITranslationKey = nil
+        startAITranslation(for: currentLyrics)
+
         let request = makeLyricsSearchRequest(for: track)
         searchRequest = request
         searchTask = Task { @MainActor in
@@ -513,6 +559,12 @@ final class AppController: NSObject {
 
                 for try await lyrics in lyricsManager.lyrics(for: request) {
                     if !firstReceived {
+                        // Set before the result goes on screen, so that its
+                        // translation already waits for the window to close.
+                        setAutomaticLyricsReplacementDeadline(
+                            Date().addingTimeInterval(window),
+                            forSearch: request
+                        )
                         lyricsReceived(lyrics: lyrics)
                         if let current = currentLyrics, current === lyrics {
                             firstReceived = true
@@ -536,6 +588,9 @@ final class AppController: NSObject {
                     lyricsReceived(lyrics: lyrics)
                 }
 
+                // Nothing else can replace the lyrics now, so a translation
+                // still waiting for the window goes ahead.
+                setAutomaticLyricsReplacementDeadline(nil, forSearch: request)
                 loadLibraryLyricsIfSearchFoundNothing(for: track, title: title, artist: artist)
 
                 if defaults[.writeToiTunesAutomatically] {
@@ -545,10 +600,366 @@ final class AppController: NSObject {
                 // Search was cancelled due to track change
             } catch {
                 print("Failed to fetch lyrics: \(error.localizedDescription)")
+                setAutomaticLyricsReplacementDeadline(nil, forSearch: request)
                 // The case the fallback exists for: every provider failed, which
                 // offline is the normal outcome rather than the exception.
                 loadLibraryLyricsIfSearchFoundNothing(for: track, title: title, artist: artist)
             }
+        }
+    }
+
+    /// Records until when `request`'s search may still replace the lyrics on
+    /// screen, and asks again whether to translate them. Ignored once another
+    /// search has taken over: a search that outlives its track must not cut
+    /// short the wait the next track's search set up.
+    @MainActor
+    private func setAutomaticLyricsReplacementDeadline(_ deadline: Date?, forSearch request: LyricsSearchRequest) {
+        guard searchRequest?.id == request.id else { return }
+        performOnLyricsDisplayQueue {
+            automaticLyricsReplacementDeadline = deadline
+            startAITranslation(for: currentLyrics)
+        }
+    }
+
+    /// The pane's status while a request is in flight, kept in one place so the
+    /// "nothing to translate" path can tell a transient status apart from a
+    /// finished one. A failure message is the only place some problems are ever
+    /// reported, and blanking it on the next track change would lose it.
+    private var aiLyricsTranslationInProgressStatus: String {
+        NSLocalizedString(
+            "Translating lyrics…",
+            comment: "Status shown while AI lyric translation is in progress."
+        )
+    }
+
+    /// Reports a translation that put nothing on screen, with what failed when
+    /// that is known: the pane is the only place a rejected key, a wrong model
+    /// name or a used-up request limit is ever reported.
+    private func reportAILyricsTranslationFailure(_ failure: Error?) {
+        guard let failure else {
+            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                "Translation failed; existing lyrics were kept.",
+                comment: "Status shown when AI lyric translation fails."
+            )
+            return
+        }
+        defaults[.aiLyricsTranslationStatus] = String(
+            format: NSLocalizedString(
+                "Translation failed; existing lyrics were kept. %@",
+                comment: "Status shown when AI lyric translation fails; %@ says what failed, such as the HTTP status the endpoint answered."
+            ),
+            OpenAICompatibleLyricsTranslator.failureDescription(for: failure)
+        )
+    }
+
+    /// Stops the translation in flight and the one put off for later, and
+    /// forgets which lyrics were last sent, so the next call starts afresh.
+    private func cancelAITranslation() {
+        aiLyricsTranslationTask?.cancel()
+        aiLyricsTranslationTask = nil
+        deferredAITranslationStart?.cancel()
+        deferredAITranslationStart = nil
+        lastAITranslationKey = nil
+    }
+
+    /// Asks `startAITranslation` again at `deadline`, when the lyrics on
+    /// screen are the ones that stay. A `.distantFuture` deadline schedules
+    /// nothing: the search replaces it with the end of its window once it
+    /// shows a result, and with nil once it ends.
+    private func deferAITranslation(until deadline: Date) {
+        guard deadline != .distantFuture else { return }
+        let start = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            startAITranslation(for: currentLyrics)
+        }
+        deferredAITranslationStart = start
+        DispatchQueue.lyricsDisplay.asyncAfter(
+            deadline: .now() + max(deadline.timeIntervalSinceNow, 0),
+            execute: start
+        )
+    }
+
+    /// Reads the API key for `endpoint`, retrying a Keychain that is only
+    /// briefly unavailable. Returns nil, with the reason in the Lab pane, when
+    /// there is no key to use, and nil alone when the task is cancelled.
+    private func aiLyricsTranslationAPIKey(for endpoint: URL) async -> String? {
+        for attempt in 0 ..< 3 {
+            do {
+                let apiKey = try AILyricsTranslationCredentialStore.apiKey(for: endpoint)
+                guard !Task.isCancelled else { return nil }
+                if apiKey == nil {
+                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                        "Add an API key in AI translation settings.",
+                        comment: "Status shown when no API key is stored for AI lyric translation."
+                    )
+                }
+                return apiKey
+            } catch let error as AILyricsTranslationCredentialError where error.isTransient {
+                guard attempt < 2 else {
+                    guard !Task.isCancelled else { return nil }
+                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                        "The keychain is temporarily unavailable; translation can be retried later.",
+                        comment: "Status for a temporary Keychain failure during AI translation."
+                    )
+                    return nil
+                }
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(250_000_000 * (1 << attempt)))
+                } catch {
+                    return nil
+                }
+            } catch {
+                guard !Task.isCancelled else { return nil }
+                defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                    "The saved API key could not be read. Check its access in Keychain.",
+                    comment: "Status for a permanent Keychain failure during AI translation."
+                )
+                return nil
+            }
+        }
+        return nil
+    }
+
+    /// The translations into `targetLanguage` that the file `lyrics` persist
+    /// to already holds for them, when that is not the file they were read
+    /// from. Reads the file, so it runs off the lyrics display queue.
+    private func savedAITranslations(for lyrics: Lyrics, targetLanguage: String) -> [Int: String] {
+        guard let destination = lyrics.persistDestination,
+              destination.fileURL != lyrics.metadata.localURL else {
+            return [:]
+        }
+        let securityScopedDirectoryURL = destination.securityScopedDirectoryURL
+        if let securityScopedDirectoryURL, !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            return [:]
+        }
+        defer {
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+        }
+        guard let contents = try? String(contentsOf: destination.fileURL, encoding: .utf8),
+              let savedLyrics = Lyrics(contents) else {
+            return [:]
+        }
+        return AILyricsTranslationPolicy.savedTranslations(
+            in: savedLyrics,
+            for: lyrics,
+            targetLanguage: targetLanguage
+        )
+    }
+
+    private func startAITranslation(for lyrics: Lyrics?) {
+        guard defaults[.aiLyricsTranslationEnabled] else {
+            // The Lab pane owns the wording while the switch is off, so the
+            // task is cancelled without rewriting the status.
+            cancelAITranslation()
+            return
+        }
+        guard let lyrics, let track = selectedPlayer.currentTrack else {
+            cancelAITranslation()
+            // Nothing is on screen to translate. Clear the in-progress line,
+            // which would otherwise sit in the pane for the rest of the session
+            // with no retry coming — but leave a finished message alone.
+            if defaults[.aiLyricsTranslationStatus] == aiLyricsTranslationInProgressStatus {
+                defaults[.aiLyricsTranslationStatus] = ""
+            }
+            return
+        }
+
+        let configuration: AILyricsTranslationConfiguration
+        do {
+            configuration = try AILyricsTranslationPolicy.configuration(
+                endpoint: defaults[.aiLyricsTranslationEndpoint],
+                model: defaults[.aiLyricsTranslationModel],
+                targetLanguage: defaults[.aiLyricsTranslationTargetLanguage],
+                // Passed raw: `configuration(...)` resolves it, so an untouched
+                // prompt still reaches the endpoint as the current default.
+                prompt: defaults[.aiLyricsTranslationPrompt]
+            )
+        } catch {
+            cancelAITranslation()
+            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                "AI translation settings are incomplete or invalid.",
+                comment: "Status for AI lyric translation when its configuration is invalid."
+            )
+            return
+        }
+
+        let sourceFingerprint = lyricsContentFingerprint(lyrics)
+        let translationKey = [
+            track.id,
+            sourceFingerprint,
+            configuration.endpoint.absoluteString,
+            configuration.model,
+            configuration.targetLanguage,
+            configuration.prompt,
+        ].joined(separator: "|")
+        guard lastAITranslationKey != translationKey else { return }
+        aiLyricsTranslationTask?.cancel()
+        aiLyricsTranslationTask = nil
+        deferredAITranslationStart?.cancel()
+        deferredAITranslationStart = nil
+        guard AILyricsTranslationPolicy.shouldTranslate(
+            lyrics: lyrics,
+            sourceLanguage: lyrics.metadata.language,
+            targetLanguage: configuration.targetLanguage
+        ) else {
+            lastAITranslationKey = translationKey
+            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                "No untranslated lines need this target language.",
+                comment: "Status shown when lyrics are already in the AI translation target language."
+            )
+            return
+        }
+        defaults[.aiLyricsTranslationStatus] = aiLyricsTranslationInProgressStatus
+        if let deadline = automaticLyricsReplacementDeadline, deadline > Date() {
+            // The search may still replace these lyrics, so ask once it no
+            // longer can. The key stays unrecorded, so that call goes ahead.
+            deferAITranslation(until: deadline)
+            return
+        }
+        lastAITranslationKey = translationKey
+
+        let trackID = track.id
+        // `Lyrics` is a reference type, and the display queue keeps mutating the
+        // displayed instance while a request is in flight — the offset setter
+        // writes `idTags[.offset]`, and picking a candidate swaps `lines` and
+        // `metadata`. The task runs off this queue, so hand it a private copy
+        // built here. The original stays the object of record: the identity
+        // check below compares against it, and the translations are applied to
+        // whatever it holds by the time the answer lands.
+        let translationSource = Lyrics(
+            lines: lyrics.lines,
+            idTags: lyrics.idTags,
+            metadata: lyrics.metadata
+        )
+        aiLyricsTranslationTask = Task { [weak self] in
+            guard let self = self else { return }
+            // What the file these lyrics persist to already holds is not paid
+            // for again — for lyrics embedded in the track, or read from beside
+            // it without write-back, that file is a library copy the lookup
+            // never reads back, so without this every play translated anew.
+            let savedTranslations = savedAITranslations(
+                for: translationSource,
+                targetLanguage: configuration.targetLanguage
+            )
+            let requestSource = savedTranslations.isEmpty
+                ? translationSource
+                : (try? AILyricsTranslationPolicy.applying(
+                    savedTranslations,
+                    to: translationSource,
+                    targetLanguage: configuration.targetLanguage
+                )) ?? translationSource
+            let linesToRequest = AILyricsTranslationPolicy.translationInputLines(
+                lyrics: requestSource,
+                targetLanguage: configuration.targetLanguage
+            )
+
+            do {
+                var result = AILyricsTranslationResult(
+                    translations: savedTranslations,
+                    failedLineCount: 0,
+                    failure: nil
+                )
+                if !linesToRequest.isEmpty {
+                    guard let apiKey = await aiLyricsTranslationAPIKey(for: configuration.endpoint) else {
+                        return
+                    }
+                    let requestedResult = try await aiLyricsTranslator.translate(
+                        lyrics: requestSource,
+                        configuration: configuration,
+                        apiKey: apiKey
+                    )
+                    result = AILyricsTranslationResult(
+                        translations: savedTranslations.merging(requestedResult.translations) { _, new in new },
+                        failedLineCount: requestedResult.failedLineCount,
+                        failure: requestedResult.failure
+                    )
+                }
+                try Task.checkCancellation()
+                performOnLyricsDisplayQueue { [weak self] in
+                    guard let self = self,
+                          selectedPlayer.currentTrack?.id == trackID,
+                          defaults[.aiLyricsTranslationEnabled],
+                          defaults[.aiLyricsTranslationEndpoint] == configuration.endpoint.absoluteString,
+                          defaults[.aiLyricsTranslationModel] == configuration.model,
+                          defaults[.aiLyricsTranslationTargetLanguage] == configuration.targetLanguage,
+                          // Compared resolved on both sides: an untouched
+                          // prompt is stored empty, and the configuration
+                          // carries whatever the sheet saved rather than the
+                          // default that empty resolves to.
+                          AILyricsTranslationPolicy.resolvedPrompt(defaults[.aiLyricsTranslationPrompt])
+                              == AILyricsTranslationPolicy.resolvedPrompt(configuration.prompt),
+                          let displayedLyrics = currentLyrics,
+                          displayedLyrics === lyrics,
+                          lyricsContentFingerprint(displayedLyrics) == sourceFingerprint else {
+                        return
+                    }
+                    // Nothing came back, so there is nothing to show or save:
+                    // the lyrics on screen and in their file stay as they are.
+                    guard !result.translations.isEmpty else {
+                        reportAILyricsTranslationFailure(result.failure)
+                        return
+                    }
+
+                    // Applied to the lyrics on screen *now*, not to the copy the
+                    // request started from: the user may have nudged the offset
+                    // or flipped a line's switch while the request was in
+                    // flight, and swapping in the older object would revert
+                    // both — and `persist()` would then write the reverted
+                    // offset back to the file.
+                    let translatedLyrics: Lyrics
+                    do {
+                        translatedLyrics = try AILyricsTranslationPolicy.applying(
+                            result.translations,
+                            to: displayedLyrics,
+                            targetLanguage: configuration.targetLanguage
+                        )
+                    } catch {
+                        reportAILyricsTranslationFailure(error)
+                        return
+                    }
+
+                    translatedLyrics.metadata.needsPersist = true
+                    // A copy, so the candidate pool still holds the original;
+                    // `reconcileLyricsCandidatePoolWithScreen()` swaps it in
+                    // there before the pool is next used.
+                    currentLyrics = translatedLyrics
+                    if translatedLyrics.persist() {
+                        defaults[.aiLyricsTranslationStatus] = result.failedLineCount == 0
+                            ? NSLocalizedString(
+                                "Lyrics translated.",
+                                comment: "Status shown when all eligible lyric lines were translated."
+                            )
+                            : String(
+                                format: NSLocalizedString(
+                                    "Translated %d lines; %d lines could not be translated.",
+                                    comment: "Status shown when AI lyric translation was partially successful."
+                                ),
+                                result.translations.count,
+                                result.failedLineCount
+                            )
+                    } else {
+                        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                            "Translations are displayed but could not be saved.",
+                            comment: "Status shown when translated lyrics could not be persisted."
+                        )
+                    }
+                }
+            } catch is CancellationError {
+                return
+            } catch let error as URLError where error.code == .cancelled {
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                reportAILyricsTranslationFailure(error)
+            }
+        }
+    }
+
+    func retryAILyricsTranslation() {
+        performOnLyricsDisplayQueue {
+            lastAITranslationKey = nil
+            aiLyricsTranslationTask?.cancel()
+            startAITranslation(for: currentLyrics)
         }
     }
 
@@ -675,6 +1086,32 @@ final class AppController: NSObject {
         candidatePoolTrackId = nil
     }
 
+    /// Puts the lyrics on screen in the pool in place of the candidate they
+    /// are a copy of. A translation lands as a copy of the lyrics it
+    /// translated — the same lines in another object — so the pool may still
+    /// hold the untranslated original, and cycling back onto it would show,
+    /// and then write, the lyrics without their translation.
+    ///
+    /// Run on the main queue, where the pool is kept, before the pool is used,
+    /// rather than from the display queue when the translation lands.
+    private func reconcileLyricsCandidatePoolWithScreen() {
+        guard let onScreenLyrics = currentLyrics,
+              !lyricsCandidatePool.contains(where: { $0 === onScreenLyrics }) else {
+            return
+        }
+        let onScreenFingerprint = lyricsContentFingerprint(onScreenLyrics)
+        guard let original = lyricsCandidatePool.candidates.first(where: {
+            lyricsContentFingerprint($0) == onScreenFingerprint
+        }) else {
+            return
+        }
+        let selectedCandidate = lyricsCandidatePool.selectedCandidate
+        lyricsCandidatePool.replaceAll(
+            with: lyricsCandidatePool.candidates.map { $0 === original ? onScreenLyrics : $0 },
+            selecting: selectedCandidate === original ? onScreenLyrics : selectedCandidate
+        )
+    }
+
     /// Makes `lyrics` the pool's only member, as the local-cache paths do —
     /// they return before any search runs, so this one file is all there is
     /// until a replenish search fills in the rest.
@@ -717,6 +1154,7 @@ final class AppController: NSObject {
             lyricsCandidateSwitchOutcomes.send(.unavailable)
             return
         }
+        reconcileLyricsCandidatePoolWithScreen()
         guard lyricsCandidatePool.count >= 2, let nextCandidate = lyricsCandidatePool.advanceSelection() else {
             startCandidateReplenishSearch(for: track)
             return
@@ -790,10 +1228,6 @@ final class AppController: NSObject {
     private func applyUserPickedCandidate(_ lyrics: Lyrics, for track: MusicTrack) {
         candidateSelectionIsPinned = true
         lyricsCandidatePool.selectCandidate(identicalTo: lyrics)
-        lyrics.associateWithTrack(track)
-        lyrics.markAsUserPicked(origin: .nextCandidate)
-        lyrics.metadata.needsPersist = true
-        currentLyrics = lyrics
 
         // Picking a candidate by hand contradicts any earlier "wrong lyrics"
         // verdict on this track, exactly as choosing one in the search panel does.
@@ -801,7 +1235,14 @@ final class AppController: NSObject {
             defaults[.noSearchingTrackIds].remove(at: index)
         }
 
-        if lyrics.persist() {
+        let didPersist = performOnLyricsDisplayQueue {
+            lyrics.associateWithTrack(track)
+            lyrics.markAsUserPicked(origin: .nextCandidate)
+            lyrics.metadata.needsPersist = true
+            currentLyrics = lyrics
+            return lyrics.persist()
+        }
+        if didPersist {
             recordUserSelectionIfAutomaticLookupWouldOverrideIt(lyrics, for: track)
         }
         if defaults[.writeToiTunesAutomatically] {
@@ -919,7 +1360,20 @@ final class AppController: NSObject {
         // Drop the bonus if the user has already moved on to another song —
         // the score was computed against a now-stale artwork.
         guard selectedPlayer.currentTrack?.id == scoredTrackId else { return }
-        lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        reconcileLyricsCandidatePoolWithScreen()
+        // A translation may have put a copy of these lyrics on screen while
+        // the artwork was being scored: the same lines in another object, which
+        // has now taken this one's place in the pool. The copy is the candidate
+        // now, so it takes the bonus. Scoring the original instead would make
+        // it outrank its own copy and swap the untranslated lyrics back in.
+        let scoredLyrics: Lyrics
+        if let current = currentLyrics, current !== lyrics,
+           lyricsContentFingerprint(current) == lyricsContentFingerprint(lyrics) {
+            scoredLyrics = current
+        } else {
+            scoredLyrics = lyrics
+        }
+        scoredLyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
         // The bonus changed this candidate's rank, so the pool has to be
         // re-sorted; the selection stays on whatever object it was pointing at.
         lyricsCandidatePool.resort()
@@ -928,14 +1382,14 @@ final class AppController: NSObject {
         // A bonus landing later cannot resurrect a result that already missed
         // the priority window — otherwise late arrivals would take the screen
         // through the artwork path that they are denied through the normal one.
-        guard !lyrics.arrivedAfterPriorityWindow else { return }
+        guard !scoredLyrics.arrivedAfterPriorityWindow else { return }
         // The lyrics may now outrank the current selection. Re-run the swap
         // check; lyricsReceived's own guards (request id, recovered/non-
         // recovered tier, strict match) still apply.
-        if let current = currentLyrics, current !== lyrics,
-           lyricsHasHigherPriority(lyrics, over: current) {
-            currentLyrics = lyrics
-            lyricsCandidatePool.selectCandidate(identicalTo: lyrics)
+        if let current = currentLyrics, current !== scoredLyrics,
+           lyricsHasHigherPriority(scoredLyrics, over: current) {
+            currentLyrics = scoredLyrics
+            lyricsCandidatePool.selectCandidate(identicalTo: scoredLyrics)
         }
     }
 
@@ -1037,7 +1491,9 @@ final class AppController: NSObject {
 
                     return LyricsLineEntry(
                         text: line.content,
-                        translation: widgetTranslation(of: line, in: lyrics),
+                        // The translation the desktop lyrics show, so the
+                        // widget follows the display language too.
+                        translation: lyrics.displayTranslation(for: line),
                         startTime: nextPosition,
                         endTime: endTime
                     )
@@ -1087,17 +1543,6 @@ final class AppController: NSObject {
             // #log(.error, "[LXWG][Write] dataStore.write failed: \(error.localizedDescription, privacy: .public)")
         }
         return widgetData
-    }
-
-    /// The translation the widget shows under `line`, the one the desktop
-    /// lyrics show: in the first language the lyrics carry a translation in,
-    /// or the translation that names no language when they carry none, as
-    /// NetEase, QQ Music and Kugou translations do.
-    ///
-    /// The one place that picks it, so that once the app lets the user choose
-    /// which translation to show, the widget follows that choice from here.
-    private func widgetTranslation(of line: LyricsLine, in lyrics: Lyrics) -> String? {
-        line.attachments[.translation(languageCode: lyrics.metadata.translationLanguages.first)]
     }
 }
 
