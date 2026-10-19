@@ -21,7 +21,7 @@ struct WidgetDataStoreTests {
             isPlaying: true,
             timestamp: Date(timeIntervalSince1970: 500),
             playbackPosition: 2.0,
-            availableTranslationLanguages: []
+            showsTranslation: false
         )
 
         try store.write(data)
@@ -52,7 +52,7 @@ struct WidgetDataStoreTests {
             isPlaying: false,
             timestamp: Date(),
             playbackPosition: 0,
-            availableTranslationLanguages: []
+            showsTranslation: false
         )
 
         try store.write(data)

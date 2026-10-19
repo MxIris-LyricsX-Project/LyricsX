@@ -10,3 +10,4 @@ xcuserdata
 .claude
 .omc
 swift-syntax/.swiftpm
+.worktrees/

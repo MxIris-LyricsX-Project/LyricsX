@@ -53,6 +53,9 @@
   - [0018 实验室页的 Apple Music 设置归入一组并补齐翻译](Evolutions/0018-lab-apple-music-group.md)
     —— MusicKit 原名恢复、Token、Storefront、歌词语言四项收进一个 "Apple Music" 组框，页高不变；
     这一页的翻译补齐并修到 16 种语言都能完整显示，输入框在从右到左的语言里不再塌成 0 宽。
+  - [0019 小组件统一成一种配置，显示翻译跟随「双语歌词」设置](Evolutions/0019-widget-single-configuration.md)
+    —— 去掉小组件每个实例自己的设置项，显示翻译改由「Prefer bilingual lyrics」决定、经 App Group 的快照传给小组件，
+    翻译语言留给 AI 翻译 PR #204 接入；所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
 
 ## 实现说明
 
@@ -82,6 +85,10 @@
 - [菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md) —— 截图副本为什么让 `NSTextField` 间歇陷入每秒 300 次的
   重画循环、调它的属性为什么没用、为什么用 cell 画字并按外观缓存位图、滚动开销为什么由帧率和条目里的按钮决定，
   以及探针为什么必须打包成 App 并经 LaunchServices 启动。
+- [桌面小组件](Internal/DesktopWidget.md) —— 播放按钮为什么走 `AudioPlaybackIntent` 而不是 `openAppWhenRun`
+  （后者每按一次就弹出设置窗口），歌词区为什么按剩下的高度挑行，以及放不下的行为什么要按顺序排在区外；刷新为什么
+  攒着发（系统每 5 秒只执行一次 app 的刷新请求），小组件为什么没有自己的设置项（编辑过的小组件自成一套配置，
+  其余的每次更新都晚 5 秒）。
 
 ## 术语
 

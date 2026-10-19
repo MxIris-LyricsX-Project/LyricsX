@@ -11,9 +11,8 @@ struct MediumWidgetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             HStack(spacing: 16) {
-                if let coverURL = entry.coverImageURL,
-                   let nsImage = NSImage(contentsOf: coverURL) {
-                    Image(nsImage: nsImage)
+                if let coverImage = entry.coverImage {
+                    Image(decorative: coverImage, scale: 1)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 80, height: 80)
@@ -50,7 +49,7 @@ struct MediumWidgetView: View {
                                     .foregroundStyle(.white.opacity(0.9))
                                     .lineLimit(1)
 
-                                if entry.showTranslation,
+                                if entry.showsTranslation,
                                    let translation = currentLine.translation,
                                    !translation.isEmpty {
                                     Text(translation)

@@ -5,8 +5,6 @@ import LyricsXWidgetShared
 struct ExtraLargeWidgetView: View {
     let entry: LyricsTimelineEntry
 
-    private let visibleLineCount = 9
-
     var body: some View {
         if entry.isEmpty {
             EmptyStateView()
@@ -14,9 +12,8 @@ struct ExtraLargeWidgetView: View {
         } else {
             VStack(spacing: 0) {
                 HStack(spacing: 12) {
-                    if let coverURL = entry.coverImageURL,
-                       let nsImage = NSImage(contentsOf: coverURL) {
-                        Image(nsImage: nsImage)
+                    if let coverImage = entry.coverImage {
+                        Image(decorative: coverImage, scale: 1)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 60, height: 60)
@@ -47,42 +44,28 @@ struct ExtraLargeWidgetView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
 
-                Spacer(minLength: 12)
-
-                if !entry.lyricsLines.isEmpty {
-                    lyricsSection
-                } else {
-                    Text("No Lyrics")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.4))
+                Group {
+                    if entry.lyricsLines.isEmpty {
+                        Text("No Lyrics")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white.opacity(0.4))
+                    } else {
+                        LyricsWindowView(
+                            lines: entry.lyricsLines,
+                            highlightedLineIndex: entry.highlightedLineIndex,
+                            lineSpacing: 8,
+                            showsTranslation: entry.showsTranslation,
+                            translationScope: .everyLine
+                        )
+                    }
                 }
-
-                Spacer(minLength: 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
 
                 PlaybackControlView(isPlaying: entry.isPlaying)
                     .padding(.bottom, 16)
             }
         }
-    }
-
-    private var lyricsSection: some View {
-        let halfWindow = visibleLineCount / 2
-        let startIndex = max(0, entry.highlightedLineIndex - halfWindow)
-        let endIndex = min(entry.lyricsLines.count - 1, startIndex + visibleLineCount - 1)
-        let adjustedStartIndex = max(0, endIndex - visibleLineCount + 1)
-
-        return VStack(spacing: 8) {
-            ForEach(adjustedStartIndex...endIndex, id: \.self) { lineIndex in
-                let line = entry.lyricsLines[lineIndex]
-                let isHighlighted = (lineIndex == entry.highlightedLineIndex)
-                LyricsLineView(
-                    line: line,
-                    isHighlighted: isHighlighted,
-                    showTranslation: entry.showTranslation,
-                    translationLanguage: entry.translationLanguage
-                )
-            }
-        }
-        .padding(.horizontal, 20)
     }
 }

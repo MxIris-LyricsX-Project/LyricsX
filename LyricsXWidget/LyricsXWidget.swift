@@ -13,9 +13,9 @@ struct LyricsWidget: Widget {
     let kind = "com.JH.LyricsX.LyricsWidget"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(
+        // Static on purpose; see LyricsTimelineProvider.
+        StaticConfiguration(
             kind: kind,
-            intent: LyricsWidgetConfigurationIntent.self,
             provider: LyricsTimelineProvider()
         ) { entry in
             LyricsWidgetEntryView(entry: entry)
@@ -97,12 +97,11 @@ private struct DebugBuildBadge: ViewModifier {
         artist: "Queen",
         albumName: "A Night at the Opera",
         backgroundColor: CodableColor(red: 0.15, green: 0.1, blue: 0.25, alpha: 1.0),
-        coverImageURL: nil,
+        coverImage: nil,
         lyricsLines: [],
         highlightedLineIndex: 0,
         isPlaying: true,
-        showTranslation: false,
-        translationLanguage: nil,
+        showsTranslation: false,
         isEmpty: false
     )
 }
@@ -116,7 +115,7 @@ private struct DebugBuildBadge: ViewModifier {
         artist: "Queen",
         albumName: "A Night at the Opera",
         backgroundColor: CodableColor(red: 0.15, green: 0.1, blue: 0.25, alpha: 1.0),
-        coverImageURL: nil,
+        coverImage: nil,
         lyricsLines: [
             LyricsLineEntry(text: "Is this the real life?", translation: nil, startTime: 0, endTime: 5),
             LyricsLineEntry(text: "Is this just fantasy?", translation: nil, startTime: 5, endTime: 10),
@@ -128,8 +127,7 @@ private struct DebugBuildBadge: ViewModifier {
         ],
         highlightedLineIndex: 3,
         isPlaying: true,
-        showTranslation: false,
-        translationLanguage: nil,
+        showsTranslation: false,
         isEmpty: false
     )
 }

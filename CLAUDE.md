@@ -135,6 +135,36 @@ swift test --filter StatusItemTextParityProbes
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 ```
 
+`LyricsXWidgetSharedTests` covers the desktop widget's shared code. Its
+`WidgetLyricsLayoutPolicyTests` pin down which lyric lines the large and
+extra-large widgets show — whole lines that fit the space between the header
+and the playback controls, highlighted line centred — so run them on any change
+to the widget's lyrics area (<1s). Why the widget fits lines to the space
+instead of showing a fixed count is in `Documentations/Internal/DesktopWidget.md`:
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetLyricsLayoutPolicyTests
+```
+
+Its `WidgetReloadPolicyTests` pin down when the app asks WidgetKit to reload
+the widget. WidgetKit runs one app-requested reload every five seconds and
+holds the rest, so a track change — a burst of changes over about two seconds
+— has to reload once, after its lyrics arrive. Run them on any change to
+`WidgetReloadCoordinator` or to the widget data bridge in `AppController` (<1s):
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
+```
+
+The widget is a `StaticConfiguration` on purpose: anything it can show two
+ways follows an app setting passed in its snapshot, because each widget the
+user edits forms a configuration of its own and puts the others five seconds
+behind. Checking a change to what the widget declares — configuration,
+supported families, name — on the desktop needs a temporarily higher
+`CFBundleVersion` in both Info.plists (revert it, never commit it): `chronod`
+caches widget descriptors by version, and a Debug build's never changes.
+`Documentations/Internal/DesktopWidget.md` has both.
+
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
 
 Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.

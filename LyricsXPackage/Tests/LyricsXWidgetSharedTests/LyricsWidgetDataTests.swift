@@ -19,7 +19,7 @@ struct LyricsWidgetDataTests {
             isPlaying: true,
             timestamp: Date(timeIntervalSince1970: 1000),
             playbackPosition: 10.5,
-            availableTranslationLanguages: ["zh-Hans", "ja"]
+            showsTranslation: true
         )
 
         let encoded = try JSONEncoder().encode(original)
@@ -39,7 +39,7 @@ struct LyricsWidgetDataTests {
         #expect(decoded.currentLineIndex == 0)
         #expect(decoded.isPlaying == true)
         #expect(decoded.playbackPosition == 10.5)
-        #expect(decoded.availableTranslationLanguages == ["zh-Hans", "ja"])
+        #expect(decoded.showsTranslation == true)
     }
 
     @Test("Encode/decode with nil optional fields")
@@ -54,7 +54,7 @@ struct LyricsWidgetDataTests {
             isPlaying: false,
             timestamp: Date(),
             playbackPosition: 0,
-            availableTranslationLanguages: []
+            showsTranslation: false
         )
 
         let encoded = try JSONEncoder().encode(original)
@@ -63,5 +63,30 @@ struct LyricsWidgetDataTests {
         #expect(decoded.albumName == nil)
         #expect(decoded.backgroundColor == nil)
         #expect(decoded.lyricsLines.isEmpty)
+    }
+
+    @Test("a snapshot an earlier version wrote reads as one that shows no translation")
+    func snapshotFromAnEarlierVersionShowsNoTranslation() throws {
+        // What the app wrote before the widget took its settings from it:
+        // whether to show translations was each widget's own setting.
+        let earlierSnapshot = Data("""
+        {
+          "trackTitle": "Song",
+          "artist": "Artist",
+          "albumName": "Album",
+          "lyricsLines": [{ "text": "First line", "translation": "第一行", "startTime": 0, "endTime": 5 }],
+          "currentLineIndex": 0,
+          "isPlaying": true,
+          "timestamp": 1000,
+          "playbackPosition": 2,
+          "availableTranslationLanguages": ["zh-Hans"]
+        }
+        """.utf8)
+
+        let decoded = try JSONDecoder().decode(LyricsWidgetData.self, from: earlierSnapshot)
+
+        #expect(decoded.trackTitle == "Song")
+        #expect(decoded.lyricsLines.first?.translation == "第一行")
+        #expect(decoded.showsTranslation == false)
     }
 }
