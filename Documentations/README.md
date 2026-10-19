@@ -53,7 +53,7 @@
   - [0018 实验室页的 Apple Music 设置归入一组并补齐翻译](Evolutions/0018-lab-apple-music-group.md)
     —— MusicKit 原名恢复、Token、Storefront、歌词语言四项收进一个 "Apple Music" 组框，页高不变；
     这一页的翻译补齐并修到 16 种语言都能完整显示，输入框在从右到左的语言里不再塌成 0 宽。
-  - [草案：小组件统一成一种配置，显示翻译跟随「双语歌词」设置](Evolutions/draft-widget-single-configuration.md)
+  - [0019 小组件统一成一种配置，显示翻译跟随「双语歌词」设置](Evolutions/0019-widget-single-configuration.md)
     —— 去掉小组件每个实例自己的设置项，显示翻译改由「Prefer bilingual lyrics」决定、经 App Group 的快照传给小组件，
     翻译语言留给 AI 翻译 PR #204 接入；所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
 

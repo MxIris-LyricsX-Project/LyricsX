@@ -152,6 +152,15 @@ holds the rest, so a track change — a burst of changes over about two seconds
 cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
 ```
 
+The widget is a `StaticConfiguration` on purpose: anything it can show two
+ways follows an app setting passed in its snapshot, because each widget the
+user edits forms a configuration of its own and puts the others five seconds
+behind. Checking a change to what the widget declares — configuration,
+supported families, name — on the desktop needs a temporarily higher
+`CFBundleVersion` in both Info.plists (revert it, never commit it): `chronod`
+caches widget descriptors by version, and a Debug build's never changes.
+`Documentations/Internal/DesktopWidget.md` has both.
+
 `LyricsXWidgetShared`'s `WidgetDataStoreTests` has a pre-existing parallel-execution race (two tests share one store file), so a bare `swift test` may show its failures — they are unrelated to the panel probes.
 
 Standalone `swift build` / `swift test` in `LyricsXPackage/` resolves `LyricsKit`/`MusicPlayer` from their pinned remote tags by default; set `LYRICSX_USE_LOCAL_DEPENDENCY=1` to use the sibling checkouts instead. The `LyricsXPackage/Package.resolved` it writes is gitignored — the canonical pins live in the Xcode project.

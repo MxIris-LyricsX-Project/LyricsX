@@ -113,7 +113,7 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
 原来每个小组件有两个设置项：「显示翻译」和「翻译语言」（`AppIntentConfiguration` 加一个配置 intent）。上一节说了，
 编辑过的小组件自成一套配置，会让其余小组件每次更新都晚 5 秒。所以现在小组件是 `StaticConfiguration`，编辑小组件时
 没有设置项，桌面上所有小组件同属一套配置。提案见
-[小组件统一成一种配置](../Evolutions/draft-widget-single-configuration.md)。
+[0019 小组件统一成一种配置](../Evolutions/0019-widget-single-configuration.md)。
 
 **以后要让小组件能用不同方式显示，也加在 app 里，经快照传过去**，不要再给小组件加配置 intent。
 
