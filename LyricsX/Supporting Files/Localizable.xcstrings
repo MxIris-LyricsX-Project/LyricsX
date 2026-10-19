@@ -119,6 +119,23 @@
         }
       }
     },
+    "A language tag such as zh-Hans or ja. Blank shows the translation that covers the most lines." : {
+      "comment" : "Tooltip of the display language field in the Lab pane.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言标签，例如 zh-Hans 或 ja。留空则显示覆盖行数最多的译文。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語言標籤，例如 zh-Hant 或 ja。留空則顯示涵蓋最多行的譯文。"
+          }
+        }
+      }
+    },
     "A language tag such as zh-Hans, zh-Hant or ja. Lines already in this language are not sent." : {
       "comment" : "Help text under the AI translation target language setting.",
       "localizations" : {
@@ -423,20 +440,19 @@
         }
       }
     },
-    "Connection failed. Check the endpoint, model, and API key." : {
-      "comment" : "Generic status shown when the AI lyrics translation endpoint test fails.",
-      "extractionState" : "stale",
+    "Configure…" : {
+      "comment" : "Button in the Lab pane that opens the AI translation settings.",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "连接失败。请检查端点、模型和 API 密钥。"
+            "value" : "配置…"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連線失敗。請檢查端點、模型與 API 金鑰。"
+            "value" : "設定…"
           }
         }
       }
@@ -471,6 +487,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示語言必須是有效的語言標籤，例如 zh-Hans 或 ja。"
+          }
+        }
+      }
+    },
+    "Display language:" : {
+      "comment" : "Label for the language whose translation the bilingual lyrics show.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示语言："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示語言："
           }
         }
       }
@@ -810,6 +843,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "內嵌歌詞無法編輯。"
+          }
+        }
+      }
+    },
+    "Enable AI translation" : {
+      "comment" : "Checkbox in the Lab pane that turns AI lyric translation on.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用 AI 翻译"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟用 AI 翻譯"
           }
         }
       }
@@ -1157,6 +1207,23 @@
         }
       }
     },
+    "Lyrics translation" : {
+      "comment" : "Title of the Lab pane's box grouping the lyrics translation settings.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词翻译"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞翻譯"
+          }
+        }
+      }
+    },
     "Lyrics Window" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1277,6 +1344,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "模型"
+          }
+        }
+      }
+    },
+    "Most complete translation (e.g. zh-Hans)" : {
+      "comment" : "Placeholder of the display language field: blank shows the translation covering the most lines.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最完整的译文（如 zh-Hans）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最完整的譯文（如 zh-Hant）"
           }
         }
       }
@@ -3137,24 +3221,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "該端點要求的模型名稱，例如 gpt-4o-mini。"
-          }
-        }
-      }
-    },
-    "The prompt cannot be empty." : {
-      "comment" : "Error shown when the AI translation prompt is empty.",
-      "extractionState" : "stale",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提示词不能为空。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "提示詞不能為空。"
           }
         }
       }

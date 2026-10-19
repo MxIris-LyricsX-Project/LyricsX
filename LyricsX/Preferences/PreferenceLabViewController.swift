@@ -5,9 +5,6 @@ import MusicKit
 
 class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet var enableTouchBarLyricsButton: NSButton!
-    @IBOutlet var preferredLyricsTranslationLanguageField: NSTextField!
-    @IBOutlet var aiLyricsTranslationEnabledButton: NSButton!
-    @IBOutlet var aiLyricsTranslationStatusField: NSTextField!
 
     @IBOutlet var musixmatchTokenField: NSTextField!
 
@@ -23,12 +20,32 @@ class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet weak var appleMusicStorefrontField: NSTextField!
     @IBOutlet weak var appleMusicLanguageField: NSTextField!
 
+    private let preferredLyricsTranslationLanguageField = NSTextField()
+    private let aiLyricsTranslationEnabledButton = NSButton(
+        checkboxWithTitle: NSLocalizedString(
+            "Enable AI translation",
+            comment: "Checkbox in the Lab pane that turns AI lyric translation on."
+        ),
+        target: nil,
+        action: nil
+    )
+    private let aiLyricsTranslationStatusField = NSTextField(labelWithString: "")
+
     private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
     private var aiConnectionTestTask: Task<Void, Never>?
     private var defaultsObservation: AnyCancellable?
 
+    /// The most the pane may be tall; see `updateMaximumPaneHeight()`.
+    private var maximumPaneHeightConstraint: NSLayoutConstraint?
+
+    /// The General pane's English height, for when it cannot be measured.
+    private static let fallbackMaximumPaneHeight: CGFloat = 782
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        insertLyricsTranslationBox()
+        embedContentInScrollView()
 
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
         artworkSimilarityBoostButton.bind(.value, withDefaultName: .artworkSimilarityBoostEnabled)
@@ -71,11 +88,6 @@ class PreferenceLabViewController: PreferenceViewController {
         appleMusicLanguageField.stringValue = defaults[.appleMusicLanguage] ?? ""
         preferredLyricsTranslationLanguageField.stringValue = defaults[.preferredLyricsTranslationLanguage] ?? ""
         aiLyricsTranslationEnabledButton.state = defaults[.aiLyricsTranslationEnabled] ? .on : .off
-        // One line, truncating: the box reserves exactly one line for the
-        // status, so a wrapping field would make the status area grow and
-        // shrink with every message.
-        aiLyricsTranslationStatusField.cell?.wraps = false
-        aiLyricsTranslationStatusField.cell?.usesSingleLineMode = true
         refreshAILyricsTranslationStatusField()
         defaultsObservation = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
             .receive(on: DispatchQueue.main)
@@ -84,13 +96,208 @@ class PreferenceLabViewController: PreferenceViewController {
             }
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        updateMaximumPaneHeight()
+    }
+
     override func viewWillDisappear() {
         super.viewWillDisappear()
         aiConnectionTestTask?.cancel()
         aiConnectionTestTask = nil
     }
 
-    @IBAction func preferredLyricsTranslationLanguageChanged(_ sender: NSTextField) {
+    // MARK: - Layout
+
+    /// The pane's content, laid out in the storyboard as one grid pinned to
+    /// the pane's edges: a label column and a control column.
+    private var contentGridView: NSGridView {
+        guard let gridView = view.subviews.lazy.compactMap({ $0 as? NSGridView }).first else {
+            preconditionFailure("The Lab pane's storyboard scene lays its content out in a grid view.")
+        }
+        return gridView
+    }
+
+    /// Adds the lyrics translation box above the Apple Music one, built the way
+    /// the storyboard builds that box: a titled box spanning both columns, its
+    /// own grid inset 12 pt, with a 138 pt label column — so the box's labels
+    /// end, and its controls start, exactly where the pane's do.
+    ///
+    /// Built here rather than in the storyboard so that Auto Layout places
+    /// every control: frames fixed in Interface Builder neither follow a
+    /// longer localized title nor mirror for right-to-left languages.
+    private func insertLyricsTranslationBox() {
+        let displayLanguageLabel = NSTextField(labelWithString: NSLocalizedString(
+            "Display language:",
+            comment: "Label for the language whose translation the bilingual lyrics show."
+        ))
+
+        let field = preferredLyricsTranslationLanguageField
+        field.bezelStyle = .roundedBezel
+        field.focusRingType = .none
+        field.refusesFirstResponder = true
+        field.usesSingleLineMode = true
+        field.lineBreakMode = .byTruncatingTail
+        field.cell?.sendsActionOnEndEditing = true
+        field.placeholderString = NSLocalizedString(
+            "Most complete translation (e.g. zh-Hans)",
+            comment: "Placeholder of the display language field: blank shows the translation covering the most lines."
+        )
+        field.toolTip = NSLocalizedString(
+            "A language tag such as zh-Hans or ja. Blank shows the translation that covers the most lines.",
+            comment: "Tooltip of the display language field in the Lab pane."
+        )
+        field.target = self
+        field.action = #selector(preferredLyricsTranslationLanguageChanged(_:))
+
+        aiLyricsTranslationEnabledButton.target = self
+        aiLyricsTranslationEnabledButton.action = #selector(aiLyricsTranslationEnabledChanged(_:))
+        let configureButton = NSButton(
+            title: NSLocalizedString(
+                "Configure…",
+                comment: "Button in the Lab pane that opens the AI translation settings."
+            ),
+            target: self,
+            action: #selector(configureAILyricsTranslation(_:))
+        )
+        configureButton.bezelStyle = .rounded
+        let switchRow = NSStackView(views: [aiLyricsTranslationEnabledButton, configureButton])
+        switchRow.orientation = .horizontal
+        switchRow.alignment = .centerY
+        switchRow.spacing = 12
+
+        // One line, truncating, with the whole message in the tooltip: a
+        // wrapping status would make the box grow and shrink with every message.
+        let statusField = aiLyricsTranslationStatusField
+        statusField.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        statusField.textColor = .secondaryLabelColor
+        statusField.lineBreakMode = .byTruncatingTail
+        statusField.usesSingleLineMode = true
+        statusField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        let boxGridView = NSGridView(views: [
+            [displayLanguageLabel, field],
+            [NSGridCell.emptyContentView, switchRow],
+            [NSGridCell.emptyContentView, statusField],
+        ])
+        boxGridView.translatesAutoresizingMaskIntoConstraints = false
+        boxGridView.rowSpacing = 6
+        boxGridView.columnSpacing = 20
+        boxGridView.column(at: 0).width = 138
+        boxGridView.column(at: 0).xPlacement = .trailing
+        boxGridView.column(at: 1).width = 338
+        boxGridView.row(at: 0).height = 28
+        boxGridView.row(at: 1).height = 28
+        boxGridView.row(at: 0).yPlacement = .center
+        boxGridView.row(at: 1).yPlacement = .center
+        boxGridView.cell(for: field)?.xPlacement = .fill
+        boxGridView.cell(for: statusField)?.xPlacement = .fill
+
+        let box = NSBox()
+        box.title = NSLocalizedString(
+            "Lyrics translation",
+            comment: "Title of the Lab pane's box grouping the lyrics translation settings."
+        )
+        box.translatesAutoresizingMaskIntoConstraints = false
+        guard let boxContentView = box.contentView else {
+            preconditionFailure("An NSBox comes with a content view.")
+        }
+        boxContentView.addSubview(boxGridView)
+        // The insets of the Apple Music box's grid in the storyboard.
+        NSLayoutConstraint.activate([
+            boxGridView.topAnchor.constraint(equalTo: boxContentView.topAnchor, constant: 8),
+            boxGridView.leadingAnchor.constraint(equalTo: boxContentView.leadingAnchor, constant: 12),
+            boxContentView.trailingAnchor.constraint(greaterThanOrEqualTo: boxGridView.trailingAnchor, constant: 12),
+            boxContentView.bottomAnchor.constraint(equalTo: boxGridView.bottomAnchor, constant: 8),
+        ])
+
+        let gridView = contentGridView
+        let appleMusicBoxRowIndex = (0 ..< gridView.numberOfRows).first {
+            gridView.row(at: $0).cell(at: 0).contentView is NSBox
+        } ?? gridView.numberOfRows
+        let row = gridView.insertRow(at: appleMusicBoxRowIndex, with: [box, NSGridCell.emptyContentView])
+        row.topPadding = 5
+        row.mergeCells(in: NSRange(location: 0, length: 2))
+        row.cell(at: 0).xPlacement = .fill
+    }
+
+    /// Moves the pane's grid into a scroll view, so that the pane is never
+    /// taller than `maximumPaneHeightConstraint` allows and scrolls instead.
+    ///
+    /// The window is sized from the selected pane and cannot be resized, so a
+    /// pane taller than the screen leaves its last rows below the screen's
+    /// bottom edge, out of reach. This one already was in German, Spanish,
+    /// French and Russian before the translation box joined it; see
+    /// PreferenceWindowSizing.md. The scroll view takes the content's height at
+    /// priority 700 — above the window's stay-put 500, below a control's 750
+    /// compression resistance, as the other panes' size constraints are — and
+    /// never more than the cap.
+    private func embedContentInScrollView() {
+        let gridView = contentGridView
+        // Takes the grid's constraints to the pane along with it.
+        gridView.removeFromSuperview()
+
+        let documentView = FlippedView()
+        documentView.translatesAutoresizingMaskIntoConstraints = false
+        documentView.addSubview(gridView)
+
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.contentView = HorizontallyFixedClipView()
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.documentView = documentView
+        view.addSubview(scrollView)
+
+        let contentHeightConstraint = scrollView.heightAnchor.constraint(equalTo: documentView.heightAnchor)
+        contentHeightConstraint.priority = NSLayoutConstraint.Priority(700)
+        let maximumPaneHeightConstraint = scrollView.heightAnchor.constraint(
+            lessThanOrEqualToConstant: Self.fallbackMaximumPaneHeight
+        )
+        self.maximumPaneHeightConstraint = maximumPaneHeightConstraint
+
+        NSLayoutConstraint.activate([
+            // The insets the storyboard gives the grid on the pane.
+            gridView.topAnchor.constraint(equalTo: documentView.topAnchor, constant: 20),
+            gridView.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: 75),
+            documentView.trailingAnchor.constraint(equalTo: gridView.trailingAnchor, constant: 20),
+            documentView.bottomAnchor.constraint(equalTo: gridView.bottomAnchor, constant: 20),
+
+            documentView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            documentView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            // As wide as the content. A legacy scroller, shown only once the
+            // content overflows, then covers the grid's 20 pt trailing inset
+            // rather than any of the grid.
+            scrollView.widthAnchor.constraint(equalTo: documentView.widthAnchor),
+            contentHeightConstraint,
+            maximumPaneHeightConstraint,
+        ])
+    }
+
+    /// Caps the pane at the General pane's height. The General pane is the
+    /// tallest of the panes that do not scroll, and its window, 870 pt in
+    /// English, is what a 13-inch MacBook Air's 876 pt has to fit anyway, so
+    /// this pane's window is never taller than that one's.
+    ///
+    /// Measured rather than written down: the General pane's height moves with
+    /// its content and with the language the app runs in.
+    private func updateMaximumPaneHeight() {
+        let generalPane = parent?.children.first { $0 is PreferenceGeneralViewController }
+        let generalPaneHeight = generalPane?.view.fittingSize.height ?? 0
+        maximumPaneHeightConstraint?.constant = generalPaneHeight > 0
+            ? generalPaneHeight
+            : Self.fallbackMaximumPaneHeight
+    }
+
+    // MARK: - Lyrics translation
+
+    @objc private func preferredLyricsTranslationLanguageChanged(_ sender: NSTextField) {
         let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else {
             defaults.remove(.preferredLyricsTranslationLanguage)
@@ -108,7 +315,7 @@ class PreferenceLabViewController: PreferenceViewController {
         sender.stringValue = language
     }
 
-    @IBAction func aiLyricsTranslationEnabledChanged(_ sender: NSButton) {
+    @objc private func aiLyricsTranslationEnabledChanged(_ sender: NSButton) {
         defaults[.aiLyricsTranslationEnabled] = sender.state == .on
         if sender.state == .off {
             updateAILyricsTranslationStatus(NSLocalizedString(
@@ -118,7 +325,7 @@ class PreferenceLabViewController: PreferenceViewController {
         }
     }
 
-    @IBAction func configureAILyricsTranslation(_ sender: NSButton) {
+    @objc private func configureAILyricsTranslation(_ sender: NSButton) {
         let settings = AILyricsTranslationSettingsViewController()
         settings.onSave = { [weak self] configuration, shouldTest in
             AppController.shared.retryAILyricsTranslation()
@@ -326,5 +533,24 @@ class PreferenceLabViewController: PreferenceViewController {
         )
         alert.addButton(withTitle: NSLocalizedString("OK", comment: "Alert OK button"))
         alert.runModal()
+    }
+}
+
+/// Flipped so that a scrolled document starts at its first row: with a
+/// non-flipped document, AppKit leaves the clip view at the content's bottom.
+private final class FlippedView: NSView {
+    override var isFlipped: Bool {
+        true
+    }
+}
+
+/// A clip view that only scrolls vertically. The document is as wide as the
+/// scroll view, so while a legacy scroller shows it is a scroller's width wider
+/// than the clip, and a trackpad would otherwise nudge it sideways.
+private final class HorizontallyFixedClipView: NSClipView {
+    override func constrainBoundsRect(_ proposedBounds: NSRect) -> NSRect {
+        var constrainedBounds = super.constrainBoundsRect(proposedBounds)
+        constrainedBounds.origin.x = 0
+        return constrainedBounds
     }
 }

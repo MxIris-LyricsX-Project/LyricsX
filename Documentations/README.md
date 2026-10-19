@@ -69,7 +69,7 @@
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
   尺寸，补的约束优先级为什么必须卡在 500 和 750 之间，量的为什么是选中页而不是 controller
   自己的 view，切 tab 为什么没有动画（试过的三种写法各自怎么失败的），grid 里的输入框为什么必须
-  给定宽度，以及怎么离屏检查一页的布局。
+  给定宽度，Lab 页为什么改成可滚动、高度上限怎么定，以及怎么离屏检查一页的布局。
 - [Apple Music 26.6 歌词动画](Internal/AppleMusicLyricsAnimation.md) —— TTML 的 word/syllable timing
   如何经过 LRCX 保存，行内 factor 与可切换的结构化 emphasis 策略、Apple Music 真实的逐行 cascade 与
   可切换的两档参数、行 layer 光栅化、`.topRelative(40)`、多行坐标、contextual blur 与 viewport edge fade
