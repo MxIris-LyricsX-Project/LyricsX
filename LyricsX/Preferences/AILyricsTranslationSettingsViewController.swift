@@ -60,6 +60,10 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     /// stack's spacing to a sheet that has nothing to validate.
     private var problemRow: NSStackView?
 
+    /// Set once the validation row is first shown; see
+    /// `pinProblemRowToFormWidth()`.
+    private var problemRowWidthConstraint: NSLayoutConstraint?
+
     private static let rowSpacing: CGFloat = 14
     private static let contentInset: CGFloat = 20
     private static let labelSpacing: CGFloat = 10
@@ -185,6 +189,14 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         rows.spacing = Self.rowSpacing
         rows.translatesAutoresizingMaskIntoConstraints = false
         rowsStack = rows
+        // Every row as wide as the form, stated outright: the stack's .width
+        // alignment gives way to what a row's content would rather be, and rows
+        // with a short help line came out narrower, each against the trailing
+        // edge. The validation row is pinned once it is first shown — while
+        // hidden, the stack keeps it out of the view hierarchy.
+        for row in rows.arrangedSubviews where row !== problemRow {
+            row.widthAnchor.constraint(equalTo: rows.widthAnchor).isActive = true
+        }
 
         let buttons = NSStackView(views: [
             makeButton(
@@ -262,6 +274,11 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             rows.trailingAnchor.constraint(equalTo: documentView.trailingAnchor, constant: -Self.contentInset),
             rows.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -Self.contentInset),
 
+            // Pinned to the clip view's top-leading corner as well as sized to
+            // it: with only a width, nothing placed the document, and its
+            // position — every field's with it — was left ambiguous.
+            documentView.topAnchor.constraint(equalTo: scroller.contentView.topAnchor),
+            documentView.leadingAnchor.constraint(equalTo: scroller.contentView.leadingAnchor),
             documentView.widthAnchor.constraint(equalTo: scroller.contentView.widthAnchor),
 
             scroller.topAnchor.constraint(equalTo: root.topAnchor),
@@ -330,7 +347,21 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         row.orientation = .horizontal
         row.alignment = .top
         row.spacing = Self.labelSpacing
+        // Out to the row's far edge, stated outright: content short enough to
+        // fit on one line was otherwise free to sit anywhere along the row.
+        content.trailingAnchor.constraint(equalTo: row.trailingAnchor).isActive = true
         return row
+    }
+
+    /// Makes `column` take the rest of `row`, and every view in it the
+    /// column's width. The stack views' own alignment does not hold this: a
+    /// help line short enough to fit on one line was left free to take any
+    /// width and position its text fits in, and was laid out flush right.
+    private func fill(_ column: NSStackView, into row: NSStackView) {
+        column.trailingAnchor.constraint(equalTo: row.trailingAnchor).isActive = true
+        for view in column.arrangedSubviews {
+            view.widthAnchor.constraint(equalTo: column.widthAnchor).isActive = true
+        }
     }
 
     private func makeWrappingLabel(_ text: String) -> NSTextField {
@@ -380,6 +411,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         // every label floating above the value it names.
         row.alignment = .firstBaseline
         row.spacing = Self.labelSpacing
+        fill(column, into: row)
         return row
     }
 
@@ -410,6 +442,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         row.orientation = .horizontal
         row.alignment = .top
         row.spacing = Self.labelSpacing
+        fill(column, into: row)
         return row
     }
 
@@ -528,12 +561,26 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
     private func present(problem: String) {
         problemLabel.stringValue = problem
         problemRow?.isHidden = false
+        pinProblemRowToFormWidth()
         // Re-measured, not grown by a number worked out here. The row brings
         // its own height and the stack's spacing with it, and a later message
         // may wrap to more lines than the one before, so any amount added by
         // hand is either short and puts the message below the fold, or long and
         // leaves the sheet with a band to spare.
         sizeSheetToContent()
+    }
+
+    /// Pins the validation row to the form's width, as every other row is,
+    /// the first time it is shown. The stack attaches a row it had hidden on
+    /// its next layout, so it is laid out first; before that, the row and the
+    /// form have no common ancestor to constrain against.
+    private func pinProblemRowToFormWidth() {
+        guard problemRowWidthConstraint == nil, let problemRow, let rowsStack else { return }
+        rowsStack.layoutSubtreeIfNeeded()
+        guard problemRow.isDescendant(of: rowsStack) else { return }
+        let widthConstraint = problemRow.widthAnchor.constraint(equalTo: rowsStack.widthAnchor)
+        widthConstraint.isActive = true
+        problemRowWidthConstraint = widthConstraint
     }
 
     private static func message(for error: Error) -> String {
