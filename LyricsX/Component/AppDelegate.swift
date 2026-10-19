@@ -347,6 +347,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                 return .unavailable
             }
 
+            // The mark has to be in the file before the editor gets it: the
+            // saving is done by the user in another app from here on, and
+            // LyricsX never sees the result to mark it afterwards.
+            //
+            // Only when the write lands on the file about to be opened, though.
+            // Lyrics that came from beside the track are read-only by default,
+            // so persisting them produces a library copy — and the user would
+            // then be editing a file the lookup never reaches, since the
+            // beside-track original still wins. Those files are not the switch's
+            // business anyway, so leaving them unmarked costs nothing.
             if let localURL = lyrics.metadata.localURL {
                 if defaults.lyricsPersistRewritesFileInPlace(localURL) {
                     lyrics.markAsUserPicked(origin: .edit)
@@ -354,17 +364,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
                     lyrics.persist()
                 }
             } else if lyrics.metadata.needsPersist {
+                // Never written anywhere yet, so this creates the library file
+                // and the mark rides along with it.
                 lyrics.markAsUserPicked(origin: .edit)
                 lyrics.persist()
             }
             guard let localURL = lyrics.metadata.localURL else {
                 return .unavailable
             }
-            return (
-                .file(
-                    localURL,
-                    defaults.lyricsSecurityScopedDirectory(containing: localURL)
-                )
+            // Opening should work for every local lyrics file, including user-owned
+            // beside-track files. Only the custom lyrics library needs a security scope.
+            return .file(
+                localURL,
+                defaults.lyricsSecurityScopedDirectory(containing: localURL)
             )
         }
 
