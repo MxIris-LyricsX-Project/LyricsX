@@ -198,6 +198,10 @@ class PreferenceLabViewController: PreferenceViewController {
             "Lyrics translation",
             comment: "Title of the Lab pane's box grouping the lyrics translation settings."
         )
+        // Zero, as the storyboard's boxes have. An NSBox made in code starts
+        // with 5 pt margins around its content view, which moved every control
+        // in here 5 pt off the pane's columns and narrowed the field by 10.
+        box.contentViewMargins = .zero
         box.translatesAutoresizingMaskIntoConstraints = false
         guard let boxContentView = box.contentView else {
             preconditionFailure("An NSBox comes with a content view.")
