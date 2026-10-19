@@ -412,6 +412,9 @@ final class AppController: NSObject {
     }
 
     func currentTrackChanged() {
+        // Ahead of clearing the lyrics below, so the widget knows to wait for
+        // the new track's.
+        widgetReloadCoordinator.note(.trackChanged)
         aiLyricsTranslationTask?.cancel()
         aiLyricsTranslationTask = nil
         lastAITranslationKey = nil
@@ -1272,12 +1275,6 @@ final class AppController: NSObject {
         var widgetCurrentLineIndex = 0
 
         if let lyrics = currentLyrics {
-            // A bare `tr` tag carries a translation with no language to name,
-            // so it contributes nothing here: an empty entry would only add an
-            // unnamed row to the widget's language picker whose `""` id then
-            // matches whatever the user had configured before. The line's
-            // translation still reaches the widget through `displayTranslation`.
-            availableTranslationLanguages = lyrics.displayTranslationLanguage.map { [$0] } ?? []
             let enabledLines = lyrics.lines.enumerated().filter { $0.element.enabled }
             let contextRadius = 50
             let (currentIndex, _) = lyrics[playbackTime + lyrics.adjustedTimeDelay]
