@@ -365,6 +365,75 @@ func aiLyricsTranslationAppliesOntoTheCurrentLyricsAndKeepsTheirOtherState() thr
 }
 
 @Test
+func aiLyricsTranslationReusesWhatASavedCopyOfTheSameLyricsHolds() throws {
+    // Lyrics embedded in a track are persisted to a library copy that the
+    // lookup never reads back. The copy goes through the file format here, as
+    // it does on disk, and its translation comes back for the line it covers.
+    let source = try #require(Lyrics("[00:01.000]first\n[00:02.000]second"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: source, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations == [0: "第一"])
+}
+
+@Test
+func aiLyricsTranslationReusesNothingFromACopyOfOtherLyrics() throws {
+    // A copy left over from lyrics that have since changed must not pin its
+    // translations onto lines they were not written for.
+    let source = try #require(Lyrics("[00:01.000]first\n[00:02.000]second"))
+    let changed = try #require(Lyrics("[00:01.000]first\n[00:02.500]second"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: changed, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationReusesOnlyTranslationsInTheTargetLanguage() throws {
+    let source = try #require(Lyrics("[00:01.000]first"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "最初"], to: source, targetLanguage: "ja")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationReusesNoTranslationThatNamesNoLanguage() throws {
+    // A translation without a language could be in any of them, so it is not
+    // taken for the target language.
+    let source = try #require(Lyrics("[00:01.000]first"))
+    let copy = try #require(Lyrics(source.description))
+    copy.lines[0].attachments[.translation()] = "第一"
+    let saved = try #require(Lyrics(copy.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
 func aiLyricsTranslationTreatsASupersededDefaultPromptAsUnset() {
     // The settings sheet used to write its pre-filled field back verbatim, so
     // an install that saved once holds the old default looking exactly like a

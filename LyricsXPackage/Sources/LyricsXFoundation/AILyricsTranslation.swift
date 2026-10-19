@@ -409,6 +409,47 @@ public enum AILyricsTranslationPolicy {
         return result
     }
 
+    /// The translations into `targetLanguage` that `saved` already holds for
+    /// the lines of `source` a request would send.
+    ///
+    /// For lyrics that are persisted somewhere the lookup never reads back:
+    /// those embedded in a track, or read from beside it without write-back,
+    /// go to a library copy while the original keeps winning the lookup, so
+    /// each play would otherwise pay for the same translation again.
+    ///
+    /// Only when `saved` is a copy of `source` — the same lines with the same
+    /// text at the same times, to the millisecond a file keeps — and only for
+    /// translations that name the language: one without a language could be
+    /// in any.
+    public static func savedTranslations(
+        in saved: Lyrics,
+        for source: Lyrics,
+        targetLanguage: String
+    ) -> [Int: String] {
+        guard let targetLanguage = normalizedLanguageIdentifier(targetLanguage),
+              saved.lines.count == source.lines.count,
+              zip(saved.lines, source.lines).allSatisfy({ savedLine, sourceLine in
+                  savedLine.content == sourceLine.content
+                      && abs(savedLine.position - sourceLine.position) < 0.000_5
+              }) else {
+            return [:]
+        }
+        let languageCandidates = targetLanguageCandidates(
+            in: saved,
+            normalizedTargetLanguage: targetLanguage
+        ).filter { $0 != nil }
+        var translations: [Int: String] = [:]
+        for line in translationInputLines(lyrics: source, targetLanguage: targetLanguage) {
+            guard let translation = saved.lines[line.index].attachments.translation(
+                languageCodeCandidate: languageCandidates
+            ), !translation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                continue
+            }
+            translations[line.index] = translation
+        }
+        return translations
+    }
+
     public static func parsedTranslations(
         response: String,
         expectedIndices: [Int]

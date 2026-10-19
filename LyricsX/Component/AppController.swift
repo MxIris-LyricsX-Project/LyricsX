@@ -679,6 +679,73 @@ final class AppController: NSObject {
         )
     }
 
+    /// Reads the API key for `endpoint`, retrying a Keychain that is only
+    /// briefly unavailable. Returns nil, with the reason in the Lab pane, when
+    /// there is no key to use, and nil alone when the task is cancelled.
+    private func aiLyricsTranslationAPIKey(for endpoint: URL) async -> String? {
+        for attempt in 0 ..< 3 {
+            do {
+                let apiKey = try AILyricsTranslationCredentialStore.apiKey(for: endpoint)
+                guard !Task.isCancelled else { return nil }
+                if apiKey == nil {
+                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                        "Add an API key in AI translation settings.",
+                        comment: "Status shown when no API key is stored for AI lyric translation."
+                    )
+                }
+                return apiKey
+            } catch let error as AILyricsTranslationCredentialError where error.isTransient {
+                guard attempt < 2 else {
+                    guard !Task.isCancelled else { return nil }
+                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                        "The keychain is temporarily unavailable; translation can be retried later.",
+                        comment: "Status for a temporary Keychain failure during AI translation."
+                    )
+                    return nil
+                }
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(250_000_000 * (1 << attempt)))
+                } catch {
+                    return nil
+                }
+            } catch {
+                guard !Task.isCancelled else { return nil }
+                defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                    "The saved API key could not be read. Check its access in Keychain.",
+                    comment: "Status for a permanent Keychain failure during AI translation."
+                )
+                return nil
+            }
+        }
+        return nil
+    }
+
+    /// The translations into `targetLanguage` that the file `lyrics` persist
+    /// to already holds for them, when that is not the file they were read
+    /// from. Reads the file, so it runs off the lyrics display queue.
+    private func savedAITranslations(for lyrics: Lyrics, targetLanguage: String) -> [Int: String] {
+        guard let destination = lyrics.persistDestination,
+              destination.fileURL != lyrics.metadata.localURL else {
+            return [:]
+        }
+        let securityScopedDirectoryURL = destination.securityScopedDirectoryURL
+        if let securityScopedDirectoryURL, !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            return [:]
+        }
+        defer {
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+        }
+        guard let contents = try? String(contentsOf: destination.fileURL, encoding: .utf8),
+              let savedLyrics = Lyrics(contents) else {
+            return [:]
+        }
+        return AILyricsTranslationPolicy.savedTranslations(
+            in: savedLyrics,
+            for: lyrics,
+            targetLanguage: targetLanguage
+        )
+    }
+
     private func startAITranslation(for lyrics: Lyrics?) {
         guard defaults[.aiLyricsTranslationEnabled] else {
             // The Lab pane owns the wording while the switch is off, so the
@@ -766,50 +833,47 @@ final class AppController: NSObject {
         )
         aiLyricsTranslationTask = Task { [weak self] in
             guard let self = self else { return }
-            var apiKey: String?
-            for attempt in 0 ..< 3 {
-                do {
-                    apiKey = try AILyricsTranslationCredentialStore.apiKey(for: configuration.endpoint)
-                    break
-                } catch let error as AILyricsTranslationCredentialError where error.isTransient {
-                    guard attempt < 2 else {
-                        guard !Task.isCancelled else { return }
-                        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-                            "The keychain is temporarily unavailable; translation can be retried later.",
-                            comment: "Status for a temporary Keychain failure during AI translation."
-                        )
-                        return
-                    }
-                    do {
-                        try await Task.sleep(nanoseconds: UInt64(250_000_000 * (1 << attempt)))
-                    } catch {
-                        return
-                    }
-                } catch {
-                    guard !Task.isCancelled else { return }
-                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-                        "The saved API key could not be read. Check its access in Keychain.",
-                        comment: "Status for a permanent Keychain failure during AI translation."
-                    )
-                    return
-                }
-            }
-
-            guard !Task.isCancelled else { return }
-            guard let apiKey else {
-                defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-                    "Add an API key in AI translation settings.",
-                    comment: "Status shown when no API key is stored for AI lyric translation."
-                )
-                return
-            }
+            // What the file these lyrics persist to already holds is not paid
+            // for again — for lyrics embedded in the track, or read from beside
+            // it without write-back, that file is a library copy the lookup
+            // never reads back, so without this every play translated anew.
+            let savedTranslations = savedAITranslations(
+                for: translationSource,
+                targetLanguage: configuration.targetLanguage
+            )
+            let requestSource = savedTranslations.isEmpty
+                ? translationSource
+                : (try? AILyricsTranslationPolicy.applying(
+                    savedTranslations,
+                    to: translationSource,
+                    targetLanguage: configuration.targetLanguage
+                )) ?? translationSource
+            let linesToRequest = AILyricsTranslationPolicy.translationInputLines(
+                lyrics: requestSource,
+                targetLanguage: configuration.targetLanguage
+            )
 
             do {
-                let result = try await aiLyricsTranslator.translate(
-                    lyrics: translationSource,
-                    configuration: configuration,
-                    apiKey: apiKey
+                var result = AILyricsTranslationResult(
+                    translations: savedTranslations,
+                    failedLineCount: 0,
+                    failure: nil
                 )
+                if !linesToRequest.isEmpty {
+                    guard let apiKey = await aiLyricsTranslationAPIKey(for: configuration.endpoint) else {
+                        return
+                    }
+                    let requestedResult = try await aiLyricsTranslator.translate(
+                        lyrics: requestSource,
+                        configuration: configuration,
+                        apiKey: apiKey
+                    )
+                    result = AILyricsTranslationResult(
+                        translations: savedTranslations.merging(requestedResult.translations) { _, new in new },
+                        failedLineCount: requestedResult.failedLineCount,
+                        failure: requestedResult.failure
+                    )
+                }
                 try Task.checkCancellation()
                 performOnLyricsDisplayQueue { [weak self] in
                     guard let self = self,

@@ -174,6 +174,24 @@ extension Lyrics {
         return "\(baseName).lrcx"
     }
 
+    /// The file `persist()` writes these lyrics to: their own file when that
+    /// is rewritten in place, the library file for their title and artist
+    /// otherwise — including lyrics embedded in a track, and lyrics read from
+    /// beside it while write-back is off, which the lookup then never reads
+    /// back from there.
+    var persistDestination: LyricsStorageDestination? {
+        LyricsStoragePolicy.persistDestination(
+            localURL: metadata.localURL,
+            allowUnmanagedLocalWriteBack: defaults[.writeBackToLyricsBesideTrack],
+            defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
+            customDirectoryURL: defaults.lyricsCustomSavingPath,
+            libraryDestination: defaults.lyricsSavingDestination(
+                title: metadata.title,
+                artist: metadata.artist
+            )
+        )
+    }
+
     @discardableResult
     func persist() -> Bool {
         // Lyrics are written on the lyrics display queue only, where
@@ -185,16 +203,7 @@ extension Lyrics {
         #if DEBUG
         dispatchPrecondition(condition: .onQueue(.lyricsDisplay))
         #endif
-        guard let destination = LyricsStoragePolicy.persistDestination(
-            localURL: metadata.localURL,
-            allowUnmanagedLocalWriteBack: defaults[.writeBackToLyricsBesideTrack],
-            defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
-            customDirectoryURL: defaults.lyricsCustomSavingPath,
-            libraryDestination: defaults.lyricsSavingDestination(
-                title: metadata.title,
-                artist: metadata.artist
-            )
-        ) else {
+        guard let destination = persistDestination else {
             return false
         }
 
