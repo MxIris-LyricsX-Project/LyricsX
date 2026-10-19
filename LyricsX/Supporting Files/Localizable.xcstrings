@@ -3180,13 +3180,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "端点没有返回译文,可能不支持 JSON 模式。"
+            "value" : "端点没有返回译文，可能不支持 JSON 模式。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "端點沒有回傳譯文,可能不支援 JSON 模式。"
+            "value" : "端點沒有回傳譯文，可能不支援 JSON 模式。"
           }
         }
       }
@@ -3214,13 +3214,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "端点的响应过大,无法读取。"
+            "value" : "端点的响应过大，无法读取。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "端點的回應過大,無法讀取。"
+            "value" : "端點的回應過大，無法讀取。"
           }
         }
       }
@@ -3265,13 +3265,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请求失败:%@"
+            "value" : "请求失败：%@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請求失敗:%@"
+            "value" : "請求失敗：%@"
           }
         }
       }
