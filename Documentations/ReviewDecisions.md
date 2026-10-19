@@ -33,3 +33,7 @@
 **裁决：不作为缺陷。** 代码能编译、行为正确，这是设计取舍而非 bug。但它是真实缺陷「主线程 `persist()` 与队列上的 `persist()` 竞争」的成因 —— 约定式的收敛没有编译器兜底，所以同一个 PR 自己新增的主线程写入没人拦得住。
 
 **已转入**：PR #183 的设计讨论。若该 PR 最终仍采用手写收敛，则那条竞争缺陷必须单独修复并保留回归测试。
+
+**2026-10-19 重新裁决（PR #204）**：#204 仍是手写收敛（`performOnLyricsDisplayQueue`），竞争本身已修：`persist()` 的每个调用点都挪进了歌词队列，包括搜索面板「使用」按钮那一处。回归测试做不到 —— 这些调用都在 app target 里，而 app 没有测试 target。JH 选定的替代是在 `persist()` 开头加一条只在 Debug 构建生效的 `dispatchPrecondition(condition: .onQueue(.lyricsDisplay))`：以后谁从别的队列写歌词，开发时第一次调用就会 trap，不会悄悄留下竞争。
+
+**若理由失效**：app 有了测试 target，或 `currentLyrics` 改成 `@globalActor` 由编译器检查，这条要重新裁决 —— 前者补回真正的回归测试，后者连断言都可以删。

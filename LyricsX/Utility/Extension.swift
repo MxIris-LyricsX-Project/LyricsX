@@ -176,6 +176,15 @@ extension Lyrics {
 
     @discardableResult
     func persist() -> Bool {
+        // Lyrics are written on the lyrics display queue only, where
+        // `AppController.currentLyrics` changes; a write from any other queue
+        // can race one from there over the same file and metadata. There is no
+        // test target for the app to keep a regression test in, so Debug builds
+        // trap on the first call from the wrong queue instead (see
+        // ReviewDecisions.md).
+        #if DEBUG
+        dispatchPrecondition(condition: .onQueue(.lyricsDisplay))
+        #endif
         guard let destination = LyricsStoragePolicy.persistDestination(
             localURL: metadata.localURL,
             allowUnmanagedLocalWriteBack: defaults[.writeBackToLyricsBesideTrack],
