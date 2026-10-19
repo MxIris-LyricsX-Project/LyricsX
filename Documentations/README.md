@@ -56,7 +56,7 @@
   - [0019 小组件统一成一种配置，显示翻译跟随「双语歌词」设置](Evolutions/0019-widget-single-configuration.md)
     —— 去掉小组件每个实例自己的设置项，显示翻译改由「Prefer bilingual lyrics」决定、经 App Group 的快照传给小组件，
     翻译语言留给 AI 翻译 PR #204 接入；所有小组件同属一套配置，app 请求一次刷新就全部立即生效。
-  - [Draft 实验室：用 OpenAI 兼容端点翻译歌词](Evolutions/draft-ai-lyrics-translation.md)
+  - [0020 实验室：用 OpenAI 兼容端点翻译歌词](Evolutions/0020-ai-lyrics-translation.md)
     —— 默认关闭的实验功能：缺目标语言译文的行发给 OpenAI 兼容端点翻译，另加「显示语言」决定各处显示哪种译文；
     优先级窗口内不发请求、每首歌请求数封顶、内嵌和旁置歌词复用歌词库副本里的译文。
 

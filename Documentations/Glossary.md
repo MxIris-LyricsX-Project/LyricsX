@@ -132,4 +132,4 @@ AppKit 为状态栏条目渲染的截图。macOS 26 起，系统菜单栏显示�
 - **目标语言**（`AILyricsTranslationTargetLanguage`）：AI 翻译把缺译文的行**翻成**哪种语言，只在 AI 翻译里用。
 
 两者故意分开：目标语言在 AI 翻译设置面板保存时就会写入，哪怕用户从没打开过这个功能。拿它决定显示的话，只打开过
-一次面板的人，歌词就换了一种译文显示。详见 [AI 翻译的提案](Evolutions/draft-ai-lyrics-translation.md)。
+一次面板的人，歌词就换了一种译文显示。详见 [AI 翻译的提案](Evolutions/0020-ai-lyrics-translation.md)。
