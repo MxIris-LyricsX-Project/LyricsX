@@ -21,19 +21,31 @@ class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet weak var appleMusicLanguageField: NSTextField!
 
     private let preferredLyricsTranslationLanguageField = NSTextField()
-    private let aiLyricsTranslationEnabledButton = NSButton(
-        checkboxWithTitle: NSLocalizedString(
-            "Enable AI translation",
-            comment: "Checkbox in the Lab pane that turns AI lyric translation on."
-        ),
-        target: nil,
-        action: nil
-    )
-    private let aiLyricsTranslationStatusField = NSTextField(labelWithString: "")
+    private let lyricsTranslationEnginePopUpButton = NSPopUpButton(frame: .zero, pullsDown: false)
+    private let aiLyricsTranslationConfigureButton = NSButton()
+    private let lyricsTranslationTargetLanguageField = NSTextField()
+    private let lyricsTranslationStatusField = NSTextField(labelWithString: "")
+    /// Shown while system translation is waiting on languages this Mac has
+    /// not downloaded; asks the system to download them.
+    private let systemTranslationDownloadButton = NSButton()
 
     private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
     private var aiConnectionTestTask: Task<Void, Never>?
     private var defaultsObservation: AnyCancellable?
+    private var languagePairToDownloadObservation: AnyCancellable?
+    /// `AppController.systemTranslationLanguagePairToDownload` as last
+    /// delivered on the main queue; the controller sets it on the lyrics
+    /// display queue, so the pane never reads it there.
+    private var systemTranslationLanguagePairToDownload: SystemTranslationLanguagePair?
+
+    /// A `SystemTranslationLanguageDownloader` from macOS 26, untyped here
+    /// because a stored property cannot have a type that is not always there.
+    private var systemTranslationLanguageDownloaderStorage: AnyObject?
+
+    @available(macOS 26.0, *)
+    private var systemTranslationLanguageDownloader: SystemTranslationLanguageDownloader? {
+        systemTranslationLanguageDownloaderStorage as? SystemTranslationLanguageDownloader
+    }
 
     /// The most the pane may be tall; see `updateMaximumPaneHeight()`.
     private var maximumPaneHeightConstraint: NSLayoutConstraint?
@@ -46,6 +58,13 @@ class PreferenceLabViewController: PreferenceViewController {
 
         insertLyricsTranslationBox()
         embedContentInScrollView()
+        if #available(macOS 26.0, *) {
+            // In the pane from the start, so the system's download prompt has
+            // a window to appear on the moment it is asked for.
+            let downloader = SystemTranslationLanguageDownloader()
+            view.addSubview(downloader.hostingView)
+            systemTranslationLanguageDownloaderStorage = downloader
+        }
 
         enableTouchBarLyricsButton.bind(.value, withDefaultName: .touchBarLyricsEnabled)
         artworkSimilarityBoostButton.bind(.value, withDefaultName: .artworkSimilarityBoostEnabled)
@@ -87,12 +106,19 @@ class PreferenceLabViewController: PreferenceViewController {
         appleMusicStorefrontField.stringValue = defaults[.appleMusicStorefront] ?? ""
         appleMusicLanguageField.stringValue = defaults[.appleMusicLanguage] ?? ""
         preferredLyricsTranslationLanguageField.stringValue = defaults[.preferredLyricsTranslationLanguage] ?? ""
-        aiLyricsTranslationEnabledButton.state = defaults[.aiLyricsTranslationEnabled] ? .on : .off
-        refreshAILyricsTranslationStatusField()
+        lyricsTranslationTargetLanguageField.stringValue = defaults[.lyricsTranslationTargetLanguage]
+        selectLyricsTranslationEngine(defaults.lyricsTranslationEngine)
+        refreshLyricsTranslationStatusField()
         defaultsObservation = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.refreshAILyricsTranslationStatusField()
+                self?.refreshLyricsTranslationStatusField()
+            }
+        languagePairToDownloadObservation = AppController.shared.$systemTranslationLanguagePairToDownload
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] languagePair in
+                self?.systemTranslationLanguagePairToDownload = languagePair
+                self?.refreshSystemTranslationDownloadButton()
             }
     }
 
@@ -150,35 +176,98 @@ class PreferenceLabViewController: PreferenceViewController {
         field.target = self
         field.action = #selector(preferredLyricsTranslationLanguageChanged(_:))
 
-        aiLyricsTranslationEnabledButton.target = self
-        aiLyricsTranslationEnabledButton.action = #selector(aiLyricsTranslationEnabledChanged(_:))
-        let configureButton = NSButton(
-            title: NSLocalizedString(
-                "Configure…",
-                comment: "Button in the Lab pane that opens the AI translation settings."
-            ),
-            target: self,
-            action: #selector(configureAILyricsTranslation(_:))
+        let engineLabel = NSTextField(labelWithString: NSLocalizedString(
+            "Translation:",
+            comment: "Label for the engine that translates lyrics into the target language, in the Lab pane."
+        ))
+        let enginePopUpButton = lyricsTranslationEnginePopUpButton
+        // Items are enabled by hand: system translation is shown but cannot be
+        // picked before macOS 26.
+        enginePopUpButton.autoenablesItems = false
+        for engine in LyricsTranslationEngine.allCases {
+            enginePopUpButton.addItem(withTitle: Self.title(of: engine))
+            guard let item = enginePopUpButton.lastItem else { continue }
+            item.representedObject = engine.rawValue
+            if engine == .system, !isSystemLyricsTranslationAvailable {
+                item.isEnabled = false
+                item.toolTip = NSLocalizedString(
+                    "Requires macOS 26 or later",
+                    comment: "Tooltip on a Lab setting that needs macOS 26 when the OS is older."
+                )
+            }
+        }
+        enginePopUpButton.target = self
+        enginePopUpButton.action = #selector(lyricsTranslationEngineChanged(_:))
+
+        let configureButton = aiLyricsTranslationConfigureButton
+        configureButton.title = NSLocalizedString(
+            "Configure…",
+            comment: "Button in the Lab pane that opens the AI translation settings."
         )
         configureButton.bezelStyle = .rounded
-        let switchRow = NSStackView(views: [aiLyricsTranslationEnabledButton, configureButton])
-        switchRow.orientation = .horizontal
-        switchRow.alignment = .centerY
-        switchRow.spacing = 12
+        configureButton.target = self
+        configureButton.action = #selector(configureAILyricsTranslation(_:))
+        let engineRow = NSStackView(views: [enginePopUpButton, configureButton])
+        engineRow.orientation = .horizontal
+        engineRow.alignment = .centerY
+        engineRow.spacing = 12
+
+        let targetLanguageLabel = NSTextField(labelWithString: NSLocalizedString(
+            "Target language:",
+            comment: "Label for the language lyrics without a translation are translated into, in the Lab pane."
+        ))
+        let targetLanguageField = lyricsTranslationTargetLanguageField
+        targetLanguageField.bezelStyle = .roundedBezel
+        targetLanguageField.focusRingType = .none
+        targetLanguageField.refusesFirstResponder = true
+        targetLanguageField.usesSingleLineMode = true
+        targetLanguageField.lineBreakMode = .byTruncatingTail
+        targetLanguageField.cell?.sendsActionOnEndEditing = true
+        // The default that a blank field stands for.
+        targetLanguageField.placeholderString = AILyricsTranslationPolicy.defaultTargetLanguage
+        targetLanguageField.toolTip = NSLocalizedString(
+            "A language tag such as zh-Hans, zh-Hant or ja. Lines without a translation into it are translated into it.",
+            comment: "Tooltip of the target language field in the Lab pane."
+        )
+        targetLanguageField.target = self
+        targetLanguageField.action = #selector(lyricsTranslationTargetLanguageChanged(_:))
 
         // One line, truncating, with the whole message in the tooltip: a
         // wrapping status would make the box grow and shrink with every message.
-        let statusField = aiLyricsTranslationStatusField
+        let statusField = lyricsTranslationStatusField
         statusField.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         statusField.textColor = .secondaryLabelColor
         statusField.lineBreakMode = .byTruncatingTail
         statusField.usesSingleLineMode = true
         statusField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        statusField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        let downloadButton = systemTranslationDownloadButton
+        downloadButton.title = NSLocalizedString(
+            "Download…",
+            comment: "Button beside the Lab pane's translation status that asks the system to download the languages system translation is missing."
+        )
+        downloadButton.bezelStyle = .rounded
+        downloadButton.controlSize = .small
+        downloadButton.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        downloadButton.target = self
+        downloadButton.action = #selector(downloadSystemTranslationLanguages(_:))
+        downloadButton.isHidden = true
+        // Keeps its own width, so a status shorter than the row is what
+        // stretches. With both at the default hugging priority, a short
+        // status — the Chinese ones — left the stack two ways to fill the row.
+        downloadButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        let statusRow = NSStackView(views: [statusField, downloadButton])
+        statusRow.orientation = .horizontal
+        statusRow.alignment = .centerY
+        statusRow.distribution = .fill
+        statusRow.spacing = 8
 
         let boxGridView = NSGridView(views: [
             [displayLanguageLabel, field],
-            [NSGridCell.emptyContentView, switchRow],
-            [NSGridCell.emptyContentView, statusField],
+            [engineLabel, engineRow],
+            [targetLanguageLabel, targetLanguageField],
+            [NSGridCell.emptyContentView, statusRow],
         ])
         boxGridView.translatesAutoresizingMaskIntoConstraints = false
         boxGridView.rowSpacing = 6
@@ -186,12 +275,13 @@ class PreferenceLabViewController: PreferenceViewController {
         boxGridView.column(at: 0).width = 138
         boxGridView.column(at: 0).xPlacement = .trailing
         boxGridView.column(at: 1).width = 338
-        boxGridView.row(at: 0).height = 28
-        boxGridView.row(at: 1).height = 28
-        boxGridView.row(at: 0).yPlacement = .center
-        boxGridView.row(at: 1).yPlacement = .center
+        for rowIndex in 0 ..< 3 {
+            boxGridView.row(at: rowIndex).height = 28
+            boxGridView.row(at: rowIndex).yPlacement = .center
+        }
         boxGridView.cell(for: field)?.xPlacement = .fill
-        boxGridView.cell(for: statusField)?.xPlacement = .fill
+        boxGridView.cell(for: targetLanguageField)?.xPlacement = .fill
+        boxGridView.cell(for: statusRow)?.xPlacement = .fill
 
         let box = NSBox()
         box.title = NSLocalizedString(
@@ -309,7 +399,7 @@ class PreferenceLabViewController: PreferenceViewController {
         }
         guard let language = AILyricsTranslationPolicy.normalizedLanguageIdentifier(value) else {
             sender.stringValue = defaults[.preferredLyricsTranslationLanguage] ?? ""
-            updateAILyricsTranslationStatus(NSLocalizedString(
+            updateLyricsTranslationStatus(NSLocalizedString(
                 "Display language must be a valid language tag, such as zh-Hans or ja.",
                 comment: "Validation feedback for the preferred lyric display language."
             ))
@@ -319,20 +409,122 @@ class PreferenceLabViewController: PreferenceViewController {
         sender.stringValue = language
     }
 
-    @objc private func aiLyricsTranslationEnabledChanged(_ sender: NSButton) {
-        defaults[.aiLyricsTranslationEnabled] = sender.state == .on
-        if sender.state == .off {
-            updateAILyricsTranslationStatus(NSLocalizedString(
-                "AI translation is disabled.",
-                comment: "Status shown when AI lyric translation is turned off."
+    private static func title(of engine: LyricsTranslationEngine) -> String {
+        switch engine {
+        case .off:
+            return NSLocalizedString(
+                "Off",
+                comment: "Lab pane translation engine choice that translates nothing."
+            )
+        case .system:
+            return NSLocalizedString(
+                "System Translation",
+                comment: "Lab pane translation engine choice that uses the system's Translation framework, on this Mac."
+            )
+        case .ai:
+            return NSLocalizedString(
+                "AI (OpenAI-compatible)",
+                comment: "Lab pane translation engine choice that sends lines to an OpenAI-compatible endpoint."
+            )
+        }
+    }
+
+    private func selectLyricsTranslationEngine(_ engine: LyricsTranslationEngine) {
+        let index = lyricsTranslationEnginePopUpButton.indexOfItem(withRepresentedObject: engine.rawValue)
+        if index >= 0 {
+            lyricsTranslationEnginePopUpButton.selectItem(at: index)
+        }
+        aiLyricsTranslationConfigureButton.isEnabled = engine == .ai
+        refreshSystemTranslationDownloadButton()
+    }
+
+    private static var lyricsTranslationOffStatus: String {
+        NSLocalizedString(
+            "Lyrics translation is off.",
+            comment: "Status shown when the Lab pane's lyrics translation is turned off."
+        )
+    }
+
+    @objc private func lyricsTranslationEngineChanged(_ sender: NSPopUpButton) {
+        guard let rawValue = sender.selectedItem?.representedObject as? String,
+              let engine = LyricsTranslationEngine(rawValue: rawValue),
+              engine != defaults.lyricsTranslationEngine else {
+            return
+        }
+        // What the previous engine reported is about that engine. Replaced
+        // before the switch is stored, so whatever the new engine reports —
+        // it starts on the change, on another queue — lands after it.
+        updateLyricsTranslationStatus(engine == .off ? Self.lyricsTranslationOffStatus : "")
+        defaults.lyricsTranslationEngine = engine
+        selectLyricsTranslationEngine(engine)
+    }
+
+    @objc private func lyricsTranslationTargetLanguageChanged(_ sender: NSTextField) {
+        let value = sender.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else {
+            // Blank stands for the default the placeholder shows.
+            defaults.remove(.lyricsTranslationTargetLanguage)
+            return
+        }
+        guard let language = AILyricsTranslationPolicy.normalizedLanguageIdentifier(value) else {
+            sender.stringValue = defaults[.lyricsTranslationTargetLanguage]
+            updateLyricsTranslationStatus(NSLocalizedString(
+                "The target language must be a language tag, such as zh-Hans or ja.",
+                comment: "Status for lyrics translation when the target language is not a valid language tag."
             ))
+            return
+        }
+        defaults[.lyricsTranslationTargetLanguage] = language
+        sender.stringValue = language
+    }
+
+    /// Shows the download button while system translation is the engine and
+    /// is waiting on a language pair, with what it would download as its
+    /// tooltip.
+    private func refreshSystemTranslationDownloadButton() {
+        let languagePair = systemTranslationLanguagePairToDownload
+        let isWaitingOnDownload = languagePair != nil && defaults.lyricsTranslationEngine == .system
+        systemTranslationDownloadButton.isHidden = !isWaitingOnDownload
+        systemTranslationDownloadButton.toolTip = languagePair.map { languagePair in
+            String(
+                format: NSLocalizedString(
+                    "Download the languages for %@",
+                    comment: "Tooltip of the Lab pane's download button; %@ is a translation direction such as Japanese → Chinese, Simplified."
+                ),
+                languagePair.localizedDescription
+            )
+        }
+    }
+
+    @objc private func downloadSystemTranslationLanguages(_ sender: NSButton) {
+        guard #available(macOS 26.0, *),
+              let downloader = systemTranslationLanguageDownloader,
+              let languagePair = systemTranslationLanguagePairToDownload else {
+            return
+        }
+        sender.isEnabled = false
+        downloader.requestDownload(of: languagePair) { [weak self] error in
+            sender.isEnabled = true
+            guard error == nil else {
+                // Dismissed, or the download failed: the languages are still
+                // missing, and the status says so again in those words.
+                self?.updateLyricsTranslationStatus(String(
+                    format: NSLocalizedString(
+                        "The languages for %@ were not downloaded.",
+                        comment: "Status shown when the system's language download prompt was dismissed or failed; %@ is a translation direction such as Japanese → Chinese, Simplified."
+                    ),
+                    languagePair.localizedDescription
+                ))
+                return
+            }
+            AppController.shared.retryLyricsTranslation()
         }
     }
 
     @objc private func configureAILyricsTranslation(_ sender: NSButton) {
         let settings = AILyricsTranslationSettingsViewController()
         settings.onSave = { [weak self] configuration, shouldTest in
-            AppController.shared.retryAILyricsTranslation()
+            AppController.shared.retryLyricsTranslation()
 
             if shouldTest {
                 self?.testAITranslationConnection(configuration: configuration)
@@ -343,7 +535,7 @@ class PreferenceLabViewController: PreferenceViewController {
 
     private func testAITranslationConnection(configuration: AILyricsTranslationConfiguration) {
         aiConnectionTestTask?.cancel()
-        updateAILyricsTranslationStatus(NSLocalizedString(
+        updateLyricsTranslationStatus(NSLocalizedString(
             "Testing connection…",
             comment: "Status shown while testing the AI lyrics translation endpoint."
         ))
@@ -351,7 +543,7 @@ class PreferenceLabViewController: PreferenceViewController {
             guard let self else { return }
             do {
                 guard let apiKey = try AILyricsTranslationCredentialStore.apiKey(for: configuration.endpoint) else {
-                    updateAILyricsTranslationStatus(NSLocalizedString(
+                    updateLyricsTranslationStatus(NSLocalizedString(
                         "No API key is saved for this endpoint.",
                         comment: "Status shown when endpoint testing finds no stored API key."
                     ))
@@ -362,7 +554,7 @@ class PreferenceLabViewController: PreferenceViewController {
                     apiKey: apiKey
                 )
                 guard !Task.isCancelled else { return }
-                updateAILyricsTranslationStatus(NSLocalizedString(
+                updateLyricsTranslationStatus(NSLocalizedString(
                     "Connection succeeded.",
                     comment: "Status shown when the AI lyrics translation endpoint test succeeds."
                 ))
@@ -372,22 +564,22 @@ class PreferenceLabViewController: PreferenceViewController {
                 return
             } catch {
                 guard !Task.isCancelled else { return }
-                updateAILyricsTranslationStatus(OpenAICompatibleLyricsTranslator.failureDescription(for: error))
+                updateLyricsTranslationStatus(OpenAICompatibleLyricsTranslator.failureDescription(for: error))
             }
         }
     }
 
-    private func updateAILyricsTranslationStatus(_ message: String) {
-        defaults[.aiLyricsTranslationStatus] = message
-        refreshAILyricsTranslationStatusField()
+    private func updateLyricsTranslationStatus(_ message: String) {
+        defaults[.lyricsTranslationStatus] = message
+        refreshLyricsTranslationStatusField()
     }
 
-    private func refreshAILyricsTranslationStatusField() {
-        let status = defaults[.aiLyricsTranslationStatus]
-        aiLyricsTranslationStatusField.stringValue = status
+    private func refreshLyricsTranslationStatusField() {
+        let status = defaults[.lyricsTranslationStatus]
+        lyricsTranslationStatusField.stringValue = status
         // The field is one line, so the tooltip carries the whole message for
         // whichever translation is too long to fit.
-        aiLyricsTranslationStatusField.toolTip = status.isEmpty ? nil : status
+        lyricsTranslationStatusField.toolTip = status.isEmpty ? nil : status
     }
 
     @IBAction func musixmatchTokenChanged(_ sender: NSTextField) {

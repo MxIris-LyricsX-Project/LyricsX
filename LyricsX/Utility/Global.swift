@@ -204,12 +204,19 @@ extension UserDefaults.DefaultsKeys {
     static let writeToiTunesAutomatically = Key<Bool>("WriteToiTunesAutomatically")
     static let writeiTunesConvertToPlainLRC = Key<Bool>("WriteiTunesConvertToPlainLRC")
     static let preferredLyricsTranslationLanguage = Key<String?>("PreferredLyricsTranslationLanguage")
+    /// A `LyricsTranslationEngine` raw value. Absent until an engine is
+    /// chosen; `LyricsTranslationEnginePolicy` falls back to the AI switch.
+    static let lyricsTranslationEngine = Key<String?>("LyricsTranslationEngine")
+    /// Superseded by `lyricsTranslationEngine`, and kept in step with it for
+    /// builds from before the engine choice.
     static let aiLyricsTranslationEnabled = Key<Bool>("AILyricsTranslationEnabled")
     static let aiLyricsTranslationEndpoint = Key<String>("AILyricsTranslationEndpoint")
     static let aiLyricsTranslationModel = Key<String>("AILyricsTranslationModel")
-    static let aiLyricsTranslationTargetLanguage = Key<String>("AILyricsTranslationTargetLanguage")
     static let aiLyricsTranslationPrompt = Key<String>("AILyricsTranslationPrompt")
-    static let aiLyricsTranslationStatus = Key<String>("AILyricsTranslationStatus")
+    // The two below are shared by both engines. Their stored names date from
+    // when AI translation was the only one, and are kept so no value is lost.
+    static let lyricsTranslationTargetLanguage = Key<String>("AILyricsTranslationTargetLanguage")
+    static let lyricsTranslationStatus = Key<String>("AILyricsTranslationStatus")
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
 

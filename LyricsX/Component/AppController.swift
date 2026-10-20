@@ -37,7 +37,7 @@ final class AppController: NSObject {
             didChangeValue(forKey: "lyricsOffset")
             scheduleCurrentLineCheck()
             performOnLyricsDisplayQueue {
-                startAITranslation(for: currentLyrics)
+                startLyricsTranslation(for: currentLyrics)
             }
         }
     }
@@ -65,16 +65,22 @@ final class AppController: NSObject {
 
     private var candidateReplenishTask: Task<Void, Never>?
     private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
-    private var aiLyricsTranslationTask: Task<Void, Never>?
-    private var lastAITranslationKey: String?
+    private var lyricsTranslationTask: Task<Void, Never>?
+    private var lastLyricsTranslationKey: String?
     /// Until when the automatic search may still put other lyrics on screen:
     /// the end of its priority window, or `.distantFuture` while it has not
-    /// shown a result yet. A translation request waits for it, so nothing is
-    /// paid for lyrics that a higher-priority result replaces seconds later.
-    /// Confined to the lyrics display queue, like the two above.
+    /// shown a result yet. An AI translation request waits for it, so nothing
+    /// is paid for lyrics that a higher-priority result replaces seconds
+    /// later. Confined to the lyrics display queue, like the two above.
     private var automaticLyricsReplacementDeadline: Date?
     /// The translation put off until `automaticLyricsReplacementDeadline`.
-    private var deferredAITranslationStart: DispatchWorkItem?
+    private var deferredLyricsTranslationStart: DispatchWorkItem?
+
+    /// The languages system translation found missing for the lyrics on
+    /// screen: lines in them stay untranslated until they are downloaded, and
+    /// the Lab pane offers to download them. Nil when nothing waits on a
+    /// download. Set on the lyrics display queue.
+    @Published private(set) var systemTranslationLanguagePairToDownload: SystemTranslationLanguagePair?
 
     /// What a "next candidate" request ended up doing. Published rather than
     /// returned because the replenish path resolves asynchronously, and both
@@ -217,24 +223,20 @@ final class AppController: NSObject {
             }
             .store(in: &cancelBag)
 
-        Publishers.MergeMany(
-            defaults.publisher(for: [.aiLyricsTranslationEnabled]).signal().eraseToAnyPublisher(),
-            defaults.publisher(for: [
-                .aiLyricsTranslationEndpoint,
-                .aiLyricsTranslationModel,
-                .aiLyricsTranslationTargetLanguage,
-                .aiLyricsTranslationPrompt,
-            ]).signal().eraseToAnyPublisher()
-        )
+        defaults.publisher(for: [
+            .lyricsTranslationEngine,
+            .aiLyricsTranslationEnabled,
+            .aiLyricsTranslationEndpoint,
+            .aiLyricsTranslationModel,
+            .lyricsTranslationTargetLanguage,
+            .aiLyricsTranslationPrompt,
+        ])
+        .signal()
         .receive(on: DispatchQueue.lyricsDisplay)
         .sink { [weak self] in
             guard let self = self else { return }
-            lastAITranslationKey = nil
-            if defaults[.aiLyricsTranslationEnabled] {
-                startAITranslation(for: currentLyrics)
-            } else {
-                cancelAITranslation()
-            }
+            lastLyricsTranslationKey = nil
+            startLyricsTranslation(for: currentLyrics)
         }
         .store(in: &cancelBag)
 
@@ -423,7 +425,7 @@ final class AppController: NSObject {
         // Ahead of clearing the lyrics below, so the widget knows to wait for
         // the new track's.
         widgetReloadCoordinator.note(.trackChanged)
-        cancelAITranslation()
+        cancelLyricsTranslation()
         automaticLyricsReplacementDeadline = nil
         performOnLyricsDisplayQueue {
             if currentLyrics?.metadata.needsPersist == true {
@@ -543,8 +545,8 @@ final class AppController: NSObject {
         // plain LRC file, which does not end the lookup — so their translation,
         // already started above, waits until the search has had its say.
         automaticLyricsReplacementDeadline = .distantFuture
-        lastAITranslationKey = nil
-        startAITranslation(for: currentLyrics)
+        lastLyricsTranslationKey = nil
+        startLyricsTranslation(for: currentLyrics)
 
         let request = makeLyricsSearchRequest(for: track)
         searchRequest = request
@@ -617,7 +619,75 @@ final class AppController: NSObject {
         guard searchRequest?.id == request.id else { return }
         performOnLyricsDisplayQueue {
             automaticLyricsReplacementDeadline = deadline
-            startAITranslation(for: currentLyrics)
+            startLyricsTranslation(for: currentLyrics)
+        }
+    }
+
+    /// What one translation run is asked to do, read from the preferences.
+    /// Two equal requests translate the same lyrics the same way.
+    private enum LyricsTranslationRequest: Equatable {
+        case ai(AILyricsTranslationConfiguration)
+        case system(targetLanguage: String)
+
+        var targetLanguage: String {
+            switch self {
+            case .ai(let configuration):
+                return configuration.targetLanguage
+            case .system(let targetLanguage):
+                return targetLanguage
+            }
+        }
+
+        /// The part of a run's key that is not the lyrics: everything that
+        /// changes what the run would produce, or where it would send them.
+        var settingsKey: String {
+            switch self {
+            case .ai(let configuration):
+                return [
+                    "ai",
+                    configuration.endpoint.absoluteString,
+                    configuration.model,
+                    configuration.targetLanguage,
+                    configuration.prompt,
+                ].joined(separator: "|")
+            case .system(let targetLanguage):
+                return ["system", targetLanguage].joined(separator: "|")
+            }
+        }
+    }
+
+    /// What one run produced, from either engine, ready to apply.
+    private struct LyricsTranslationOutcome {
+        /// Line index → translation, including those read back from a saved copy.
+        let translations: [Int: String]
+        let failedLineCount: Int
+        let failure: Error?
+        /// System translation only: the languages the lyrics need that this
+        /// Mac has not downloaded, which kept their lines untranslated.
+        var languagePairToDownload: SystemTranslationLanguagePair?
+    }
+
+    /// The run the preferences ask for: nil while translation is off, and an
+    /// error when the chosen engine's settings cannot be used.
+    private func lyricsTranslationRequest() throws -> LyricsTranslationRequest? {
+        let targetLanguage = defaults.resolvedLyricsTranslationTargetLanguage
+        switch defaults.lyricsTranslationEngine {
+        case .off:
+            return nil
+        case .ai:
+            return .ai(try AILyricsTranslationPolicy.configuration(
+                endpoint: defaults[.aiLyricsTranslationEndpoint],
+                model: defaults[.aiLyricsTranslationModel],
+                targetLanguage: targetLanguage,
+                // Passed raw: `configuration(...)` resolves it, so an untouched
+                // prompt still reaches the endpoint as the current default.
+                prompt: defaults[.aiLyricsTranslationPrompt]
+            ))
+        case .system:
+            guard let targetLanguage = AILyricsTranslationPolicy.normalizedLanguageIdentifier(targetLanguage) else {
+                throw AILyricsTranslationError.invalidTargetLanguage
+            }
+            return .system(targetLanguage: targetLanguage)
         }
     }
 
@@ -625,7 +695,7 @@ final class AppController: NSObject {
     /// "nothing to translate" path can tell a transient status apart from a
     /// finished one. A failure message is the only place some problems are ever
     /// reported, and blanking it on the next track change would lose it.
-    private var aiLyricsTranslationInProgressStatus: String {
+    private var lyricsTranslationInProgressStatus: String {
         NSLocalizedString(
             "Translating lyrics…",
             comment: "Status shown while AI lyric translation is in progress."
@@ -634,16 +704,23 @@ final class AppController: NSObject {
 
     /// Reports a translation that put nothing on screen, with what failed when
     /// that is known: the pane is the only place a rejected key, a wrong model
-    /// name or a used-up request limit is ever reported.
-    private func reportAILyricsTranslationFailure(_ failure: Error?) {
+    /// name, a used-up request limit or a language still to download is ever
+    /// reported.
+    private func reportLyricsTranslationFailure(_ failure: Error?) {
         guard let failure else {
-            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+            defaults[.lyricsTranslationStatus] = NSLocalizedString(
                 "Translation failed; existing lyrics were kept.",
                 comment: "Status shown when AI lyric translation fails."
             )
             return
         }
-        defaults[.aiLyricsTranslationStatus] = String(
+        // Not failures of the run but of what this Mac has: the status says
+        // what to do about it rather than that something went wrong.
+        if let failure = failure as? SystemLyricsTranslationError {
+            defaults[.lyricsTranslationStatus] = failure.statusDescription
+            return
+        }
+        defaults[.lyricsTranslationStatus] = String(
             format: NSLocalizedString(
                 "Translation failed; existing lyrics were kept. %@",
                 comment: "Status shown when AI lyric translation fails; %@ says what failed, such as the HTTP status the endpoint answered."
@@ -654,25 +731,26 @@ final class AppController: NSObject {
 
     /// Stops the translation in flight and the one put off for later, and
     /// forgets which lyrics were last sent, so the next call starts afresh.
-    private func cancelAITranslation() {
-        aiLyricsTranslationTask?.cancel()
-        aiLyricsTranslationTask = nil
-        deferredAITranslationStart?.cancel()
-        deferredAITranslationStart = nil
-        lastAITranslationKey = nil
+    private func cancelLyricsTranslation() {
+        lyricsTranslationTask?.cancel()
+        lyricsTranslationTask = nil
+        deferredLyricsTranslationStart?.cancel()
+        deferredLyricsTranslationStart = nil
+        lastLyricsTranslationKey = nil
+        systemTranslationLanguagePairToDownload = nil
     }
 
-    /// Asks `startAITranslation` again at `deadline`, when the lyrics on
+    /// Asks `startLyricsTranslation` again at `deadline`, when the lyrics on
     /// screen are the ones that stay. A `.distantFuture` deadline schedules
     /// nothing: the search replaces it with the end of its window once it
     /// shows a result, and with nil once it ends.
-    private func deferAITranslation(until deadline: Date) {
+    private func deferLyricsTranslation(until deadline: Date) {
         guard deadline != .distantFuture else { return }
         let start = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-            startAITranslation(for: currentLyrics)
+            startLyricsTranslation(for: currentLyrics)
         }
-        deferredAITranslationStart = start
+        deferredLyricsTranslationStart = start
         DispatchQueue.lyricsDisplay.asyncAfter(
             deadline: .now() + max(deadline.timeIntervalSinceNow, 0),
             execute: start
@@ -688,7 +766,7 @@ final class AppController: NSObject {
                 let apiKey = try AILyricsTranslationCredentialStore.apiKey(for: endpoint)
                 guard !Task.isCancelled else { return nil }
                 if apiKey == nil {
-                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                    defaults[.lyricsTranslationStatus] = NSLocalizedString(
                         "Add an API key in AI translation settings.",
                         comment: "Status shown when no API key is stored for AI lyric translation."
                     )
@@ -697,7 +775,7 @@ final class AppController: NSObject {
             } catch let error as AILyricsTranslationCredentialError where error.isTransient {
                 guard attempt < 2 else {
                     guard !Task.isCancelled else { return nil }
-                    defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                    defaults[.lyricsTranslationStatus] = NSLocalizedString(
                         "The keychain is temporarily unavailable; translation can be retried later.",
                         comment: "Status for a temporary Keychain failure during AI translation."
                     )
@@ -710,7 +788,7 @@ final class AppController: NSObject {
                 }
             } catch {
                 guard !Task.isCancelled else { return nil }
-                defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                defaults[.lyricsTranslationStatus] = NSLocalizedString(
                     "The saved API key could not be read. Check its access in Keychain.",
                     comment: "Status for a permanent Keychain failure during AI translation."
                 )
@@ -723,7 +801,7 @@ final class AppController: NSObject {
     /// The translations into `targetLanguage` that the file `lyrics` persist
     /// to already holds for them, when that is not the file they were read
     /// from. Reads the file, so it runs off the lyrics display queue.
-    private func savedAITranslations(for lyrics: Lyrics, targetLanguage: String) -> [Int: String] {
+    private func savedTranslations(for lyrics: Lyrics, targetLanguage: String) -> [Int: String] {
         guard let destination = lyrics.persistDestination,
               destination.fileURL != lyrics.metadata.localURL else {
             return [:]
@@ -746,77 +824,126 @@ final class AppController: NSObject {
         )
     }
 
-    private func startAITranslation(for lyrics: Lyrics?) {
-        guard defaults[.aiLyricsTranslationEnabled] else {
-            // The Lab pane owns the wording while the switch is off, so the
+    /// Runs `request`'s engine over the lines of `lyrics` that still need a
+    /// translation once `savedTranslations` are in. Nil when the engine cannot
+    /// run at all — no API key to send — with the reason already in the pane.
+    private func translate(
+        _ lyrics: Lyrics,
+        savedTranslations: [Int: String],
+        with request: LyricsTranslationRequest
+    ) async throws -> LyricsTranslationOutcome? {
+        let linesToRequest = AILyricsTranslationPolicy.translationInputLines(
+            lyrics: lyrics,
+            targetLanguage: request.targetLanguage
+        )
+        guard !linesToRequest.isEmpty else {
+            return LyricsTranslationOutcome(translations: savedTranslations, failedLineCount: 0, failure: nil)
+        }
+        switch request {
+        case .ai(let configuration):
+            guard let apiKey = await aiLyricsTranslationAPIKey(for: configuration.endpoint) else {
+                return nil
+            }
+            let result = try await aiLyricsTranslator.translate(
+                lyrics: lyrics,
+                configuration: configuration,
+                apiKey: apiKey
+            )
+            return LyricsTranslationOutcome(
+                translations: savedTranslations.merging(result.translations) { _, new in new },
+                failedLineCount: result.failedLineCount,
+                failure: result.failure
+            )
+        case .system(let targetLanguage):
+            guard #available(macOS 26.0, *) else {
+                // Unreachable: the engine reads as off before macOS 26.
+                return nil
+            }
+            let result = try await SystemLyricsTranslator().translate(
+                lyrics: lyrics,
+                lyricsLanguage: lyrics.metadata.language,
+                targetLanguage: targetLanguage
+            )
+            return LyricsTranslationOutcome(
+                translations: savedTranslations.merging(result.translations) { _, new in new },
+                failedLineCount: result.failedLineCount,
+                failure: result.failure,
+                languagePairToDownload: result.languagePairToDownload
+            )
+        }
+    }
+
+    private func startLyricsTranslation(for lyrics: Lyrics?) {
+        guard defaults.lyricsTranslationEngine != .off else {
+            // The Lab pane owns the wording while translation is off, so the
             // task is cancelled without rewriting the status.
-            cancelAITranslation()
+            cancelLyricsTranslation()
             return
         }
         guard let lyrics, let track = selectedPlayer.currentTrack else {
-            cancelAITranslation()
+            cancelLyricsTranslation()
             // Nothing is on screen to translate. Clear the in-progress line,
             // which would otherwise sit in the pane for the rest of the session
             // with no retry coming — but leave a finished message alone.
-            if defaults[.aiLyricsTranslationStatus] == aiLyricsTranslationInProgressStatus {
-                defaults[.aiLyricsTranslationStatus] = ""
+            if defaults[.lyricsTranslationStatus] == lyricsTranslationInProgressStatus {
+                defaults[.lyricsTranslationStatus] = ""
             }
             return
         }
 
-        let configuration: AILyricsTranslationConfiguration
+        let request: LyricsTranslationRequest
         do {
-            configuration = try AILyricsTranslationPolicy.configuration(
-                endpoint: defaults[.aiLyricsTranslationEndpoint],
-                model: defaults[.aiLyricsTranslationModel],
-                targetLanguage: defaults[.aiLyricsTranslationTargetLanguage],
-                // Passed raw: `configuration(...)` resolves it, so an untouched
-                // prompt still reaches the endpoint as the current default.
-                prompt: defaults[.aiLyricsTranslationPrompt]
-            )
+            guard let preferredRequest = try lyricsTranslationRequest() else {
+                cancelLyricsTranslation()
+                return
+            }
+            request = preferredRequest
         } catch {
-            cancelAITranslation()
-            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
-                "AI translation settings are incomplete or invalid.",
-                comment: "Status for AI lyric translation when its configuration is invalid."
-            )
+            cancelLyricsTranslation()
+            defaults[.lyricsTranslationStatus] = defaults.lyricsTranslationEngine == .ai
+                ? NSLocalizedString(
+                    "AI translation settings are incomplete or invalid.",
+                    comment: "Status for AI lyric translation when its configuration is invalid."
+                )
+                : NSLocalizedString(
+                    "The target language must be a language tag, such as zh-Hans or ja.",
+                    comment: "Status for lyrics translation when the target language is not a valid language tag."
+                )
             return
         }
 
         let sourceFingerprint = lyricsContentFingerprint(lyrics)
-        let translationKey = [
-            track.id,
-            sourceFingerprint,
-            configuration.endpoint.absoluteString,
-            configuration.model,
-            configuration.targetLanguage,
-            configuration.prompt,
-        ].joined(separator: "|")
-        guard lastAITranslationKey != translationKey else { return }
-        aiLyricsTranslationTask?.cancel()
-        aiLyricsTranslationTask = nil
-        deferredAITranslationStart?.cancel()
-        deferredAITranslationStart = nil
+        let translationKey = [track.id, sourceFingerprint, request.settingsKey].joined(separator: "|")
+        guard lastLyricsTranslationKey != translationKey else { return }
+        lyricsTranslationTask?.cancel()
+        lyricsTranslationTask = nil
+        deferredLyricsTranslationStart?.cancel()
+        deferredLyricsTranslationStart = nil
+        systemTranslationLanguagePairToDownload = nil
         guard AILyricsTranslationPolicy.shouldTranslate(
             lyrics: lyrics,
             sourceLanguage: lyrics.metadata.language,
-            targetLanguage: configuration.targetLanguage
+            targetLanguage: request.targetLanguage
         ) else {
-            lastAITranslationKey = translationKey
-            defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+            lastLyricsTranslationKey = translationKey
+            defaults[.lyricsTranslationStatus] = NSLocalizedString(
                 "No untranslated lines need this target language.",
                 comment: "Status shown when lyrics are already in the AI translation target language."
             )
             return
         }
-        defaults[.aiLyricsTranslationStatus] = aiLyricsTranslationInProgressStatus
-        if let deadline = automaticLyricsReplacementDeadline, deadline > Date() {
+        defaults[.lyricsTranslationStatus] = lyricsTranslationInProgressStatus
+        // Only AI translation waits for the search to have its say: it is the
+        // one that costs money. System translation runs on this Mac in a
+        // moment, and a result for lyrics replaced meanwhile is dropped by the
+        // check below like any other that arrives too late.
+        if case .ai = request, let deadline = automaticLyricsReplacementDeadline, deadline > Date() {
             // The search may still replace these lyrics, so ask once it no
             // longer can. The key stays unrecorded, so that call goes ahead.
-            deferAITranslation(until: deadline)
+            deferLyricsTranslation(until: deadline)
             return
         }
-        lastAITranslationKey = translationKey
+        lastLyricsTranslationKey = translationKey
 
         let trackID = track.id
         // `Lyrics` is a reference type, and the display queue keeps mutating the
@@ -831,72 +958,59 @@ final class AppController: NSObject {
             idTags: lyrics.idTags,
             metadata: lyrics.metadata
         )
-        aiLyricsTranslationTask = Task { [weak self] in
+        lyricsTranslationTask = Task { [weak self] in
             guard let self = self else { return }
-            // What the file these lyrics persist to already holds is not paid
-            // for again — for lyrics embedded in the track, or read from beside
-            // it without write-back, that file is a library copy the lookup
-            // never reads back, so without this every play translated anew.
-            let savedTranslations = savedAITranslations(
+            // What the file these lyrics persist to already holds is not
+            // translated again — for lyrics embedded in the track, or read from
+            // beside it without write-back, that file is a library copy the
+            // lookup never reads back, so without this every play translated
+            // anew, and AI translation paid for it each time.
+            let savedTranslations = self.savedTranslations(
                 for: translationSource,
-                targetLanguage: configuration.targetLanguage
+                targetLanguage: request.targetLanguage
             )
             let requestSource = savedTranslations.isEmpty
                 ? translationSource
                 : (try? AILyricsTranslationPolicy.applying(
                     savedTranslations,
                     to: translationSource,
-                    targetLanguage: configuration.targetLanguage
+                    targetLanguage: request.targetLanguage
                 )) ?? translationSource
-            let linesToRequest = AILyricsTranslationPolicy.translationInputLines(
-                lyrics: requestSource,
-                targetLanguage: configuration.targetLanguage
-            )
 
             do {
-                var result = AILyricsTranslationResult(
-                    translations: savedTranslations,
-                    failedLineCount: 0,
-                    failure: nil
-                )
-                if !linesToRequest.isEmpty {
-                    guard let apiKey = await aiLyricsTranslationAPIKey(for: configuration.endpoint) else {
-                        return
-                    }
-                    let requestedResult = try await aiLyricsTranslator.translate(
-                        lyrics: requestSource,
-                        configuration: configuration,
-                        apiKey: apiKey
-                    )
-                    result = AILyricsTranslationResult(
-                        translations: savedTranslations.merging(requestedResult.translations) { _, new in new },
-                        failedLineCount: requestedResult.failedLineCount,
-                        failure: requestedResult.failure
-                    )
+                guard let outcome = try await self.translate(
+                    requestSource,
+                    savedTranslations: savedTranslations,
+                    with: request
+                ) else {
+                    return
                 }
                 try Task.checkCancellation()
                 performOnLyricsDisplayQueue { [weak self] in
                     guard let self = self,
                           selectedPlayer.currentTrack?.id == trackID,
-                          defaults[.aiLyricsTranslationEnabled],
-                          defaults[.aiLyricsTranslationEndpoint] == configuration.endpoint.absoluteString,
-                          defaults[.aiLyricsTranslationModel] == configuration.model,
-                          defaults[.aiLyricsTranslationTargetLanguage] == configuration.targetLanguage,
-                          // Compared resolved on both sides: an untouched
-                          // prompt is stored empty, and the configuration
-                          // carries whatever the sheet saved rather than the
-                          // default that empty resolves to.
-                          AILyricsTranslationPolicy.resolvedPrompt(defaults[.aiLyricsTranslationPrompt])
-                              == AILyricsTranslationPolicy.resolvedPrompt(configuration.prompt),
+                          // The preferences still ask for what was run: the
+                          // same engine, with the same settings.
+                          (try? lyricsTranslationRequest()) == request,
                           let displayedLyrics = currentLyrics,
                           displayedLyrics === lyrics,
                           lyricsContentFingerprint(displayedLyrics) == sourceFingerprint else {
                         return
                     }
+                    systemTranslationLanguagePairToDownload = outcome.languagePairToDownload
                     // Nothing came back, so there is nothing to show or save:
                     // the lyrics on screen and in their file stay as they are.
-                    guard !result.translations.isEmpty else {
-                        reportAILyricsTranslationFailure(result.failure)
+                    guard !outcome.translations.isEmpty else {
+                        if outcome.failedLineCount == 0 {
+                            // Every line it would have sent turned out to be in
+                            // the target language already.
+                            defaults[.lyricsTranslationStatus] = NSLocalizedString(
+                                "No untranslated lines need this target language.",
+                                comment: "Status shown when lyrics are already in the AI translation target language."
+                            )
+                        } else {
+                            reportLyricsTranslationFailure(outcome.failure)
+                        }
                         return
                     }
 
@@ -909,12 +1023,12 @@ final class AppController: NSObject {
                     let translatedLyrics: Lyrics
                     do {
                         translatedLyrics = try AILyricsTranslationPolicy.applying(
-                            result.translations,
+                            outcome.translations,
                             to: displayedLyrics,
-                            targetLanguage: configuration.targetLanguage
+                            targetLanguage: request.targetLanguage
                         )
                     } catch {
-                        reportAILyricsTranslationFailure(error)
+                        reportLyricsTranslationFailure(error)
                         return
                     }
 
@@ -924,21 +1038,29 @@ final class AppController: NSObject {
                     // there before the pool is next used.
                     currentLyrics = translatedLyrics
                     if translatedLyrics.persist() {
-                        defaults[.aiLyricsTranslationStatus] = result.failedLineCount == 0
-                            ? NSLocalizedString(
-                                "Lyrics translated.",
-                                comment: "Status shown when all eligible lyric lines were translated."
-                            )
-                            : String(
-                                format: NSLocalizedString(
-                                    "Translated %d lines; %d lines could not be translated.",
-                                    comment: "Status shown when AI lyric translation was partially successful."
-                                ),
-                                result.translations.count,
-                                result.failedLineCount
-                            )
+                        if let languagePairToDownload = outcome.languagePairToDownload {
+                            // What the user can act on, ahead of a count of what
+                            // the download would fix.
+                            defaults[.lyricsTranslationStatus] = SystemLyricsTranslationError
+                                .languagesNotDownloaded(languagePairToDownload)
+                                .statusDescription
+                        } else {
+                            defaults[.lyricsTranslationStatus] = outcome.failedLineCount == 0
+                                ? NSLocalizedString(
+                                    "Lyrics translated.",
+                                    comment: "Status shown when all eligible lyric lines were translated."
+                                )
+                                : String(
+                                    format: NSLocalizedString(
+                                        "Translated %d lines; %d lines could not be translated.",
+                                        comment: "Status shown when AI lyric translation was partially successful."
+                                    ),
+                                    outcome.translations.count,
+                                    outcome.failedLineCount
+                                )
+                        }
                     } else {
-                        defaults[.aiLyricsTranslationStatus] = NSLocalizedString(
+                        defaults[.lyricsTranslationStatus] = NSLocalizedString(
                             "Translations are displayed but could not be saved.",
                             comment: "Status shown when translated lyrics could not be persisted."
                         )
@@ -950,16 +1072,19 @@ final class AppController: NSObject {
                 return
             } catch {
                 guard !Task.isCancelled else { return }
-                reportAILyricsTranslationFailure(error)
+                reportLyricsTranslationFailure(error)
             }
         }
     }
 
-    func retryAILyricsTranslation() {
+    /// Translates the lyrics on screen again, as if they had just arrived:
+    /// after the settings change, or once the languages system translation
+    /// was missing are downloaded.
+    func retryLyricsTranslation() {
         performOnLyricsDisplayQueue {
-            lastAITranslationKey = nil
-            aiLyricsTranslationTask?.cancel()
-            startAITranslation(for: currentLyrics)
+            lastLyricsTranslationKey = nil
+            lyricsTranslationTask?.cancel()
+            startLyricsTranslation(for: currentLyrics)
         }
     }
 

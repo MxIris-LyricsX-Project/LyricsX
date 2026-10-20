@@ -3,7 +3,7 @@ import LyricsXFoundation
 
 /// The AI translation settings form, presented as a sheet.
 ///
-/// A sheet rather than an `NSAlert` accessory view: this is five fields and a
+/// A sheet rather than an `NSAlert` accessory view: this is four fields and a
 /// destructive action, and it needs somewhere to put a line of help under each
 /// one and a place to say *which* field is wrong. An alert gives neither — it
 /// would have to close itself and report the failure somewhere else, which is
@@ -22,7 +22,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
     private let endpointField = NSTextField()
     private let modelField = NSTextField()
-    private let targetLanguageField = NSTextField()
     private let apiKeyField = NSSecureTextField()
     private let removeKeyButton = NSButton()
     private let promptTextView = NSTextView()
@@ -81,10 +80,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             ? AILyricsTranslationPolicy.defaultModel
             : defaults[.aiLyricsTranslationModel]
 
-        targetLanguageField.stringValue = defaults[.aiLyricsTranslationTargetLanguage].isEmpty
-            ? AILyricsTranslationPolicy.defaultTargetLanguage
-            : defaults[.aiLyricsTranslationTargetLanguage]
-
         promptTextView.string = AILyricsTranslationPolicy.resolvedPrompt(
             defaults[.aiLyricsTranslationPrompt]
         )
@@ -109,7 +104,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
         let titles = [
             NSLocalizedString("Endpoint", comment: "AI lyrics translation endpoint setting."),
             NSLocalizedString("Model", comment: "AI lyrics translation model setting."),
-            NSLocalizedString("Target language", comment: "AI lyrics translation target language setting."),
             NSLocalizedString("API key", comment: "AI lyrics translation API-key setting."),
             NSLocalizedString("Prompt", comment: "AI lyrics translation prompt setting."),
         ]
@@ -152,15 +146,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
             makeFieldRow(
                 title: titles[2],
                 labelColumnWidth: labelColumnWidth,
-                control: targetLanguageField,
-                help: NSLocalizedString(
-                    "A language tag such as zh-Hans, zh-Hant or ja. Lines already in this language are not sent.",
-                    comment: "Help text under the AI translation target language setting."
-                )
-            ),
-            makeFieldRow(
-                title: titles[3],
-                labelColumnWidth: labelColumnWidth,
                 control: apiKeyField,
                 help: NSLocalizedString(
                     "Kept in the Keychain and bound to this endpoint's host, so changing the host means saving the key again.",
@@ -168,7 +153,7 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 ),
                 accessory: removeKeyButton
             ),
-            makePromptRow(title: titles[4], labelColumnWidth: labelColumnWidth),
+            makePromptRow(title: titles[3], labelColumnWidth: labelColumnWidth),
             problemRow,
         ])
         rows.orientation = .vertical
@@ -511,9 +496,8 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
                 model: modelField.stringValue.isEmpty
                     ? AILyricsTranslationPolicy.defaultModel
                     : modelField.stringValue,
-                targetLanguage: targetLanguageField.stringValue.isEmpty
-                    ? AILyricsTranslationPolicy.defaultTargetLanguage
-                    : targetLanguageField.stringValue,
+                // Set in the Lab pane, where it is shared with system translation.
+                targetLanguage: defaults.resolvedLyricsTranslationTargetLanguage,
                 prompt: promptTextView.string
             )
         } catch {
@@ -536,7 +520,6 @@ final class AILyricsTranslationSettingsViewController: NSViewController {
 
         defaults[.aiLyricsTranslationEndpoint] = configuration.endpoint.absoluteString
         defaults[.aiLyricsTranslationModel] = configuration.model
-        defaults[.aiLyricsTranslationTargetLanguage] = configuration.targetLanguage
         // Stored empty while it is still the default. Writing the default text
         // verbatim would freeze today's wording in the database, and a later
         // improvement to it would then reach only users who had never opened
