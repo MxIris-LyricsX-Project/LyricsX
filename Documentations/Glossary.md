@@ -142,4 +142,4 @@ AppKit 为状态栏条目渲染的截图。macOS 26 起，系统菜单栏显示�
 Translation 框架在本机翻译，要求 macOS 26，只用已下载的语言）、**AI 翻译**（`ai`，发给 OpenAI 兼容端点）。
 同一时刻只有一个引擎在跑。存在 `LyricsTranslationEngine` 里；还没选过时由旧的 AI 开关
 （`AILyricsTranslationEnabled`）决定，改引擎时也同步写回这个开关，降级回旧版本时 AI 翻译照旧。
-详见[系统翻译的提案](Evolutions/draft-system-lyrics-translation.md)。
+详见[系统翻译的提案](Evolutions/0021-system-lyrics-translation.md)。
