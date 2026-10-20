@@ -127,6 +127,14 @@ public enum AILyricsTranslationPolicy {
         """,
     ]
 
+    /// The language to translate into, for either engine. An empty stored
+    /// value means none was ever set, so the default applies — the one the
+    /// Lab pane shows as the field's placeholder.
+    public static func resolvedTargetLanguage(_ stored: String) -> String {
+        let stored = stored.trimmingCharacters(in: .whitespacesAndNewlines)
+        return stored.isEmpty ? defaultTargetLanguage : stored
+    }
+
     /// The prompt to send. An empty stored value means the user never
     /// customised it, so the current default applies.
     public static func resolvedPrompt(_ stored: String) -> String {
