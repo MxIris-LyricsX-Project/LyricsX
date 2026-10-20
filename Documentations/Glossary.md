@@ -128,8 +128,18 @@ AppKit 为状态栏条目渲染的截图。macOS 26 起，系统菜单栏显示�
 
 - **显示语言**（`PreferredLyricsTranslationLanguage`）：歌词带着几种译文时，桌面歌词、歌词窗口、Apple Music 面板、
   小组件和 iTunes 导出显示哪一种，由 `Lyrics.displayTranslation(for:)` 一处决定。留空就取覆盖行数最多的那种。
-  和 AI 翻译开没开无关。
-- **目标语言**（`AILyricsTranslationTargetLanguage`）：AI 翻译把缺译文的行**翻成**哪种语言，只在 AI 翻译里用。
+  和翻译开没开、用哪个引擎无关。
+- **目标语言**（存储名 `AILyricsTranslationTargetLanguage`，代码里的键叫 `lyricsTranslationTargetLanguage`）：
+  翻译引擎把缺译文的行**翻成**哪种语言，两个引擎共用，在组框里设置，留空即 zh-Hans。存储名沿用只有 AI 翻译的时候，
+  改名会丢掉已存的值。
 
-两者故意分开：目标语言在 AI 翻译设置面板保存时就会写入，哪怕用户从没打开过这个功能。拿它决定显示的话，只打开过
-一次面板的人，歌词就换了一种译文显示。详见 [AI 翻译的提案](Evolutions/0020-ai-lyrics-translation.md)。
+两者故意分开：目标语言只要填过就会写入，哪怕用户从没打开过翻译。拿它决定显示的话，只填过一次的人，歌词就换了
+一种译文显示。详见 [AI 翻译的提案](Evolutions/0020-ai-lyrics-translation.md)。
+
+## 翻译引擎（translation engine）
+
+实验室页「歌词翻译」组框里「翻译」下拉框选的东西，`LyricsTranslationEngine`：关、**系统翻译**（`system`，用系统的
+Translation 框架在本机翻译，要求 macOS 26，只用已下载的语言）、**AI 翻译**（`ai`，发给 OpenAI 兼容端点）。
+同一时刻只有一个引擎在跑。存在 `LyricsTranslationEngine` 里；还没选过时由旧的 AI 开关
+（`AILyricsTranslationEnabled`）决定，改引擎时也同步写回这个开关，降级回旧版本时 AI 翻译照旧。
+详见[系统翻译的提案](Evolutions/draft-system-lyrics-translation.md)。

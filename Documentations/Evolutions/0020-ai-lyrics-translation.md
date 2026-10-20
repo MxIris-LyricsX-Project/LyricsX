@@ -4,7 +4,7 @@
 - **创建日期**: 2026-10-19
 - **最后更新**: 2026-10-19
 - **实现分支 / PR**: `feat/ai-lyrics-translation`（PR #204，接替 #184）
-- **配套文档**: [AI lyrics translation](../AITranslation.md)（面向用户的说明）；
+- **配套文档**: [Lyrics translation](../LyricsTranslation.md)（面向用户的说明，原名 `AITranslation.md`，系统翻译加入时改名）；
   [设置窗口的尺寸](../Internal/PreferenceWindowSizing.md)「Lab 现在可以滚动」一节
 
 ## 摘要

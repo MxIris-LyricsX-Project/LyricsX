@@ -46,9 +46,11 @@ hand.
 policies — lyrics storage destinations, editing eligibility, HUD window
 configuration, playback-position preservation, candidate-pool ordering, the
 manual-selection override table, and the source-ordering modes (including the
-property tests that keep the ordering transitive), plus the AI translation
-policies (request encoding, batch boundaries, reusing a saved copy's
-translations) — and is fast and headless enough to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
+property tests that keep the ordering transitive), plus the lyrics translation
+policies (the engine choice and its migration from the AI switch, AI request
+encoding and batch boundaries, reusing a saved copy's translations, grouping
+lines by language for System Translation) — and is fast and headless enough to
+run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
 renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
 its animation geometry and karaoke colour (no clipping, bounded lift, sweep
 actually paints white, no position drift):
@@ -109,8 +111,14 @@ swift test --filter ScrollSpringProbes
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
 
-AI lyrics translation setup, privacy behavior, request limits, and retry
-semantics are documented in [Documentations/AITranslation.md](Documentations/AITranslation.md).
+Lyrics translation — the engine choice, System Translation's downloaded
+languages, and AI translation's setup, privacy behavior, request limits, and
+retry semantics — is documented in
+[Documentations/LyricsTranslation.md](Documentations/LyricsTranslation.md).
+`SystemLyricsTranslatorProbes` (in `LyricsXFoundationTests`) runs System
+Translation against the real Translation framework; each probe covers one
+state of the Mac's downloaded languages and skips itself in any other, so
+which of them ran is in the test output.
 
 `MenuBarLyricsTests` guards the menu bar lyric line (`MenuBarMarqueeLabel`,
 which replaced MarqueeLabel's `NSTextField` on macOS 26+). Run them on any
@@ -352,7 +360,7 @@ Setting evaluation order (high overrides low): target xcconfig → project xccon
 
 The app uses a **Combine-driven reactive architecture** with shared singletons:
 
-- **`Component/`** — Core singletons: `AppController` (central lyrics search/management hub), `AppDelegate`, `SelectedPlayer` (player adapter). `AppController` listens for track changes via Combine publishers, runs async lyrics searches (`AsyncSequence`), and distributes results to display layers. `AITranslationService` is the Labs AI translation client: the Keychain credential store and the OpenAI-compatible request loop; its pure policies are `AILyricsTranslationPolicy` in `LyricsXFoundation`.
+- **`Component/`** — Core singletons: `AppController` (central lyrics search/management hub), `AppDelegate`, `SelectedPlayer` (player adapter). `AppController` listens for track changes via Combine publishers, runs async lyrics searches (`AsyncSequence`), and distributes results to display layers. `AITranslationService` is the Labs AI translation client: the Keychain credential store and the OpenAI-compatible request loop; its pure policies are `AILyricsTranslationPolicy` in `LyricsXFoundation`. The other engine, System Translation (macOS 26+), is `SystemLyricsTranslator` in `LyricsXFoundation`; `AppController` runs whichever `LyricsTranslationEngine` the Lab pane picked, and the pane's language download prompt comes from `SystemTranslationLanguageDownloader`, an invisible SwiftUI `translationTask` — the only public way to ask for a download.
 - **`AppleMusicLyrics/`** — App-side glue for the `AppleMusicLyricsPanel` package target: just `AppleMusicLyricsWindowController`, which owns the panel window (frame autosave, pin button, HUD lifecycle), installs `AppleMusicLyrics.HostEnvironment`, and injects `AppController`'s lyrics publishers into the panel. The engine itself lives in `LyricsXPackage/Sources/AppleMusicLyricsPanel/`.
 - **`Controller/`** — Display controllers: `KaraokeLyricsController` (desktop karaoke overlay), `MenuBarLyricsController` (menu bar text: `MenuBarMarqueeLabel` on macOS 26+, MarqueeLabel before), `TouchBarLyricsController`
 - **`LyricsHUD/`** — Floating lyrics panel (`LyricsHUDViewController`)

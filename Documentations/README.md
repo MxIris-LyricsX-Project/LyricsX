@@ -65,8 +65,9 @@
 
 ## 使用说明
 
-- [AI lyrics translation](AITranslation.md) —— 面向用户，英文，README 链到这里：实验室页的 AI 翻译怎么设置、
-  会把什么发给端点、API key 怎么保管、请求的限制与重试，以及显示语言怎么挑译文。
+- [Lyrics translation](LyricsTranslation.md) —— 面向用户，英文，README 链到这里：实验室页的两种翻译引擎怎么选；
+  系统翻译要求 macOS 26、只用已下载的语言、缺语言时怎么下载、哪些语言对不支持；AI 翻译怎么设置、会把什么发给端点、
+  API key 怎么保管、请求的限制与重试；以及目标语言和显示语言各管什么。原名 `AITranslation.md`。
 
 ## 实现说明
 
