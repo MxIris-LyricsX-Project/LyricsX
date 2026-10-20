@@ -102,6 +102,23 @@
         }
       }
     },
+    "%1$@ → %2$@" : {
+      "comment" : "A translation direction: %1$@ is the language translated from, %2$@ the language translated into.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → %2$@"
+          }
+        }
+      }
+    },
     "$targetLanguage is replaced with the target language's name before the request is sent." : {
       "comment" : "Help text under the AI translation prompt setting.",
       "localizations" : {
@@ -138,6 +155,7 @@
     },
     "A language tag such as zh-Hans, zh-Hant or ja. Lines already in this language are not sent." : {
       "comment" : "Help text under the AI translation target language setting.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -149,6 +167,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "語言標籤，例如 zh-Hans、zh-Hant 或 ja。已經是該語言的行不會送出。"
+          }
+        }
+      }
+    },
+    "A language tag such as zh-Hans, zh-Hant or ja. Lines without a translation into it are translated into it." : {
+      "comment" : "Tooltip of the target language field in the Lab pane.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言标签，例如 zh-Hans、zh-Hant 或 ja。没有这种语言译文的行会被翻译成这种语言。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語言標籤，例如 zh-Hans、zh-Hant 或 ja。沒有這種語言譯文的行會被翻譯成這種語言。"
           }
         }
       }
@@ -288,8 +323,26 @@
         }
       }
     },
+    "AI (OpenAI-compatible)" : {
+      "comment" : "Lab pane translation engine choice that sends lines to an OpenAI-compatible endpoint.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI（OpenAI 兼容）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI（OpenAI 相容）"
+          }
+        }
+      }
+    },
     "AI translation is disabled." : {
       "comment" : "Status shown when AI lyric translation is turned off.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -633,6 +686,40 @@
         }
       }
     },
+    "Download the languages for %@" : {
+      "comment" : "Tooltip of the Lab pane's download button; %@ is a translation direction such as Japanese → Chinese, Simplified.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载 %@ 的语言"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載 %@ 的語言"
+          }
+        }
+      }
+    },
+    "Download…" : {
+      "comment" : "Button beside the Lab pane's translation status that asks the system to download the languages system translation is missing.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載…"
+          }
+        }
+      }
+    },
     "Edit" : {
       "comment" : "Lyrics window context menu",
       "localizations" : {
@@ -866,6 +953,7 @@
     },
     "Enable AI translation" : {
       "comment" : "Checkbox in the Lab pane that turns AI lyric translation on.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -1237,6 +1325,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "歌詞翻譯"
+          }
+        }
+      }
+    },
+    "Lyrics translation is off." : {
+      "comment" : "Status shown when the Lab pane's lyrics translation is turned off.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌词翻译已关闭。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌詞翻譯已關閉。"
           }
         }
       }
@@ -1732,6 +1837,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有需要翻譯成該目標語言的行。"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "comment" : "Lab pane translation engine choice that translates nothing.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉"
           }
         }
       }
@@ -2506,6 +2628,113 @@
         }
       }
     },
+    "Requires macOS 26 or later" : {
+      "comment" : "Tooltip on a Lab setting that needs macOS 26 when the OS is older.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يتطلب macOS 26 أو إصدارًا أحدث"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erfordert macOS 26 oder neuer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires macOS 26 or later"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requiere macOS 26 o posterior"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "به macOS 26 یا جدیدتر نیاز دارد"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nécessite macOS 26 ou version ultérieure"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memerlukan macOS 26 atau yang lebih baru"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richiede macOS 26 o versioni successive"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 26 以降が必要です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 26 이상이 필요합니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vereist macOS 26 of nieuwer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymaga macOS 26 lub nowszego"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requer macOS 26 ou posterior"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Требуется macOS 26 или новее"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрібна macOS 26 або новіша"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 26 或更高版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 macOS 26 或更新版本"
+          }
+        }
+      }
+    },
     "Save" : {
       "comment" : "Save AI lyrics translation settings.",
       "localizations" : {
@@ -3089,8 +3318,43 @@
         }
       }
     },
+    "System Translation" : {
+      "comment" : "Lab pane translation engine choice that uses the system's Translation framework, on this Mac.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统翻译"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統翻譯"
+          }
+        }
+      }
+    },
+    "System Translation cannot translate %@." : {
+      "comment" : "Status shown when the system translation framework does not support a language pair; %@ is a translation direction such as Chinese, Traditional → Chinese, Simplified.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统翻译不支持 %@。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統翻譯不支援 %@。"
+          }
+        }
+      }
+    },
     "Target language" : {
       "comment" : "AI lyrics translation target language setting.",
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3102,6 +3366,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目標語言"
+          }
+        }
+      }
+    },
+    "Target language:" : {
+      "comment" : "Label for the language lyrics without a translation are translated into, in the Lab pane.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标语言："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標語言："
           }
         }
       }
@@ -3242,6 +3523,57 @@
         }
       }
     },
+    "The language of these lyrics could not be recognized." : {
+      "comment" : "Status shown when system lyric translation cannot tell which language the lyrics are in.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法识别这些歌词的语言。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法辨識這些歌詞的語言。"
+          }
+        }
+      }
+    },
+    "The languages for %@ are not downloaded yet." : {
+      "comment" : "Status shown when system lyric translation needs languages this Mac has not downloaded; %@ is a translation direction such as Japanese → Chinese, Simplified.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的语言还没有下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的語言尚未下載。"
+          }
+        }
+      }
+    },
+    "The languages for %@ were not downloaded." : {
+      "comment" : "Status shown when the system's language download prompt was dismissed or failed; %@ is a translation direction such as Japanese → Chinese, Simplified.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的语言没有下载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的語言沒有下載。"
+          }
+        }
+      }
+    },
     "The model name this endpoint expects, for example gpt-4o-mini." : {
       "comment" : "Help text under the AI translation model setting.",
       "localizations" : {
@@ -3306,6 +3638,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法從鑰匙串移除已儲存的金鑰。"
+          }
+        }
+      }
+    },
+    "The target language must be a language tag, such as zh-Hans or ja." : {
+      "comment" : "Status for lyrics translation when the target language is not a valid language tag.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标语言必须是语言标签，例如 zh-Hans 或 ja。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標語言必須是語言標籤，例如 zh-Hans 或 ja。"
           }
         }
       }
@@ -3604,6 +3953,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "翻譯失敗，已保留原有歌詞。%@"
+          }
+        }
+      }
+    },
+    "Translation:" : {
+      "comment" : "Label for the engine that translates lyrics into the target language, in the Lab pane.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻譯："
           }
         }
       }

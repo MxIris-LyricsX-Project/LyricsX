@@ -59,14 +59,15 @@
   - [0020 实验室：用 OpenAI 兼容端点翻译歌词](Evolutions/0020-ai-lyrics-translation.md)
     —— 默认关闭的实验功能：缺目标语言译文的行发给 OpenAI 兼容端点翻译，另加「显示语言」决定各处显示哪种译文；
     优先级窗口内不发请求、每首歌请求数封顶、内嵌和旁置歌词复用歌词库副本里的译文。
-  - [草案：用系统翻译翻译歌词](Evolutions/draft-system-lyrics-translation.md)
-    —— macOS 26+ 用公开的 `TranslationSession(installedSource:target:)` 在本机翻译，与 AI 翻译二选一；
-    语言没下载时经 SwiftUI 的 `.translationTask` 请系统弹下载确认。
+  - [0021 实验室：用系统翻译翻译歌词](Evolutions/0021-system-lyrics-translation.md)
+    —— macOS 26+ 用公开的 `TranslationSession(installedSource:target:)` 在本机翻译，与 AI 翻译二选一、共用目标语言；
+    一首歌的行全进同一个 session，原样返回的行不存；语言没下载时经 SwiftUI 的 `.translationTask` 请系统弹下载确认。
 
 ## 使用说明
 
-- [AI lyrics translation](AITranslation.md) —— 面向用户，英文，README 链到这里：实验室页的 AI 翻译怎么设置、
-  会把什么发给端点、API key 怎么保管、请求的限制与重试，以及显示语言怎么挑译文。
+- [Lyrics translation](LyricsTranslation.md) —— 面向用户，英文，README 链到这里：实验室页的两种翻译引擎怎么选；
+  系统翻译要求 macOS 26、只用已下载的语言、缺语言时怎么下载、哪些语言对不支持；AI 翻译怎么设置、会把什么发给端点、
+  API key 怎么保管、请求的限制与重试；以及目标语言和显示语言各管什么。原名 `AITranslation.md`。
 
 ## 实现说明
 
