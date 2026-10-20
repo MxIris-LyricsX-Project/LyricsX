@@ -59,6 +59,9 @@
   - [0020 实验室：用 OpenAI 兼容端点翻译歌词](Evolutions/0020-ai-lyrics-translation.md)
     —— 默认关闭的实验功能：缺目标语言译文的行发给 OpenAI 兼容端点翻译，另加「显示语言」决定各处显示哪种译文；
     优先级窗口内不发请求、每首歌请求数封顶、内嵌和旁置歌词复用歌词库副本里的译文。
+  - [草案：用系统翻译翻译歌词](Evolutions/draft-system-lyrics-translation.md)
+    —— macOS 26+ 用公开的 `TranslationSession(installedSource:target:)` 在本机翻译，与 AI 翻译二选一；
+    语言没下载时经 SwiftUI 的 `.translationTask` 请系统弹下载确认。
 
 ## 使用说明
 
