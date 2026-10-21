@@ -239,4 +239,63 @@ extension AppleMusicLyrics {
             )
         }
     }
+
+    /// How a line's text changes colour when it becomes, or stops being, the
+    /// selected one.
+    ///
+    /// `sub_10016D164` moves the un-sung colour between
+    /// `selectedUpcomingTextColor` and `deselectedTextColor` and fades the sung
+    /// sweep's opacity between 1 and 0, in both directions, on
+    /// `lineChangeSpringTimingParametersValues` — the same spring the scroll
+    /// falls back to (`LineTransitionPlan.normalSpring*`). The translation
+    /// does not take part: `sub_10017A270` rebuilds its attributed string with
+    /// the new colour straight away.
+    enum LineSelectionPlan {
+        static let springTiming = SpringTimingParameters(
+            mass: LineTransitionPlan.normalSpringMass,
+            stiffness: LineTransitionPlan.normalSpringStiffness,
+            damping: LineTransitionPlan.normalSpringDamping
+        )
+    }
+
+    /// How a line reacts to the mouse button going down on it and coming back
+    /// up — `sub_10019D630`, which `SyncedLyricsLineView.setHighlighted:` calls
+    /// as `NSControl` tracks the click.
+    ///
+    /// Two animators run side by side. One fades the highlight in and the
+    /// line's container down to `highlightLabelAlpha` along a cubic curve; the
+    /// other shrinks both to `touchDownTransform` on a spring. Releasing runs
+    /// both back after `releaseDelay`, so even a quick click shows the pressed
+    /// state for a moment.
+    enum LinePressPlan {
+        static let pressOpacityTiming = CubicTimingParameters(
+            duration: 0.2,
+            controlPoint1: CGPoint(x: 0, y: 0),
+            controlPoint2: CGPoint(x: 0.55, y: 1)
+        )
+        static let releaseOpacityTiming = CubicTimingParameters(
+            duration: 0.3,
+            controlPoint1: CGPoint(x: 0.25, y: 0.1),
+            controlPoint2: CGPoint(x: 0.25, y: 0.1)
+        )
+        static let pressTransformSpringMass: CGFloat = 1
+        static let pressTransformSpringStiffness: CGFloat = 322
+        static let pressTransformSpringDamping: CGFloat = 24
+        static let releaseTransformSpringMass: CGFloat = 2
+        static let releaseTransformSpringStiffness: CGFloat = 300
+        static let releaseTransformSpringDamping: CGFloat = 50
+        static let pressTransformTiming = SpringTimingParameters(
+            mass: pressTransformSpringMass,
+            stiffness: pressTransformSpringStiffness,
+            damping: pressTransformSpringDamping
+        )
+        static let releaseTransformTiming = SpringTimingParameters(
+            mass: releaseTransformSpringMass,
+            stiffness: releaseTransformSpringStiffness,
+            damping: releaseTransformSpringDamping
+        )
+        /// The delay `sub_10019D630` hands `sub_100162B3C` for both animators
+        /// when the line is released; pressing starts at once.
+        static let releaseDelay: TimeInterval = 0.1
+    }
 }

@@ -6,11 +6,12 @@ extension AppleMusicLyrics {
     ///
     /// Music keeps these in a 880-byte struct that its own view controller injects
     /// into `SyncedLyricsLineLayer`, so the values are not compiled into the
-    /// binary. Everything below was read out of a live `LyricsSpecs` by attaching
-    /// lldb to Music 1.6.5 and breaking on the per-Word emphasis scheduler, whose
-    /// X0 is the specs pointer (2026-07-26; scratchpad `dump_specs.py`). The
-    /// offsets are the ones the disassembly reads, kept here so a future dump can
-    /// be checked field by field.
+    /// animation code. The first section was read out of a live `LyricsSpecs` by
+    /// attaching lldb to Music 1.6.5 and breaking on the per-Word emphasis
+    /// scheduler, whose X0 is the specs pointer (2026-07-26; scratchpad
+    /// `dump_specs.py`); the Music 26.6 section was read from the initializer
+    /// that fills the struct in. The offsets are the ones the disassembly reads,
+    /// kept here so a future dump can be checked field by field.
     ///
     /// The constants at the bottom are different in kind: they are literals
     /// compiled into the animation code itself, so they came from the
@@ -69,6 +70,50 @@ extension AppleMusicLyrics {
         static let lineBlurAnimationDuration: TimeInterval = 0.12
         static let lineBlurTimingControlPoint1 = CGPoint(x: 0.33, y: 0)
         static let lineBlurTimingControlPoint2 = CGPoint(x: 0.2, y: 0.1)
+        /// The three values above as one curve. `sub_10019EBAC` animates every
+        /// line filter on it — the blur radius, and the hover brightness when a
+        /// hovered line becomes the selected one.
+        static let lineFilterTiming = CubicTimingParameters(
+            duration: lineBlurAnimationDuration,
+            controlPoint1: lineBlurTimingControlPoint1,
+            controlPoint2: lineBlurTimingControlPoint2
+        )
+
+        // MARK: Read from Music 26.6's LyricsSpecs initializer
+
+        // The values below come from the 26.6 binary rather than a live dump:
+        // `sub_1001D1C28` fills in the defaults and `sub_1001D0A1C`, the closure
+        // the Now Playing ("pretty") window applies on top, overrides some of
+        // them. The field names are the struct's own, from its type metadata.
+
+        /// `selectedUpcomingTextColor` (+368): the selected line's text that has
+        /// not been sung yet, and the selected line's translation.
+        static let selectedUpcomingTextOpacity: CGFloat = 0.5
+        /// `deselectedTextColor` (+384): the text and translation of every other
+        /// line. Music dims those lines by colour; the line layer itself stays
+        /// fully opaque.
+        static let deselectedTextOpacity: CGFloat = 0.4
+        /// `translationSpacing` (+296): the gap between the main text block and
+        /// the translation under it.
+        static let translationSpacing: CGFloat = 7
+        /// `touchDownTransform` (+0x258): what a pressed line's container and
+        /// highlight shrink to, about their centres.
+        static let touchDownTransform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        /// `highlightLabelAlpha` (+0x288): the pressed line's container opacity.
+        static let highlightLabelOpacity: Float = 0.85
+        /// `highlightViewBackgroundColor` (+0x290): the rounded highlight behind
+        /// a pressed line — `NSColor(white: 1, alpha: 0.08)`.
+        static let highlightViewBackgroundColor = CGColor(gray: 1, alpha: 0.08)
+        /// `highlightViewCornerRadius` (+0x2A0), drawn with a continuous corner
+        /// curve.
+        static let highlightViewCornerRadius: CGFloat = 16
+        /// `highlightViewMargin` (+0x2A8): how far the highlight reaches past
+        /// the line's frame on every side.
+        static let highlightViewMargin: CGFloat = 16
+        /// `inputAmount` of the `colorBrightness` filter on a hovered line.
+        /// `sub_10019EEDC` uses −1 when `focusStyle` (+0x2F4) is `.dark` and +1
+        /// otherwise; the Now Playing window sets `.bright`.
+        static let focusedLineBrightnessAmount = 1
 
         // MARK: Literals compiled into the animation code
 

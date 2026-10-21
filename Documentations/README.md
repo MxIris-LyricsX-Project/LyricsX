@@ -62,6 +62,9 @@
   - [0021 实验室：用系统翻译翻译歌词](Evolutions/0021-system-lyrics-translation.md)
     —— macOS 26+ 用公开的 `TranslationSession(installedSource:target:)` 在本机翻译，与 AI 翻译二选一、共用目标语言；
     一首歌的行全进同一个 session，原样返回的行不存；语言没下载时经 SwiftUI 的 `.translationTask` 请系统弹下载确认。
+  - [草案：歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](Evolutions/draft-apple-music-line-interaction-parity.md)
+    —— 行的图层结构改成 Music 的「背景 + 容器（主歌词 + 翻译）」；补上悬停（去模糊、提亮）和按下（白底、
+    缩到 0.95）；非当前行从整行 0.55 改为文字白 40%，切行时颜色走切行弹簧；翻译改粗体、白 50% / 40%、间距 7 pt。
 
 ## 使用说明
 
@@ -85,7 +88,8 @@
 - [Apple Music 26.6 歌词动画](Internal/AppleMusicLyricsAnimation.md) —— TTML 的 word/syllable timing
   如何经过 LRCX 保存，行内 factor 与可切换的结构化 emphasis 策略、Apple Music 真实的逐行 cascade 与
   可切换的两档参数、行 layer 光栅化、`.topRelative(40)`、多行坐标、contextual blur 与 viewport edge fade
-  如何落地，以及 AppKit view geometry 和 Core Animation presentation 各自拥有什么状态。
+  如何落地，行的图层结构、悬停与按下反馈、非当前行亮度和翻译样式，以及 AppKit view geometry 和
+  Core Animation presentation 各自拥有什么状态。
 - [Apple Music 歌词面板 Metal 渐变背景](Internal/AppleMusicMetalGradient.md) —— 一个 `MTKView` 驱动器带两条管线：
   默认复刻 Music 26「正在播放」的 `MediaCoreUI` 背景（128 pixel gamma 空间封面、三实例旋转、四分之一画布 pt 级模糊、
   细分网格、白混与 LUT 近似），`legacyTSL` 保留 MiniPlayer 管线；以及生命周期暂停、失败降级与离屏验证边界。

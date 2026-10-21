@@ -130,9 +130,8 @@ struct TranslatedLineEmphasisProbes {
         rowView.updateKaraoke(elapsedTime: 0, lineDuration: lineDuration, mode: .characterLevel)
         CATransaction.flush()
 
-        let contentLayer = try #require(
-            rowView.layer?.sublayers?.compactMap { $0 as? AppleMusicLyrics.SyncedLyricsLineContentLayer }.first
-        )
+        let contentLayer = rowView.contentLayer
+        let rowLayer = try #require(rowView.layer)
         let glyphLayers = glyphLayers(of: contentLayer)
         #expect(!glyphLayers.isEmpty, "\(label): the row built no glyph layers")
 
@@ -157,7 +156,7 @@ struct TranslatedLineEmphasisProbes {
         return LineTrace(
             label: label,
             rowHeight: rowHeight,
-            contentTopInset: Self.topInset(of: contentLayer),
+            contentTopInset: Self.topInset(of: contentLayer, in: rowLayer),
             glyphCount: glyphLayers.count,
             tracks: tracks
         )
@@ -194,8 +193,7 @@ struct TranslatedLineEmphasisProbes {
     /// Where the content layer's top edge sits below the row's top edge, read
     /// through Core Animation so it is right whichever way up the row's backing
     /// layer is.
-    private static func topInset(of contentLayer: CALayer) -> CGFloat {
-        guard let rowLayer = contentLayer.superlayer else { return .nan }
+    private static func topInset(of contentLayer: CALayer, in rowLayer: CALayer) -> CGFloat {
         let frameInRow = contentLayer.convert(contentLayer.bounds, to: rowLayer)
         return rowLayer.contentsAreFlipped() ? frameInRow.minY : rowLayer.bounds.height - frameInRow.maxY
     }

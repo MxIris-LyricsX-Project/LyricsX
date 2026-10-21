@@ -4,10 +4,11 @@ import QuartzCore
 extension AppleMusicLyrics {
     /// Apple Music's `LayerPropertyAnimator`, ported.
     ///
-    /// You hand it some layers and a spring, register closures that mutate those
-    /// layers however you like, then `run(afterDelay:)`. It snapshots the
-    /// animatable properties before and after your closures, and emits one
-    /// `CASpringAnimation` per property that actually changed.
+    /// You hand it some layers and a timing — a spring, or a cubic curve —
+    /// register closures that mutate those layers however you like, then
+    /// `run(afterDelay:)`. It snapshots the animatable properties before and
+    /// after your closures, and emits one animation per property that actually
+    /// changed.
     ///
     /// Why this shape rather than writing the animations by hand: the call sites
     /// get to say *what the layer should look like* (`frame = ...`,
@@ -95,11 +96,11 @@ extension AppleMusicLyrics {
         }
 
         private let layers: [CALayer]
-        private let timing: SpringTimingParameters
+        private let timing: any LayerAnimationTiming
         private var changes: [() -> Void] = []
         private var completions: [() -> Void] = []
 
-        init(layers: [CALayer], timing: SpringTimingParameters) {
+        init(layers: [CALayer], timing: any LayerAnimationTiming) {
             self.layers = layers
             self.timing = timing
         }
@@ -121,10 +122,18 @@ extension AppleMusicLyrics {
         /// stagger work: a glyph whose `beginTime` has not arrived yet keeps
         /// showing its *old* value rather than snapping to the new one.
         func run(afterDelay delay: TimeInterval = 0) {
-            // Read the rendered values, not the model ones: if a previous batch is
-            // still in flight, the model already holds that batch's destination and
-            // animating from it would skip whatever is currently on screen.
-            let before = layers.map { Snapshot(of: $0.presentation() ?? $0) }
+            // What changed is decided from the model, which is what the closures
+            // write; where it animates from is read off the screen. Animating from
+            // the model would skip whatever a previous batch still has in flight,
+            // since the model already holds that batch's destination. Diffing the
+            // screen, though, would also pick up a property another animator set
+            // a moment ago in this same turn — its animation is not committed yet,
+            // so the screen still shows the old value — and replace that animation
+            // with one on this timing. A pressed line runs two animators over the
+            // same two layers, one for opacity and one for the transform
+            // (`sub_10019D630`), so that is not hypothetical.
+            let modelBefore = layers.map(Snapshot.init(of:))
+            let visibleBefore = layers.map { Snapshot(of: $0.presentation() ?? $0) }
 
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -137,16 +146,28 @@ extension AppleMusicLyrics {
             let beginTime = CACurrentMediaTime() + delay
 
             for (index, layer) in layers.enumerated() {
-                addAnimations(to: layer, from: before[index], to: after[index], beginTime: beginTime)
+                addAnimations(
+                    to: layer,
+                    changedFrom: modelBefore[index],
+                    visibleFrom: visibleBefore[index],
+                    to: after[index],
+                    beginTime: beginTime
+                )
             }
 
             scheduleCompletions(afterDelay: delay)
         }
 
-        private func addAnimations(to layer: CALayer, from before: Snapshot, to after: Snapshot, beginTime: CFTimeInterval) {
-            for property in AnimatedProperty.allCases where after.differs(from: before, in: property) {
-                let animation = timing.makeAnimation(keyPath: property.keyPath)
-                animation.fromValue = before.value(for: property)
+        private func addAnimations(
+            to layer: CALayer,
+            changedFrom modelBefore: Snapshot,
+            visibleFrom visibleBefore: Snapshot,
+            to after: Snapshot,
+            beginTime: CFTimeInterval
+        ) {
+            for property in AnimatedProperty.allCases where after.differs(from: modelBefore, in: property) {
+                let animation = timing.makePropertyAnimation(keyPath: property.keyPath)
+                animation.fromValue = visibleBefore.value(for: property)
                 animation.toValue = after.value(for: property)
                 animation.beginTime = beginTime
                 animation.fillMode = .both
@@ -159,7 +180,7 @@ extension AppleMusicLyrics {
         private func scheduleCompletions(afterDelay delay: TimeInterval) {
             guard !completions.isEmpty else { return }
             let pending = completions
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay + timing.settlingDuration) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay + timing.totalDuration) {
                 for completion in pending {
                     completion()
                 }

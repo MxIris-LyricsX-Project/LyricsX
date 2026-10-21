@@ -83,6 +83,13 @@ extension AppleMusicLyrics {
             LineCascadeVariant.resolve()
         }
 
+        /// How bright the rows other than the selected one are; see
+        /// `DeselectedLineOpacityVariant`. Read on every line change, like the
+        /// cascade variant. Probes inject a fixed variant.
+        private var deselectedLineOpacityVariantProvider: () -> DeselectedLineOpacityVariant = {
+            DeselectedLineOpacityVariant.resolve()
+        }
+
         /// A line change that arrived while an Apple Music cascade was still
         /// settling. Music refuses to select a new line while its line-change
         /// animators are in flight and catches up once they finish; this holds the
@@ -152,6 +159,10 @@ extension AppleMusicLyrics {
 
         func setLineCascadeVariantProvider(_ provider: @escaping () -> LineCascadeVariant) {
             lineCascadeVariantProvider = provider
+        }
+
+        func setDeselectedLineOpacityVariantProvider(_ provider: @escaping () -> DeselectedLineOpacityVariant) {
+            deselectedLineOpacityVariantProvider = provider
         }
 
         private func setupScrollView() {
@@ -363,7 +374,6 @@ extension AppleMusicLyrics {
                     mainFontSize: mainFontSize,
                     translationFontSize: translationFontSize
                 )
-                view.alphaValue = 0.55
                 view.onTap = { [weak self] tappedLine in
                     guard let self else { return }
                     self.pendingInteractiveTargetOriginalIndex = originalIndex
@@ -496,12 +506,20 @@ extension AppleMusicLyrics {
         private func applyHighlight(originalIndex: Int?, animated: Bool) {
             deferredHighlightedOriginalIndex = nil
             let previousHighlightedOriginalIndex = highlightedOriginalIndex
+            let deselectedTextOpacity = deselectedLineOpacityVariantProvider().textOpacity
+            for view in enabledLineViews {
+                view.setDeselectedTextOpacity(deselectedTextOpacity)
+            }
+            // Music moves the text colours of both lines on its line-change
+            // spring (`LineSelectionPlan`); a rebuild or a window-less update
+            // switches them at once.
+            let animatesSelection = animated && window != nil
             if let old = highlightedOriginalIndex, let view = lineViewByOriginalIndex[old] {
-                view.setHighlighted(false)
+                view.setHighlighted(false, animated: animatesSelection)
             }
             highlightedOriginalIndex = originalIndex
             if let new = originalIndex, let view = lineViewByOriginalIndex[new] {
-                view.setHighlighted(true)
+                view.setHighlighted(true, animated: animatesSelection)
             }
             if !animated {
                 lastHighlightedPosition = originalIndex.flatMap { lineViewByOriginalIndex[$0]?.enabledPosition }
@@ -601,18 +619,12 @@ extension AppleMusicLyrics {
             )
             for view in enabledLineViews {
                 let isSelected = highlightedPosition.map { view.enabledPosition == $0 } ?? false
-                // Every non-selected line sits at one flat opacity no matter how
-                // far from the selected one it is — measured off a Music 26.5.2
-                // recording, stroke peaks hold at ~0.5 luminance from one line
-                // away to four. Depth comes from the blur, not an opacity ramp;
-                // the ramp this replaces sank the bottom of the panel into the
-                // background.
-                let target: CGFloat = isSelected ? 1.0 : 0.55
-                if animated {
-                    view.animateAlpha(to: target, duration: 0.5)
-                } else {
-                    view.alphaValue = target
-                }
+                // Every non-selected line sits at one flat brightness no matter
+                // how far from the selected one it is: Music colours their text
+                // `deselectedTextColor` and leaves the line layer opaque (see
+                // `setHighlighted(_:animated:)`). Depth comes from the blur, not
+                // an opacity ramp; the ramp this once replaced sank the bottom of
+                // the panel into the background.
                 // `deselectedTransform` is the identity (no whole-line scale) — kept
                 // for the active line staying at 1.0.
                 view.setLineSelected(isSelected, animated: animated)

@@ -1,7 +1,8 @@
 # Apple Music 26.6 歌词动画
 
 > 对应提案：[对齐 Apple Music 26.6 歌词动画](../Evolutions/0007-apple-music-lyrics-animation-parity.md)、
-> [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)
+> [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)、
+> [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/draft-apple-music-line-interaction-parity.md)
 >
 > 面向维护者。这里记录最终数据链、动画状态所有权和降级边界；旧的探索文档保留为历史记录，
 > 不再作为 26.6 行为的实现依据。
@@ -199,7 +200,9 @@ display link → `SyncedLyricsManager` 选行 → 代理 `animate(to:)`（`sub_1
   新 offset 并复位各行 frame。
 - 有切行动画在飞时，`displayLinkFired` → `sub_1001D8C08` 直接跳过管理器更新，不选新行；动画结束后
   一次性追上。逐字高亮的进度更新仍继续执行。
-- 选中态切换用 `custom((0.17, 0), (0.83, 1), 0.28 s)`；blur 半径仍是下文的 0.12 秒曲线。
+- 选中态切换时行的 transform 走 `custom((0.17, 0), (0.83, 1), 0.28 s)`，但 pretty 模式的
+  `deselectedTransform` 是单位矩阵，这条曲线看不出来；文字颜色走的是切行弹簧，见下文「行的图层结构、悬停、
+  按下与明暗」（2026-10-17 复核更正，此前把 0.28 秒曲线记成了选中态本身）。blur 半径仍是下文的 0.12 秒曲线。
 
 pretty 模式的 `selectedLinePosition` 是 Music 用自己的 `activeBaseline` 锚点构造的 `.center(rect:)`，
 本项目仍沿用上面校准出的 40% baseline，没有重算。
@@ -283,9 +286,9 @@ Apple Music 的 `SyncedLyricsLineLayer.init`（`sub_1001A5294`）设置 `shouldR
 （`sub_1001DC498`）临时关掉光栅化。本项目此前从未打开它：blur 动画结束时「恢复」的是 backing layer 默认
 的 false，于是 cascade 每帧都要重新合成每一行的嵌套 mask、词级 shadow 和高斯模糊，全屏时正是 30 FPS
 的来源。现在 `SyncedLyricsLineView` 在 init、进入 window 和 backing 属性变化时把 backing layer 设为
-`shouldRasterize = true`、`rasterizationScale = window.backingScaleFactor`；`isBlurRadiusAnimating`
-为真时关掉，动画结束后固定恢复为 true。`rasterizationScale` 不能省：默认值 1 会把 Retina 文字按半分辨率
-缓存。正在做逐字动画的选中行也光栅化，和 Apple Music 一致；如果实测它每帧重光栅化的开销可见，再单独
+`shouldRasterize = true`、`rasterizationScale = window.backingScaleFactor`；滤镜输入（blur 半径，以及
+2026-10-17 加入的悬停亮度）动画期间关掉，最后一个滤镜动画结束后恢复为 true。`rasterizationScale` 不能省：
+默认值 1 会把 Retina 文字按半分辨率缓存。正在做逐字动画的选中行也光栅化，和 Apple Music 一致；如果实测它每帧重光栅化的开销可见，再单独
 豁免并记入提案决策日志。
 
 ## 字号、行距、锚点与边缘渐隐（Now Playing 模式）
@@ -349,11 +352,13 @@ layer 打这个标志（面板里打在 `NSScrollView` 的 layer 上，行 view 
 CATransaction 提交时才打，比 `layout()` 晚一拍。所以由我们自己摆放的 sublayer 只能猜奇偶，而且第一次 layout 时
 猜不到。
 
-因此 content layer 不再由行 view 手工加到 backing layer 上，而是交给一个 flipped 的 layer-hosting 子视图
-`ContentHostView`（`view.layer = contentLayer`）承载：AppKit 会在每次提交时把宿主 layer 的朝向维持成与 view 一致的
-y-down，行 view 只在 `layout()` 里设置宿主的 frame（y-down 坐标）。`SyncedLyricsLineContentLayer.init` 仍默认
-`isGeometryFlipped = true`，供离屏探针直接挂在 y-up 的 CARenderer 根下使用；被宿主时这个值由 AppKit 接管，行 view
-永远不写它。
+因此行的 layer 树不由行 view 手工加到 backing layer 上，而是交给一个 flipped 的 layer-hosting 子视图承载：AppKit
+会在每次提交时把宿主根层的朝向维持成与 view 一致的 y-down，行 view 只在 `layout()` 里设置宿主的 frame（y-down
+坐标），永远不写根层的 `isGeometryFlipped`。2026-10-17 起宿主是 `LineHostView`，它托管的不再是 content layer 本身，
+而是一个根层，content layer 在根层下的 container 里（结构见下文「行的图层结构、悬停、按下与明暗」）。
+`SyncedLyricsLineContentLayer.init` 仍默认 `isGeometryFlipped = true`，供离屏探针直接把它当根层用；挂进行里时行 view
+在 init 中把它设回 `false`——它的祖先已经是 y-down，自己再翻一次就倒了。这不是猜奇偶：根层的有效朝向由 AppKit
+保证，中间的 container 与 content layer 都由我们设为不翻。
 
 这条曾两次修错：最早按行 layer 自己的 `isGeometryFlipped` 取反，8445f2e 改成硬编码 `true`，两版都只看了行 layer
 自己、没看祖先链的奇偶；2026-09-06 在 Darwin 25.6 上换行歌词再次整行颠倒（08-29 以来没有代码改过这条链，应是
@@ -371,6 +376,96 @@ mask。progress gradient 为弹跳和 glow 保留的上下 padding 可以在几�
 mask，因此不会提前点亮下一行左侧的短文本。多行 progression 仍按各行宽度累计，只有前一行完整唱完
 后才开始移动下一行 gradient。
 
+## 行的图层结构、悬停、按下与明暗
+
+2026-10-17 对照 26.6 的 `Music.i64` 补齐。Music 的每一行是一个 `SyncedLyricsLineView`（`NSControl` 子类）背着一个
+`SyncedLyricsLineLayer`：行 layer 自己带 blur 与亮度两个滤镜、常开光栅化，下面是按下高亮和 container，container 里是
+主歌词与翻译。本项目照这个结构搭：
+
+```text
+SyncedLyricsLineView 的 backing layer   filters = [gaussianBlur, colorBrightness]，常开光栅化
+└── LineHostView 托管的根层             y-down，isGeometryFlipped 归 AppKit
+    ├── 按下高亮                        第一次按下时创建，插在最底层
+    └── container                       Music 的 line frame：文字列宽 × 主歌词 + 翻译
+        ├── SyncedLyricsLineContentLayer   主歌词，isGeometryFlipped = false
+        └── LineTranslationLayer           翻译
+```
+
+先改结构的原因：Music 按下时把 container 连同翻译一起缩到 0.95、淡到 0.85。翻译原先画在行 view 自己的
+`draw(_:)` 里，不挪进 container 就跟不上；直接给 backing layer 设 transform 又违反下文「AppKit 与 Core Animation 的
+所有权」。container 和高亮层都按 bounds + position 摆在 line frame 中心，缩放以行中心为基点。行 view 不再整体变透明
+（`alphaValue` 恒为 1）。
+
+### 悬停（`mouseEntered:` / `mouseExited:` → `sub_100154530` → `sub_10019EEDC`）
+
+- 只对非当前行：**立即**（调用时传的是 `animated: false`）把 blur 半径设 0，并把
+  `filters.colorBrightness.inputAmount` 设 +1。−1 只在 `focusStyle`（+0x2F4）为 `.dark` 时出现，pretty 闭包设的是
+  `.bright`。亮度滤镜第一次悬停时才装上，顺序与 Music 一致 `[blur, brightness]`。移出时立即恢复。
+- 悬停中的行变成当前行时，亮度沿 0.12 秒的 blur 曲线撤回——这是 `sub_10019E6C4` 唯一要求动画的一条路径。反过来
+  （当前行退成非当前行时指针还停在上面）本项目按同一曲线把亮度加回；Music 这一侧没核对。
+- tracking area 用 `.activeAlways`：面板经常浮在别的 app 上，只在前台生效就很少看得到。Music 用的选项没核对。
+- 亮度 +1 落在白字上是什么观感取决于 render server 的 `colorBrightness` 实现，没有做像素级验证，留给用户目测。
+
+### 按下（`setHighlighted:` → `sub_10019D630`）
+
+| | 按下 | 松开 |
+|---|---|---|
+| 高亮层 opacity | 0 → 1 | → 0 |
+| container opacity | 1 → `highlightLabelAlpha` 0.85 | → 1 |
+| opacity 曲线 | `(0, 0)(0.55, 1)`，0.2 秒 | `(0.25, 0.1)(0.25, 0.1)`，0.3 秒 |
+| container 与高亮层的 transform | → `touchDownTransform`（scale 0.95） | → 单位矩阵 |
+| transform 弹簧（mass / stiffness / damping） | 1 / 322 / 24 | 2 / 300 / 50 |
+| 开始时间 | 立即 | 两段都晚 0.1 秒（`sub_100162B3C` 的 delay 参数） |
+
+- 高亮层：`highlightViewBackgroundColor` 白 8%、`highlightViewCornerRadius` 16（continuous）、比 line frame 四周各大
+  `highlightViewMargin` 16（`sub_10019E418`）。按住期间 blur 沿 0.12 秒曲线去掉，松开后恢复。
+- 两个 animator 在同一轮里作用于同一对 layer（高亮层与 container），一个只动 opacity、一个只动 transform。
+  `LayerPropertyAnimator` 原先拿 presentation 和新 model 比较来决定动哪些属性：第一个 animator 刚写的 opacity 还没
+  提交，presentation 仍是旧值，第二个 animator 就会把它也当成「变了」，用弹簧把 cubic 动画换掉。现在改为用 model 的
+  前后差决定动哪些属性，起点仍取 presentation。既有调用点每次都只改自己写的属性，行为不变。
+- 本项目自己跟 `mouseDown` / `mouseDragged` / `mouseUp`：拖出行外收回按下效果、拖回来再出现（与 `NSControl` 的高亮
+  跟踪一致）；松开时不在行内就不跳转。Music 的 `mouseUp:` 不判断位置，照样发 action，这一点没有照抄。
+
+### 模糊按状态推导
+
+当前行、悬停中的非当前行和按下中的行 blur 为 0，其余取 `LineBlurPlan` 的值。`setLineBlurRadius` 只记下 plan 的
+请求，写进滤镜的值每次按状态重算。Music 是按下时记住原半径、松开时写回；对从悬停开始的点击两者结果相同，推导的
+写法还不会在点击和切行交错时写回一个过期的半径。
+
+### 非当前行亮度
+
+- Music 不动整行的 opacity（视图层级抓取里 line layer 的 opacity 都是 1）：非当前行的未唱色层是
+  `deselectedTextColor` 白 40%，当前行是 `selectedUpcomingTextColor` 白 50%，已唱扫光白 100%。
+- 切换当前行时 `sub_10016D164` 把未唱色在 0.5 / 0.4 之间、扫光 opacity 在 1 / 0 之间移动，**两个方向**都走
+  `lineChangeSpringTimingParametersValues` 1 / 100 / 18（`LineSelectionPlan`）。注意这里固定用 specs 的值，不走逐字
+  歌词按唱句间隙选的动态弹簧。
+- 退出当前行时扫光原地淡出，不先归零，所以看到的是唱过的部分慢慢暗下去；字形仍立即回落，和以前一样。变成当前行时
+  扫光从零开始。
+- 本项目此前是整行 `alphaValue` 0.55、扫光瞬间隐藏。0.55 是当初对着 26.5.2 录屏校准的，与 26.6 的 0.4 冲突，所以
+  做成隐藏 defaults 键 `AppleMusicLyricsDeselectedLineOpacityVariant`，每次切行读取：`appleMusic26`（默认，0.4）/
+  `legacyRecording`（0.55）。两档都作用在文字颜色上，不再是整行 alpha。
+
+```bash
+defaults write dev.JH.LyricsX AppleMusicLyricsDeselectedLineOpacityVariant legacyRecording   # Debug 构建；Release 是 com.JH.LyricsX
+defaults delete dev.JH.LyricsX AppleMusicLyricsDeselectedLineOpacityVariant                  # 回到默认 appleMusic26
+```
+
+### 翻译
+
+- `sub_10017A8D0`：翻译与原文忽略大小写后相同就不显示；翻译的 y = 主文字块高度 + `translationSpacing` 7 pt（以前
+  4 pt）。行高与 `.center` 锚点用的内容块高度一起跟着变。
+- `sub_10017A270`：没有音译时用 `translationLargeFont`（粗体，主字号 × 0.57；以前是 medium），段落的 line break
+  strategy 为 3（push-out + Hangul word priority）；颜色当前行 `selectedUpcomingTextColor` 0.5、其他行跟主歌词同一个
+  `deselectedTextColor`（以前固定白 70%，再乘整行 0.55），切行时立即换、不做动画。
+- 本项目把翻译画成白色，用 `LineTranslationLayer` 的 opacity 表达这两种颜色，切行时只改 opacity、不重画文字；Music
+  是重建属性串。字形互不重叠时两者看起来一样。
+
+验证：`LineInteractionPlanTests` 断言上面的数值、翻译查重规则、明暗变体的读取，并在真实的 content layer 上断言选中 /
+取消选中的弹簧、扫光原地淡出与从零开始；`LayerPresentationCopyTests` 覆盖新的 `LineTranslationLayer`；
+`LineInteractionProbes` 把一行挂进窗口模拟悬停、按下、拖出、松开与切换当前行，并在容器里检查明暗变体的传递。
+`WrappedRowOrderProbes`、`LineEmphasisStructureProbes`、`TranslatedLineEmphasisProbes` 改为通过行 view 的
+`contentLayer` 取主歌词层。
+
 ## Contextual blur
 
 blur 不再等同于“所有非选中行”。scroll view 先根据当前渲染上下文生成 `LineBlurPlan`，只把上下文内
@@ -383,6 +478,8 @@ blur 不再等同于“所有非选中行”。scroll view 先根据当前渲染
 - cubic control points `(0.33, 0)` 与 `(0.2, 0.1)`；
 - model radius 先写最终值，显式动画从 presentation radius 开始；
 - 动画期间关闭 rasterization，且只有最新 animation generation 的 completion 可以恢复原状态。
+
+悬停中和按下中的行不模糊，plan 给的半径只是请求；见下文「模糊按状态推导」。
 
 ### 外层 viewport edge fade
 
@@ -426,8 +523,8 @@ inset；边缘空间完全由 mask 的 alpha transition 形成。曾尝试上下
 确认这种硬留白与 Apple Music 不符，随后撤销。
 
 因此不能把视觉上的渐隐误实现为“离选中行越远，Gaussian blur radius 越大”。那既不符合二进制结构，
-也会让更多大半径 filter 参与行间 spring 合成。非选中行仍保持统一的基础 alpha 和固定 blur，连续的
-上下衰减只由 viewport mask 负责。用户反馈的边缘观感不是 row 的真实文字间距不足，因此没有扩大
+也会让更多大半径 filter 参与行间 spring 合成。非选中行仍保持统一的文字亮度（`deselectedTextColor`，
+见下文）和固定 blur，连续的上下衰减只由 viewport mask 负责。用户反馈的边缘观感不是 row 的真实文字间距不足，因此没有扩大
 row spacing，也没有保留额外 viewport inset。
 
 ## AppKit 与 Core Animation 的所有权
@@ -442,6 +539,10 @@ row spacing，也没有保留额外 viewport inset。
 - 面板内任何声明了自己指定初始化器的 `CALayer` 子类都必须覆盖 `init(layer:)`：Core Animation 造 presentation 副本
   就是给原层的类 alloc 新实例再发 `initWithLayer:`，Swift 子类一旦有了自己的指定初始化器就不再继承它，漏掉的那个类
   在任何人取副本时直接崩溃（见 2026-09-13 修正）。
+- 行自己的动画（按下的缩放与变暗）只作用在宿主根层下面我们自己建的 layer 上，从不碰 backing layer 的
+  transform、opacity 或几何；backing layer 上只有滤镜和光栅化这两样 AppKit 不管的状态。
+- 同一轮里对同一组 layer 跑多个 `LayerPropertyAnimator` 是允许的：动哪些属性由各自 change closure 写下的 model 差
+  决定，不会互相覆盖（见上文「按下」）。
 
 后续若直接长期修改 row backing layer 的 geometry，AppKit 下一次 layout 会把它重写，表现通常是
 换行中途突然跳回。不要用 completion 再补 model value，那会同时破坏 hit testing 和连续换行。
@@ -509,11 +610,12 @@ LYRICSX_PANEL_DIAGNOSTICS=lyrics,karaoke
   --predicate 'subsystem == "com.JH.LyricsX.AppleMusicLyricsPanel.Lyrics" AND category == "InlineKaraoke"'
 ```
 
-并排比较两档 cascade 或两档行内策略时，播放中直接改隐藏键即可，下一次切行或下一个词生效：
+并排比较两档 cascade、两档行内策略或两档非当前行亮度时，播放中直接改隐藏键即可，下一次切行或下一个词生效：
 
 ```bash
 defaults write dev.JH.LyricsX AppleMusicLyricsCascadeVariant legacySwiftUI     # 或 appleMusic26
 defaults write dev.JH.LyricsX AppleMusicLyricsStructuredEmphasisPolicy fullEmphasis   # 或 appleMusic26
+defaults write dev.JH.LyricsX AppleMusicLyricsDeselectedLineOpacityVariant legacyRecording   # 或 appleMusic26
 defaults delete dev.JH.LyricsX AppleMusicLyricsCascadeVariant                # 回到默认
 ```
 
@@ -525,8 +627,8 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 ## 与提案的差异和已知边界
 
 - 范围仍只有 main vocals；Background Vocals、duet alignment 和 agent transform 未实现。
-- 0007 没有新增开关；后续提案加了两个隐藏 defaults 键（cascade 两档、结构化行内策略两档），没有
-  设置界面。非 Apple Music 来源只保留数据 fallback。
+- 0007 没有新增开关；后续提案加了三个隐藏 defaults 键（cascade 两档、结构化行内策略两档、非当前行亮度两档），
+  没有设置界面。非 Apple Music 来源只保留数据 fallback。
 - 提案要求精确路径不受 phrase 字段污染。最终代码把统一执行字段命名为
   `emphasisDuration` / `emphasisGlyphCount`：结构化路径填真实 word 值，只有 fallback 才从 phrase 推断。
 - Apple Music 26.6 的精确公式没有最小 spring period；非结构化来源的连续快词因为缺失 word/syllable
@@ -555,6 +657,11 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - 本次没有获得交互式 UI 验证授权，因此没有启动应用；位置与流畅度判断使用用户提供的 Apple Music
   对比录屏，自动化 probe 验证 layer 层级、模型终点、presentation continuity、spring 参数、
   relative baseline、换行顺序与 rasterization 生命周期。
+- 悬停、按下、非当前行亮度与翻译样式（2026-10-17）与 Music 的差别：松开时不在行内不跳转；模糊按状态推导而不是
+  按下时记住、松开时写回；悬停在面板不是前台窗口时也生效；翻译颜色用 layer opacity 表达而不重建属性串；亮度动画
+  也像 blur 一样暂停光栅化（Music 的亮度动画是否这样没核对）；非当前行亮度保留 0.55 一档作对照。这些都写在上文
+  「行的图层结构、悬停、按下与明暗」。间奏圆点、作词行、同时两行选中、对唱对齐、和声，以及文字左右边距
+  （Music 20、本项目 24）与歌词列宽仍未对齐。
 - 非结构化来源（Kugou、QQ 音乐、部分网易云的 `[tt]` 行内标签）从 0011 起一度仍走满强度 swell，2026-09-06
   用户把它描述为「一上一下」（当时播的是 Kugou 版 STAY，不是语言差异），同日改为默认档下与结构化词同一机制，
   老观感留在 `fullEmphasis` 档；见下文「2026-09-06 修正：行内标签歌词也走逐音节抬高」。LIBLRC 等纯按行歌词
@@ -721,7 +828,8 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   `musicConstantLineSpacing`，只作对照与文档。锚点取 28 pt 是因为用户满意的那个窗口就落在这一档，
   改动不会动到他已经看过的画面。
 - **未动**：行内 `mainToTranslationSpacing` 仍是 4 pt 常量，没有跟着字号放大；如果大字号下主歌词与翻译
-  贴得太近，再单独处理。
+  贴得太近，再单独处理。（2026-10-17 改为 Music 的 `translationSpacing` 7 pt，仍不随字号缩放，见「行的图层结构、
+  悬停、按下与明暗」。）
 
 ## 验证记录
 
@@ -911,11 +1019,39 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - 文档判断：更新本节上方「性能诊断」与 `AppleMusicMetalGradient.md` 的诊断段；没有新增需要登记的项目术语。
 - 未启动应用做交互式验证；新增追踪的实际输出待下次播放后用 `log show` 读取。
 
+### 2026-10-17 行的悬停、按下、明暗与翻译
+
+- 改动：见上文「行的图层结构、悬停、按下与明暗」；`LayerPropertyAnimator` 改为按 model 差决定动哪些属性。
+- 不开窗口的测试：`LineInteractionPlanTests`（新增 11 项）、`LayerPresentationCopyTests`（新增 `LineTranslationLayer`
+  一项）、`AnimationPlanTests`、`NowPlayingLyricsLayoutPolicyTests`，共 44 项 / 5 个 suite，原始退出码 0；跑前跑后
+  Dock 的终端登记计数都是 0。
+- 构建：`LyricsXPackage` 带测试构建与 workspace LyricsX Debug scheme 隔离构建都成功，退出码 0；本次改动的文件没有
+  编译警告，SwiftFormat lint 无差异。首轮因为默认 Xcode（27.2）缺 Metal Toolchain 组件，临时用 Xcode 27.2 beta
+  构建；用户装好组件后，用默认 Xcode 和原来的产物目录重跑了两次构建与上面的测试，结果相同。
+- 开窗口的探针（用户同意后跑）：新增的 `LineInteractionProbes`、改了取层方式的 `WrappedRowOrderProbes`、
+  `LineEmphasisStructureProbes`、`TranslatedLineEmphasisProbes`，以及受这次改动波及的 `LineBlurProbes`、
+  `LineTransitionProbes`、`LineEmphasisProbes`、`SyllableLiftProbes`、`InlineTagSyllableLiftProbes`、
+  `LyricsLibraryFixtureProbes`，放在一次 `--no-parallel` 运行里：48 项 / 10 个 suite，两项失败。一项是新探针自己的
+  断言写错——`#expect` 会把右侧的 `520 - 48` 单独求值成 `Int`，与 `CGFloat` 的 472 比较不相等——改为与行宽比较；另一项
+  是 `LineEmphasisProbes.emphasisTimelineKeepsGlyphsIntactAndInPlace` 的「resting frame rendered no ink」，即上文记过的
+  静止帧偶发空白。随后 `LineInteractionProbes`、`LineEmphasisProbes`、`TranslatedLineEmphasisProbes` 各重复 5 次
+  （`--maximum-repetitions 5 --repeat-until fail`），15 项全部通过，原始退出码 0。
+- `LayerPropertyAnimator` 改动的红绿对照：把判断临时改回「presentation 对新 model」，`pressShrinksAndDimsTheLineOnMusicsTimings`
+  失败——container 的 opacity 动画变成了 `CASpringAnimation`，时长差 0.43 秒；改回后通过。不开窗口时 presentation 层
+  不存在，这个问题复现不出来，所以回归放在开窗口的探针里。
+- 这次会话经 `herdr` 跑在 iTerm2 里，xctest 进程在 launchservicesd 里登记成 `(null)`，全局指令里按 iTerm2 / Ghostty
+  bundle ID 数 Dock 残留图标的命令数不到它们。
+- 文档判断：更新本篇（新增一节，更正 0.28 秒曲线、光栅化、宿主视图与「统一的基础 alpha」几处旧说法）、文档索引与
+  提案；没有新增需要登记的项目术语。
+- 未启动应用做交互式 UI 验证；悬停亮度的观感、按下的手感与 0.4 / 0.55 的对比待用户目测。
+
 ## 以后重做版本核对时
 
 Apple Music 私有实现会随版本变化。升级验证时应分别核对：word factor 的语言门槛、rise/return delay、
 deglow spring、`lineChangeSpringTimingParametersValues` 的消费端（包括 timedWords 动态分支与 gap 来源）、
 `lineDelay`（pretty 与侧栏两个值）、延迟序号的减一截断与回滚处理、首行位移如何传到后续行、
 「动画中不选新行」的 tick 门槛、tap line spring、selected baseline fraction、行 layer 的
-rasterize 生命周期、blur membership、viewport mask 分支、mask target 的 flipped 状态与 cubic curve。
+rasterize 生命周期、blur membership、viewport mask 分支、mask target 的 flipped 状态与 cubic curve，以及
+悬停的亮度值与 `focusStyle`、按下的两条曲线与两组弹簧和 0.1 秒延迟、高亮层的 specs、选中切换颜色用的弹簧、
+`deselectedTextColor` / `selectedUpcomingTextColor`、`translationSpacing` 与翻译的查重规则。
 这些值集中在纯 plan、`LyricsSpecs` 与 `AnimationVariants`，不要先在 layer 执行代码里散改常数。

@@ -215,13 +215,9 @@ struct LineEmphasisStructureProbes {
         lineView.layoutSubtreeIfNeeded()
         CATransaction.flush()
 
-        // The content layer is the layer of a hosting subview, so reach it
-        // through the view rather than through the row's own sublayer list.
-        let contentLayer = try #require(
-            lineView.subviews.compactMap {
-                $0.layer as? AppleMusicLyrics.SyncedLyricsLineContentLayer
-            }.first
-        )
+        // The content layer sits inside the tree a hosting subview owns, so
+        // reach it through the view rather than through the row's sublayers.
+        let contentLayer = lineView.contentLayer
         #expect(
             contentLayer.contentsAreFlipped(),
             "the content layer must be effectively y-down, the space LineTextLayout produces its frames in"

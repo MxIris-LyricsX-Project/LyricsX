@@ -7,11 +7,21 @@ import OSToolbox
 extension AppleMusicLyrics {
     /// One lyric line, rendered as a layer-backed `NSView`.
     ///
-    /// The main text is a Core Animation layer tree — see
-    /// `SyncedLyricsLineContentLayer` — built once per line and then driven
-    /// entirely by scheduled animations. The view itself only draws the
-    /// translation, measures, and decides *when* to hand the line its playback
-    /// position; it never draws a glyph.
+    /// The line is a Core Animation layer tree arranged the way Music's
+    /// `SyncedLyricsLineLayer` arranges its own:
+    ///
+    /// ```
+    /// row's backing layer          blur and hover-brightness filters, rasterized
+    /// └── line host view's layer   y-down, hosted by a flipped view
+    ///     ├── pressed highlight    built on the first press, always at the back
+    ///     └── container            what a press shrinks and dims
+    ///         ├── SyncedLyricsLineContentLayer   the main text
+    ///         └── LineTranslationLayer           the translation
+    /// ```
+    ///
+    /// The tree is built once per line and then driven entirely by scheduled
+    /// animations. The view itself measures, follows the pointer, and decides
+    /// *when* to hand the line its playback position; it never draws a glyph.
     ///
     /// This replaced a per-frame `draw(_:)` that solved Apple Music's emphasis
     /// spring on the CPU and composited the karaoke fill by hand. That could not
@@ -45,12 +55,33 @@ extension AppleMusicLyrics {
         // MARK: State
 
         private(set) var isHighlighted = false
+        /// The pointer is over the row, between `mouseEntered:` and
+        /// `mouseExited:`.
+        private(set) var isPointerInside = false
+        /// The mouse button went down on the row and the pointer is still on it.
+        private(set) var isPressed = false
+        /// The mouse button that went down on the row is still down, wherever
+        /// the pointer has gone since.
+        private var isTrackingPress = false
         private var karaokeFraction: CGFloat = 0
+        /// The radius the container's contextual blur plan asks for; see
+        /// `LineBlurPlan`.
+        private var requestedBlurRadius: CGFloat = 0
+        /// The radius on the blur filter, after the hover and press exemptions.
         private var blurRadius: CGFloat = 0
-        private var blurAnimationGeneration = 0
-        /// While the blur radius animates the row must not be cached, or the
-        /// bitmap would freeze one intermediate radius; see `updateRasterization`.
-        private var isBlurRadiusAnimating = false
+        /// The amount on the brightness filter.
+        private var brightnessAmount = 0
+        /// Opacity of the text of every line but the selected one; see
+        /// `DeselectedLineOpacityVariant`.
+        private var deselectedTextOpacity = DeselectedLineOpacityVariant.default.textOpacity
+        /// Filters whose input is animating. The row must not be cached while
+        /// any is, or the bitmap would freeze one intermediate value; see
+        /// `updateRasterization`.
+        private var animatingFilters: Set<LineFilter> = []
+        /// Bumped by every change to a filter's input, so the timer that ends an
+        /// animation can tell whether a newer change has replaced it.
+        private var filterChangeGenerations: [LineFilter: Int] = [:]
+        private var hoverTrackingArea: NSTrackingArea?
 
         // MARK: Cached layout
 
@@ -63,10 +94,21 @@ extension AppleMusicLyrics {
 
         // MARK: Layers
 
-        private let contentLayer = SyncedLyricsLineContentLayer()
-        /// The content layer is hosted by a flipped view rather than added to
-        /// this view's backing layer by hand. `LineTextLayout` produces y-down
-        /// coordinates, and only AppKit knows which layers in the ancestry carry
+        /// The main text. Internal so probes can reach it without walking the
+        /// tree.
+        let contentLayer = SyncedLyricsLineContentLayer()
+        private let translationLayer = LineTranslationLayer()
+        /// Music's `containerLayer`: the main text and the translation, which a
+        /// press shrinks and dims together.
+        private let containerLayer = NoAnimationLayer()
+        /// Music's `backgroundLayer`: the rounded highlight behind a pressed
+        /// line, built the first time the line is pressed.
+        private var pressedBackgroundLayer: NoAnimationLayer?
+        /// The root of the line's tree, hosted by `lineHostView`.
+        private let lineHostLayer = NoAnimationLayer()
+        /// The tree is hosted by a flipped view rather than added to this view's
+        /// backing layer by hand. `LineTextLayout` produces y-down coordinates,
+        /// and only AppKit knows which layers in the ancestry carry
         /// `isGeometryFlipped`: it puts the flag wherever flippedness changes
         /// between a view and its superview (on the NSScrollView's layer inside
         /// the panel, on this row's own layer when the row is hosted alone) and
@@ -74,10 +116,12 @@ extension AppleMusicLyrics {
         /// only guess the parity — and both guesses this code has made
         /// (`!layer.isGeometryFlipped`, then a hard-coded `true` in 8445f2e)
         /// reversed the wrapped rows once the ancestry changed. A layer-hosting
-        /// flipped view hands the orientation to AppKit for good.
-        private let contentHostView = ContentHostView()
+        /// flipped view hands the orientation to AppKit for good: the root's
+        /// flag is AppKit's alone, and everything under it inherits a y-down
+        /// space.
+        private let lineHostView = LineHostView()
 
-        private final class ContentHostView: NSView {
+        private final class LineHostView: NSView {
             override var isFlipped: Bool {
                 true
             }
@@ -85,6 +129,35 @@ extension AppleMusicLyrics {
             /// Clicks belong to the row.
             override func hitTest(_ point: NSPoint) -> NSView? {
                 nil
+            }
+        }
+
+        /// The two filters Music's `SyncedLyricsLineLayer` can carry, in the
+        /// order it keeps them: `filters = [blurFilter, brightnessFilter]`. Each
+        /// goes on the first time it is needed and stays for life.
+        private enum LineFilter: CaseIterable {
+            case blur
+            case brightness
+
+            /// The `CAFilter` type, also used as the filter's `name` — which is
+            /// what makes `keyPath` resolve. With the two matching, the key
+            /// paths are byte-for-byte the ones in Music's disassembly.
+            var name: String {
+                switch self {
+                case .blur: "gaussianBlur"
+                case .brightness: "colorBrightness"
+                }
+            }
+
+            var inputKey: String {
+                switch self {
+                case .blur: "inputRadius"
+                case .brightness: "inputAmount"
+                }
+            }
+
+            var keyPath: String {
+                "filters.\(name).\(inputKey)"
             }
         }
 
@@ -100,23 +173,24 @@ extension AppleMusicLyrics {
         }
 
         private let horizontalPadding: CGFloat = 24
-        private let mainToTranslationSpacing: CGFloat = 4
-        /// The active line's not-yet-sung text sits at 50% white
-        /// (`selectedUpcomingTextColor`, from the live `LyricsSpecs` dump); the
-        /// sung prefix fills to 100%. Other lines are told apart by the
-        /// container's alpha, never by scale — Music's `deselectedTransform` is
-        /// the identity.
-        private let unsungOpacity: CGFloat = 0.5
 
         // MARK: Lifecycle
 
         override init(frame frameRect: NSRect) {
             super.init(frame: frameRect)
             wantsLayer = true
-            layerContentsRedrawPolicy = .onSetNeedsDisplay
-            contentHostView.layer = contentLayer
-            contentHostView.wantsLayer = true
-            addSubview(contentHostView)
+            // `SyncedLyricsLineContentLayer` flips its own geometry for use on
+            // its own, where it is the root of its space. Here it sits under the
+            // host root, which AppKit already keeps y-down, and a second flip
+            // would turn its rows back over.
+            contentLayer.isGeometryFlipped = false
+            containerLayer.addSublayer(contentLayer)
+            containerLayer.addSublayer(translationLayer)
+            lineHostLayer.addSublayer(containerLayer)
+            lineHostView.layer = lineHostLayer
+            lineHostView.wantsLayer = true
+            addSubview(lineHostView)
+            updateTranslationOpacity()
             updateRasterization()
         }
 
@@ -144,18 +218,19 @@ extension AppleMusicLyrics {
         }
 
         /// Apple Music's `SyncedLyricsLineLayer` sets `shouldRasterize = true` in
-        /// its initializer (`sub_1001A5294`) and keeps the gaussian blur filter
-        /// installed for life, so a line that is merely scrolling is one cached
-        /// bitmap to the render server instead of a tree of nested masks, word
-        /// glow and a blur pass. It only drops the cache while the blur radius
-        /// animates (`sub_1001DC498`), because a rasterized layer would hold one
-        /// intermediate radius for the whole transition.
+        /// its initializer (`sub_1001A5294`) and keeps its filters installed for
+        /// life, so a line that is merely scrolling is one cached bitmap to the
+        /// render server instead of a tree of nested masks, word glow and a blur
+        /// pass. It only drops the cache while the blur radius animates
+        /// (`sub_1001DC498`), because the bitmap includes the filters and would
+        /// hold one intermediate radius for the whole transition. The hover
+        /// brightness animates on the same curve and is treated the same way.
         ///
         /// `rasterizationScale` defaults to 1, which would cache Retina text at
         /// half resolution; it follows the window's backing scale instead.
         private func updateRasterization() {
             guard let layer else { return }
-            layer.shouldRasterize = !isBlurRadiusAnimating
+            layer.shouldRasterize = animatingFilters.isEmpty
             if let backingScaleFactor = window?.backingScaleFactor {
                 layer.rasterizationScale = backingScaleFactor
             }
@@ -198,6 +273,10 @@ extension AppleMusicLyrics {
         }
 
         private func rebuildAttributedStrings() {
+            defer {
+                translationLayer.attributedText = translationAttributed
+                translationLayer.isHidden = translationAttributed == nil
+            }
             guard let line else {
                 mainAttributed = nil
                 translationAttributed = nil
@@ -219,44 +298,54 @@ extension AppleMusicLyrics {
 
             translationAttributed = Self.makeTranslationAttributedString(
                 translation: displayTranslation,
-                fontSize: translationFontSize,
-                paragraph: paragraph
+                forLineContent: line.content,
+                fontSize: translationFontSize
             )
 
             laidOutForWidth = -1
             needsLayout = true
-            needsDisplay = true
         }
 
+        /// `sub_10017A270`'s translation: `translationLargeFont`, which is bold
+        /// (its size is the caller's, the main size × 0.57), under a paragraph
+        /// style with line break strategy 3. The text is white; the layer's
+        /// opacity carries Music's colour — see `updateTranslationOpacity()`.
         private static func makeTranslationAttributedString(
             translation: String?,
-            fontSize: CGFloat,
-            paragraph: NSParagraphStyle
+            forLineContent lineContent: String,
+            fontSize: CGFloat
         ) -> NSAttributedString? {
             guard AppleMusicLyrics.hostEnvironment.isBilingualPreferred(),
                   let translation else {
                 return nil
             }
             let displayText = AppleMusicLyrics.hostEnvironment.transformTranslation(translation)
+            guard shouldDisplayTranslation(displayText, forLineContent: lineContent) else { return nil }
+            let paragraph = NSMutableParagraphStyle()
+            paragraph.alignment = .left
+            paragraph.lineBreakMode = .byWordWrapping
+            paragraph.lineBreakStrategy = [.pushOut, .hangulWordPriority]
             return NSAttributedString(
                 string: displayText,
                 attributes: [
-                    .font: NSFont.systemFont(ofSize: fontSize, weight: .medium),
-                    .foregroundColor: NSColor.white.withAlphaComponent(0.7),
+                    .font: NSFont.systemFont(ofSize: fontSize, weight: .bold),
+                    .foregroundColor: NSColor.white,
                     .paragraphStyle: paragraph,
                 ]
             )
+        }
+
+        /// `sub_10017A8D0` leaves a translation out when, ignoring case, it is
+        /// the line itself.
+        nonisolated static func shouldDisplayTranslation(_ translation: String, forLineContent lineContent: String) -> Bool {
+            translation.lowercased() != lineContent.lowercased()
         }
 
         // MARK: Measurement & layout
 
         func preferredHeight(forWidth width: CGFloat) -> CGFloat {
             buildLayoutIfNeeded(forWidth: width)
-            var height = verticalPadding * 2 + mainTextSize.height
-            if translationAttributed != nil {
-                height += mainToTranslationSpacing + translationTextSize.height
-            }
-            return ceil(height)
+            return ceil(verticalPadding * 2 + contentHeight)
         }
 
         /// Distance from the row's top edge to the first main-text baseline.
@@ -274,27 +363,68 @@ extension AppleMusicLyrics {
         /// first, so it is usable before the row has been given a frame.
         func contentCenterOffset(forWidth width: CGFloat) -> CGFloat {
             buildLayoutIfNeeded(forWidth: width)
-            var contentHeight = mainTextSize.height
-            if translationAttributed != nil {
-                contentHeight += mainToTranslationSpacing + translationTextSize.height
-            }
             return verticalPadding + contentHeight / 2
+        }
+
+        /// The main text plus, when shown, the translation under it.
+        private var contentHeight: CGFloat {
+            guard translationAttributed != nil else { return mainTextSize.height }
+            return mainTextSize.height + LyricsSpecs.translationSpacing + translationTextSize.height
+        }
+
+        /// Music's line frame, inside this row: the text column, as tall as the
+        /// content block. The padding around it is this row's own.
+        private var lineFrame: CGRect {
+            CGRect(
+                x: horizontalPadding,
+                y: verticalPadding,
+                width: max(1, bounds.width - horizontalPadding * 2),
+                height: contentHeight
+            )
         }
 
         override func layout() {
             super.layout()
             buildLayoutIfNeeded(forWidth: bounds.width)
-            // The host is a flipped view inside a flipped view, so this frame is
-            // y-down like everything else here; AppKit turns it into the hosted
-            // layer's geometry and keeps that layer effectively y-down. The layer
-            // is bigger than the text it holds — see `textOutset` — so back the
-            // origin off by that much to put the *text* on the padding.
-            contentHostView.frame = NSRect(
-                x: horizontalPadding - contentLayer.textOutset.width,
-                y: verticalPadding - contentLayer.textOutset.height,
-                width: contentLayer.bounds.width,
-                height: contentLayer.bounds.height
+            // The host is a flipped view inside a flipped view, so its frame is
+            // y-down like everything else here, and AppKit keeps the hosted root
+            // effectively y-down.
+            lineHostView.frame = bounds
+            layoutLineLayers()
+        }
+
+        private func layoutLineLayers() {
+            let currentLineFrame = lineFrame
+            let lineCenter = CGPoint(x: currentLineFrame.midX, y: currentLineFrame.midY)
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            // Bounds and position rather than frame: a pressed container and its
+            // highlight carry a transform, and a frame assigned through one comes
+            // out scaled. Both scale about the line's centre.
+            containerLayer.bounds = CGRect(origin: .zero, size: currentLineFrame.size)
+            containerLayer.position = lineCenter
+            // The content layer is bigger than the text it holds — see
+            // `textOutset` — so back its origin off by that much to put the
+            // *text* at the container's origin.
+            contentLayer.frame = CGRect(
+                origin: CGPoint(x: -contentLayer.textOutset.width, y: -contentLayer.textOutset.height),
+                size: contentLayer.bounds.size
             )
+            translationLayer.frame = CGRect(
+                x: 0,
+                y: mainTextSize.height + LyricsSpecs.translationSpacing,
+                width: currentLineFrame.width,
+                height: translationTextSize.height
+            )
+            if let pressedBackgroundLayer {
+                let margin = LyricsSpecs.highlightViewMargin
+                pressedBackgroundLayer.bounds = CGRect(
+                    origin: .zero,
+                    size: currentLineFrame.insetBy(dx: -margin, dy: -margin).size
+                )
+                pressedBackgroundLayer.position = lineCenter
+            }
+            CATransaction.commit()
         }
 
         /// Lay the main text out and rebuild the layer tree. Cached by width, and
@@ -318,6 +448,7 @@ extension AppleMusicLyrics {
             }
             laidOutForWidth = width
 
+            let contentsScale = window?.backingScaleFactor ?? 2
             let layout = LineTextLayout.build(
                 attributed: mainAttributed,
                 content: line.content,
@@ -331,12 +462,7 @@ extension AppleMusicLyrics {
             mainTextSize = layout?.contentSize ?? .zero
 
             if let layout {
-                // Only the active line reads as "half sung"; every other line is a
-                // single flat colour, dimmed by the container's alpha instead.
-                contentLayer.unsungColor = CGColor(gray: 1, alpha: isHighlighted ? unsungOpacity : 1)
-                contentLayer.sungColor = CGColor(gray: 1, alpha: 1)
-                contentLayer.rebuild(with: layout, contentsScale: window?.backingScaleFactor ?? 2)
-                contentLayer.isHighlighted = isHighlighted
+                contentLayer.rebuild(with: layout, contentsScale: contentsScale)
                 let renderedGlyphCount = layout.words.reduce(0) { partialCount, word in
                     partialCount + word.glyphs.count
                 }
@@ -359,50 +485,51 @@ extension AppleMusicLyrics {
                 let constraint = CGSize(width: textWidth, height: .greatestFiniteMagnitude)
                 let rect = translationAttributed.boundingRect(with: constraint, options: [.usesLineFragmentOrigin, .usesFontLeading])
                 translationTextSize = CGSize(width: ceil(rect.width), height: ceil(rect.height))
+                if translationLayer.contentsScale != contentsScale {
+                    translationLayer.contentsScale = contentsScale
+                    translationLayer.setNeedsDisplay()
+                }
             } else {
                 translationTextSize = .zero
             }
-            needsDisplay = true
         }
 
-        // MARK: Drawing
+        // MARK: Selection
 
-        /// Only the translation is drawn — the main text is the layer tree.
-        override func draw(_ dirtyRect: NSRect) {
-            guard let translationAttributed else { return }
-            let textWidth = max(1, bounds.width - horizontalPadding * 2)
-            let translationY = verticalPadding + mainTextSize.height + mainToTranslationSpacing
-            translationAttributed.draw(
-                with: CGRect(x: horizontalPadding, y: translationY, width: textWidth, height: translationTextSize.height),
-                options: [.usesLineFragmentOrigin, .usesFontLeading]
-            )
-        }
-
-        // MARK: Highlight / Fade
-
-        func setHighlighted(_ highlighted: Bool) {
+        /// Make this the selected line, or stop it being one. `animated` moves
+        /// the main text's colours on Music's line-change spring
+        /// (`LineSelectionPlan`); the translation's colour switches at once
+        /// either way, as Music's does.
+        func setHighlighted(_ highlighted: Bool, animated: Bool = false) {
             guard isHighlighted != highlighted else { return }
             isHighlighted = highlighted
             if !highlighted {
                 karaokeFraction = 0
             }
-            // Non-active lines read as one flat colour: no sweep, no emphasis.
-            contentLayer.unsungColor = CGColor(gray: 1, alpha: highlighted ? unsungOpacity : 1)
-            contentLayer.isHighlighted = highlighted
+            contentLayer.setHighlighted(highlighted, animatedWith: animated ? LineSelectionPlan.springTiming : nil)
+            updateTranslationOpacity()
+            // The selected line is never focused. A hovered line that becomes
+            // the selected one gives its brightness up on the filter curve —
+            // the one path on which `sub_10019E6C4` asks `sub_10019EEDC` to
+            // animate.
+            applyBrightness(animated: animated)
         }
 
-        func animateAlpha(to target: CGFloat, duration: TimeInterval) {
-            // Every line change asks every row for its opacity, and now that the
-            // un-selected rows all share one value, nearly every one of those asks
-            // is a no-op. Spinning up an animation group anyway puts one
-            // `CABasicAnimation` per row on the main thread at exactly the moment
-            // the scroll spring has to start moving cleanly.
-            guard abs(alphaValue - target) > 0.001 else { return }
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = duration
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                animator().alphaValue = target
-            }
+        /// The text opacity of every line but the selected one, from the
+        /// current `DeselectedLineOpacityVariant`. Handed to every row on every
+        /// line change.
+        func setDeselectedTextOpacity(_ opacity: CGFloat) {
+            guard opacity != deselectedTextOpacity else { return }
+            deselectedTextOpacity = opacity
+            contentLayer.deselectedColor = CGColor(gray: 1, alpha: opacity)
+            updateTranslationOpacity()
+        }
+
+        /// `sub_10017A270` colours the translation `selectedUpcomingTextColor`
+        /// on the selected line and `deselectedTextColor` on every other one.
+        private func updateTranslationOpacity() {
+            let opacity = isHighlighted ? LyricsSpecs.selectedUpcomingTextOpacity : deselectedTextOpacity
+            translationLayer.opacity = Float(opacity)
         }
 
         /// Apple Music's `deselectedTransform` is the identity — re-confirmed by
@@ -413,9 +540,147 @@ extension AppleMusicLyrics {
             _ = animated
         }
 
+        // MARK: Hover
+
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+            if let hoverTrackingArea {
+                removeTrackingArea(hoverTrackingArea)
+            }
+            // `.activeAlways`: the panel usually floats over whichever app is in
+            // front, and a hover that only worked while it was key would rarely
+            // be seen.
+            let trackingArea = NSTrackingArea(
+                rect: bounds,
+                options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                owner: self
+            )
+            addTrackingArea(trackingArea)
+            hoverTrackingArea = trackingArea
+        }
+
+        override func mouseEntered(with event: NSEvent) {
+            setPointerInside(true)
+        }
+
+        override func mouseExited(with event: NSEvent) {
+            setPointerInside(false)
+        }
+
+        /// `mouseEntered:` and `mouseExited:` both reach `sub_10019EEDC` with
+        /// `animated: false`: the focus look comes and goes at once.
+        private func setPointerInside(_ pointerInside: Bool) {
+            guard pointerInside != isPointerInside else { return }
+            isPointerInside = pointerInside
+            let lineOriginalIndex = originalIndex
+            let transition = pointerInside ? "entered" : "exited"
+            #log(.debug, "Line pointer \(transition, privacy: .public) originalIndex=\(lineOriginalIndex, privacy: .public)")
+            applyBrightness(animated: false)
+            applyBlurRadius(animated: false)
+        }
+
+        /// Music's focused line: one the pointer rests on, unless it is the
+        /// selected line. It is not blurred, and it is brightened.
+        private var isFocused: Bool {
+            isPointerInside && !isHighlighted
+        }
+
+        private func applyBrightness(animated: Bool) {
+            let target = isFocused ? LyricsSpecs.focusedLineBrightnessAmount : 0
+            guard target != brightnessAmount, installFilterIfNeeded(.brightness) else { return }
+            brightnessAmount = target
+            setFilterInput(NSNumber(value: target), of: .brightness, animated: animated)
+        }
+
+        // MARK: Press
+
+        override func mouseDown(with event: NSEvent) {
+            // Taking the event is what routes the drag and the `mouseUp` here.
+            isTrackingPress = true
+            setPressed(true)
+        }
+
+        override func mouseDragged(with event: NSEvent) {
+            guard isTrackingPress else { return }
+            // `NSControl` tracking takes a control's highlight away while the
+            // pointer is outside it and gives it back on the way in, and Music's
+            // press look follows that highlight.
+            setPressed(bounds.contains(convert(event.locationInWindow, from: nil)))
+        }
+
+        override func mouseUp(with event: NSEvent) {
+            guard isTrackingPress else { return }
+            isTrackingPress = false
+            let isReleasedInside = bounds.contains(convert(event.locationInWindow, from: nil))
+            setPressed(false)
+            // Music's `mouseUp:` sends its action wherever the button comes up;
+            // a click that has left the line is dropped here instead.
+            guard isReleasedInside, let line else { return }
+            onTap?(line)
+        }
+
+        private func setPressed(_ pressed: Bool) {
+            guard pressed != isPressed else { return }
+            isPressed = pressed
+            let lineOriginalIndex = originalIndex
+            let transition = pressed ? "pressed" : "released"
+            #log(.debug, "Line \(transition, privacy: .public) originalIndex=\(lineOriginalIndex, privacy: .public)")
+            animatePressAppearance(pressed: pressed)
+            // `sub_10019D630` takes the blur away for as long as the line is
+            // held and puts it back on release, both on the filter curve.
+            applyBlurRadius(animated: true)
+        }
+
+        /// `sub_10019D630`: the highlight fades in behind the line while the
+        /// container fades to `highlightLabelOpacity`, both on a cubic curve,
+        /// and the two shrink to `touchDownTransform` on a spring. Releasing
+        /// runs both back `LinePressPlan.releaseDelay` later.
+        private func animatePressAppearance(pressed: Bool) {
+            let backgroundLayer = pressedBackgroundLayerCreatingIfNeeded()
+            let containerLayer = self.containerLayer
+            let delay = pressed ? 0 : LinePressPlan.releaseDelay
+
+            let opacityAnimator = LayerPropertyAnimator(
+                layers: [backgroundLayer, containerLayer],
+                timing: pressed ? LinePressPlan.pressOpacityTiming : LinePressPlan.releaseOpacityTiming
+            )
+            opacityAnimator.addChange {
+                backgroundLayer.opacity = pressed ? 1 : 0
+                containerLayer.opacity = pressed ? LyricsSpecs.highlightLabelOpacity : 1
+            }
+
+            let transform = pressed ? LyricsSpecs.touchDownTransform : .identity
+            let transformAnimator = LayerPropertyAnimator(
+                layers: [containerLayer, backgroundLayer],
+                timing: pressed ? LinePressPlan.pressTransformTiming : LinePressPlan.releaseTransformTiming
+            )
+            transformAnimator.addChange {
+                containerLayer.setAffineTransform(transform)
+                backgroundLayer.setAffineTransform(transform)
+            }
+
+            opacityAnimator.run(afterDelay: delay)
+            transformAnimator.run(afterDelay: delay)
+        }
+
+        private func pressedBackgroundLayerCreatingIfNeeded() -> NoAnimationLayer {
+            if let pressedBackgroundLayer {
+                return pressedBackgroundLayer
+            }
+            let backgroundLayer = NoAnimationLayer()
+            backgroundLayer.backgroundColor = LyricsSpecs.highlightViewBackgroundColor
+            backgroundLayer.cornerCurve = .continuous
+            backgroundLayer.cornerRadius = LyricsSpecs.highlightViewCornerRadius
+            backgroundLayer.opacity = 0
+            lineHostLayer.insertSublayer(backgroundLayer, at: 0)
+            pressedBackgroundLayer = backgroundLayer
+            layoutLineLayers()
+            return backgroundLayer
+        }
+
         // MARK: Blur
 
-        /// Apply the radius selected by the current contextual blur plan.
+        /// The radius the current contextual blur plan selects for this line.
         ///
         /// `SyncedLyricsLineLayer` carries a Gaussian blur filter for its whole
         /// life and only ever animates the radius — `sub_10019EBAC` writes
@@ -425,11 +690,24 @@ extension AppleMusicLyrics {
         /// Review), so the filter type, the key path, and the render-server-side
         /// evaluation are all Music's own — no `layerUsesCoreImageFilters`, no
         /// in-process Core Image pass.
+        ///
+        /// What reaches the filter is derived rather than stored: a focused or
+        /// pressed line is not blurred, whatever the plan says. Music zeroes the
+        /// radius on press and writes back the one it had on release instead;
+        /// the two agree for any click that starts on a hovered line, and the
+        /// derived one never writes back a radius a line change has made stale
+        /// in between.
         func setLineBlurRadius(_ requestedRadius: CGFloat, animated: Bool) {
-            let musicRadius = min(max(0, requestedRadius), LyricsSpecs.maximumLineBlurRadius)
+            requestedBlurRadius = requestedRadius
+            applyBlurRadius(animated: animated)
+        }
+
+        private func applyBlurRadius(animated: Bool) {
+            let effectiveRadius = isFocused || isPressed ? 0 : requestedBlurRadius
+            let musicRadius = min(max(0, effectiveRadius), LyricsSpecs.maximumLineBlurRadius)
             let target = musicRadius * LyricsSpecs.renderedBlurRadiusScale
-            guard target != blurRadius, let layer, installBlurFilterIfNeeded() else { return }
-            let visibleRadius = (layer.presentation()?.value(forKeyPath: Self.blurRadiusKeyPath) as? NSNumber)
+            guard target != blurRadius, let layer, installFilterIfNeeded(.blur) else { return }
+            let visibleRadius = (layer.presentation()?.value(forKeyPath: LineFilter.blur.keyPath) as? NSNumber)
                 .map(CGFloat.init(truncating:)) ?? blurRadius
             let lineOriginalIndex = originalIndex
             #log(
@@ -451,72 +729,85 @@ extension AppleMusicLyrics {
                 """
             )
             blurRadius = target
-            blurAnimationGeneration += 1
-            let animationGeneration = blurAnimationGeneration
+            setFilterInput(NSNumber(value: Double(target)), of: .blur, animated: animated)
+        }
+
+        // MARK: Filters
+
+        /// Set one filter's input, at once or along `LyricsSpecs.lineFilterTiming`
+        /// from what is on screen now.
+        private func setFilterInput(_ value: NSNumber, of filter: LineFilter, animated: Bool) {
+            guard let layer else { return }
+            let keyPath = filter.keyPath
+            let visibleValue = layer.presentation()?.value(forKeyPath: keyPath) ?? layer.value(forKeyPath: keyPath)
 
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            layer.setValue(target, forKeyPath: Self.blurRadiusKeyPath)
+            layer.setValue(value, forKeyPath: keyPath)
             CATransaction.commit()
 
-            if animated {
-                isBlurRadiusAnimating = true
+            let generation = (filterChangeGenerations[filter] ?? 0) + 1
+            filterChangeGenerations[filter] = generation
+            guard animated else {
+                layer.removeAnimation(forKey: keyPath)
+                animatingFilters.remove(filter)
                 updateRasterization()
-                let animation = CABasicAnimation(keyPath: Self.blurRadiusKeyPath)
-                animation.fromValue = visibleRadius
-                animation.toValue = target
-                animation.duration = LyricsSpecs.lineBlurAnimationDuration
-                animation.timingFunction = CAMediaTimingFunction(
-                    controlPoints: Float(LyricsSpecs.lineBlurTimingControlPoint1.x),
-                    Float(LyricsSpecs.lineBlurTimingControlPoint1.y),
-                    Float(LyricsSpecs.lineBlurTimingControlPoint2.x),
-                    Float(LyricsSpecs.lineBlurTimingControlPoint2.y)
-                )
-                layer.add(animation, forKey: Self.blurRadiusKeyPath)
-                let restorationDeadline = DispatchTime.now() + LyricsSpecs.lineBlurAnimationDuration
-                DispatchQueue.main.asyncAfter(deadline: restorationDeadline) { [weak self] in
-                    guard let self,
-                          self.blurAnimationGeneration == animationGeneration
-                    else {
-                        return
-                    }
-                    self.isBlurRadiusAnimating = false
-                    self.updateRasterization()
-                }
-            } else {
-                layer.removeAnimation(forKey: Self.blurRadiusKeyPath)
-                isBlurRadiusAnimating = false
-                updateRasterization()
+                return
+            }
+            let animation = LyricsSpecs.lineFilterTiming.makePropertyAnimation(keyPath: keyPath)
+            animation.fromValue = visibleValue
+            animation.toValue = value
+            layer.add(animation, forKey: keyPath)
+            animatingFilters.insert(filter)
+            updateRasterization()
+            let restorationDeadline = DispatchTime.now() + LyricsSpecs.lineFilterTiming.totalDuration
+            DispatchQueue.main.asyncAfter(deadline: restorationDeadline) { [weak self] in
+                guard let self, self.filterChangeGenerations[filter] == generation else { return }
+                self.animatingFilters.remove(filter)
+                self.updateRasterization()
             }
         }
 
-        /// The filter's `name` is what makes the key path above resolve, so the
-        /// two have to agree — hence one constant rather than two literals. With
-        /// the name matching the type, the key path is byte-for-byte the one in
-        /// Music's disassembly.
-        private static let blurFilterName = "gaussianBlur"
-        private static let blurRadiusKeyPath = "filters.\(blurFilterName).inputRadius"
-
-        private func installBlurFilterIfNeeded() -> Bool {
+        /// Installs `filter` next to whatever is already there, in Music's
+        /// order. The filters already installed are read back from the layer,
+        /// so their current inputs come along.
+        private func installFilterIfNeeded(_ filter: LineFilter) -> Bool {
             guard let layer else { return false }
-            guard layer.filters == nil else { return true }
-            guard let filter = Self.makePrivateGaussianBlurFilter() else { return false }
-            layer.filters = [filter]
+            var installedFilters = (layer.filters ?? []).compactMap { $0 as? NSObject }
+            if installedFilters.contains(where: { Self.name(of: $0) == filter.name }) {
+                return true
+            }
+            guard let newFilter = Self.makePrivateFilter(filter) else { return false }
+            installedFilters.append(newFilter)
+            installedFilters.sort { firstFilter, secondFilter in
+                Self.order(of: firstFilter) < Self.order(of: secondFilter)
+            }
+            layer.filters = installedFilters
             return true
+        }
+
+        private static func name(of installedFilter: NSObject) -> String? {
+            installedFilter.value(forKey: "name") as? String
+        }
+
+        private static func order(of installedFilter: NSObject) -> Int {
+            let installedName = name(of: installedFilter)
+            return LineFilter.allCases.firstIndex { $0.name == installedName } ?? LineFilter.allCases.count
         }
 
         /// `CAFilter` is private API, reached through the runtime so there is
         /// nothing to link against. If a future macOS removes it this returns
-        /// nil and the panel simply loses its depth blur — nothing else breaks.
-        private static func makePrivateGaussianBlurFilter() -> NSObject? {
+        /// nil and the panel simply loses its depth blur and hover brightness —
+        /// nothing else breaks.
+        private static func makePrivateFilter(_ filter: LineFilter) -> NSObject? {
             guard let filterClass = NSClassFromString("CAFilter") as? NSObject.Type,
-                  let filter = filterClass
-                  .perform(NSSelectorFromString("filterWithType:"), with: blurFilterName)?
+                  let privateFilter = filterClass
+                  .perform(NSSelectorFromString("filterWithType:"), with: filter.name)?
                   .takeUnretainedValue() as? NSObject
             else { return nil }
-            filter.setValue(blurFilterName, forKey: "name")
-            filter.setValue(0.0, forKey: "inputRadius")
-            return filter
+            privateFilter.setValue(filter.name, forKey: "name")
+            privateFilter.setValue(NSNumber(value: 0), forKey: filter.inputKey)
+            return privateFilter
         }
 
         // MARK: Karaoke (per-frame, highlighted line only)
@@ -563,17 +854,7 @@ extension AppleMusicLyrics {
             )
         }
 
-        // MARK: Hit testing
-
-        override func mouseDown(with event: NSEvent) {
-            // Swallow so `mouseUp` is delivered to this view.
-        }
-
-        override func mouseUp(with event: NSEvent) {
-            let point = convert(event.locationInWindow, from: nil)
-            guard bounds.contains(point), let line else { return }
-            onTap?(line)
-        }
+        // MARK: Cursor
 
         override func resetCursorRects() {
             addCursorRect(bounds, cursor: .pointingHand)

@@ -31,6 +31,37 @@ extension AppleMusicLyrics {
         }
     }
 
+    /// How bright the text of every line other than the selected one is.
+    ///
+    /// Selected through a hidden user-defaults key, read on every line change,
+    /// so the two can be compared side by side without a rebuild.
+    enum DeselectedLineOpacityVariant: String, CaseIterable, Sendable {
+        /// Music 26.6's `deselectedTextColor`: white at 40%, for the main text
+        /// and the translation alike.
+        case appleMusic26
+        /// White at 55%: the opacity the panel used to fade whole rows to,
+        /// calibrated against a screen recording of Music 26.5.2.
+        case legacyRecording
+
+        static let userDefaultsKey = "AppleMusicLyricsDeselectedLineOpacityVariant"
+        static let `default`: DeselectedLineOpacityVariant = .appleMusic26
+
+        var textOpacity: CGFloat {
+            switch self {
+            case .appleMusic26: LyricsSpecs.deselectedTextOpacity
+            case .legacyRecording: 0.55
+            }
+        }
+
+        static func resolve(from userDefaults: UserDefaults = .standard) -> DeselectedLineOpacityVariant {
+            guard let rawValue = userDefaults.string(forKey: userDefaultsKey),
+                  let variant = DeselectedLineOpacityVariant(rawValue: rawValue) else {
+                return .default
+            }
+            return variant
+        }
+    }
+
     /// How much emphasis a word carrying structured (`SynchronizedTextTiming`)
     /// timing receives. Words that only carry inline start tags are unaffected:
     /// they keep the established full-strength phrase fallback either way.

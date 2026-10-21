@@ -30,3 +30,4 @@
 | [0019](0019-widget-single-configuration.md) | 小组件统一成一种配置，显示翻译跟随「双语歌词」设置 | Implemented |
 | [0020](0020-ai-lyrics-translation.md) | 实验室：用 OpenAI 兼容端点翻译歌词 | Implemented |
 | [0021](0021-system-lyrics-translation.md) | 实验室：用系统翻译（Translation 框架）翻译歌词 | Implemented |
+| [draft](draft-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | In Progress |

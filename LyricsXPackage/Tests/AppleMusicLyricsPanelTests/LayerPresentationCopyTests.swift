@@ -102,6 +102,28 @@ struct LayerPresentationCopyTests {
         return (0 ..< sideLength * sideLength).count { pixels[$0] > 0 }
     }
 
+    @Test func lineTranslationLayerCopyStillDrawsItsText() throws {
+        let original = AppleMusicLyrics.LineTranslationLayer()
+        original.attributedText = NSAttributedString(
+            string: "copy",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 18, weight: .bold),
+                .foregroundColor: NSColor.white,
+            ]
+        )
+        original.bounds = CGRect(x: 0, y: 0, width: 40, height: 40)
+
+        let copy = try #require(makeCopyAsCoreAnimationDoes(of: original) as? AppleMusicLyrics.LineTranslationLayer)
+        // The copy has no bounds of its own (see above); the text is what it
+        // has to bring.
+        copy.bounds = original.bounds
+
+        #expect(copy.attributedText == original.attributedText)
+        let originalInkedPixelCount = try inkedPixelCount(drawing: original)
+        #expect(originalInkedPixelCount > 0)
+        #expect(try inkedPixelCount(drawing: copy) == originalInkedPixelCount)
+    }
+
     @Test func syncedLyricsLineContentLayerCopyDoesNotTrap() throws {
         let original = AppleMusicLyrics.SyncedLyricsLineContentLayer()
 

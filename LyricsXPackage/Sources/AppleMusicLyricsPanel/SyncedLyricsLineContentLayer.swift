@@ -134,12 +134,21 @@ extension AppleMusicLyrics {
 
         // MARK: Appearance
 
-        /// Colour of text that has not been sung yet.
-        var unsungColor: CGColor = .init(gray: 1, alpha: 0.5) {
+        /// Colour of the selected line's text that has not been sung yet —
+        /// Music's `selectedUpcomingTextColor`.
+        var unsungColor: CGColor = .init(gray: 1, alpha: LyricsSpecs.selectedUpcomingTextOpacity) {
             didSet {
-                visualRowNodes.forEach { visualRowNode in
-                    visualRowNode.backgroundColorLayer.backgroundColor = unsungColor
-                }
+                guard highlightState else { return }
+                applySelectionAppearance()
+            }
+        }
+
+        /// Colour of the text of every line other than the selected one —
+        /// Music's `deselectedTextColor`.
+        var deselectedColor: CGColor = .init(gray: 1, alpha: LyricsSpecs.deselectedTextOpacity) {
+            didSet {
+                guard !highlightState else { return }
+                applySelectionAppearance()
             }
         }
 
@@ -152,19 +161,16 @@ extension AppleMusicLyrics {
             }
         }
 
-        /// While false the sweep is hidden entirely and the line reads as one flat
-        /// colour, which is what every line other than the active one looks like.
-        var isHighlighted = false {
-            didSet {
-                guard isHighlighted != oldValue else { return }
-                visualRowNodes.forEach { visualRowNode in
-                    visualRowNode.progressGradientLayer.isHidden = !isHighlighted
-                }
-                if !isHighlighted {
-                    resetEmphasis()
-                }
-            }
+        /// Whether this is the selected line. While false the sweep is faded
+        /// out and the line reads as one flat `deselectedColor`, which is what
+        /// every line other than the active one looks like. Assigning switches
+        /// at once; `setHighlighted(_:animatedWith:)` can animate the switch.
+        var isHighlighted: Bool {
+            get { highlightState }
+            set { setHighlighted(newValue, animatedWith: nil) }
         }
+
+        private var highlightState = false
 
         /// How timed words — structured or inline-tag — are emphasized; see
         /// `StructuredEmphasisPolicy`. Read as each word starts so the hidden
@@ -212,6 +218,51 @@ extension AppleMusicLyrics {
 
         override func action(forKey event: String) -> CAAction? {
             nil
+        }
+
+        // MARK: Selection
+
+        /// Switch between the selected and the deselected look the way
+        /// `sub_10016D164` does: the un-sung colour moves between `unsungColor`
+        /// and `deselectedColor` while the sung sweep fades in or out. Given a
+        /// timing, both travel on it together; without one they switch at once.
+        ///
+        /// A line that stops being selected keeps its sweep where it was, so the
+        /// part that was sung is what fades out; its glyphs still settle back at
+        /// once. A line that becomes selected starts from an empty sweep.
+        func setHighlighted(_ highlighted: Bool, animatedWith timing: (any LayerAnimationTiming)?) {
+            guard highlighted != highlightState else { return }
+            highlightState = highlighted
+            if highlighted {
+                resetSweep()
+            } else {
+                resetGlyphEmphasis()
+            }
+            let selectionLayers = visualRowNodes.flatMap { visualRowNode -> [CALayer] in
+                [visualRowNode.backgroundColorLayer, visualRowNode.progressGradientLayer]
+            }
+            guard let timing else {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                selectionLayers.forEach(LayerPropertyAnimator.removeAllAnimations(from:))
+                applySelectionAppearance()
+                CATransaction.commit()
+                return
+            }
+            let animator = LayerPropertyAnimator(layers: selectionLayers, timing: timing)
+            animator.addChange {
+                self.applySelectionAppearance()
+            }
+            animator.run()
+        }
+
+        private func applySelectionAppearance() {
+            let backgroundColor = highlightState ? unsungColor : deselectedColor
+            let sweepOpacity: Float = highlightState ? 1 : 0
+            for visualRowNode in visualRowNodes {
+                visualRowNode.backgroundColorLayer.backgroundColor = backgroundColor
+                visualRowNode.progressGradientLayer.opacity = sweepOpacity
+            }
         }
 
         // MARK: Building
@@ -435,7 +486,7 @@ extension AppleMusicLyrics {
 
                 let backgroundColorLayer = NoAnimationLayer()
                 backgroundColorLayer.frame = colorContainerLayer.bounds
-                backgroundColorLayer.backgroundColor = unsungColor
+                backgroundColorLayer.backgroundColor = highlightState ? unsungColor : deselectedColor
                 colorContainerLayer.addSublayer(backgroundColorLayer)
 
                 let gradient = LineProgressGradientLayer(
@@ -444,7 +495,7 @@ extension AppleMusicLyrics {
                     verticalPadding: LyricsSpecs.syllableLift + LyricsSpecs.glowRadius,
                     color: sungColor
                 )
-                gradient.isHidden = !isHighlighted
+                gradient.opacity = highlightState ? 1 : 0
                 gradient.position = CGPoint(
                     x: textOutset.width + gradient.originX(forFillEdge: 0),
                     y: textOutset.height - gradient.verticalPadding
@@ -854,10 +905,20 @@ extension AppleMusicLyrics {
             DispatchQueue.main.asyncAfter(deadline: .now() + plan.deglowDelay, execute: work)
         }
 
-        /// Put every glyph back at rest immediately, cancelling anything pending.
-        /// Called when the line stops being the active one, or is recycled for a
-        /// different lyric.
+        /// Put every glyph back at rest and the sweep back at the start,
+        /// immediately, cancelling anything pending. Called when the line is
+        /// recycled for a different lyric, or the playback time jumps.
         func resetEmphasis() {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            resetGlyphEmphasis()
+            resetSweep()
+            CATransaction.commit()
+        }
+
+        /// The glyph half of `resetEmphasis()`, which is all a line that stops
+        /// being the active one gives up at once: its sweep fades out instead.
+        private func resetGlyphEmphasis() {
             if wordNodes.contains(where: { $0.isEmphasisScheduled }) {
                 let emphasisWordCount = wordNodes.count
                 let currentLineLabel = lineLabel
@@ -890,6 +951,12 @@ extension AppleMusicLyrics {
                     glyphLayer.setAffineTransform(.identity)
                 }
             }
+            CATransaction.commit()
+        }
+
+        private func resetSweep() {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             for visualRowNode in visualRowNodes {
                 let gradient = visualRowNode.progressGradientLayer
                 gradient.position.x = textOutset.width + gradient.originX(forFillEdge: 0)

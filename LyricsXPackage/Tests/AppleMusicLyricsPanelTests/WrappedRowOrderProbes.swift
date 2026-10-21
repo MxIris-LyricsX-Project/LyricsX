@@ -65,9 +65,7 @@ struct WrappedRowOrderProbes {
         window: NSWindow
     ) throws {
         let rowLayer = try #require(rowView.layer)
-        let contentLayer = try #require(
-            rowLayer.sublayers?.compactMap { $0 as? AppleMusicLyrics.SyncedLyricsLineContentLayer }.first
-        )
+        let contentLayer = rowView.contentLayer
         let rowContainers = (contentLayer.sublayers ?? []).filter { candidate in
             (candidate.sublayers ?? []).contains { $0 is AppleMusicLyrics.LineProgressGradientLayer }
         }
