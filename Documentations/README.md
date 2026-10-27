@@ -62,12 +62,12 @@
   - [0021 实验室：用系统翻译翻译歌词](Evolutions/0021-system-lyrics-translation.md)
     —— macOS 26+ 用公开的 `TranslationSession(installedSource:target:)` 在本机翻译，与 AI 翻译二选一、共用目标语言；
     一首歌的行全进同一个 session，原样返回的行不存；语言没下载时经 SwiftUI 的 `.translationTask` 请系统弹下载确认。
+  - [0022 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](Evolutions/0022-panel-playback-slider.md)
+    —— 手写的细条换成 Music 全屏播放器那根时间条的移植（按下长高、plus-lighter），新增 AppKitPlus 依赖
+    （`from: "0.19.0"`）；拖动期间不再逐事件 seek，松手时 seek 一次。
   - [草案：歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](Evolutions/draft-apple-music-line-interaction-parity.md)
     —— 行的图层结构改成 Music 的「背景 + 容器（主歌词 + 翻译）」；补上悬停（去模糊、提亮）和按下（白底、
     缩到 0.95）；非当前行从整行 0.55 改为文字白 40%，切行时颜色走切行弹簧；翻译改粗体、白 50% / 40%、间距 7 pt。
-  - [草案：歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](Evolutions/draft-panel-playback-slider.md)
-    —— 手写的细条换成 Music 全屏播放器那根时间条的移植（按下长高、plus-lighter），新增 AppKitPlus 依赖
-    （`from: "0.19.0"`）；拖动期间不再逐事件 seek，松手时 seek 一次。
 
 ## 使用说明
 

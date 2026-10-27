@@ -1,9 +1,10 @@
-# Draft - 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider
+# 0022 - 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **创建日期**: 2026-10-28
 - **最后更新**: 2026-10-28
 - **实现分支 / PR**: `feature/panel-playback-slider`
+- **配套文档**: [Apple Music 26.6 歌词动画](../Internal/AppleMusicLyricsAnimation.md) 的「进度条」一节（实现说明）
 
 ## 摘要
 
@@ -61,3 +62,6 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
 | 2026-10-28 | 松手的 seek 放在 `playbackSliderDidEndScrubbing`；AppKit 随后补发的那次 action 值与刚 seek 的相同，按值跳过 | AppKitPlus 自带示例的同一做法；方向键与 VoiceOver 走同一个 action，值一变就 seek，不必分辨 action 从哪来 |
 | 2026-10-28 | 测试按 AppKitPlus 自己的测试那样直接调滑块 cell 的 `startTracking` / `continueTracking` / `stopTracking`，不投递真实鼠标事件 | 投递的点击能否复现取决于测试宿主链接的 SDK 和窗口是否为 key，测试进程保证不了；点击落点另在窗口的 hit-test 上断言 |
 | 2026-10-28 | 实现完成，待合并 | 验证见落地步骤 2。`LyricsXFoundationTests` 里 `SystemLyricsTranslatorProbes.anEnglishLineInAJapaneseSongIsTranslatedWithTheRest` 失败，但 develop 上同样失败——它取决于本机系统翻译的输出，与本改动无关。没有做界面上的交互验证（实际点按、拖动的手感要在 app 里看） |
+| 2026-10-28 | 用户在 app 里看过，确认没问题；合进 develop，编号 0022，状态改 Implemented | 与方案没有偏离，也没有没做完的项 |
+| 2026-10-28 | 文档：实现说明写在既有的《Apple Music 26.6 歌词动画》里，不另开一篇；不需要使用指南；没有新术语 | 进度条属于面板 chrome，和那篇里 chrome timer 的说明挨着读；用户可见的只是外观和松手才 seek，用不着说明书；`NSPlaybackSlider` 是库里的类名，不是本项目的自造词 |
+| 2026-10-28 | 后续：下一个版本的发布说明加一条「进度条换成 Music 全屏播放器的样式，松手时才跳到新位置」 | 发布说明在发版时才写，这里先记下 |
