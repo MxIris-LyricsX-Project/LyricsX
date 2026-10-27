@@ -3,6 +3,7 @@ import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
 
+@Loggable(subsystem: "com.JH.LyricsX.SearchLyrics", category: "SearchLyricsViewController")
 class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate, StoryboardViewController {
     var imageCache = NSCache<NSURL, NSImage>()
 
@@ -16,7 +17,11 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     var lyricsManager: LyricsProvider { AppController.shared.lyricsManager }
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
-    var searchResult: [Lyrics] = []
+    /// The track the current search ran for, which a result the user applies
+    /// belongs to even once another track plays.
+    private var searchedTrack: MusicTrack?
+    private var panelResults = LyricsSearchPanelResults<Lyrics>(trackIdentifier: nil)
+    private var searchResult: [Lyrics] { panelResults.results }
     var artworkScoringTasks: [Task<Void, Never>] = []
     var progressObservation: NSKeyValueObservation?
 
@@ -44,7 +49,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     func reloadKeyword() {
         guard let track = selectedPlayer.currentTrack else {
             searchTask?.cancel()
-            searchResult = []
+            searchedTrack = nil
+            panelResults = LyricsSearchPanelResults(trackIdentifier: nil)
             searchArtist = ""
             searchTitle = ""
             artworkView.image = #imageLiteral(resourceName: "missing_artwork")
@@ -71,11 +77,12 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         artworkScoringTasks.forEach { $0.cancel() }
         artworkScoringTasks.removeAll()
         progressObservation?.invalidate()
-        searchResult = []
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
         lyricsPreviewTextView.string = " "
 
         let track = selectedPlayer.currentTrack
+        searchedTrack = track
+        panelResults = LyricsSearchPanelResults(trackIdentifier: track?.id)
         let duration = track?.duration ?? 0
         let req = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: searchArtist), duration: duration, limit: 8)
         searchRequest = req
@@ -83,34 +90,63 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         tableView.reloadData()
         searchTask = Task { @MainActor in
             do {
-                for try await lyrics in lyricsManager.lyrics(for: req) {
+                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: req)) { lyrics in
                     lyricsReceived(lyrics: lyrics)
                 }
+                // Cancelled by the search that replaced it, whose progress
+                // the indicator now shows.
+                guard completion == .finished else { return }
                 progressIndicator.stopAnimation(nil)
-            } catch is CancellationError {
-                // Search was cancelled
             } catch {
-                print(error)
+                #log(.error, "Lyrics search failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
 
     @IBAction func useLyricsAction(_ sender: Any) {
-        guard let index = tableView.selectedRowIndexes.first else {
+        guard let lrc = panelResults.selectedResult else {
             return
         }
+        switch panelResults.application(whilePlaying: selectedPlayer.currentTrack?.id) {
+        case .currentTrack:
+            guard let track = selectedPlayer.currentTrack else {
+                return
+            }
+            apply(lrc, to: track)
+        case .originalTrackOnly:
+            guard let searchedTrack else {
+                return
+            }
+            save(lrc, forTrackNoLongerPlaying: searchedTrack)
+        }
+    }
 
-        guard let track = selectedPlayer.currentTrack else {
-            return
-        }
+    /// Clears an earlier "wrong lyrics" or "don't search this album" verdict:
+    /// picking lyrics by hand contradicts it.
+    private func clearRejection(of track: MusicTrack) {
         if let index = defaults[.noSearchingTrackIds].firstIndex(of: track.id) {
             defaults[.noSearchingTrackIds].remove(at: index)
         }
         if let index = defaults[.noSearchingAlbumNames].firstIndex(of: track.album ?? "") {
             defaults[.noSearchingAlbumNames].remove(at: index)
         }
+    }
 
-        let lrc = searchResult[index]
+    /// The search ran for a track that has stopped playing since, so the
+    /// pick is saved for that track — the next time it plays it gets these
+    /// lyrics — and the lyrics on screen, another track's, are left alone.
+    private func save(_ lrc: Lyrics, forTrackNoLongerPlaying track: MusicTrack) {
+        clearRejection(of: track)
+        performOnLyricsDisplayQueue {
+            lrc.associateWithTrack(track)
+            lrc.markAsUserPicked(origin: .searchPanel)
+            lrc.metadata.needsPersist = true
+            lrc.persist()
+        }
+    }
+
+    private func apply(_ lrc: Lyrics, to track: MusicTrack) {
+        clearRejection(of: track)
         // On the lyrics display queue, like every other change to the lyrics
         // on screen: a write from here would race one from there.
         performOnLyricsDisplayQueue {
@@ -145,13 +181,18 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
-        if let idx = searchResult.firstIndex(where: { lyricsHasHigherPriority(lyrics, over: $0) }) {
-            searchResult.insert(lyrics, at: idx)
-        } else {
-            searchResult.append(lyrics)
-        }
+        panelResults.insert(lyrics, outranks: { lyricsHasHigherPriority($0, over: $1) })
         scheduleArtworkScoring(for: lyrics)
+        reloadResultsKeepingSelection()
+    }
+
+    /// Reloads the table and puts the selection back on the selected result,
+    /// which ranking may have moved to another row.
+    private func reloadResultsKeepingSelection() {
         tableView.reloadData()
+        if let selectedIndex = panelResults.selectedIndex, selectedIndex != tableView.selectedRow {
+            tableView.selectRowIndexes(IndexSet(integer: selectedIndex), byExtendingSelection: false)
+        }
     }
 
     private func scheduleArtworkScoring(for lyrics: Lyrics) {
@@ -174,35 +215,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         // have already been cleared; identity-check before mutating.
         guard searchResult.contains(where: { $0 === lyrics }) else { return }
         lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
-        resortAfterArtworkScoring()
-    }
-
-    @MainActor
-    private func resortAfterArtworkScoring() {
-        let selectedLyrics: Lyrics?
-        let selectedRow = tableView.selectedRow
-        if selectedRow >= 0, selectedRow < searchResult.count {
-            selectedLyrics = searchResult[selectedRow]
-        } else {
-            selectedLyrics = nil
-        }
-
-        // Replay the insertion-order semantics of `lyricsReceived` so that
-        // results with equal effective quality keep their relative order.
-        var reordered: [Lyrics] = []
-        for lyrics in searchResult {
-            if let idx = reordered.firstIndex(where: { lyricsHasHigherPriority(lyrics, over: $0) }) {
-                reordered.insert(lyrics, at: idx)
-            } else {
-                reordered.append(lyrics)
-            }
-        }
-        searchResult = reordered
-        tableView.reloadData()
-
-        if let selectedLyrics, let newIndex = searchResult.firstIndex(where: { $0 === selectedLyrics }) {
-            tableView.selectRowIndexes(IndexSet(integer: newIndex), byExtendingSelection: false)
-        }
+        panelResults.rerank(outranks: { lyricsHasHigherPriority($0, over: $1) })
+        reloadResultsKeepingSelection()
     }
 
     // MARK: - TableViewDelegate
@@ -244,6 +258,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     func tableViewSelectionDidChange(_ notification: Notification) {
         let index = tableView.selectedRow
+        panelResults.select(at: index >= 0 ? index : nil)
         guard index >= 0 else {
             return
         }

@@ -40,3 +40,23 @@ func lyricsWindowToggleUsesActualWindowVisibility() {
         ) == .close
     )
 }
+
+@Test
+func lyricsWindowFallsBackToTheSystemFontWhenItsFontIsGone() {
+    // A font chosen for the lyrics window can be removed in Font Book or
+    // deactivated by a font manager while its name stays in the preferences.
+    let font: NSFont? = LyricsHUDWindowConfiguration.textFont(
+        named: "LyricsX Test Font That Is Not Installed",
+        size: 21
+    )
+
+    #expect(font?.pointSize == 21)
+}
+
+@Test
+func lyricsWindowUsesTheChosenFontWhileItIsInstalled() {
+    let font: NSFont? = LyricsHUDWindowConfiguration.textFont(named: "Helvetica", size: 13)
+
+    #expect(font?.fontName == "Helvetica")
+    #expect(font?.pointSize == 13)
+}

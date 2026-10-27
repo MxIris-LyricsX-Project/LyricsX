@@ -67,13 +67,12 @@ final class AppController: NSObject {
     private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
     private var lyricsTranslationTask: Task<Void, Never>?
     private var lastLyricsTranslationKey: String?
-    /// Until when the automatic search may still put other lyrics on screen:
-    /// the end of its priority window, or `.distantFuture` while it has not
-    /// shown a result yet. An AI translation request waits for it, so nothing
-    /// is paid for lyrics that a higher-priority result replaces seconds
-    /// later. Confined to the lyrics display queue, like the two above.
-    private var automaticLyricsReplacementDeadline: Date?
-    /// The translation put off until `automaticLyricsReplacementDeadline`.
+    /// Whether, and until when, the automatic search may still put other
+    /// lyrics on screen. An AI translation request waits for it, so nothing is
+    /// paid for lyrics that a higher-priority result replaces seconds later.
+    /// Confined to the lyrics display queue, like the two above.
+    private var automaticLyricsReplacementWindow = AutomaticLyricsReplacementWindow()
+    /// The translation put off until `automaticLyricsReplacementWindow` closes.
     private var deferredLyricsTranslationStart: DispatchWorkItem?
 
     /// The languages system translation found missing for the lyrics on
@@ -426,7 +425,7 @@ final class AppController: NSObject {
         // the new track's.
         widgetReloadCoordinator.note(.trackChanged)
         cancelLyricsTranslation()
-        automaticLyricsReplacementDeadline = nil
+        automaticLyricsReplacementWindow.reset()
         performOnLyricsDisplayQueue {
             if currentLyrics?.metadata.needsPersist == true {
                 currentLyrics?.persist()
@@ -544,11 +543,11 @@ final class AppController: NSObject {
         // The search may replace whatever is on screen — lyrics read from a
         // plain LRC file, which does not end the lookup — so their translation,
         // already started above, waits until the search has had its say.
-        automaticLyricsReplacementDeadline = .distantFuture
+        let request = makeLyricsSearchRequest(for: track)
+        automaticLyricsReplacementWindow.searchStarted(identifier: request.id, isAutomatic: true)
         lastLyricsTranslationKey = nil
         startLyricsTranslation(for: currentLyrics)
 
-        let request = makeLyricsSearchRequest(for: track)
         searchRequest = request
         searchTask = Task { @MainActor in
             do {
@@ -559,20 +558,17 @@ final class AppController: NSObject {
                 var firstReceived = false
                 var collectionStart: Date?
 
-                for try await lyrics in lyricsManager.lyrics(for: request) {
+                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: request)) { lyrics in
                     if !firstReceived {
                         // Set before the result goes on screen, so that its
                         // translation already waits for the window to close.
-                        setAutomaticLyricsReplacementDeadline(
-                            Date().addingTimeInterval(window),
-                            forSearch: request
-                        )
+                        automaticSearchShowedFirstResult(request, closingAt: Date().addingTimeInterval(window))
                         lyricsReceived(lyrics: lyrics)
                         if let current = currentLyrics, current === lyrics {
                             firstReceived = true
                             collectionStart = Date()
                         }
-                        continue
+                        return
                     }
 
                     // Route B name-recovery results are slower than the direct
@@ -592,17 +588,21 @@ final class AppController: NSObject {
 
                 // Nothing else can replace the lyrics now, so a translation
                 // still waiting for the window goes ahead.
-                setAutomaticLyricsReplacementDeadline(nil, forSearch: request)
+                automaticSearchEnded(request)
+                // Cancelled because the track changed or the lyrics were
+                // rejected. Falling back to the library and writing into Music
+                // are for a search that ran to its end: either would now bring
+                // back rejected lyrics, or write over another track's.
+                guard completion == .finished else { return }
                 loadLibraryLyricsIfSearchFoundNothing(for: track, title: title, artist: artist)
 
                 if defaults[.writeToiTunesAutomatically] {
                     writeToiTunes(overwrite: true)
                 }
-            } catch is CancellationError {
-                // Search was cancelled due to track change
             } catch {
-                print("Failed to fetch lyrics: \(error.localizedDescription)")
-                setAutomaticLyricsReplacementDeadline(nil, forSearch: request)
+                #log(.error, "Failed to fetch lyrics: \(error.localizedDescription, privacy: .public)")
+                automaticSearchEnded(request)
+                guard !Task.isCancelled else { return }
                 // The case the fallback exists for: every provider failed, which
                 // offline is the normal outcome rather than the exception.
                 loadLibraryLyricsIfSearchFoundNothing(for: track, title: title, artist: artist)
@@ -610,15 +610,24 @@ final class AppController: NSObject {
         }
     }
 
-    /// Records until when `request`'s search may still replace the lyrics on
-    /// screen, and asks again whether to translate them. Ignored once another
-    /// search has taken over: a search that outlives its track must not cut
-    /// short the wait the next track's search set up.
+    /// The automatic search `request` has put its first result on screen, and
+    /// better ones may replace it until `closingDate`. Asks again whether to
+    /// translate the lyrics on screen.
     @MainActor
-    private func setAutomaticLyricsReplacementDeadline(_ deadline: Date?, forSearch request: LyricsSearchRequest) {
-        guard searchRequest?.id == request.id else { return }
+    private func automaticSearchShowedFirstResult(_ request: LyricsSearchRequest, closingAt closingDate: Date) {
         performOnLyricsDisplayQueue {
-            automaticLyricsReplacementDeadline = deadline
+            automaticLyricsReplacementWindow.firstResultShown(bySearch: request.id, closingAt: closingDate)
+            startLyricsTranslation(for: currentLyrics)
+        }
+    }
+
+    /// The automatic search `request` has ended, so nothing it returns can
+    /// replace the lyrics on screen any more, and a translation still waiting
+    /// for it goes ahead.
+    @MainActor
+    private func automaticSearchEnded(_ request: LyricsSearchRequest) {
+        performOnLyricsDisplayQueue {
+            automaticLyricsReplacementWindow.searchEnded(identifier: request.id)
             startLyricsTranslation(for: currentLyrics)
         }
     }
@@ -741,11 +750,8 @@ final class AppController: NSObject {
     }
 
     /// Asks `startLyricsTranslation` again at `deadline`, when the lyrics on
-    /// screen are the ones that stay. A `.distantFuture` deadline schedules
-    /// nothing: the search replaces it with the end of its window once it
-    /// shows a result, and with nil once it ends.
+    /// screen are the ones that stay.
     private func deferLyricsTranslation(until deadline: Date) {
-        guard deadline != .distantFuture else { return }
         let start = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             startLyricsTranslation(for: currentLyrics)
@@ -937,11 +943,21 @@ final class AppController: NSObject {
         // one that costs money. System translation runs on this Mac in a
         // moment, and a result for lyrics replaced meanwhile is dropped by the
         // check below like any other that arrives too late.
-        if case .ai = request, let deadline = automaticLyricsReplacementDeadline, deadline > Date() {
-            // The search may still replace these lyrics, so ask once it no
-            // longer can. The key stays unrecorded, so that call goes ahead.
-            deferLyricsTranslation(until: deadline)
-            return
+        if case .ai = request {
+            // The key stays unrecorded while this waits, so the next call goes
+            // ahead.
+            switch automaticLyricsReplacementWindow.translationStart(at: Date()) {
+            case .now:
+                break
+            case .at(let closingDate):
+                // The search may still replace these lyrics, so ask once it
+                // no longer can.
+                deferLyricsTranslation(until: closingDate)
+                return
+            case .afterTheSearchShowsAResult:
+                // Asked again when the search shows its first result, or ends.
+                return
+            }
         }
         lastLyricsTranslationKey = translationKey
 
@@ -1279,6 +1295,16 @@ final class AppController: NSObject {
             lyricsCandidateSwitchOutcomes.send(.unavailable)
             return
         }
+        // The player has moved on and the track change has not reached the
+        // pool yet: its candidates are the previous track's, and switching
+        // onto one would save it as this track's lyrics.
+        guard LyricsResultsApplication(
+            resultsFoundFor: candidatePoolTrackId,
+            whilePlaying: track.id
+        ) == .currentTrack else {
+            lyricsCandidateSwitchOutcomes.send(.unavailable)
+            return
+        }
         reconcileLyricsCandidatePoolWithScreen()
         guard lyricsCandidatePool.count >= 2, let nextCandidate = lyricsCandidatePool.advanceSelection() else {
             startCandidateReplenishSearch(for: track)
@@ -1309,20 +1335,23 @@ final class AppController: NSObject {
         let onScreenFingerprint = onScreenLyrics.map(lyricsContentFingerprint)
         let request = makeLyricsSearchRequest(for: track)
         searchRequest = request
+        performOnLyricsDisplayQueue {
+            automaticLyricsReplacementWindow.searchStarted(identifier: request.id, isAutomatic: false)
+        }
         lyricsCandidateSwitchOutcomes.send(.searching)
 
         candidateReplenishTask = Task { @MainActor in
             defer { candidateReplenishTask = nil }
             var hasSwitched = false
             do {
-                for try await lyrics in lyricsManager.lyrics(for: request) {
+                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: request)) { lyrics in
                     lyricsReceived(lyrics: lyrics)
                     guard !hasSwitched,
                           selectedPlayer.currentTrack?.id == track.id,
                           let firstDifferentCandidate = lyricsCandidatePool.candidates.first(where: {
                               lyricsContentFingerprint($0) != onScreenFingerprint
                           }) else {
-                        continue
+                        return
                     }
                     // Switch on the first genuinely different candidate rather
                     // than waiting for the stream to drain: a full search can
@@ -1336,10 +1365,13 @@ final class AppController: NSObject {
                         service: firstDifferentCandidate.metadata.service
                     ))
                 }
-            } catch is CancellationError {
-                return
+                // Cancelled because the track changed: "nothing else found"
+                // would report on a search that never finished, for a track
+                // no longer playing.
+                guard completion == .finished else { return }
             } catch {
                 log("Failed to fetch replenish candidates: \(error.localizedDescription)")
+                guard !Task.isCancelled else { return }
             }
             if !hasSwitched {
                 lyricsCandidateSwitchOutcomes.send(.exhausted)
