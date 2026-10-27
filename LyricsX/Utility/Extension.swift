@@ -77,11 +77,10 @@ extension UserDefaults {
     }
 
     var lyricsWindowFont: NSFont {
-        return NSFont(
-            name: defaults[.lyricsWindowFontName],
+        return LyricsHUDWindowConfiguration.textFont(
+            named: defaults[.lyricsWindowFontName],
             size: CGFloat(defaults[.lyricsWindowFontSize])
         )
-            ?? NSFont.labelFont(ofSize: CGFloat(defaults[.desktopLyricsFontSize]))
     }
 }
 

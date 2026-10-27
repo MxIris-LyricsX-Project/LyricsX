@@ -117,7 +117,7 @@ class ScrollLyricsView: NSScrollView {
         textView.string = lrcContent
         highlightedRange = nil
         let range = textView.string.fullRange
-        let font = NSFont(name: fontName, size: fontSize)!
+        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
         let style = NSMutableParagraphStyle().with {
             $0.alignment = .center
         }
@@ -258,7 +258,7 @@ class ScrollLyricsView: NSScrollView {
 
     func updateFont() {
         let range = textView.string.fullRange
-        guard let font = NSFont(name: fontName, size: fontSize) else { return }
+        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
         textView.textStorage?.addAttribute(.font, value: font, range: range)
     }
 }
