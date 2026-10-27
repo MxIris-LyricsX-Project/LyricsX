@@ -60,8 +60,8 @@ public enum LyricsStoragePolicy {
     }
 
     /// The file to delete when the user rejects the lyrics on screen with
-    /// "Wrong Lyrics" or "Don't Search Lyrics for This Album": LyricsX's own
-    /// copy in the library, and nothing else. A file beside the track is the
+    /// "Wrong Lyrics" or "Disable Lyrics for Entire Album": LyricsX's own copy
+    /// in the library, and nothing else. A file beside the track is the
     /// user's — hand-made or bought — and a verdict on the lyrics must not
     /// destroy it.
     public static func fileToRemoveWhenRejected(
@@ -78,6 +78,39 @@ public enum LyricsStoragePolicy {
             return nil
         }
         return localURL
+    }
+
+    /// Whether rejecting the lyrics on screen with "Wrong Lyrics" or "Disable
+    /// Lyrics for Entire Album" clears the track's lyrics in Music, where
+    /// automatic writing may have put them.
+    ///
+    /// Only LyricsX's own text goes, as with `fileToRemoveWhenRejected`: Music
+    /// has to hold, line for line, one of `contentsLyricsXWrote`. Anything else
+    /// there — lyrics the user typed in or that came embedded in the file, or
+    /// LyricsX's text the user has since corrected — is the user's, and a
+    /// verdict on the lyrics on screen must not destroy it.
+    ///
+    /// Line breaks, the blank lines between lines and the whitespace around
+    /// each are left out of the comparison, so a write Music stored with other
+    /// line endings still counts as LyricsX's.
+    public static func clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: String?,
+        contentsLyricsXWrote: [String]
+    ) -> Bool {
+        guard let lyricsInMusic else {
+            return false
+        }
+        let linesInMusic = comparableLines(of: lyricsInMusic)
+        guard !linesInMusic.isEmpty else {
+            return false
+        }
+        return contentsLyricsXWrote.contains { comparableLines(of: $0) == linesInMusic }
+    }
+
+    private static func comparableLines(of text: String) -> [String] {
+        text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
     }
 
     public static func persistDestination(

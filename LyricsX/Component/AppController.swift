@@ -47,6 +47,13 @@ final class AppController: NSObject {
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
 
+    /// What `writeToiTunes` last put into Music, and into which track.
+    /// Rejected lyrics come back out of Music only while it still holds
+    /// LyricsX's own text, and by then the lyrics on screen may write something
+    /// else — a translation arrived, the offset moved — so the comparison takes
+    /// this write as well.
+    private var lastLyricsWrittenToMusic: (trackIdentifier: String, content: String)?
+
     /// Every candidate the current track's search produced, ordered by the same
     /// relation the manual search panel sorts its list by. The display logic in
     /// `lyricsReceived` picks the top of it on its own; `advanceToNextLyricsCandidate`
@@ -379,16 +386,61 @@ final class AppController: NSObject {
     func writeToiTunes(overwrite: Bool) {
         guard selectedPlayer.name == .appleMusic,
               let currentLyrics = currentLyrics,
-              let sbTrack = selectedPlayer.currentTrack?.originalTrack,
-              overwrite || (sbTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
+              let track = selectedPlayer.currentTrack,
+              let scriptingBridgeTrack = track.originalTrack,
+              overwrite || (scriptingBridgeTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
             return
         }
+        let content = musicLyricsContent(for: currentLyrics)
+        scriptingBridgeTrack.setValue(content, forKey: "lyrics")
+        lastLyricsWrittenToMusic = (track.id, content)
+    }
 
+    /// Takes rejected lyrics back out of Music, where automatic writing may
+    /// have put them — and nothing else: whatever Music holds for the track
+    /// stays unless it is still exactly what LyricsX wrote there. Call it
+    /// before the rejected lyrics leave the screen, so they can be compared.
+    func removeRejectedLyricsFromMusic(of track: MusicTrack) {
+        guard selectedPlayer.name == .appleMusic else {
+            return
+        }
+        var contentsLyricsXWrote: [String] = []
+        if let lastLyricsWrittenToMusic, lastLyricsWrittenToMusic.trackIdentifier == track.id {
+            contentsLyricsXWrote.append(lastLyricsWrittenToMusic.content)
+        }
+        // A write from an earlier launch left no record, but wrote what the
+        // rejected lyrics still write.
+        if let currentLyrics {
+            contentsLyricsXWrote.append(musicLyricsContent(for: currentLyrics))
+        }
+        guard LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+            lyricsInMusic: track.lyrics,
+            contentsLyricsXWrote: contentsLyricsXWrote
+        ) else {
+            return
+        }
+        track.setLyrics("")
+    }
+
+    /// Stops both searches that may still be running for the current track,
+    /// for the actions that reject the lyrics on screen. Left running, the
+    /// automatic search puts its next result back on screen and, when it
+    /// ends, writes it into Music; the next-candidate search applies what it
+    /// finds as the user's own pick, which takes the track off the rejected
+    /// list.
+    func cancelLyricsSearches() {
+        searchTask?.cancel()
+        candidateReplenishTask?.cancel()
+    }
+
+    /// The text `writeToiTunes` puts into Music for `lyrics` under the current
+    /// preferences.
+    private func musicLyricsContent(for lyrics: Lyrics) -> String {
         let content: String
         if defaults[.writeiTunesConvertToPlainLRC] {
             // For plain LRC export, preserve the legacy LRC formatting but still respect
             // the Chinese conversion setting for consistency with the non-plain branch.
-            var legacy = currentLyrics.legacyDescription
+            var legacy = lyrics.legacyDescription
             if let converter = ChineseConverter.shared {
                 legacy = converter.convert(legacy)
             }
@@ -397,14 +449,14 @@ final class AppController: NSObject {
             // LRC output single-line per timestamp.
             content = legacy
         } else {
-            content = currentLyrics.lines.map { line -> String in
+            content = lyrics.lines.map { line -> String in
                 var content = line.content
                 if let converter = ChineseConverter.shared {
                     content = converter.convert(content)
                 }
                 if defaults[.writeiTunesWithTranslation] {
                     // TODO: tagged translation
-                    if var translation = currentLyrics.displayTranslation(for: line) {
+                    if var translation = lyrics.displayTranslation(for: line) {
                         if let converter = ChineseConverter.shared {
                             translation = converter.convert(translation)
                         }
@@ -416,8 +468,7 @@ final class AppController: NSObject {
         }
         // swiftlint:disable:next force_try
         let regex = Regex(#"\n{3,}"#)
-        let replaced = content.replacingMatches(of: regex, with: "\n\n")
-        sbTrack.setValue(replaced, forKey: "lyrics")
+        return content.replacingMatches(of: regex, with: "\n\n")
     }
 
     func currentTrackChanged() {
