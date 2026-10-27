@@ -60,3 +60,4 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
 | 2026-10-28 | 拆出两个落地步骤：先只加依赖，再换控件 | 加依赖本身就要单独验证一次：resolve 没有推进别的依赖，框架确实嵌进了 app 包 |
 | 2026-10-28 | 松手的 seek 放在 `playbackSliderDidEndScrubbing`；AppKit 随后补发的那次 action 值与刚 seek 的相同，按值跳过 | AppKitPlus 自带示例的同一做法；方向键与 VoiceOver 走同一个 action，值一变就 seek，不必分辨 action 从哪来 |
 | 2026-10-28 | 测试按 AppKitPlus 自己的测试那样直接调滑块 cell 的 `startTracking` / `continueTracking` / `stopTracking`，不投递真实鼠标事件 | 投递的点击能否复现取决于测试宿主链接的 SDK 和窗口是否为 key，测试进程保证不了；点击落点另在窗口的 hit-test 上断言 |
+| 2026-10-28 | 实现完成，待合并 | 验证见落地步骤 2。`LyricsXFoundationTests` 里 `SystemLyricsTranslatorProbes.anEnglishLineInAJapaneseSongIsTranslatedWithTheRest` 失败，但 develop 上同样失败——它取决于本机系统翻译的输出，与本改动无关。没有做界面上的交互验证（实际点按、拖动的手感要在 app 里看） |
