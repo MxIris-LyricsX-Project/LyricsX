@@ -209,7 +209,6 @@ extension AppleMusicLyrics {
                 coverImageView.heightAnchor.constraint(equalTo: coverImageView.widthAnchor),
                 infoColumn.widthAnchor.constraint(equalTo: leftColumn.widthAnchor),
                 progressView.widthAnchor.constraint(equalTo: leftColumn.widthAnchor),
-                progressView.heightAnchor.constraint(equalToConstant: 24),
 
                 messageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 messageLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),

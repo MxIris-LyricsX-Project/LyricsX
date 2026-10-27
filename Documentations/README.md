@@ -93,8 +93,8 @@
 - [Apple Music 26.6 歌词动画](Internal/AppleMusicLyricsAnimation.md) —— TTML 的 word/syllable timing
   如何经过 LRCX 保存，行内 factor 与可切换的结构化 emphasis 策略、Apple Music 真实的逐行 cascade 与
   可切换的两档参数、行 layer 光栅化、`.topRelative(40)`、多行坐标、contextual blur 与 viewport edge fade
-  如何落地，行的图层结构、悬停与按下反馈、非当前行亮度和翻译样式，以及 AppKit view geometry 和
-  Core Animation presentation 各自拥有什么状态。
+  如何落地，行的图层结构、悬停与按下反馈、非当前行亮度和翻译样式，AppKit view geometry 和
+  Core Animation presentation 各自拥有什么状态，以及左栏进度条为什么只在松手时 seek、点击为什么只交给滑块本身。
 - [Apple Music 歌词面板 Metal 渐变背景](Internal/AppleMusicMetalGradient.md) —— 一个 `MTKView` 驱动器带两条管线：
   默认复刻 Music 26「正在播放」的 `MediaCoreUI` 背景（128 pixel gamma 空间封面、三实例旋转、四分之一画布 pt 级模糊、
   细分网格、白混与 LUT 近似），`legacyTSL` 保留 MiniPlayer 管线；以及生命周期暂停、失败降级与离屏验证边界。

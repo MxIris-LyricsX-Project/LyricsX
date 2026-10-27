@@ -1,4 +1,5 @@
 import AppKit
+import AppKitPlus
 import UIFoundation
 
 /// Pure-AppKit chrome controls for the lyrics panel (playback scrubber + buttons).
@@ -34,25 +35,27 @@ extension AppleMusicLyrics {
         }
     }
 
-    /// Playback scrubber: a thin track + fill with elapsed / remaining labels.
-    /// Click or drag the bar to seek; the labels are inert.
-    final class PlaybackProgressView: NSView {
+    /// Playback scrubber: AppKitPlus's `NSPlaybackSlider` — the time slider of
+    /// Music's full-screen player — over elapsed / remaining labels. Press or drag
+    /// the bar to scrub; the labels are inert.
+    ///
+    /// The seek happens once, on release. While the bar is pressed it follows the
+    /// pointer, the labels show where it is, and playback updates leave it alone —
+    /// the 10 Hz chrome tick would otherwise pull it back from under the pointer.
+    /// The arrow keys and VoiceOver move the slider without pressing it, and seek
+    /// at once.
+    final class PlaybackProgressView: NSView, NSPlaybackSliderDelegate {
         var onSeek: ((TimeInterval) -> Void)?
 
-        private var duration: TimeInterval = 0
-        private var currentTime: TimeInterval = 0
-
-        private let track = LayerBackedView()
-        private let fill = LayerBackedView()
+        private let timeSlider = NSPlaybackSlider()
         private let elapsedLabel = NSTextField(labelWithString: "0:00")
         private let remainingLabel = NSTextField(labelWithString: "-0:00")
-        private var fillWidthConstraint: NSLayoutConstraint!
 
-        private let barHeight: CGFloat = 4
-        /// How far above and below the bar a click still counts as a scrub. The
-        /// bar itself is only `barHeight` tall; this gives it a strip to aim at
-        /// without reaching the labels underneath.
-        private let scrubberVerticalSlop: CGFloat = 6
+        private var duration: TimeInterval = 0
+        /// The time the bar shows while it is not pressed: playback's, or where
+        /// the last seek went until playback reports it.
+        private var displayedTime: TimeInterval = 0
+        private var isScrubbing = false
 
         override init(frame frameRect: NSRect) {
             super.init(frame: frameRect)
@@ -60,20 +63,21 @@ extension AppleMusicLyrics {
             setup()
         }
 
-        /// Only the bar and the strip around it take clicks. The two time labels
-        /// sit at the ends of the bar, and AppKit hands a click on a
-        /// non-selectable `NSTextField` to its next responder — this view — which
-        /// read the click's x as a scrub to the very start or the very end of the
-        /// track, so a click on a label skipped to the previous or next song.
-        /// Music's own time labels are inert; a click on them here now falls
-        /// through to the window-drag root view.
+        /// Only the slider takes clicks, and the hit test hands back the slider
+        /// itself rather than this view: built with the macOS 27 SDK, a system
+        /// control tracks the mouse through gesture recognizers, which AppKit
+        /// collects from the window's hit-test view up — a hit on this view would
+        /// leave the slider's out. The time labels sit under the ends of the bar
+        /// and stay inert, as Music's are: a click on one falls through to the
+        /// window-drag root view. (A click on a label used to reach the
+        /// hand-drawn bar this slider replaced, which read its x as a scrub to
+        /// the very start or the very end of the track — the previous or the
+        /// next song.)
         override func hitTest(_ point: NSPoint) -> NSView? {
-            let localPoint = convert(point, from: superview)
-            return scrubberHitRect.contains(localPoint) ? self : nil
-        }
-
-        private var scrubberHitRect: NSRect {
-            track.frame.insetBy(dx: 0, dy: -scrubberVerticalSlop).intersection(bounds)
+            guard let hitView = super.hitTest(point), hitView.isDescendant(of: timeSlider) else {
+                return nil
+            }
+            return hitView
         }
 
         @available(*, unavailable)
@@ -82,17 +86,14 @@ extension AppleMusicLyrics {
         }
 
         private func setup() {
-            for bar in [track, fill] {
-                bar.translatesAutoresizingMaskIntoConstraints = false
-                // Renderer-driven: `cornerRadius` / `backgroundColor` are applied
-                // in `LayerBackedView.updateLayer()`, the only sync-safe window.
-                bar.cornerRadius = barHeight / 2
-                bar.clipsToBounds = true
+            timeSlider.minValue = 0
+            timeSlider.maxValue = 0
+            timeSlider.scrubbingDelegate = self
+            timeSlider.primaryAction = NSAction { [weak self] _ in
+                self?.timeSliderValueDidChange()
             }
-            track.backgroundColor = NSColor.white.withAlphaComponent(0.3)
-            fill.backgroundColor = .white
-            addSubview(track)
-            track.addSubview(fill)
+            timeSlider.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(timeSlider)
 
             for label in [elapsedLabel, remainingLabel] {
                 label.font = .monospacedDigitSystemFont(ofSize: 11, weight: .medium)
@@ -106,58 +107,70 @@ extension AppleMusicLyrics {
             }
             remainingLabel.alignment = .right
 
-            fillWidthConstraint = fill.widthAnchor.constraint(equalToConstant: 0)
+            // Music puts its time labels 6 points below the slider's 16-point row.
+            let labelSpacing: CGFloat = 6
             NSLayoutConstraint.activate([
-                track.leadingAnchor.constraint(equalTo: leadingAnchor),
-                track.trailingAnchor.constraint(equalTo: trailingAnchor),
-                track.topAnchor.constraint(equalTo: topAnchor),
-                track.heightAnchor.constraint(equalToConstant: barHeight),
+                timeSlider.leadingAnchor.constraint(equalTo: leadingAnchor),
+                timeSlider.trailingAnchor.constraint(equalTo: trailingAnchor),
+                timeSlider.topAnchor.constraint(equalTo: topAnchor),
 
-                fill.leadingAnchor.constraint(equalTo: track.leadingAnchor),
-                fill.topAnchor.constraint(equalTo: track.topAnchor),
-                fill.bottomAnchor.constraint(equalTo: track.bottomAnchor),
-                fillWidthConstraint,
-
-                elapsedLabel.topAnchor.constraint(equalTo: track.bottomAnchor, constant: 4),
+                elapsedLabel.topAnchor.constraint(equalTo: timeSlider.bottomAnchor, constant: labelSpacing),
                 elapsedLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
                 elapsedLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-                remainingLabel.topAnchor.constraint(equalTo: track.bottomAnchor, constant: 4),
+                remainingLabel.topAnchor.constraint(equalTo: timeSlider.bottomAnchor, constant: labelSpacing),
                 remainingLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
             ])
         }
 
         func update(currentTime: TimeInterval, duration: TimeInterval) {
-            self.currentTime = currentTime
             self.duration = duration
-            applyFill()
-            elapsedLabel.stringValue = Self.formatTime(currentTime)
-            remainingLabel.stringValue = "-" + Self.formatTime(max(0, duration - currentTime))
+            if timeSlider.maxValue != duration {
+                timeSlider.maxValue = duration
+            }
+            // A pressed bar follows the pointer, not playback.
+            guard !isScrubbing else { return }
+            displayedTime = currentTime
+            timeSlider.doubleValue = currentTime
+            showTime(currentTime)
         }
 
-        override func layout() {
-            super.layout()
-            applyFill()
+        // MARK: NSPlaybackSliderDelegate
+
+        func playbackSliderDidBeginScrubbing(_ playbackSlider: NSPlaybackSlider) {
+            isScrubbing = true
+            showTime(playbackSlider.doubleValue)
         }
 
-        private func applyFill() {
-            let progress = duration > 0 ? min(1, max(0, currentTime / duration)) : 0
-            fillWidthConstraint.constant = track.bounds.width * progress
+        func playbackSliderDidEndScrubbing(_ playbackSlider: NSPlaybackSlider) {
+            isScrubbing = false
+            seek(to: playbackSlider.doubleValue)
         }
 
-        override func mouseDown(with event: NSEvent) {
-            seek(with: event)
+        /// Sent on the press, after every movement of a drag, once more after the
+        /// release, and for each arrow key or VoiceOver adjustment.
+        private func timeSliderValueDidChange() {
+            let time = timeSlider.doubleValue
+            if isScrubbing {
+                showTime(time)
+            } else if time != displayedTime {
+                // The arrow keys and VoiceOver. The action that follows a release
+                // carries the time `playbackSliderDidEndScrubbing(_:)` has just
+                // sought to, and stops at the comparison above.
+                seek(to: time)
+            }
         }
 
-        override func mouseDragged(with event: NSEvent) {
-            seek(with: event)
+        private func seek(to time: TimeInterval) {
+            displayedTime = time
+            showTime(time)
+            guard duration > 0 else { return }
+            onSeek?(time)
         }
 
-        private func seek(with event: NSEvent) {
-            guard duration > 0, track.bounds.width > 0 else { return }
-            let x = track.convert(event.locationInWindow, from: nil).x
-            let fraction = max(0, min(1, x / track.bounds.width))
-            onSeek?(fraction * duration)
+        private func showTime(_ time: TimeInterval) {
+            elapsedLabel.stringValue = Self.formatTime(time)
+            remainingLabel.stringValue = "-" + Self.formatTime(max(0, duration - time))
         }
 
         static func formatTime(_ time: TimeInterval) -> String {

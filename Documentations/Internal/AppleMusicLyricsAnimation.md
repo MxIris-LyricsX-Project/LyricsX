@@ -2,7 +2,8 @@
 
 > 对应提案：[对齐 Apple Music 26.6 歌词动画](../Evolutions/0007-apple-music-lyrics-animation-parity.md)、
 > [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)、
-> [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/draft-apple-music-line-interaction-parity.md)
+> [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/draft-apple-music-line-interaction-parity.md)、
+> [歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](../Evolutions/draft-panel-playback-slider.md)
 >
 > 面向维护者。这里记录最终数据链、动画状态所有权和降级边界；旧的探索文档保留为历史记录，
 > 不再作为 26.6 行为的实现依据。
@@ -583,6 +584,26 @@ occlusion、最小化、还原通知和 `viewDidMoveToWindow`。「补一帧」�
 间奏期间 `updateInterludesIfNeeded` 每帧都请求把 clip 对准圆点；`LineTransitionCoordinator.transitionClip`
 在 clip 已静止于目标（没有 clip 动画、model origin 与目标相差不到 0.5 pt）时直接返回，不再每帧取消 row 动画并
 重跑 `setBoundsOrigin` + `reflectScrolledClipView`。
+
+## 进度条
+
+左栏的进度条是 AppKitPlus 的 `NSPlaybackSlider`——Music 全屏播放器那根时间条的移植——由 `PlaybackProgressView`
+包着，时间标签在它下方 6 pt（Music 的间距）。外观全由控件决定：静止时是 7 pt 的胶囊，已播放部分白 45%、其余白 18%，
+以 plus-lighter 叠在背景上；按下时用弹簧长到 16 pt，已播放部分变成纯白。它不支持改色，背景偏亮时条会很淡，Music 也一样。
+
+- **只在松手时 seek。** `playbackSliderDidBeginScrubbing` 到 `playbackSliderDidEndScrubbing` 之间，滑块跟着指针走，
+  时间标签显示指针处的时间，`update(currentTime:duration:)` 送来的播放位置只更新时长、不动滑块——否则 10 Hz 的
+  chrome timer 会把按住的条拉回播放位置。松手时 seek 一次。AppKit 在松手之后还会补发一次 action，值与刚 seek 的相同，
+  由 `displayedTime` 的比较挡掉；方向键和 VoiceOver 只发 action、不经过按下，值一变就立即 seek。时长未知（0）时不 seek，
+  滑块也不设为 disabled（disabled 会把整条画到 1/4 不透明度，几乎看不见）。
+- **点击只交给滑块本身。** `PlaybackProgressView.hitTest` 在滑块范围内返回滑块，其余位置返回 `nil`，而不返回容器自己：
+  用 macOS 27 SDK 构建时，系统控件靠 gesture recognizer 跟踪鼠标，AppKit 从窗口 hit-test 命中的视图沿 superview 链
+  向上收集 recognizer，命中容器就收不到滑块的那一个，点击会悄无声息地失效。返回 `nil` 让时间标签保持惰性：标签贴在
+  条两端的下方，曾经把点击转给手写的进度条，被读成跳到开头或结尾，也就是上一首、下一首。根视图 `DraggablePanelView`
+  的 hitTest 因为祖先链里有 `PlaybackProgressView` 而放行滑块，其余位置的点击照旧拖窗口。
+
+`PlaybackScrubberProbes` 守住这两条：点击落在哪里断言在窗口的 hit-test 上（条上每一点都到滑块，标签到不了）；seek 的
+时机经滑块 cell 的三个 tracking 方法驱动，并像 AppKit 一样在按下、每次移动和松手之后发 action。
 
 ## 性能诊断
 

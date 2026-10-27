@@ -110,6 +110,14 @@ swift test --filter LyricsLibraryFixtureProbes
 # called ScrollSpringProbes until 8445f2e; that filter now matches nothing.)
 swift test --filter LineTransitionProbes
 
+# The panel's scrubber (AppKitPlus's NSPlaybackSlider): every point on the bar
+# reaches the slider and the time labels stay inert, asserted on the window's
+# hit test (built with the macOS 27 SDK, the slider tracks the mouse through
+# gesture recognizers); a press seeks once, on release, a pressed bar ignores
+# playback, and the arrow keys seek at once. Run on any change to
+# PlaybackProgressView or to the views around it.
+swift test --filter PlaybackScrubberProbes
+
 # When the panel's display link and chrome timer tick: full rate only while
 # playback plays lyrics in a window on screen, one frame per change while
 # paused, nothing while hidden, occluded, minimized or without lyrics. Plus
@@ -370,6 +378,7 @@ Setting evaluation order (high overrides low): target xcconfig → project xccon
 - **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`) — transitive dependency of MusicPlayer; provides the `MediaRemoteAdapter` product used by `SystemMedia` to bridge the private MediaRemote APIs
 - **LyricsXFoundation** (local package in `LyricsXPackage/`) — re-export wrapper (`@_exported import LyricsKit`) plus small shared extensions (`PlaybackState.lyricsDisplayTime`, `MusicTrack.resolvedArtwork`), the pure policies, and a few AppKit views the app uses — including `MenuBarMarqueeLabel`, the menu bar lyric line on macOS 26+
 - **AppleMusicLyricsPanel** (local package target in `LyricsXPackage/`) — the Apple Music-style lyrics panel: CALayer karaoke engine, panel view controller, gradient background. Extracted from the app target so it builds and probe-tests standalone (`swift test --filter LineEmphasisProbes`). All app coupling flows through one injection seam, `AppleMusicLyrics.HostEnvironment` (player, translation policy, lyric time delay), installed by the app-side glue
+- **AppKitPlus** (`AppKitSupportProgram/AppKitPlus-Release`, `from: "0.19.0"`) — binary xcframework of AppKit additions; `AppleMusicLyricsPanel` uses its `NSPlaybackSlider` as the panel's scrubber. A dynamic framework (~13 MB) embedded in the app bundle; its process-wide method hooks install only when the feature that owns them is first used. UIFoundation's own `AppKitPlus` trait stays off, so `LayerBackedView` keeps its plain-`NSView` base — and with the trait off UIFoundation ships an `NSEdgeInsets` `==` of its own, ambiguous next to AppKitPlus's in any file that sees both
 
 ### App Internal Structure (`LyricsX/`)
 

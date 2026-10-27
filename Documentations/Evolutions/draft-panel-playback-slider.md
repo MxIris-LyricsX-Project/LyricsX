@@ -34,14 +34,16 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
 
 1. [x] 依赖：`Package.swift` 加 AppKitPlus-Release，刷新 Xcode 工程的 `Package.resolved`；app 构建通过，
    `AppKitPlus.framework` 嵌进 app 包（Debug 包里 13 MB，已签名，经 `@rpath` 链接）。
-2. [ ] 进度条：`PlaybackProgressView` 换成 `NSPlaybackSlider`，面板去掉固定高度，改写 `PlaybackScrubberProbes`，
-   连同 `CLAUDE.md` 与实现说明一起提交。
+2. [x] 进度条：`PlaybackProgressView` 换成 `NSPlaybackSlider`，面板去掉固定高度，改写 `PlaybackScrubberProbes`，
+   连同 `CLAUDE.md` 与实现说明一起提交。`PlaybackScrubberProbes` 的 10 个测试全过；逐一把实现改坏（hit-test 返回容器、
+   标签可点、按住时跟随播放、无时长也 seek、拖动中逐事件 seek、松手补发的 action 重复 seek、松手本身不 seek），每一处
+   都有对应的测试变红。面板探针整组 172 个全过，app 的 Debug 构建通过，app 与 AppKitPlus 之间没有重名的 Objective-C 类。
 
 **未经询问采用的假设**：外观完全照 Music（已播放部分白 45%、其余白 18%，按下时变白长高；这个控件本身不支持改色）；
 时长未知（0）时滑块照常显示、按下不 seek，不设为 disabled（disabled 会把整条画到 1/4 不透明度，几乎看不见）；时间
 标签的字体和颜色不变；不打开 UIFoundation 的 `AppKitPlus` trait。
 
-**影响**：app 包多出约 12 MB 的 `AppKitPlus.framework`（含 x86_64、arm64、arm64e 的动态框架，随 app 一起签名分发）。
+**影响**：app 包多出约 13 MB 的 `AppKitPlus.framework`（含 x86_64、arm64、arm64e 的动态框架，随 app 一起签名分发）。
 它的进程级 method hook 都在对应功能第一次被用到时才安装，只用这个滑块不会改变 app 其他界面的 AppKit 行为。AppKitPlus
 自述仍在测试、不承诺 API 稳定；`from:` 允许升到 1.0.0 以下的任何版本，但 `Package.resolved` 把它钉在 0.19.0，只有
 主动 resolve 才会升级。CI 用 Xcode 26.4（macOS 26 SDK）走经典 tracking loop，本机 Xcode 27.2 走 gesture recognizer，
@@ -56,3 +58,5 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
 | 2026-10-28 | 直接依赖 AppKitPlus，不打开 UIFoundation 的 `AppKitPlus` trait | 只需要这一个控件；打开 trait 会把面板里所有 `LayerBackedView` 的基类换成 `NSLayerBackedView`。代价：trait 关着时 UIFoundation 自带一份 `NSEdgeInsets` 的 `==`，与 AppKitPlus 的重名，同时看得见两者的文件里比较 `NSEdgeInsets` 会报歧义（目前没有这样的代码） |
 | 2026-10-28 | 用户批准，开始实现 | — |
 | 2026-10-28 | 拆出两个落地步骤：先只加依赖，再换控件 | 加依赖本身就要单独验证一次：resolve 没有推进别的依赖，框架确实嵌进了 app 包 |
+| 2026-10-28 | 松手的 seek 放在 `playbackSliderDidEndScrubbing`；AppKit 随后补发的那次 action 值与刚 seek 的相同，按值跳过 | AppKitPlus 自带示例的同一做法；方向键与 VoiceOver 走同一个 action，值一变就 seek，不必分辨 action 从哪来 |
+| 2026-10-28 | 测试按 AppKitPlus 自己的测试那样直接调滑块 cell 的 `startTracking` / `continueTracking` / `stopTracking`，不投递真实鼠标事件 | 投递的点击能否复现取决于测试宿主链接的 SDK 和窗口是否为 key，测试进程保证不了；点击落点另在窗口的 hit-test 上断言 |
