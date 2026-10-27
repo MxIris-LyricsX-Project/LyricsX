@@ -1,6 +1,6 @@
 # Draft - 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **创建日期**: 2026-10-28
 - **最后更新**: 2026-10-28
 - **实现分支 / PR**: `feature/panel-playback-slider`
@@ -30,6 +30,13 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
   不经拖动的调整立即 seek。
 - **文档**：`CLAUDE.md` 的依赖清单与测试命令；`Internal/AppleMusicLyricsAnimation.md` 补一段进度条的实现说明。
 
+**落地步骤**：
+
+1. [x] 依赖：`Package.swift` 加 AppKitPlus-Release，刷新 Xcode 工程的 `Package.resolved`；app 构建通过，
+   `AppKitPlus.framework` 嵌进 app 包（Debug 包里 13 MB，已签名，经 `@rpath` 链接）。
+2. [ ] 进度条：`PlaybackProgressView` 换成 `NSPlaybackSlider`，面板去掉固定高度，改写 `PlaybackScrubberProbes`，
+   连同 `CLAUDE.md` 与实现说明一起提交。
+
 **未经询问采用的假设**：外观完全照 Music（已播放部分白 45%、其余白 18%，按下时变白长高；这个控件本身不支持改色）；
 时长未知（0）时滑块照常显示、按下不 seek，不设为 disabled（disabled 会把整条画到 1/4 不透明度，几乎看不见）；时间
 标签的字体和颜色不变；不打开 UIFoundation 的 `AppKitPlus` trait。
@@ -48,3 +55,4 @@ AppKitPlus 依赖，版本要求 `from: "0.19.0"`。
 | 2026-10-28 | 松手时 seek 一次，不再逐事件 seek | `NSPlaybackSlider` 文档推荐的用法；逐事件 seek 会给播放器连发一串 seek 请求 |
 | 2026-10-28 | 直接依赖 AppKitPlus，不打开 UIFoundation 的 `AppKitPlus` trait | 只需要这一个控件；打开 trait 会把面板里所有 `LayerBackedView` 的基类换成 `NSLayerBackedView`。代价：trait 关着时 UIFoundation 自带一份 `NSEdgeInsets` 的 `==`，与 AppKitPlus 的重名，同时看得见两者的文件里比较 `NSEdgeInsets` 会报歧义（目前没有这样的代码） |
 | 2026-10-28 | 用户批准，开始实现 | — |
+| 2026-10-28 | 拆出两个落地步骤：先只加依赖，再换控件 | 加依赖本身就要单独验证一次：resolve 没有推进别的依赖，框架确实嵌进了 app 包 |

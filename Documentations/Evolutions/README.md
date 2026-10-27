@@ -31,4 +31,4 @@
 | [0020](0020-ai-lyrics-translation.md) | 实验室：用 OpenAI 兼容端点翻译歌词 | Implemented |
 | [0021](0021-system-lyrics-translation.md) | 实验室：用系统翻译（Translation 框架）翻译歌词 | Implemented |
 | [draft](draft-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | In Progress |
-| [draft](draft-panel-playback-slider.md) | 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider | Accepted |
+| [draft](draft-panel-playback-slider.md) | 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider | In Progress |

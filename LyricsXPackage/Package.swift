@@ -106,6 +106,10 @@ let package = Package(
             url: "https://github.com/Lakr233/MSDisplayLink",
             from: "2.0.0"
         ),
+        .package(
+            url: "https://github.com/AppKitSupportProgram/AppKitPlus-Release",
+            from: "0.19.0"
+        ),
     ],
     targets: [
         .target(
@@ -130,6 +134,7 @@ let package = Package(
                 .product(name: "OSToolbox", package: "FrameworkToolbox"),
                 .product(name: "UIFoundation", package: "UIFoundation"),
                 .product(name: "MSDisplayLink", package: "MSDisplayLink"),
+                .product(name: "AppKitPlus", package: "AppKitPlus-Release"),
             ],
             resources: [
                 .process("ArtworkGradientShaders.metal"),
@@ -146,6 +151,7 @@ let package = Package(
             name: "AppleMusicLyricsPanelTests",
             dependencies: [
                 "AppleMusicLyricsPanel",
+                .product(name: "AppKitPlus", package: "AppKitPlus-Release"),
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
