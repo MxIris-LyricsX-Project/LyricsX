@@ -541,11 +541,49 @@ func aiLyricsTranslationKeepsValidPartialResponseEntries() throws {
     """
     let parsed = try AILyricsTranslationPolicy.parsedTranslations(
         response: response,
-        expectedIndices: [4, 5, 6, 7]
+        expectedLines: [
+            AILyricsTranslationInputLine(index: 4, text: "hello"),
+            AILyricsTranslationInputLine(index: 5, text: "goodbye"),
+            AILyricsTranslationInputLine(index: 6, text: "hi"),
+            AILyricsTranslationInputLine(index: 7, text: "farewell"),
+        ]
     )
 
     #expect(parsed.translations == [4: "bonjour", 6: "hola"])
     #expect(parsed.missingIndices == [5, 7])
+}
+
+@Test
+func aiLyricsTranslationKeepsNoLineTheModelHandedBackUnchanged() throws {
+    // The prompt asks the model to return a line already in the target
+    // language as it is. Kept as a translation, that line shows twice in
+    // bilingual lyrics; and it was answered, so it is not missing either.
+    let response = """
+    {"translations":[{"index":0,"text":"Baby I love you"},{"index":1,"text":"I miss you"}]}
+    """
+    let parsed = try AILyricsTranslationPolicy.parsedTranslations(
+        response: response,
+        expectedLines: [
+            AILyricsTranslationInputLine(index: 0, text: "Baby I love you"),
+            AILyricsTranslationInputLine(index: 1, text: "보고 싶어"),
+        ]
+    )
+
+    #expect(parsed.translations == [1: "I miss you"])
+    #expect(parsed.missingIndices.isEmpty)
+}
+
+@Test
+func aiLyricsTranslationCopyRanksExactlyLikeTheLyricsItTranslates() throws {
+    // LyricsKit ranks lyrics that carry a translation above lyrics that do
+    // not, which rewards a provider for shipping one. A translation made here
+    // must not earn that: the translated copy replaces the original on screen,
+    // and a better result arriving in the priority window would lose to it.
+    let source = try #require(Lyrics("[ti:Title]\n[ar:Artist]\n[00:01.000]first\n[00:02.000]second"))
+
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: source, targetLanguage: "zh-Hans")
+
+    #expect(translated.quality == source.quality)
 }
 
 @Test
@@ -555,7 +593,10 @@ func aiLyricsTranslationDiscardsAmbiguousDuplicateIndices() throws {
     """
     let parsed = try AILyricsTranslationPolicy.parsedTranslations(
         response: response,
-        expectedIndices: [2, 3]
+        expectedLines: [
+            AILyricsTranslationInputLine(index: 2, text: "eins"),
+            AILyricsTranslationInputLine(index: 3, text: "zwei"),
+        ]
     )
 
     #expect(parsed.translations == [3: "valid"])

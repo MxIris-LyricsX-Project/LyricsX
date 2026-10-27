@@ -480,7 +480,7 @@ final class OpenAICompatibleLyricsTranslator {
                 let content = try OpenAICompatibleChatResponse.content(from: data)
                 let parsed = try AILyricsTranslationPolicy.parsedTranslations(
                     response: content,
-                    expectedIndices: remaining.map(\.index)
+                    expectedLines: remaining
                 )
                 translations.merge(parsed.translations) { _, new in new }
                 remaining = remaining.filter { parsed.missingIndices.contains($0.index) }
@@ -604,9 +604,12 @@ final class OpenAICompatibleLyricsTranslator {
         }
         let parsed = try AILyricsTranslationPolicy.parsedTranslations(
             response: content,
-            expectedIndices: [probeLine.index]
+            expectedLines: [probeLine]
         )
-        guard parsed.translations[probeLine.index] != nil else {
+        // Answered is enough: with an English target the probe line comes
+        // back as it went, which is no translation to keep but still proves
+        // the endpoint works.
+        guard !parsed.missingIndices.contains(probeLine.index) else {
             throw OpenAICompatibleLyricsTranslatorError.invalidResponse
         }
     }

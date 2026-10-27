@@ -407,6 +407,12 @@ public enum AILyricsTranslationPolicy {
             throw AILyricsTranslationError.invalidResponse
         }
         let result = Lyrics(lines: source.lines, idTags: source.idTags, metadata: source.metadata)
+        // Ranked before the translation is attached. LyricsKit scores lyrics
+        // that come with a translation higher, to reward a provider for
+        // shipping one, and caches the score on first use; a translation made
+        // here must not earn that, or the copy would outrank a better result
+        // arriving in the priority window that the original would have lost to.
+        _ = result.quality
         let tag = LyricsLine.Attachments.Tag.translation(languageCode: targetLanguage)
         for index in translations.keys.sorted() {
             result.lines[index].attachments[tag] = translations[index]
@@ -460,8 +466,9 @@ public enum AILyricsTranslationPolicy {
 
     public static func parsedTranslations(
         response: String,
-        expectedIndices: [Int]
+        expectedLines: [AILyricsTranslationInputLine]
     ) throws -> AILyricsTranslationParsedResult {
+        let expectedIndices = expectedLines.map(\.index)
         let response = strippingMarkdownFence(from: response)
         guard let data = response.data(using: .utf8),
               let payload = try? JSONDecoder().decode(TranslationResponse.self, from: data) else {
@@ -473,8 +480,10 @@ public enum AILyricsTranslationPolicy {
               expectedIndexSet.allSatisfy({ $0 >= 0 }) else {
             throw AILyricsTranslationError.invalidResponse
         }
+        let sourceTexts = Dictionary(uniqueKeysWithValues: expectedLines.map { ($0.index, $0.text) })
 
         var translations: [Int: String] = [:]
+        var unchangedIndices = Set<Int>()
         var duplicateIndices = Set<Int>()
 
         for translation in payload.translations {
@@ -501,9 +510,18 @@ public enum AILyricsTranslationPolicy {
             translations[translation.index] = text
         }
 
+        // A line handed back as it was — already in the target language, as
+        // the prompt asks — was answered but is no translation: kept, it would
+        // show twice in bilingual lyrics. System Translation drops these too.
+        for (index, text) in translations
+        where SystemLyricsTranslationPolicy.isUnchanged(text, from: sourceTexts[index] ?? "") {
+            translations.removeValue(forKey: index)
+            unchangedIndices.insert(index)
+        }
+
         return AILyricsTranslationParsedResult(
             translations: translations,
-            missingIndices: expectedIndices.filter { translations[$0] == nil }
+            missingIndices: expectedIndices.filter { translations[$0] == nil && !unchangedIndices.contains($0) }
         )
     }
 
