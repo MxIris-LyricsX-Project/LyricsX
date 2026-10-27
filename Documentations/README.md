@@ -81,6 +81,8 @@
   两种拼法都试。
 - [歌词候选的排序](Internal/LyricsSourceOrdering.md) —— 为什么用分数分桶而不是比分差
   （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前。
+- [把歌词写进「音乐」](Internal/MusicLyricsWriting.md) —— 什么时候写、写什么，否掉歌词时为什么只撤回
+  LyricsX 自己写的那份，以及暂缓到 1.9.0 正式版之后的已知问题：自动写入会覆盖用户原有的歌词。
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
   尺寸，补的约束优先级为什么必须卡在 500 和 750 之间，量的为什么是选中页而不是 controller
   自己的 view，切 tab 为什么没有动画（试过的三种写法各自怎么失败的），grid 里的输入框为什么必须
