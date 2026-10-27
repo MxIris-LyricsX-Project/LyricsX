@@ -477,7 +477,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         defaults[.noSearchingTrackIds].append(track.id)
         if defaults[.writeToiTunesAutomatically] {
-            track.setLyrics("")
+            AppController.shared.removeRejectedLyricsFromMusic(of: track)
         }
         removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
@@ -491,7 +491,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         defaults[.noSearchingAlbumNames].append(album)
         if defaults[.writeToiTunesAutomatically] {
-            track.setLyrics("")
+            AppController.shared.removeRejectedLyricsFromMusic(of: track)
         }
         removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil

@@ -165,7 +165,7 @@ func preparingAFileThatAlreadyExistsLeavesItsContentsAlone() throws {
 
 @Test
 func rejectingLyricsReadFromBesideATrackLeavesTheUsersFileAlone() {
-    // "Wrong Lyrics" and "Don't Search Lyrics for This Album" delete the file
+    // "Wrong Lyrics" and "Disable Lyrics for Entire Album" delete the file
     // the rejected lyrics came from. A file beside the track is the user's own
     // — hand-made or bought — and the verdict must not destroy it.
     let besideTrackURL = URL(fileURLWithPath: "/Users/tester/Music/Album/Song.lrc")
@@ -192,4 +192,92 @@ func rejectingLyricsFromTheLibraryRemovesTheLibraryCopy() {
         )
         #expect(fileToRemove == libraryFileURL)
     }
+}
+
+@Test
+func rejectingLyricsKeepsTheUsersOwnLyricsInMusic() {
+    // With automatic writing on, rejecting lyrics also clears the track's
+    // lyrics in Music. Lyrics the user typed there, or that came embedded in
+    // the file, were never LyricsX's, and the verdict must not destroy them.
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: "Words I wrote myself\nThe second verse",
+        contentsLyricsXWrote: ["Somebody else's song\nAnother line"]
+    )
+
+    #expect(!clears)
+}
+
+@Test
+func rejectingLyricsKeepsLyricsXsTextOnceTheUserEditedIt() {
+    // A line corrected by hand makes the text the user's.
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: "First line\nSecond line, corrected",
+        contentsLyricsXWrote: ["First line\nSecond line"]
+    )
+
+    #expect(!clears)
+}
+
+@Test
+func rejectingLyricsKeepsWhatMusicHoldsWhenLyricsXWroteNothingToCompare() {
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: "Words I wrote myself",
+        contentsLyricsXWrote: []
+    )
+
+    #expect(!clears)
+}
+
+@Test(arguments: [nil, "", " \n\r\n "] as [String?])
+func rejectingLyricsHasNothingToClearWhenMusicHoldsNoLyrics(lyricsInMusic: String?) {
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: lyricsInMusic,
+        contentsLyricsXWrote: ["First line\nSecond line"]
+    )
+
+    #expect(!clears)
+}
+
+@Test
+func rejectingLyricsTakesWhatLyricsXWroteBackOutOfMusic() {
+    // What the clearing is for: automatic writing put the wrong lyrics into
+    // Music, and rejecting them must not leave them there.
+    let written = "First line\nFirst translation\nSecond line"
+
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: written,
+        contentsLyricsXWrote: [written]
+    )
+
+    #expect(clears)
+}
+
+@Test
+func rejectingLyricsTakesBackAnEarlierWriteOfThem() {
+    // The lyrics on screen gained a translation after LyricsX wrote them into
+    // Music, so they now write something else; what Music holds is still the
+    // earlier write, and still LyricsX's.
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: "First line\nSecond line",
+        contentsLyricsXWrote: [
+            "First line\nSecond line",
+            "First line\nFirst translation\nSecond line\nSecond translation",
+        ]
+    )
+
+    #expect(clears)
+}
+
+@Test(arguments: [
+    "First line\rSecond line",
+    "First line\r\nSecond line\r\n",
+    "First line\n\nSecond line\n",
+])
+func lyricsXsWriteStillCountsWhenMusicStoresItsLineBreaksDifferently(lyricsInMusic: String) {
+    let clears = LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+        lyricsInMusic: lyricsInMusic,
+        contentsLyricsXWrote: ["First line\nSecond line"]
+    )
+
+    #expect(clears)
 }

@@ -43,8 +43,9 @@ the package tests below are the only automated gate and they have to be run by
 hand.
 
 `LyricsXPackage` has three suites. `LyricsXFoundationTests` covers the pure
-policies — lyrics storage destinations and which file rejecting lyrics may
-delete, editing eligibility, HUD window configuration and its font fallback,
+policies — lyrics storage destinations and what rejecting lyrics may take
+with it (LyricsX's library file, and Music's lyrics only while they are
+still the text LyricsX wrote there), editing eligibility, HUD window configuration and its font fallback,
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
