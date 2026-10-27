@@ -479,9 +479,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if defaults[.writeToiTunesAutomatically] {
             track.setLyrics("")
         }
-        if let url = AppController.shared.currentLyrics?.metadata.localURL {
-            try? FileManager.default.removeItem(at: url)
-        }
+        removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
         AppController.shared.searchTask?.cancel()
     }
@@ -495,10 +493,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         if defaults[.writeToiTunesAutomatically] {
             track.setLyrics("")
         }
-        if let url = AppController.shared.currentLyrics?.metadata.localURL {
-            try? FileManager.default.removeItem(at: url)
-        }
+        removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
+    }
+
+    /// Deletes LyricsX's own copy of the lyrics the user just rejected, so the
+    /// next lookup cannot bring them back. A file beside the track is left
+    /// alone: it is the user's, not LyricsX's to delete.
+    private func removeRejectedLyricsFile() {
+        guard let fileURL = LyricsStoragePolicy.fileToRemoveWhenRejected(
+            localURL: AppController.shared.currentLyrics?.metadata.localURL,
+            defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
+            customDirectoryURL: defaults.lyricsCustomSavingPath
+        ) else {
+            return
+        }
+        try? FileManager.default.removeItem(at: fileURL)
     }
 
     func registerUserDefaults() {

@@ -162,3 +162,34 @@ func preparingAFileThatAlreadyExistsLeavesItsContentsAlone() throws {
     #expect(preparedURL == fileURL)
     #expect(try String(contentsOf: preparedURL, encoding: .utf8) == existingContents)
 }
+
+@Test
+func rejectingLyricsReadFromBesideATrackLeavesTheUsersFileAlone() {
+    // "Wrong Lyrics" and "Don't Search Lyrics for This Album" delete the file
+    // the rejected lyrics came from. A file beside the track is the user's own
+    // — hand-made or bought — and the verdict must not destroy it.
+    let besideTrackURL = URL(fileURLWithPath: "/Users/tester/Music/Album/Song.lrc")
+
+    let fileToRemove = LyricsStoragePolicy.fileToRemoveWhenRejected(
+        localURL: besideTrackURL,
+        defaultDirectoryURL: defaultDirectoryURL,
+        customDirectoryURL: customDirectoryURL
+    )
+
+    #expect(fileToRemove == nil)
+}
+
+@Test
+func rejectingLyricsFromTheLibraryRemovesTheLibraryCopy() {
+    for libraryFileURL in [
+        defaultDirectoryURL.appendingPathComponent("Title - Artist.lrcx"),
+        customDirectoryURL.appendingPathComponent("Title - Artist.lrcx"),
+    ] {
+        let fileToRemove = LyricsStoragePolicy.fileToRemoveWhenRejected(
+            localURL: libraryFileURL,
+            defaultDirectoryURL: defaultDirectoryURL,
+            customDirectoryURL: customDirectoryURL
+        )
+        #expect(fileToRemove == libraryFileURL)
+    }
+}

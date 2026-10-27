@@ -59,6 +59,27 @@ public enum LyricsStoragePolicy {
         return false
     }
 
+    /// The file to delete when the user rejects the lyrics on screen with
+    /// "Wrong Lyrics" or "Don't Search Lyrics for This Album": LyricsX's own
+    /// copy in the library, and nothing else. A file beside the track is the
+    /// user's — hand-made or bought — and a verdict on the lyrics must not
+    /// destroy it.
+    public static func fileToRemoveWhenRejected(
+        localURL: URL?,
+        defaultDirectoryURL: URL,
+        customDirectoryURL: URL?
+    ) -> URL? {
+        guard let localURL,
+              isManagedLibraryFile(
+                  localURL,
+                  defaultDirectoryURL: defaultDirectoryURL,
+                  customDirectoryURL: customDirectoryURL
+              ) else {
+            return nil
+        }
+        return localURL
+    }
+
     public static func persistDestination(
         localURL: URL?,
         allowUnmanagedLocalWriteBack: Bool,
