@@ -422,6 +422,17 @@ final class AppController: NSObject {
         track.setLyrics("")
     }
 
+    /// Stops both searches that may still be running for the current track,
+    /// for the actions that reject the lyrics on screen. Left running, the
+    /// automatic search puts its next result back on screen and, when it
+    /// ends, writes it into Music; the next-candidate search applies what it
+    /// finds as the user's own pick, which takes the track off the rejected
+    /// list.
+    func cancelLyricsSearches() {
+        searchTask?.cancel()
+        candidateReplenishTask?.cancel()
+    }
+
     /// The text `writeToiTunes` puts into Music for `lyrics` under the current
     /// preferences.
     private func musicLyricsContent(for lyrics: Lyrics) -> String {

@@ -481,7 +481,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
-        AppController.shared.searchTask?.cancel()
+        AppController.shared.cancelLyricsSearches()
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
@@ -495,6 +495,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
+        AppController.shared.cancelLyricsSearches()
     }
 
     /// Deletes LyricsX's own copy of the lyrics the user just rejected, so the
