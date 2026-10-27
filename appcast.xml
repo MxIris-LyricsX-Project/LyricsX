@@ -5,6 +5,43 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-rc.1</title>
+            <pubDate>Tue, 27 Oct 2026 10:10:29 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900201</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-rc.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>New</h3>
+<ul>
+<li>New Lyrics translation in Preferences → Lab fills in missing translations, using System Translation on macOS 26 or an OpenAI-compatible service.</li>
+<li>A Display language setting chooses which translation the desktop lyrics, the Apple Music-style lyrics window and the widget show.</li>
+<li>Lines in the Apple Music-style lyrics window respond to hovering and clicking as they do in Music.</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li>Unplayed lines and translations in the Apple Music-style lyrics window now look as they do in Music.</li>
+<li>The Apple Music-style lyrics window no longer keeps the Mac busy while paused or idle, and its background holds still while paused.</li>
+<li>Widgets follow the app's settings, including Prefer bilingual lyrics, instead of having options of their own.</li>
+<li>The large and extra-large widgets show as many whole lyric lines as fit.</li>
+<li>The widget's playback buttons no longer open the app.</li>
+<li>Widget lyrics change closer to when each line is sung.</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li>Lines without word timing now light up all at once in the Apple Music-style lyrics window instead of word by word.</li>
+<li>Fixed album artwork spilling out of the extra-large widget.</li>
+<li>Wrong Lyrics no longer deletes lyrics files you keep beside your music.</li>
+<li>Fixed Search Lyrics applying a different result than the one selected.</li>
+<li>Lyrics chosen in Search Lyrics or with Next Lyrics Candidate are no longer saved to a song that started playing in the meantime.</li>
+<li>Fixed rejected lyrics coming back, and lyrics in Music being rewritten, after a search was interrupted.</li>
+<li>Fixed a crash in the lyrics window when its font is no longer installed.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<p>Thanks to @dongge0210 for (#204), which added lyrics translation through OpenAI-compatible services.</p>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-rc.1/LyricsX_1.9.0-rc.1+10900201.zip" length="10676074" type="application/octet-stream" sparkle:edSignature="SM8MAURa+rG4gRTwUZAeZP+nvMuqHJMQpRrRcp2R2+7vh58sj0i+5Ha2TFzQSnTzWm6gY12eK18V7pThQXrdAg==" />
+        </item>
+        <item>
             <title>1.9.0-beta.14</title>
             <pubDate>Wed, 07 Oct 2026 12:01:31 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
