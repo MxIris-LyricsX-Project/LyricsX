@@ -3,6 +3,7 @@ import QuartzCore
 import Combine
 import LyricsXFoundation
 import MSDisplayLink
+import MusicPlayer
 import OSToolbox
 
 // MARK: - Container View (AppKit + CALayer lyrics engine)
@@ -48,6 +49,14 @@ extension AppleMusicLyrics {
         private var displayLinkFrameTimingAccumulator = FrameTimingAccumulator()
         private var displayLinkWorkTimingAccumulator = FrameWorkTimingAccumulator()
         private var preferenceObservers: Set<AnyCancellable> = []
+        private var playbackStateObservation: AnyCancellable?
+        private var windowObservations: [NSObjectProtocol] = []
+        /// Mirrors the host player's play state; the display link only runs
+        /// while it is true (see `LyricsDisplayLinkPolicy`).
+        private var isPlaybackActive = false
+        /// A single frame requested while the link is stopped, run on the next
+        /// main-queue turn so a burst of changes renders once.
+        private var isSingleFrameScheduled = false
         private let lineTransitionCoordinator = LineTransitionCoordinator()
         private var pendingInteractiveTargetOriginalIndex: Int?
         private var lastLineTransitionTime: CFTimeInterval?
@@ -134,6 +143,12 @@ extension AppleMusicLyrics {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] in self?.refreshTranslations() }
                 .store(in: &preferenceObservers)
+            // The display link only ticks while playback plays. A pause, a seek
+            // while paused and a resume all arrive here.
+            self.isPlaybackActive = selectedPlayer.playbackState.isPlaying
+            self.playbackStateObservation = selectedPlayer.playbackStateWillChange
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] playbackState in self?.playbackStateDidChange(playbackState) }
         }
 
         @available(*, unavailable)
@@ -143,6 +158,7 @@ extension AppleMusicLyrics {
 
         deinit {
             NotificationCenter.default.removeObserver(self)
+            windowObservations.forEach { NotificationCenter.default.removeObserver($0) }
             displayLink = nil
         }
 
@@ -215,16 +231,16 @@ extension AppleMusicLyrics {
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            if window != nil {
-                startDisplayLink()
-            } else {
-                stopDisplayLink()
-            }
+            replaceWindowObservations()
+            refreshDisplayLinkActivity()
         }
 
         // MARK: Update Entry Point
 
         func update(lyrics: Lyrics, highlightedLineIndex: Int?, mainFontSize: CGFloat, translationFontSize: CGFloat) {
+            // A line change while paused, or lyrics that just arrived, still
+            // have to reach the screen once.
+            defer { refreshDisplayLinkActivity() }
             let newSignature = LayoutSignature(lyrics: lyrics)
             let fontsChanged = mainFontSize != self.mainFontSize || translationFontSize != self.translationFontSize
             self.lyrics = lyrics
@@ -284,6 +300,24 @@ extension AppleMusicLyrics {
             }
             wasFollowing = isFollowing
             refreshEdgeFadeForFollowingState()
+        }
+
+        /// Retire the current lyrics: the panel shows "No Lyrics" and fades this
+        /// view out instead of hiding it (hiding would change the stack's fitting
+        /// size and snap the window back to it). Without this the previous
+        /// song's rows stayed behind the fade, its highlighted line sweeping and
+        /// swelling against the next song's clock.
+        func clearLyrics() {
+            guard lyrics != nil else { return }
+            if let highlighted = highlightedOriginalIndex {
+                lineViewByOriginalIndex[highlighted]?.setHighlighted(false)
+            }
+            highlightedOriginalIndex = nil
+            lyrics = nil
+            signature = nil
+            rebuildLineViews()
+            relayout()
+            refreshDisplayLinkActivity()
         }
 
         /// Re-center when the interaction state returns to following outside of a
@@ -346,6 +380,11 @@ extension AppleMusicLyrics {
             lineViewByOriginalIndex.removeAll()
             enabledOriginalIndices.removeAll()
             hasWordTiming = false
+            instrumentalView?.removeFromSuperview()
+            instrumentalView = nil
+            introEndTime = 0
+            interludeSegments.forEach { $0.view.removeFromSuperview() }
+            interludeSegments.removeAll()
 
             guard let lyrics else { return }
 
@@ -378,9 +417,6 @@ extension AppleMusicLyrics {
             }
 
             // Intro "•••" indicator when the first vocal line starts late.
-            instrumentalView?.removeFromSuperview()
-            instrumentalView = nil
-            introEndTime = 0
             if let firstIndex = enabledOriginalIndices.first {
                 let firstPosition = lyrics.lines[firstIndex].position
                 let currentTime = selectedPlayer.playbackTime + lyrics.adjustedTimeDelay
@@ -396,8 +432,6 @@ extension AppleMusicLyrics {
 
             // Mid-song interlude indicators between word-timed lines whose gap
             // (next line start − this line's sung end) exceeds the threshold.
-            interludeSegments.forEach { $0.view.removeFromSuperview() }
-            interludeSegments.removeAll()
             for position in enabledOriginalIndices.indices.dropLast() {
                 let line = lyrics.lines[enabledOriginalIndices[position]]
                 guard let duration = line.timetagDuration, duration > 0 else { continue }
@@ -805,6 +839,72 @@ extension AppleMusicLyrics {
         }
 
         // MARK: Display Link (per-frame karaoke driver)
+
+        /// Starts, stops or single-steps the display link from what is on screen
+        /// and whether playback moves it; see `LyricsDisplayLinkPolicy`. Called
+        /// on every input change: playback state, lyrics, line, window.
+        private func refreshDisplayLinkActivity() {
+            let activity = LyricsDisplayLinkPolicy.activity(
+                isPlaying: isPlaybackActive,
+                hasLyrics: lyrics != nil && !enabledLineViews.isEmpty,
+                isAttachedToWindow: window != nil,
+                isWindowVisible: window?.isVisible ?? false,
+                isWindowMiniaturized: window?.isMiniaturized ?? false,
+                isWindowOccluded: !(window?.occlusionState.contains(.visible) ?? false)
+            )
+            switch activity {
+            case .running:
+                startDisplayLink()
+            case .renderingSingleFrame:
+                stopDisplayLink()
+                scheduleSingleFrame()
+            case .idle:
+                stopDisplayLink()
+            }
+        }
+
+        /// One display-link frame without the link: the time a pause landed on,
+        /// a seek or line change while paused. Everything that frame starts is
+        /// a Core Animation animation or a dispatched work item, so it finishes
+        /// on its own; sung glyphs keep their lift.
+        private func scheduleSingleFrame() {
+            guard !isSingleFrameScheduled else { return }
+            isSingleFrameScheduled = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.isSingleFrameScheduled = false
+                guard self.displayLink == nil else { return }
+                #signpost(.event, "LyricsSingleFrame")
+                self.handleDisplayLink()
+            }
+        }
+
+        private func playbackStateDidChange(_ playbackState: PlaybackState) {
+            isPlaybackActive = playbackState.isPlaying
+            refreshDisplayLinkActivity()
+        }
+
+        private func replaceWindowObservations() {
+            windowObservations.forEach { NotificationCenter.default.removeObserver($0) }
+            windowObservations.removeAll()
+            guard let window else { return }
+            // Occlusion covers being covered, ordered out and moved to another
+            // Space; minimizing is observed on its own as well.
+            let notificationNames: [Notification.Name] = [
+                NSWindow.didChangeOcclusionStateNotification,
+                NSWindow.didMiniaturizeNotification,
+                NSWindow.didDeminiaturizeNotification,
+            ]
+            windowObservations = notificationNames.map { notificationName in
+                NotificationCenter.default.addObserver(
+                    forName: notificationName,
+                    object: window,
+                    queue: .main
+                ) { [weak self] _ in
+                    self?.refreshDisplayLinkActivity()
+                }
+            }
+        }
 
         private func startDisplayLink() {
             guard displayLink == nil else { return }
