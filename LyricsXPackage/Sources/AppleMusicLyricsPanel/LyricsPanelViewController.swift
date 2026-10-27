@@ -327,11 +327,13 @@ extension AppleMusicLyrics {
                 .sink { [weak self] _ in self?.handleTrackChange() }
                 .store(in: &cancellables)
 
-            // The chrome timer only ticks while something plays; a pause, a seek
-            // while paused and a resume all arrive here.
+            // The backdrop only animates while something plays, and the chrome
+            // timer only ticks then; a pause, a seek while paused and a resume
+            // all arrive here.
+            backgroundView.setPlaybackActive(selectedPlayer.playbackState.isPlaying)
             selectedPlayer.playbackStateWillChange
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in self?.refreshChromeActivity() }
+                .sink { [weak self] playbackState in self?.playbackStateDidChange(playbackState) }
                 .store(in: &cancellables)
 
             AppleMusicLyrics.hostEnvironment.artworkUpgrades
@@ -385,6 +387,11 @@ extension AppleMusicLyrics {
         private func stopChromeTimer() {
             chromeTimer?.invalidate()
             chromeTimer = nil
+        }
+
+        private func playbackStateDidChange(_ playbackState: PlaybackState) {
+            backgroundView.setPlaybackActive(playbackState.isPlaying)
+            refreshChromeActivity()
         }
 
         private func replaceWindowObservations() {

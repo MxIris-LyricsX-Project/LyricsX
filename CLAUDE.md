@@ -115,8 +115,9 @@ swift test --filter "LyricsDisplayLinkPolicyTests|PanelLyricsRemovalProbes"
 # The panel backdrop: Music 26's Now Playing pipeline (`mediaCoreUI26`, the
 # default) and the MiniPlayer pipeline kept as `legacyTSL`. Real offscreen
 # Metal rendering read back pixel by pixel, plus the uniform layout, mesh
-# tables and orientation table. LYRICSX_BACKDROP_PREVIEW_DIRECTORY dumps the
-# full-frame test's PNGs.
+# tables and orientation table, and the rendering policy (the backdrop only
+# animates while playback plays over a real cover). LYRICSX_BACKDROP_PREVIEW_DIRECTORY
+# dumps the full-frame test's PNGs.
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
 

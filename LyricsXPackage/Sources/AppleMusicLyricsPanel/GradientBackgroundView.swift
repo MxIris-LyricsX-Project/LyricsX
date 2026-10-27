@@ -33,6 +33,12 @@ extension AppleMusicLyrics {
         private var isPresentationVisible = false
         private var isWindowDragging = false
         private var isPerformingLiveResize = false
+        /// Whether the player is playing. The panel's view controller forwards
+        /// the host player's state; until it does, the backdrop holds still.
+        private var isPlaybackActive = false
+        /// Whether the backdrop's destination texture is a track's cover rather
+        /// than the grey placeholder.
+        private var isShowingArtwork = false
 
         override init(frame frameRect: NSRect) {
             let variant = ArtworkBackdropVariant.resolve()
@@ -124,6 +130,12 @@ extension AppleMusicLyrics {
             refreshRenderingState()
         }
 
+        func setPlaybackActive(_ isActive: Bool) {
+            guard isPlaybackActive != isActive else { return }
+            isPlaybackActive = isActive
+            refreshRenderingState()
+        }
+
         func setWindowDragging(_ isDragging: Bool) {
             guard isWindowDragging != isDragging else { return }
             isWindowDragging = isDragging
@@ -146,7 +158,7 @@ extension AppleMusicLyrics {
                 context: nil,
                 hints: nil
             ), let textureLoader else {
-                applyFallbackArtwork(animated: true)
+                applyFallbackArtwork()
                 return
             }
             prepareArtwork(
@@ -180,7 +192,7 @@ extension AppleMusicLyrics.GradientBackgroundView {
         artworkAbsenceWorkItem?.cancel()
         artworkAbsenceWorkItem = nil
         if trackIdentity == nil {
-            applyFallbackArtwork(animated: true)
+            applyFallbackArtwork()
         } else if artwork == nil {
             scheduleArtworkAbsenceFallback()
         }
@@ -239,7 +251,7 @@ extension AppleMusicLyrics.GradientBackgroundView {
                 .error,
                 "Artwork backdrop preparation failed generation=\(generation, privacy: .public)"
             )
-            applyFallbackArtwork(animated: true)
+            applyFallbackArtwork()
             return
         }
 
@@ -260,12 +272,18 @@ extension AppleMusicLyrics.GradientBackgroundView {
             "ArtworkBackdropApplied",
             "width=\(textureWidth, privacy: .public) height=\(textureHeight, privacy: .public)"
         )
+        // The cover decides whether the backdrop animates at all, so the state
+        // goes first: a playing panel resumes its clock before the cross-fade
+        // starts on it. A paused one cuts straight to the new cover in a single
+        // frame, as Reduce Motion does, because a frozen clock would hold the
+        // cross-fade at its first frame.
+        isShowingArtwork = true
+        refreshRenderingState(requestsSingleFrame: false)
         metalView?.setArtworkTexture(
             texture,
             averageLuminosity: averageLuminosity,
-            animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+            animated: currentRenderingDecision().shouldRenderContinuously
         )
-        requestSingleFrameIfAppropriate()
     }
 
     fileprivate func configureViewHierarchy() {
@@ -338,12 +356,7 @@ extension AppleMusicLyrics.GradientBackgroundView {
         }
     }
 
-    fileprivate func refreshRenderingState() {
-        guard let metalView else { return }
-
-        let isPresentationVisible = self.isPresentationVisible
-        let isWindowDragging = self.isWindowDragging
-        let isPerformingLiveResize = self.isPerformingLiveResize
+    fileprivate func currentRenderingDecision() -> (canRenderFrame: Bool, shouldRenderContinuously: Bool) {
         let isWindowOccluded = !(window?.occlusionState.contains(.visible) ?? false)
         let isAttachedToWindow = window != nil
         let isWindowVisible = window?.isVisible ?? false
@@ -366,8 +379,25 @@ extension AppleMusicLyrics.GradientBackgroundView {
             isViewHidden: isViewHidden,
             isWindowDragging: isWindowDragging,
             isLiveResizing: isPerformingLiveResize,
-            shouldReduceMotion: shouldReduceMotion
+            shouldReduceMotion: shouldReduceMotion,
+            isPlaybackActive: isPlaybackActive,
+            isShowingArtwork: isShowingArtwork
         )
+        return (canRenderFrame, shouldRenderContinuously)
+    }
+
+    fileprivate func refreshRenderingState(requestsSingleFrame: Bool = true) {
+        guard let metalView else { return }
+
+        let (canRenderFrame, shouldRenderContinuously) = currentRenderingDecision()
+        let isPresentationVisible = self.isPresentationVisible
+        let isWindowDragging = self.isWindowDragging
+        let isPerformingLiveResize = self.isPerformingLiveResize
+        let isWindowOccluded = !(window?.occlusionState.contains(.visible) ?? false)
+        let isWindowVisible = window?.isVisible ?? false
+        let shouldReduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        let isPlaybackActive = self.isPlaybackActive
+        let isShowingArtwork = self.isShowingArtwork
 
         #log(
             .info,
@@ -379,14 +409,18 @@ extension AppleMusicLyrics.GradientBackgroundView {
             occluded=\(isWindowOccluded, privacy: .public) \
             windowDragging=\(isWindowDragging, privacy: .public) \
             liveResizing=\(isPerformingLiveResize, privacy: .public) \
-            reduceMotion=\(shouldReduceMotion, privacy: .public)
+            reduceMotion=\(shouldReduceMotion, privacy: .public) \
+            playbackActive=\(isPlaybackActive, privacy: .public) \
+            showingArtwork=\(isShowingArtwork, privacy: .public)
             """
         )
         metalView.setRenderingState(
             isFrameRenderingAllowed: canRenderFrame,
             isContinuousRenderingEnabled: shouldRenderContinuously
         )
-        requestSingleFrameIfAppropriate()
+        if requestsSingleFrame {
+            requestSingleFrameIfAppropriate()
+        }
     }
 
     fileprivate func refreshPreferredFramesPerSecond() {
@@ -419,12 +453,13 @@ extension AppleMusicLyrics.GradientBackgroundView {
         }
     }
 
-    fileprivate func applyFallbackArtwork(animated: Bool) {
-        metalView?.setFallbackArtwork(
-            animated: animated
-                && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-        )
-        requestSingleFrameIfAppropriate()
+    /// The placeholder never animates the backdrop, so the switch to it is a
+    /// single-frame cut: a cross-fade would freeze at its first frame the
+    /// moment continuous rendering stops.
+    fileprivate func applyFallbackArtwork() {
+        isShowingArtwork = false
+        refreshRenderingState(requestsSingleFrame: false)
+        metalView?.setFallbackArtwork(animated: false)
     }
 
     fileprivate func scheduleArtworkAbsenceFallback() {
@@ -436,7 +471,7 @@ extension AppleMusicLyrics.GradientBackgroundView {
             else {
                 return
             }
-            self.applyFallbackArtwork(animated: true)
+            self.applyFallbackArtwork()
         }
         self.artworkAbsenceWorkItem = artworkAbsenceWorkItem
         DispatchQueue.main.asyncAfter(
