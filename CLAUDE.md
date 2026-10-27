@@ -104,14 +104,24 @@ swift test --filter LyricsLibraryFixtureProbes
 
 # The line-change scroll: asserts the clip travels on a real CASpringAnimation
 # with Music's own mass/stiffness/damping, rather than being stepped by hand
-# from the display link. Offscreen and synthetic — no recording, no player.
-swift test --filter ScrollSpringProbes
+# from the display link, and that re-anchoring a clip already at rest moves
+# nothing. Offscreen and synthetic — no recording, no player. (This suite was
+# called ScrollSpringProbes until 8445f2e; that filter now matches nothing.)
+swift test --filter LineTransitionProbes
+
+# When the panel's display link and chrome timer tick: full rate only while
+# playback plays lyrics in a window on screen, one frame per change while
+# paused, nothing while hidden, occluded, minimized or without lyrics. Plus
+# the panel dropping the previous song's rows when its lyrics go away. Run on
+# any change to what starts or stops either driver.
+swift test --filter "LyricsDisplayLinkPolicyTests|PanelLyricsRemovalProbes"
 
 # The panel backdrop: Music 26's Now Playing pipeline (`mediaCoreUI26`, the
 # default) and the MiniPlayer pipeline kept as `legacyTSL`. Real offscreen
 # Metal rendering read back pixel by pixel, plus the uniform layout, mesh
-# tables and orientation table. LYRICSX_BACKDROP_PREVIEW_DIRECTORY dumps the
-# full-frame test's PNGs.
+# tables and orientation table, and the rendering policy (the backdrop only
+# animates while playback plays over a real cover). LYRICSX_BACKDROP_PREVIEW_DIRECTORY
+# dumps the full-frame test's PNGs.
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
 

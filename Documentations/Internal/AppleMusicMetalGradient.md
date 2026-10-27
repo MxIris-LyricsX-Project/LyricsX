@@ -142,6 +142,7 @@ Music 以 30 FPS 绘制，但每帧只给 `time` 加 1/60，所以旋转周期�
 采样密度、不影响运动速度——`animationTimeScale` 不随帧率改变。曾经跟随屏幕取到 60 FPS，但每帧都要重跑整条模糊链，
 实测下来主线程会长时间卡在 `nextDrawable()` 上与合成器抢 GPU；见 0010 的决策日志。切歌过渡与 Reduce Motion 不受这个
 比例影响：前者按 wall-clock 0.8 s，后者沿用 0008 的「停止连续绘制、只在状态改变时画单帧」而不是 Music 的 1/600 慢放。
+暂停、停止播放与只有占位贴图时也走这条单帧路径（2026-10-27，见下文「生命周期」）。
 
 ### 与 Music 实现的已知差异
 
@@ -153,6 +154,7 @@ Music 以 30 FPS 绘制，但每帧只给 `time` 加 1/60，所以旋转周期�
 | 模糊目标 | 每帧 ±1 pt 逼近 | 直接取值 | 不切档就没有过渡 |
 | 帧率与时间 | 30 FPS，`time += 1/60` | ≤ 30 FPS，`time = 0.5 × wall-clock` | 帧率对齐 Music，时间用 wall-clock 所以速度不随帧率变 |
 | Reduce Motion | `time += 1/600` | 停止连续绘制 | 沿用 0008 |
+| 暂停 / 停止 / 无封面 | 照常绘制 | 停止连续绘制，状态改变时画单帧 | issue #191：可见但闲着的面板每秒重跑 30 次整条管线 |
 | 无封面 | `systemGray` 占位 | 同色 2 × 2 贴图 | — |
 
 ### 参数来源
@@ -178,7 +180,15 @@ sigma 为对角线 × 0.045394707 的模糊、6 × 6 控制点三级细分的网
 - 连续绘制完全交给 `MTKView`：`preferredFramesPerSecond` 取 Music 的 30，屏幕上限更低时跟随屏幕；`autoResizeDrawable`
   关闭，拖动与 live resize 时冻结 drawable size；不创建自定义 timer，不直接调用 `nextDrawable()`。
 - `ArtworkGradientRenderingPolicy` 要求 view controller 已显示、view 附着在可见且未被遮挡的窗口、view 未隐藏、窗口不在
-  自定义拖动、view 不在 live resize、Reduce Motion 未开启，才连续渲染；暂停时 `ArtworkGradientAnimationClock` 同时停止。
+  自定义拖动、view 不在 live resize、Reduce Motion 未开启、**播放器正在播放、且背景显示的是真实封面而不是 2 × 2 占位贴图**，
+  才连续渲染；暂停时 `ArtworkGradientAnimationClock` 同时停止。不满足时只在状态改变时画单帧，与 Reduce Motion 同一条路。
+- 后两个输入是 2026-10-27 为 issue #191 加的：此前面板只要可见，不论有没有在播放、有没有封面，都以 30 FPS 重跑混合、
+  旋转、MPS 模糊与网格各 pass。播放状态由 `LyricsPanelViewController` 订阅宿主播放器的 `playbackStateWillChange`
+  转给 `GradientBackgroundView.setPlaybackActive(_:)`；是否显示封面由 `GradientBackgroundView` 自己记录（准备好的封面
+  上屏时为真，换到占位贴图时为假）。可见的代价：**暂停时背景静止，继续播放时接着动**。
+- 因为时钟停住时过渡也停在第一帧，不连续渲染时换封面一律是单帧硬切，不做 0.8 s 交叉淡入：暂停中换歌、以及任何
+  时候换到占位贴图都是如此；播放中从占位贴图换到真实封面仍是交叉淡入（先恢复时钟再入队）。已知边界：交叉淡入的
+  0.8 s 内恰好按下暂停，背景会停在半途，继续播放后才走完。
 - `#log` / `#signpost` 宏挂在面板诊断开关的 `backdrop` 组（`AppleMusicLyrics.PanelDiagnostics.isBackdropEnabled`）
   上，默认关闭，subsystem 是 `com.JH.LyricsX.AppleMusicLyricsPanel.Backdrop`，与歌词动画的 `.Lyrics` 分开；
   `defaults write dev.JH.LyricsX AppleMusicLyricsDiagnosticsEnabled -string backdrop` 或环境变量

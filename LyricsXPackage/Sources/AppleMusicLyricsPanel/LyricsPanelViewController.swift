@@ -32,6 +32,8 @@ extension AppleMusicLyrics {
         private var karaokeMode: KaraokeMode = .characterLevel
         private var cancellables: Set<AnyCancellable> = []
         private var chromeTimer: Timer?
+        private var windowObservations: [NSObjectProtocol] = []
+        private var isViewAppeared = false
 
         // MARK: Views
 
@@ -80,7 +82,6 @@ extension AppleMusicLyrics {
             buildHierarchy()
             wireInteraction()
             subscribe()
-            startChromeTimer()
             // Seed the track id before the first artwork apply, so the gradient
             // palette extracts on initial load (the currentTrackWillChange sink
             // delivers a turn later and would otherwise leave a nil-vs-nil guard
@@ -92,15 +93,22 @@ extension AppleMusicLyrics {
 
         public override func viewDidAppear() {
             super.viewDidAppear()
+            isViewAppeared = true
             backgroundView.setPresentationVisible(true)
-            startChromeTimer()
+            replaceWindowObservations()
+            refreshChromeActivity()
         }
 
         public override func viewDidDisappear() {
             super.viewDidDisappear()
+            isViewAppeared = false
             backgroundView.setPresentationVisible(false)
-            chromeTimer?.invalidate()
-            chromeTimer = nil
+            replaceWindowObservations()
+            stopChromeTimer()
+        }
+
+        deinit {
+            windowObservations.forEach { NotificationCenter.default.removeObserver($0) }
         }
 
         // MARK: Build
@@ -319,20 +327,91 @@ extension AppleMusicLyrics {
                 .sink { [weak self] _ in self?.handleTrackChange() }
                 .store(in: &cancellables)
 
+            // The backdrop only animates while something plays, and the chrome
+            // timer only ticks then; a pause, a seek while paused and a resume
+            // all arrive here.
+            backgroundView.setPlaybackActive(selectedPlayer.playbackState.isPlaying)
+            selectedPlayer.playbackStateWillChange
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] playbackState in self?.playbackStateDidChange(playbackState) }
+                .store(in: &cancellables)
+
             AppleMusicLyrics.hostEnvironment.artworkUpgrades
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] upgrade in self?.applyUpgradedArtwork(upgrade) }
                 .store(in: &cancellables)
         }
 
+        /// The chrome timer follows the display link's rule: it ticks while
+        /// playback plays (or a cover is still on its way) in a window on
+        /// screen, ticks once for a change while paused, and otherwise stops.
+        private func currentChromeActivity() -> LyricsDisplayLinkPolicy.Activity {
+            let window = view.window
+            return LyricsDisplayLinkPolicy.chromeActivity(
+                isPlaying: selectedPlayer.playbackState.isPlaying,
+                isAwaitingArtwork: selectedPlayer.currentTrack != nil && coverImageView.image == nil,
+                isAttachedToWindow: isViewAppeared && window != nil,
+                isWindowVisible: window?.isVisible ?? false,
+                isWindowMiniaturized: window?.isMiniaturized ?? false,
+                isWindowOccluded: !(window?.occlusionState.contains(.visible) ?? false)
+            )
+        }
+
+        private func refreshChromeActivity() {
+            switch currentChromeActivity() {
+            case .running:
+                startChromeTimer()
+            case .renderingSingleFrame:
+                stopChromeTimer()
+                chromeTick()
+            case .idle:
+                stopChromeTimer()
+            }
+        }
+
         private func startChromeTimer() {
             guard chromeTimer == nil else { return }
             let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
-                self?.chromeTick()
+                guard let self else { return }
+                self.chromeTick()
+                // A cover that arrived while paused ends the polling.
+                if self.currentChromeActivity() != .running {
+                    self.stopChromeTimer()
+                }
             }
             // .common so the scrubber keeps updating during window resize too.
             RunLoop.main.add(timer, forMode: .common)
             chromeTimer = timer
+        }
+
+        private func stopChromeTimer() {
+            chromeTimer?.invalidate()
+            chromeTimer = nil
+        }
+
+        private func playbackStateDidChange(_ playbackState: PlaybackState) {
+            backgroundView.setPlaybackActive(playbackState.isPlaying)
+            refreshChromeActivity()
+        }
+
+        private func replaceWindowObservations() {
+            windowObservations.forEach { NotificationCenter.default.removeObserver($0) }
+            windowObservations.removeAll()
+            guard isViewAppeared, let window = view.window else { return }
+            let notificationNames: [Notification.Name] = [
+                NSWindow.didChangeOcclusionStateNotification,
+                NSWindow.didMiniaturizeNotification,
+                NSWindow.didDeminiaturizeNotification,
+            ]
+            windowObservations = notificationNames.map { notificationName in
+                NotificationCenter.default.addObserver(
+                    forName: notificationName,
+                    object: window,
+                    queue: .main
+                ) { [weak self] _ in
+                    self?.refreshChromeActivity()
+                }
+            }
         }
 
         // MARK: Data handlers
@@ -355,6 +434,10 @@ extension AppleMusicLyrics {
                     mainFontSize: adaptiveMainFontSize,
                     translationFontSize: adaptiveTranslationFontSize
                 )
+            } else {
+                // The fade only hides the rows; retire them too, or the previous
+                // song's line keeps animating behind it against the new clock.
+                lyricsContainer.clearLyrics()
             }
             refreshArtwork()
         }
@@ -382,6 +465,8 @@ extension AppleMusicLyrics {
             }
             refreshArtwork()
             refreshTrackInfo()
+            // A new track without its cover yet resumes polling for it.
+            refreshChromeActivity()
         }
 
         private func chromeTick() {

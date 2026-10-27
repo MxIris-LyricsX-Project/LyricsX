@@ -221,7 +221,7 @@ struct ArtworkGradientRenderingPolicyTests {
         )
     }
 
-    @Test func visibleStationaryWindowRendersContinuously() {
+    @Test func visibleStationaryWindowWithPlayingArtworkRendersContinuously() {
         let shouldRenderContinuously = AppleMusicLyrics.ArtworkGradientRenderingPolicy.shouldRenderContinuously(
             isPresentationVisible: true,
             isAttachedToWindow: true,
@@ -230,10 +230,57 @@ struct ArtworkGradientRenderingPolicyTests {
             isViewHidden: false,
             isWindowDragging: false,
             isLiveResizing: false,
-            shouldReduceMotion: false
+            shouldReduceMotion: false,
+            isPlaybackActive: true,
+            isShowingArtwork: true
         )
 
         #expect(shouldRenderContinuously)
+    }
+
+    /// The backdrop re-runs its blend, rotation, blur and mesh passes 30 times
+    /// a second. While nothing plays, or while all it shows is the grey 2 × 2
+    /// placeholder, it draws a single frame on each change instead, the way the
+    /// Reduce Motion path does (issue #191).
+    @Test(arguments: [
+        (false, true),
+        (true, false),
+        (false, false),
+    ])
+    func pausedPlaybackOrMissingArtworkPausesContinuousRendering(
+        isPlaybackActive: Bool,
+        isShowingArtwork: Bool
+    ) {
+        let shouldRenderContinuously = AppleMusicLyrics.ArtworkGradientRenderingPolicy.shouldRenderContinuously(
+            isPresentationVisible: true,
+            isAttachedToWindow: true,
+            isWindowVisible: true,
+            isWindowOccluded: false,
+            isViewHidden: false,
+            isWindowDragging: false,
+            isLiveResizing: false,
+            shouldReduceMotion: false,
+            isPlaybackActive: isPlaybackActive,
+            isShowingArtwork: isShowingArtwork
+        )
+
+        #expect(!shouldRenderContinuously)
+    }
+
+    /// A paused panel still draws its single frames: the policy that allows a
+    /// frame at all does not look at playback.
+    @Test func pausedPlaybackStillAllowsSingleFrames() {
+        #expect(
+            AppleMusicLyrics.ArtworkGradientRenderingPolicy.canRenderFrame(
+                isPresentationVisible: true,
+                isAttachedToWindow: true,
+                isWindowVisible: true,
+                isWindowOccluded: false,
+                isViewHidden: false,
+                isWindowDragging: false,
+                isLiveResizing: false
+            )
+        )
     }
 
     @Test(arguments: [
@@ -264,7 +311,9 @@ struct ArtworkGradientRenderingPolicyTests {
             isViewHidden: isViewHidden,
             isWindowDragging: isWindowDragging,
             isLiveResizing: isLiveResizing,
-            shouldReduceMotion: shouldReduceMotion
+            shouldReduceMotion: shouldReduceMotion,
+            isPlaybackActive: true,
+            isShowingArtwork: true
         )
 
         #expect(!shouldRenderContinuously)

@@ -89,6 +89,10 @@ syllable 的层级。若同一视觉行里连续至少三个 fallback 单元各�
 这条 `0.25` 秒规则是缺少结构化层级时的项目 fallback，不是从 Apple Music 26.6 恢复出的常量。
 结构化 `SynchronizedTextTiming` 即使 word 很短也始终保留原始 envelope。
 
+两种词级时间都没有的行（纯 LRC 的逐行歌词，或结构化 timing 与本行字数对不上而被丢弃的行）成为当前行时
+整行立即点亮：`KaraokeFill` 对它直接返回 1，不再按「到下一行的时间」从左到右线性扫过去。见下文
+「2026-10-27 修正：逐行歌词整行点亮」。
+
 ### factor 与语言能力
 
 Music 建模时给每个词一个 `Lyrics.Word.emphasis`（`enum { case factor(Double), case none }`，`sub_1001C2DD4`）。
@@ -547,6 +551,39 @@ row spacing，也没有保留额外 viewport inset。
 后续若直接长期修改 row backing layer 的 geometry，AppKit 下一次 layout 会把它重写，表现通常是
 换行中途突然跳回。不要用 completion 再补 model value，那会同时破坏 hit testing 和连续换行。
 
+## Display link 的生命周期
+
+`SyncedLyricsContainerView` 的 display link 只负责一件事：每帧从播放器状态读一次歌词时间，推进当前行的
+sweep、到点的词的 swell 与逐音节抬高，以及前奏 / 间奏圆点的进度。它不驱动任何动画本身——swell、抬高、
+换行的 clip 与 row 弹簧都是 Core Animation 动画或 `DispatchWorkItem`，安装之后自己跑完。所以只要播放时间
+不动，tick 就什么也不会改变。
+
+何时运行由 `LyricsDisplayLinkPolicy.activity` 决定，输入全是普通的布尔值：
+
+| 状态 | 结果 |
+|---|---|
+| 有歌词、窗口在屏幕上、正在播放 | `running`：按显示器满帧率 tick（ProMotion 上 120 Hz），不降帧 |
+| 有歌词、窗口在屏幕上、暂停或停止 | `renderingSingleFrame`：停掉 link，在下一个 main queue 回合补一帧 |
+| 没有歌词，或窗口未附着、不可见、最小化、被完全遮挡（含在别的 Space） | `idle`：停掉 link |
+
+容器在每个输入变化时重新判定：`AppleMusicLyrics.HostEnvironment.player` 的 `playbackStateWillChange`
+（暂停、继续、暂停中的 seek 都走这里）、`update(lyrics:…)`（换歌词、暂停中换行）、`clearLyrics()`，以及窗口的
+occlusion、最小化、还原通知和 `viewDidMoveToWindow`。「补一帧」把暂停落点、暂停中 seek 或换行的状态画到屏幕上，
+多个变化在同一回合里合并成一帧。停掉 link 不会丢掉任何已经开始的动画，唱过的字也保持抬高，因为抬高只在
+`resetEmphasis()`（倒带或切行）时才回落。播放期间仍是满帧率：降到 30 FPS 的方案曾因「太卡」被否决。
+
+面板 chrome（进度条、时间标签、播放 / 暂停图标）的 10 Hz timer 走同一个判定的
+`chromeActivity`：播放中、或当前曲目的封面还没到（播放器可能晚于切歌才发布封面）时运行，暂停时每次状态变化
+刷新一次，窗口不在屏幕上时停止。
+
+歌词消失（`applyLyrics(nil)`：切歌后还没搜到、或搜不到）时，面板仍然只把歌词列淡出而不隐藏——隐藏会改变
+`NSStackView` 的 fitting size，窗口会被弹回初始大小——但同时调用 `clearLyrics()` 拆掉上一首歌的所有行和前奏 /
+间奏圆点，link 随之 `idle`。之前这些行一直留在淡出层后面，旧的当前行按新歌的时钟继续扫光与 swell。
+
+间奏期间 `updateInterludesIfNeeded` 每帧都请求把 clip 对准圆点；`LineTransitionCoordinator.transitionClip`
+在 clip 已静止于目标（没有 clip 动画、model origin 与目标相差不到 0.5 pt）时直接返回，不再每帧取消 row 动画并
+重跑 `setBoundsOrigin` + `reflectScrolledClipView`。
+
 ## 性能诊断
 
 歌词动画使用 `com.JH.LyricsX.AppleMusicLyricsPanel.Lyrics` subsystem，并把不同边界分到四个 category；背景
@@ -665,7 +702,7 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - 非结构化来源（Kugou、QQ 音乐、部分网易云的 `[tt]` 行内标签）从 0011 起一度仍走满强度 swell，2026-09-06
   用户把它描述为「一上一下」（当时播的是 Kugou 版 STAY，不是语言差异），同日改为默认档下与结构化词同一机制，
   老观感留在 `fullEmphasis` 档；见下文「2026-09-06 修正：行内标签歌词也走逐音节抬高」。LIBLRC 等纯按行歌词
-  没有词级时间，仍只有整行高亮。
+  没有词级时间，仍只有整行高亮（2026-10-27 之前实现其实是线性扫过，见「2026-10-27 修正：逐行歌词整行点亮」）。
 
 ### 2026-09-05 修正：唱过的字保持抬高，而不是落回原位
 
@@ -830,6 +867,42 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - **未动**：行内 `mainToTranslationSpacing` 仍是 4 pt 常量，没有跟着字号放大；如果大字号下主歌词与翻译
   贴得太近，再单独处理。（2026-10-17 改为 Music 的 `translationSpacing` 7 pt，仍不随字号缩放，见「行的图层结构、
   悬停、按下与明暗」。）
+
+### 2026-10-27 修正：逐行歌词整行点亮
+
+- **现象**（issue #205）：只有逐行时间的歌词在面板里被一个字一个字地扫亮，看上去像逐字歌词，而且扫光
+  常常落后于演唱。
+- **根因**：`KaraokeFill.unclampedFraction` 在既没有 `[tt]` 也没有有效结构化 timing 时返回
+  `elapsedTime / lineDuration`，而 `lineDuration` 在这种行上就是到下一行开始的间隔——整行要等到下一行
+  开始前一刻才扫满。这段线性兜底从最早的 SwiftUI `TextRenderer`（`f21dc18b`）原样搬进 AppKit 重写，一直
+  存在，不是回归；本文「与提案的差异」一节早就写明逐行歌词「仍只有整行高亮」，是实现与文档不一致。
+- **修法**：这种行在判断时长之前就直接返回 1，成为当前行即整行点亮，与 Music 对逐行歌词的处理一致；
+  行内 `[tt]` 与结构化 timing 的两条路径一行未动。由于返回值在时长判断之前，两行同时间戳造成的零时长
+  也照样点亮。
+- **回归**：`AnimationPlanTests` 的 `lineSyncedLyricsLightTheWholeLineAtOnce`（行首、行中、行尾、略早于
+  行首、`wordLevel`）、`lineSyncedLyricsLightTheLineEvenWithoutADuration`、
+  `structuredTimingThatDoesNotFitTheLineLightsTheWholeLine` 在修复前失败，修复后通过；
+  `inlineTagLyricsStillSweepWordByWord` 与既有的 `structuredKaraokeUsesExplicitSyllableEnds` 守住词级路径。
+
+### 2026-10-27 修正：面板闲着也按满帧率跑 display link
+
+- **现象**（issue #191）：120 Hz 的 MacBook Pro 上打开面板，整机功耗从约 20 W 升到约 45 W，切到 60 Hz 回落到
+  约 25 W；另一位用户在没有播放音乐、面板只是开着时机器也一直发烫。
+- **根因**：display link 在 `viewDidMoveToWindow` 里启动，只在离开窗口时停止，所以面板开着就按显示器满帧率
+  tick——暂停、没有歌词、窗口被遮挡、最小化或在别的 Space 都一样，每帧照做读状态、扫光、调度词与音节的工作。
+  `applyLyrics(nil)` 只把歌词列淡出，上一首歌的当前行还在后面按新歌时钟动；间奏期间每帧的对准在弹簧落定后
+  仍每帧重设 clip。面板 chrome 的 10 Hz timer 也不看播放状态和窗口可见性。从 AppKit 重写（`c2dbdf28`）起
+  就是这样，不是回归。
+- **修法**：见上文「Display link 的生命周期」——`LyricsDisplayLinkPolicy` 按播放状态、有无歌词与窗口可见性
+  决定运行、补一帧或停止；`clearLyrics()` 拆掉旧行；`transitionClip` 对已静止的同一目标直接返回；chrome timer
+  走同一判定。播放中的帧率、layer 树与动画常数都没动。背景的 Metal 渲染是同一 issue 的另一半，见
+  `AppleMusicMetalGradient.md`。
+- **回归**：`LyricsDisplayLinkPolicyTests`（播放 / 暂停 / 无歌词 / 不在屏幕上，以及 chrome 的封面轮询）、
+  `PanelLyricsRemovalProbes`（经发布者注入的面板清空歌词后不再留着上一首歌的行，歌词列仍是淡出而非隐藏，
+  同一份歌词回来时重新建行）、`LineTransitionProbes.reanchoringASettledClipLeavesTheClipViewAlone`
+  （修复前同一目标的五次请求移动了五次 clip）。修复前三者都失败，修复后通过。
+- **未做**：没有在真机上量功耗——本次没有启动应用的授权；容器把 policy 接到真实信号这一层没有自动化断言，
+  靠 policy 测试与上面的面板探针间接覆盖。
 
 ## 验证记录
 

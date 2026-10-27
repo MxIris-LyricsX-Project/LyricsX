@@ -557,4 +557,60 @@ struct LineTransitionProbes {
         #expect(abs(Double(interactiveSpring.stiffness) - 260) < 1)
         #expect(abs(Double(interactiveSpring.damping) - 50) < 0.5)
     }
+
+    // MARK: Re-anchoring a settled clip
+
+    /// Counts every time something moves the clip view's bounds origin.
+    private final class BoundsOriginCountingClipView: NSClipView {
+        var boundsOriginChangeCount = 0
+
+        override func setBoundsOrigin(_ newOrigin: NSPoint) {
+            boundsOriginChangeCount += 1
+            super.setBoundsOrigin(newOrigin)
+        }
+    }
+
+    /// During an interlude the display link re-anchors the clip on the dots on
+    /// every frame. Once the clip has settled there, asking again for the same
+    /// origin must leave the clip view alone: it used to fall through to
+    /// `setBoundsOrigin` + `reflectScrolledClipView` once per frame for the
+    /// whole interlude (issue #191).
+    @Test func reanchoringASettledClipLeavesTheClipViewAlone() {
+        let frame = NSRect(x: 0, y: 0, width: 400, height: 300)
+        let scrollView = NSScrollView(frame: frame)
+        let clipView = BoundsOriginCountingClipView()
+        clipView.wantsLayer = true
+        scrollView.contentView = clipView
+        scrollView.documentView = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 2000))
+        let window = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentView = scrollView
+        defer {
+            window.contentView = nil
+            window.close()
+        }
+        let coordinator = AppleMusicLyrics.LineTransitionCoordinator()
+        let timing = AppleMusicLyrics.SpringTimingParameters(
+            mass: AppleMusicLyrics.LineTransitionPlan.normalSpringMass,
+            stiffness: AppleMusicLyrics.LineTransitionPlan.normalSpringStiffness,
+            damping: AppleMusicLyrics.LineTransitionPlan.normalSpringDamping
+        )
+
+        coordinator.transitionClip(scrollView: scrollView, targetClipVerticalOrigin: 240, timing: timing, animated: false)
+        #expect(clipView.bounds.origin.y == 240)
+        clipView.boundsOriginChangeCount = 0
+
+        for _ in 0 ..< 5 {
+            coordinator.transitionClip(scrollView: scrollView, targetClipVerticalOrigin: 240, timing: timing, animated: true)
+        }
+
+        #expect(clipView.boundsOriginChangeCount == 0, "a settled clip was moved \(clipView.boundsOriginChangeCount) times")
+        #expect(clipView.bounds.origin.y == 240)
+        #expect(Self.clipBoundsSprings(in: scrollView).isEmpty)
+
+        // A new target still springs.
+        coordinator.transitionClip(scrollView: scrollView, targetClipVerticalOrigin: 400, timing: timing, animated: true)
+        #expect(clipView.bounds.origin.y == 400)
+        #expect(Self.clipBoundsSprings(in: scrollView).count == 1)
+    }
 }

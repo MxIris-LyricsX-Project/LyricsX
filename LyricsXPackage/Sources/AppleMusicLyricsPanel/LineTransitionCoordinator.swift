@@ -96,6 +96,14 @@ extension AppleMusicLyrics {
                clipLayer.animation(forKey: Self.clipBoundsAnimationKey) != nil {
                 return
             }
+            // Already resting on the target: nothing to move. The interlude dots
+            // re-anchor the clip on every display-link frame, and once the spring
+            // had settled each of those calls used to cancel the row animations
+            // and run `setBoundsOrigin` + `reflectScrolledClipView` again.
+            if clipLayer.animation(forKey: Self.clipBoundsAnimationKey) == nil,
+               abs(clipView.bounds.origin.y - targetClipVerticalOrigin) <= 0.5 {
+                return
+            }
 
             let visibleClipVerticalOrigin = (clipLayer.presentation() ?? clipLayer).bounds.origin.y
             let displacement = targetClipVerticalOrigin - visibleClipVerticalOrigin

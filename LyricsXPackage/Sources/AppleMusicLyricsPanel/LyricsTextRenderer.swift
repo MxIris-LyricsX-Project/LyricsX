@@ -17,7 +17,8 @@ extension AppleMusicLyrics {
     // MARK: - Karaoke Fill Fraction
 
     /// Computes the fraction (`0...1`) of a lyric line that should be lit up at
-    /// `elapsedTime`, from per-word timing.
+    /// `elapsedTime`, from per-word timing. A line without any word timing is
+    /// lit whole as soon as it is current.
     ///
     /// Ported verbatim (logic-wise) from the previous SwiftUI `LyricsTextRenderer`.
     /// The CALayer engine feeds this fraction into the progress-mask position
@@ -66,13 +67,13 @@ extension AppleMusicLyrics {
                 )
             }
 
-            guard lineDuration > 0 else { return 0 }
+            // No word timing at all — a line-synced LRC line, or structured
+            // timing that did not fit the line: Music lights the whole line the
+            // moment it becomes current. Sweeping it across the gap to the next
+            // line read as word-by-word progress and trailed the singing.
+            guard !wordTimings.isEmpty else { return 1 }
 
-            guard !wordTimings.isEmpty else {
-                // No timetag: linear progress across the whole line.
-                return CGFloat(min(1, max(0, elapsedTime / lineDuration)))
-            }
-            guard totalCharacterCount > 0 else { return 0 }
+            guard lineDuration > 0, totalCharacterCount > 0 else { return 0 }
 
             for (timingIndex, timing) in wordTimings.enumerated() {
                 let nextTiming = timingIndex + 1 < wordTimings.count ? wordTimings[timingIndex + 1] : nil

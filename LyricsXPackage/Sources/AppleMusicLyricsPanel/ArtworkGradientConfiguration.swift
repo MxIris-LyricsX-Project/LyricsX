@@ -137,6 +137,12 @@ extension AppleMusicLyrics {
                 && !isLiveResizing
         }
 
+        /// The backdrop only animates while something plays over a real cover.
+        /// Paused or stopped, or showing nothing but the grey 2 × 2 placeholder,
+        /// it draws one frame per change instead — the Reduce Motion path — so a
+        /// visible but idle panel no longer re-runs the blend, rotation, blur and
+        /// mesh passes 30 times a second (issue #191). The visible cost is that
+        /// the backdrop holds still while playback is paused.
         static func shouldRenderContinuously(
             isPresentationVisible: Bool,
             isAttachedToWindow: Bool,
@@ -145,7 +151,9 @@ extension AppleMusicLyrics {
             isViewHidden: Bool,
             isWindowDragging: Bool,
             isLiveResizing: Bool,
-            shouldReduceMotion: Bool
+            shouldReduceMotion: Bool,
+            isPlaybackActive: Bool,
+            isShowingArtwork: Bool
         ) -> Bool {
             canRenderFrame(
                 isPresentationVisible: isPresentationVisible,
@@ -156,6 +164,8 @@ extension AppleMusicLyrics {
                 isWindowDragging: isWindowDragging,
                 isLiveResizing: isLiveResizing
             ) && !shouldReduceMotion
+                && isPlaybackActive
+                && isShowingArtwork
         }
     }
 
