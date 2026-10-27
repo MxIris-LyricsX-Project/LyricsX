@@ -54,3 +54,15 @@
 
 **复核方式**：AppKit 的尺寸行为别凭读代码判断。按《设置窗口的尺寸》「怎么验证」一节的离屏方法，把面板放进透明窗口
 布局之后，比较 `promptTextView.frame.width` 和 `enclosingScrollView.contentSize.width`。
+
+---
+
+## 2026-10-27 · 发版前的整项目审查
+
+### `CXExtensions` 里几个 Combine 工具写错了 —— 不可达，不修
+
+**发现内容**：`LyricsX/Utility/CXExtensions/AnyScheduler.swift` 的 `_equalTo` 用 `<` 判断相等（第 126 行），毫秒、微秒、纳秒的时间换算是乘而不是除（第 290–292 行）。
+
+**裁决：不修。** `AnyScheduler`、`Blocking`、`WeakAssign`、`SelfRetainedCancellable`、`DelayedAutoCancellable`、`IgnoreError` 在 app 里都没有调用方（`CXExtensions/` 之外 grep 不到），这些错误在运行期碰不到。真正用到的只有 `Invoke`（`weaklyOn`）、`Signal` 和 `prepend`，审查没在它们身上发现问题。
+
+**若理由失效**：一旦有代码开始用上面任何一个，这条要重新裁决，而且得先修好再用。更省事的做法是直接删掉这些没人用的工具。
