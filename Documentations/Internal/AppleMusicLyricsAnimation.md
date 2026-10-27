@@ -88,6 +88,10 @@ syllable 的层级。若同一视觉行里连续至少三个 fallback 单元各�
 这条 `0.25` 秒规则是缺少结构化层级时的项目 fallback，不是从 Apple Music 26.6 恢复出的常量。
 结构化 `SynchronizedTextTiming` 即使 word 很短也始终保留原始 envelope。
 
+两种词级时间都没有的行（纯 LRC 的逐行歌词，或结构化 timing 与本行字数对不上而被丢弃的行）成为当前行时
+整行立即点亮：`KaraokeFill` 对它直接返回 1，不再按「到下一行的时间」从左到右线性扫过去。见下文
+「2026-10-27 修正：逐行歌词整行点亮」。
+
 ### factor 与语言能力
 
 Music 建模时给每个词一个 `Lyrics.Word.emphasis`（`enum { case factor(Double), case none }`，`sub_1001C2DD4`）。
@@ -558,7 +562,7 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
 - 非结构化来源（Kugou、QQ 音乐、部分网易云的 `[tt]` 行内标签）从 0011 起一度仍走满强度 swell，2026-09-06
   用户把它描述为「一上一下」（当时播的是 Kugou 版 STAY，不是语言差异），同日改为默认档下与结构化词同一机制，
   老观感留在 `fullEmphasis` 档；见下文「2026-09-06 修正：行内标签歌词也走逐音节抬高」。LIBLRC 等纯按行歌词
-  没有词级时间，仍只有整行高亮。
+  没有词级时间，仍只有整行高亮（2026-10-27 之前实现其实是线性扫过，见「2026-10-27 修正：逐行歌词整行点亮」）。
 
 ### 2026-09-05 修正：唱过的字保持抬高，而不是落回原位
 
@@ -722,6 +726,22 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   改动不会动到他已经看过的画面。
 - **未动**：行内 `mainToTranslationSpacing` 仍是 4 pt 常量，没有跟着字号放大；如果大字号下主歌词与翻译
   贴得太近，再单独处理。
+
+### 2026-10-27 修正：逐行歌词整行点亮
+
+- **现象**（issue #205）：只有逐行时间的歌词在面板里被一个字一个字地扫亮，看上去像逐字歌词，而且扫光
+  常常落后于演唱。
+- **根因**：`KaraokeFill.unclampedFraction` 在既没有 `[tt]` 也没有有效结构化 timing 时返回
+  `elapsedTime / lineDuration`，而 `lineDuration` 在这种行上就是到下一行开始的间隔——整行要等到下一行
+  开始前一刻才扫满。这段线性兜底从最早的 SwiftUI `TextRenderer`（`f21dc18b`）原样搬进 AppKit 重写，一直
+  存在，不是回归；本文「与提案的差异」一节早就写明逐行歌词「仍只有整行高亮」，是实现与文档不一致。
+- **修法**：这种行在判断时长之前就直接返回 1，成为当前行即整行点亮，与 Music 对逐行歌词的处理一致；
+  行内 `[tt]` 与结构化 timing 的两条路径一行未动。由于返回值在时长判断之前，两行同时间戳造成的零时长
+  也照样点亮。
+- **回归**：`AnimationPlanTests` 的 `lineSyncedLyricsLightTheWholeLineAtOnce`（行首、行中、行尾、略早于
+  行首、`wordLevel`）、`lineSyncedLyricsLightTheLineEvenWithoutADuration`、
+  `structuredTimingThatDoesNotFitTheLineLightsTheWholeLine` 在修复前失败，修复后通过；
+  `inlineTagLyricsStillSweepWordByWord` 与既有的 `structuredKaraokeUsesExplicitSyllableEnds` 守住词级路径。
 
 ## 验证记录
 

@@ -255,6 +255,90 @@ struct AnimationPlanTests {
         #expect(abs(betweenWords - 0.5) < 0.000_001)
         #expect(abs(halfwayThroughSecondWord - 0.75) < 0.000_001)
     }
+
+    /// A line-synced (plain LRC) line has no word timing, so Music lights the
+    /// whole line the moment it becomes current. Sweeping it left to right
+    /// across the gap to the next line read as word-by-word progress and
+    /// trailed the singing (issue #205).
+    @Test(arguments: [
+        (-0.05, AppleMusicLyrics.KaraokeMode.characterLevel),
+        (0, .characterLevel),
+        (0.4, .characterLevel),
+        (2, .characterLevel),
+        (3.99, .characterLevel),
+        (0.4, .wordLevel),
+    ])
+    func lineSyncedLyricsLightTheWholeLineAtOnce(
+        elapsedTime: TimeInterval,
+        mode: AppleMusicLyrics.KaraokeMode
+    ) {
+        let fraction = AppleMusicLyrics.KaraokeFill.fraction(
+            elapsedTime: elapsedTime,
+            lineDuration: 4,
+            wordTimings: [],
+            synchronizedTextTiming: nil,
+            totalCharacterCount: 12,
+            mode: mode
+        )
+        #expect(fraction == 1)
+    }
+
+    /// Two lines sharing a timestamp leave the earlier one a zero duration; a
+    /// line-synced line is still lit while it is current.
+    @Test func lineSyncedLyricsLightTheLineEvenWithoutADuration() {
+        let fraction = AppleMusicLyrics.KaraokeFill.fraction(
+            elapsedTime: 0,
+            lineDuration: 0,
+            wordTimings: [],
+            synchronizedTextTiming: nil,
+            totalCharacterCount: 12,
+            mode: .characterLevel
+        )
+        #expect(fraction == 1)
+    }
+
+    /// Structured timing that does not fit the line is ignored, which leaves a
+    /// line with no usable word timing: it lights like a line-synced line.
+    @Test func structuredTimingThatDoesNotFitTheLineLightsTheWholeLine() {
+        let mismatchedTiming = LyricsLine.Attachments.SynchronizedTextTiming(
+            words: [
+                .init(
+                    characterRange: 0 ..< 40,
+                    timeRange: 0 ..< 3,
+                    syllables: [.init(characterRange: 0 ..< 40, timeRange: 0 ..< 3)]
+                ),
+            ],
+            duration: 3
+        )
+        #expect(!mismatchedTiming.isValid(forCharacterCount: 6))
+
+        let fraction = AppleMusicLyrics.KaraokeFill.fraction(
+            elapsedTime: 0.5,
+            lineDuration: 3,
+            wordTimings: [],
+            synchronizedTextTiming: mismatchedTiming,
+            totalCharacterCount: 6,
+            mode: .characterLevel
+        )
+        #expect(fraction == 1)
+    }
+
+    /// Inline `[tt]` timing keeps its per-word sweep: a quarter of the way
+    /// through the text at the first word's midpoint.
+    @Test func inlineTagLyricsStillSweepWordByWord() {
+        let fraction = AppleMusicLyrics.KaraokeFill.fraction(
+            elapsedTime: 1,
+            lineDuration: 4,
+            wordTimings: [
+                .init(characterIndex: 0, timeOffset: 0),
+                .init(characterIndex: 6, timeOffset: 2),
+            ],
+            synchronizedTextTiming: nil,
+            totalCharacterCount: 12,
+            mode: .characterLevel
+        )
+        #expect(abs(fraction - 0.25) < 0.000_001)
+    }
 }
 
 @MainActor
