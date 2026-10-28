@@ -172,6 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             if AppController.shared.currentLyrics?.metadata.needsPersist == true {
                 AppController.shared.currentLyrics?.persist()
             }
+            AppController.shared.retireWidgetSnapshot()
         }
         if defaults[.launchAndQuitWithPlayer] {
             let url = Bundle.main.bundleURL

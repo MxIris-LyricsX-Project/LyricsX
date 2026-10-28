@@ -103,6 +103,10 @@ final class AppController: NSObject {
         writeWidgetSnapshot(playbackState: playbackState)
     }
 
+    /// Set as the app quits, once the widget's snapshot is cleared, so nothing
+    /// writes it back. Read and written on `DispatchQueue.lyricsDisplay`.
+    private var widgetSnapshotIsRetired = false
+
     @objc dynamic var lyricsOffset: Int {
         get {
             return currentLyrics?.offset ?? 0
@@ -1654,6 +1658,17 @@ final class AppController: NSObject {
         writeWidgetSnapshot(playbackState: nil)
     }
 
+    /// Clears the widget's snapshot as the app quits and reloads the widget.
+    /// Nothing keeps the snapshot current after that, and the widget would go
+    /// on showing a playing song — its timeline plays the lines forward from
+    /// the snapshot's moment — for as long as it stays on the desktop. Runs
+    /// on `DispatchQueue.lyricsDisplay`.
+    func retireWidgetSnapshot() {
+        widgetSnapshotIsRetired = true
+        widgetDataStore.clear()
+        widgetReloadCoordinator.deliverClearedSnapshotNow()
+    }
+
     /// Writes the snapshot the widget reads and returns it, or clears it and
     /// returns `nil` when nothing is playing. Never reloads the widget: that
     /// is `WidgetReloadCoordinator`'s call.
@@ -1662,6 +1677,7 @@ final class AppController: NSObject {
     /// state the player has not reported yet.
     @discardableResult
     private func writeWidgetSnapshot(playbackState explicitPlaybackState: PlaybackState?) -> LyricsWidgetData? {
+        guard !widgetSnapshotIsRetired else { return nil }
         guard let track = selectedPlayer.currentTrack else {
             widgetDataStore.clear()
             return nil

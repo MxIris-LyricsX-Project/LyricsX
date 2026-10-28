@@ -243,6 +243,19 @@ Sparkle 在 app 退出之后才安装更新，小组件扩展的进程它不管�
 （带配置 intent）记在了新版本号下，要等下一次版本号变化才会重读。结束旧进程之后小组件照常出图，目前没看到这份旧
 描述造成别的问题。
 
+### app 退出时清空快照
+
+播放中的 timeline 从快照记下的时刻往后推着排行。app 一退出就没人更新快照了，可小组件每 45 秒左右还会要一份新
+timeline，读到的仍是那份「正在播放」的快照，于是接着往后推：歌名停在退出时那首，歌词一直滚到列表末尾，播放按钮
+看起来也还在播放。
+
+现在 app 退出时（`applicationWillTerminate`）在 `lyricsDisplay` 队列上清掉快照，立刻刷新一次，不等节流窗口；
+小组件回到没有歌曲时的样子。`AppController` 同时记下一个标志，之后再有写快照的请求一律当作没在播放，退出途中
+排着的刷新不会把快照写回来。2026-10-28 实测：Debug 版退出后约 50 毫秒，小组件来取 timeline，读到的是空快照。
+
+退出 LyricsX 之后音乐可能还在放，小组件说「没在播放」不一定对；但它已经无从知道播放状态，总比继续滚一份过时的
+歌词好。
+
 ## 模块结构
 
 | 文件 | 内容 |
@@ -288,6 +301,11 @@ cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
 ```
 
 同时确认别的小组件进程（正式版的、其他 Debug 构建的）还在，一个都不该被结束。
+
+退出时清空快照：放着歌时退出 app，上面那条 `log stream` 里，`[LXWG][Reload] reloadAllTimelines (hasSnapshot=false…)`
+之后应紧跟 `[LXWG][Provider] getTimeline(in:) called (hasData=false…)`。要直接看快照，读 App Group 容器里的那份
+偏好文件（`~/Library/Group Containers/<group>/Library/Preferences/<group>.plist`），不要用 `defaults read <group>`：
+它读的是 `~/Library/Preferences` 下另一份早已过时的同名文件。刚退出时文件可能还没写回磁盘，以小组件日志为准。
 
 刷新实际怎么发生，要看系统日志。下面这条录下 app 的刷新决定（`[LXWG][Reload]`）、小组件每次生成 timeline
 时读到的快照（`[LXWG][Provider]`），以及 `chronod` 对每次请求的处理：`record reload: … = externalRequest(`
@@ -354,6 +372,8 @@ descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从
   （见「验证」）。macOS 26 上的效果要等下一次发版，在 26 的 Mac 上更新之后看上面那条日志。
 - 从 beta.14 或更早直接更新上来的，`chronod` 里那份旧描述要到再下一次版本号变化才更新，见「更新之后，结束旧版本留下的
   扩展进程」。
+- app 不是正常退出（崩溃、强制退出）时 `applicationWillTerminate` 不会运行，快照留着，小组件照旧滚下去，直到 app
+  再启动写新快照。
 
 ## 后续工作
 

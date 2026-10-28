@@ -100,6 +100,15 @@ final class WidgetReloadCoordinator: @unchecked Sendable {
         }
     }
 
+    /// For the app quitting, once the snapshot is cleared: reloads the widget
+    /// at once, past any wait, and drops the reload that was waiting. Runs on
+    /// `DispatchQueue.lyricsDisplay`.
+    func deliverClearedSnapshotNow() {
+        scheduledReload?.cancel()
+        scheduledReload = nil
+        deliver(nil)
+    }
+
     private func scheduleReload() {
         scheduledReload?.cancel()
         scheduledReload = nil
