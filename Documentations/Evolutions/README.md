@@ -32,3 +32,4 @@
 | [0021](0021-system-lyrics-translation.md) | 实验室：用系统翻译（Translation 框架）翻译歌词 | Implemented |
 | [0022](0022-panel-playback-slider.md) | 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider | Implemented |
 | [draft](draft-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | In Progress |
+| [draft](draft-panel-slider-from-uifoundation.md) | 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus | Accepted |
