@@ -123,6 +123,7 @@ actor HighResolutionArtworkService {
                 image: localArtwork,
                 trackIdentifier: request.trackIdentifier
             )
+            guard isCurrent(request) else { return }
         }
 
         let localLongestEdge = request.localArtwork?.longestPixelEdge
@@ -148,11 +149,17 @@ actor HighResolutionArtworkService {
         if hasFreshMiss(forKey: cacheKey) { return }
 
         await downloadPendingCandidates(for: request)
+        guard isCurrent(request) else { return }
 
-        guard let best = await bestVerifiedCandidate(
+        let verifiedCandidate = await bestVerifiedCandidate(
             request: request,
             localLongestEdge: localLongestEdge
-        ) else {
+        )
+        guard isCurrent(request) else {
+            #log(.info, "Dropped an artwork pass: the track changed while its candidates were verified")
+            return
+        }
+        guard let best = verifiedCandidate else {
             recordMissIfAllowed(request, forKey: cacheKey)
             return
         }
@@ -176,6 +183,15 @@ actor HighResolutionArtworkService {
         )
     }
 
+    /// Whether `request` is still for the track playing now. A pass awaits the
+    /// network and the fingerprint scorer, and the next track's pass can run
+    /// in between: the per-track state below and the scorer's reference then
+    /// belong to that track, and the candidates found for it must not be
+    /// filed under this one's cache key.
+    private func isCurrent(_ request: HighResolutionArtworkRequest) -> Bool {
+        request.trackIdentifier == currentTrackIdentifier
+    }
+
     // MARK: - Sources
 
     /// Every source worth trying for this track, asked for its largest rendition.
@@ -186,7 +202,9 @@ actor HighResolutionArtworkService {
         if let iTunesResults {
             results = iTunesResults
         } else if let fetched = await fetchITunesResults(for: request) {
-            iTunesResults = fetched
+            if isCurrent(request) {
+                iTunesResults = fetched
+            }
             results = fetched
         } else {
             results = []
@@ -314,7 +332,7 @@ actor HighResolutionArtworkService {
         }
 
         // The track may have moved on while these were in flight.
-        guard request.trackIdentifier == currentTrackIdentifier else { return }
+        guard isCurrent(request) else { return }
         downloadedCandidates.append(contentsOf: fetched)
     }
 
@@ -378,9 +396,15 @@ actor HighResolutionArtworkService {
             return nil
         }
         let bundleIdentifier = Bundle.main.bundleIdentifier ?? "com.JH.LyricsX"
-        let directoryURL = cachesURL
-            .appendingPathComponent(bundleIdentifier, isDirectory: true)
-            .appendingPathComponent("HighResolutionArtwork", isDirectory: true)
+        let applicationCachesURL = cachesURL.appendingPathComponent(bundleIdentifier, isDirectory: true)
+        // Covers cached before a pass re-checked the track after each wait
+        // may be another song's, filed under the song played just before it.
+        // There is no telling which, so that cache is dropped whole.
+        try? FileManager.default.removeItem(
+            at: applicationCachesURL.appendingPathComponent("HighResolutionArtwork", isDirectory: true)
+        )
+        let directoryURL = applicationCachesURL
+            .appendingPathComponent("HighResolutionArtwork-2", isDirectory: true)
         do {
             try FileManager.default.createDirectory(
                 at: directoryURL,
