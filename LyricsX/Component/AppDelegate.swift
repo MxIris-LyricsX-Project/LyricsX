@@ -115,6 +115,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         NSRunningApplication.runningApplications(withBundleIdentifier: lyricsXHelperIdentifier).forEach { $0.terminate() }
 
+        // After an update the desktop widgets are still answered by the old
+        // version's widget extension until something ends it.
+        DispatchQueue.global(qos: .utility).async {
+            StaleWidgetExtensionTerminator().terminateStaleProcesses()
+        }
+
         // Mirror the keys LyricsXHelper reads from the shared suite. KVO on the
         // standard defaults is reliable; Cocoa Bindings to a bare UserDefaults
         // instance was not — it never actually pushed values into the suite, so
@@ -166,6 +172,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             if AppController.shared.currentLyrics?.metadata.needsPersist == true {
                 AppController.shared.currentLyrics?.persist()
             }
+            AppController.shared.retireWidgetSnapshot()
         }
         if defaults[.launchAndQuitWithPlayer] {
             let url = Bundle.main.bundleURL

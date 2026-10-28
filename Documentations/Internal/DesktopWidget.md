@@ -207,6 +207,55 @@ WidgetKit 计时和实际播放之间的误差就攒不起来。
 窗口末尾之后才开始的那一行晚了好几秒，而且每分钟一次。现在 `.after` 定在窗口末尾前 15 秒，交接期间旧 timeline 里
 还有行可换。每次生成的条数不变，只是后台刷新从约每 64 秒一次变成约每 49 秒一次。
 
+### 更新之后，结束旧版本留下的扩展进程
+
+Sparkle 在 app 退出之后才安装更新，小组件扩展的进程它不管。安装时旧的 app 被挪进 Sparkle 的安装目录然后删掉，
+扩展进程照样运行着那个已删除的文件；系统按实例复用进程，之后小组件的每次请求都交给它，直到用户注销或重启。
+平时这只意味着新版本对小组件的改动要重启才生效；配置方式一变就成了故障。2026-10-28，一台 macOS 26.7 的 Mac 从
+1.9.0-beta.14 更新到 rc.1：rc.1 的小组件是静态配置，没有配置 intent，beta.14 的旧进程却要求 intent，25 分钟里报了
+798 次 "Intent configuration is required but was not provided"，桌面小组件全黑。结束那个进程之后，系统一秒内从新
+安装包启动扩展，四个小组件都取到了 timeline，此后没有再报错。
+
+所以 app 每次启动都检查一遍（`StaleWidgetExtensionTerminator`，在后台队列上跑），找到旧进程就发 SIGTERM 结束它，
+再刷新一次所有小组件，让系统从当前安装包启动扩展。Sparkle 的维护者对这类问题给的也是这个办法
+（[Sparkle issue 1096](https://github.com/sparkle-project/Sparkle/issues/1096)）。
+
+哪些进程算旧的，由 `WidgetExtensionProcessPolicy` 决定：
+
+- 运行在安装包里那个路径上、但跑的不是那个文件（设备号和 inode 不同）：更新把文件原地覆盖了。
+- 运行在别的路径上、而那里的文件已经不在：Sparkle 挪走又删掉的旧版本。
+- 运行在别的路径上、那里是同一个小组件的**更旧**版本：旧版本还没删掉。
+- 其余都不动：别的构建的小组件（比如 Debug 版，bundle identifier 不同）、同一版本的另一份副本，以及**更新**的副本，
+  后者是系统挑来服务小组件的那一份。最后这条是实测改出来的：一开始只要版本号不同就结束，结果一个 2929 的 Debug
+  构建结束了系统刚从 2930 那份启动的进程，系统马上又启动一个，白折腾一次。
+
+进程的路径和文件不从 `proc_pidpath` 取，而是从进程映射可执行文件的那段内存（`PROC_PIDREGIONPATHINFO`）里取，也就是
+`lsof` 列为 txt 的那一项：文件删掉之后它仍报文件最后所在的路径，inode 也还是旧文件的。先用 `proc_name` 按进程名
+筛一遍，免得对每个进程都去翻内存区域；`proc_name` 的缓冲区至少要有 `proc_bsdinfo.pbi_name` 那么长（32 字节），
+短了它对每个进程都直接失败，第一次实测就是因此什么也没找到。
+
+**macOS 27.2 上系统自己会清掉旧进程。** 实测时把正在服务小组件的 Debug 包挪走、换上新构建、删掉旧包，旧进程一直
+活着；新包登记进 LaunchServices、app 启动的那一刻，系统用 SIGKILL 结束了它。这台 Mac 当初从 beta.14 更新到 rc.1
+时也没出问题。macOS 26.7 没有这么做，所以这一段主要是给 macOS 26 及更早的系统用的，在 27 上它通常找不到要结束的
+进程。
+
+**旧描述还会留一阵。** 版本号变化时 `chronod` 立刻重读小组件描述，读的是当时还活着的旧进程，于是 beta.14 的描述
+（带配置 intent）记在了新版本号下，要等下一次版本号变化才会重读。结束旧进程之后小组件照常出图，目前没看到这份旧
+描述造成别的问题。
+
+### app 退出时清空快照
+
+播放中的 timeline 从快照记下的时刻往后推着排行。app 一退出就没人更新快照了，可小组件每 45 秒左右还会要一份新
+timeline，读到的仍是那份「正在播放」的快照，于是接着往后推：歌名停在退出时那首，歌词一直滚到列表末尾，播放按钮
+看起来也还在播放。
+
+现在 app 退出时（`applicationWillTerminate`）在 `lyricsDisplay` 队列上清掉快照，立刻刷新一次，不等节流窗口；
+小组件回到没有歌曲时的样子。`AppController` 同时记下一个标志，之后再有写快照的请求一律当作没在播放，退出途中
+排着的刷新不会把快照写回来。2026-10-28 实测：Debug 版退出后约 50 毫秒，小组件来取 timeline，读到的是空快照。
+
+退出 LyricsX 之后音乐可能还在放，小组件说「没在播放」不一定对；但它已经无从知道播放状态，总比继续滚一份过时的
+歌词好。
+
 ## 模块结构
 
 | 文件 | 内容 |
@@ -218,6 +267,8 @@ WidgetKit 计时和实际播放之间的误差就攒不起来。
 | `LyricsX/Component/WidgetReloadCoordinator.swift` | 在 `lyricsDisplay` 队列上执行上面的规则：记下变化、到点写快照、该刷新才刷新 |
 | `LyricsXWidget/Views/LyricsWindowView.swift` | 大号和超大号共用的歌词区，以及量高度、调用策略、摆放行的 `LyricsWindowLayout` |
 | `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件；在 app 里调 `AppController` 的 `togglePlaybackFromWidget()` 等方法 |
+| `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetExtensionProcessPolicy.swift` | 纯规则：一个正在运行的小组件扩展进程是不是更新留下的旧进程 |
+| `LyricsX/Component/StaleWidgetExtensionTerminator.swift` | app 启动时枚举进程、读出每个小组件进程运行的文件，按上面的规则结束旧进程 |
 
 ## 验证
 
@@ -233,7 +284,28 @@ cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
 
 # 快照的编码，3 个用例（<1 秒）。旧版本写的快照（没有 showsTranslation）应读成不显示译文
 cd LyricsXPackage && swift test --filter LyricsWidgetDataTests
+
+# 哪些小组件扩展进程算更新留下的旧进程，10 个用例（<1 秒）。三种该结束的情况在原来「从不结束」的行为上是红的；
+# 「更新的副本不动」和「读不出版本号的副本不动」在一开始「版本号不同就结束」的规则上是红的
+cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
 ```
+
+结束旧进程这一步在 app 里，没有测试宿主，是这样实测的：复制一份 `/bin/sleep`，放到某个
+`…/LyricsXWidget.appex/Contents/MacOS/LyricsXWidget` 路径下运行，再删掉它的目录，就得到一个和 Sparkle 更新后
+一样、跑着已删除文件的「小组件」进程（系统不会替它收拾，它不是真的扩展）。然后启动 app，几秒内这个进程应当消失，
+日志里有 `Ended stale widget extension <pid> at <路径>`：
+
+```bash
+/usr/bin/log show --info --last 5m --style compact \
+  --predicate 'subsystem == "com.JH.LyricsX.diagnostics" AND category == "StaleWidgetExtension"'
+```
+
+同时确认别的小组件进程（正式版的、其他 Debug 构建的）还在，一个都不该被结束。
+
+退出时清空快照：放着歌时退出 app，上面那条 `log stream` 里，`[LXWG][Reload] reloadAllTimelines (hasSnapshot=false…)`
+之后应紧跟 `[LXWG][Provider] getTimeline(in:) called (hasData=false…)`。要直接看快照，读 App Group 容器里的那份
+偏好文件（`~/Library/Group Containers/<group>/Library/Preferences/<group>.plist`），不要用 `defaults read <group>`：
+它读的是 `~/Library/Preferences` 下另一份早已过时的同名文件。刚退出时文件可能还没写回磁盘，以小组件日志为准。
 
 刷新实际怎么发生，要看系统日志。下面这条录下 app 的刷新决定（`[LXWG][Reload]`）、小组件每次生成 timeline
 时读到的快照（`[LXWG][Provider]`），以及 `chronod` 对每次请求的处理：`record reload: … = externalRequest(`
@@ -296,6 +368,12 @@ descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从
 - 小组件删掉后残留的配置要重启 `chronod` 和 `NotificationCenter` 才清掉，见「节流按小组件种类算，请求按配置拆分」。
 - 升级之后要把小组件全部删掉、重新添加一次，才会同在一套配置里；没这样做的用户，一部分小组件仍晚 5 秒。见「小组件
   没有自己的设置项」。
+- 结束旧扩展进程没在一次真实的 Sparkle 更新里验证过：macOS 27.2 上系统自己先清掉了，app 这一步是用假进程实测的
+  （见「验证」）。macOS 26 上的效果要等下一次发版，在 26 的 Mac 上更新之后看上面那条日志。
+- 从 beta.14 或更早直接更新上来的，`chronod` 里那份旧描述要到再下一次版本号变化才更新，见「更新之后，结束旧版本留下的
+  扩展进程」。
+- app 不是正常退出（崩溃、强制退出）时 `applicationWillTerminate` 不会运行，快照留着，小组件照旧滚下去，直到 app
+  再启动写新快照。
 
 ## 后续工作
 

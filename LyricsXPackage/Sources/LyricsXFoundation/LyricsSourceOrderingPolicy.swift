@@ -92,6 +92,18 @@ public enum LyricsSourceOrderingPolicy {
         }
     }
 
+    /// The source list after the row at `sourceRow` is dragged into the gap
+    /// above row `dropRow` — `sources.count` is the gap below the last row —
+    /// or `nil` when the list has no such row or gap.
+    public static func reorderedSources(_ sources: [String], movingRowAt sourceRow: Int, toDropRow dropRow: Int) -> [String]? {
+        guard sources.indices.contains(sourceRow), (0 ... sources.count).contains(dropRow) else { return nil }
+        var reorderedSources = sources
+        let targetRow = dropRow > sourceRow ? dropRow - 1 : dropRow
+        let movedSource = reorderedSources.remove(at: sourceRow)
+        reorderedSources.insert(movedSource, at: targetRow)
+        return reorderedSources
+    }
+
     public static func qualityBucket(_ quality: Double, tolerance: Double = qualityTolerance) -> Int {
         guard tolerance > 0, tolerance.isFinite else {
             return 0

@@ -88,7 +88,9 @@ public enum SystemLyricsTranslationPolicy {
 /// Japanese-to-Chinese session translated "Baby I love you" and a Korean line
 /// as well as its Japanese ones, and an English-to-Chinese one the Japanese
 /// lines. Picking such lines out would only have asked for a second
-/// download.
+/// download. On macOS 27.2 the Japanese-to-Chinese session hands
+/// "Baby I love you" back as it was, so there such a line is dropped as
+/// unchanged and goes without a translation.
 @available(macOS 26.0, *)
 public struct SystemLyricsTranslator: Sendable {
     public init() {}

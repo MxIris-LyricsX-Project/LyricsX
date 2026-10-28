@@ -57,9 +57,9 @@ func theLinesOfADownloadedPairAreTranslated() async throws {
     await languagePairState(from: "ja", to: "zh-Hans") == .downloaded
 })
 func anEnglishLineInAJapaneseSongIsTranslatedWithTheRest() async throws {
-    // Why the translator sends a song's every line to one session: the
-    // Japanese one reads English too, so it needs no session of its own —
-    // and no English download.
+    // Why the translator sends a song's every line to one session: on macOS
+    // 26.7 the Japanese one reads English too, so it needs no session of its
+    // own — and no English download.
     let lyrics = try #require(Lyrics("[00:01.000]君の名前を呼んだ\n[00:05.000]Baby I love you\n[00:09.000]夜明けの空に"))
     let result = try await SystemLyricsTranslator().translate(
         lyrics: lyrics,
@@ -67,8 +67,17 @@ func anEnglishLineInAJapaneseSongIsTranslatedWithTheRest() async throws {
         targetLanguage: "zh-Hans"
     )
     #expect(result.failedLineCount == 0)
-    #expect(Set(result.translations.keys) == [0, 1, 2])
-    #expect(result.translations[1] != "Baby I love you")
+    // On macOS 27.2 the session hands the English line back as it was, and the
+    // translator drops it as unchanged. When a release translates it again,
+    // the known issue is not recorded and this probe fails: drop the wrapper.
+    withKnownIssue("macOS 27 hands an English line in a Japanese song back untranslated") {
+        #expect(Set(result.translations.keys) == [0, 1, 2])
+        #expect(result.translations[1] != "Baby I love you")
+    } when: {
+        ProcessInfo.processInfo.isOperatingSystemAtLeast(
+            OperatingSystemVersion(majorVersion: 27, minorVersion: 0, patchVersion: 0)
+        )
+    }
 }
 
 @available(macOS 26.0, *)

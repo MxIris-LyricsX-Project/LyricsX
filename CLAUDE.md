@@ -49,7 +49,9 @@ still the text LyricsX wrote there), editing eligibility, HUD window configurati
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
-the property tests that keep the ordering transitive), plus the lyrics
+the property tests that keep the ordering transitive) and dragging a source to
+another place in the list, what the menu bar's lyric line shows when there is
+no line to show, plus the lyrics
 translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine
@@ -141,7 +143,9 @@ retry semantics — is documented in
 `SystemLyricsTranslatorProbes` (in `LyricsXFoundationTests`) runs System
 Translation against the real Translation framework; each probe covers one
 state of the Mac's downloaded languages and skips itself in any other, so
-which of them ran is in the test output.
+which of them ran is in the test output. On macOS 27 the English line of a
+Japanese song comes back untranslated, which the mixed-language probe records
+as a known issue; it fails, on purpose, once a release translates it again.
 
 `MenuBarLyricsTests` guards the menu bar lyric line (`MenuBarMarqueeLabel`,
 which replaced MarqueeLabel's `NSTextField` on macOS 26+). Run them on any
@@ -185,6 +189,18 @@ holds the rest, so a track change — a burst of changes over about two seconds
 
 ```bash
 cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
+```
+
+Its `WidgetExtensionProcessPolicyTests` pin down which running widget
+extension processes the app ends at launch. Sparkle installs an update after
+the app quits and leaves the widget extension running the old, deleted files,
+so on macOS 26 the widgets keep the old code until logout — and went black
+when the old code met rc.1's configuration. Run them on any change to
+`StaleWidgetExtensionTerminator` (<1s); how to try the terminator itself is in
+`Documentations/Internal/DesktopWidget.md`:
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
 ```
 
 The widget is a `StaticConfiguration` on purpose: anything it can show two

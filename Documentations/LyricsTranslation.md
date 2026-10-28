@@ -15,7 +15,9 @@ Adding a translation does not change how the lyrics rank against other search re
 
 System Translation only uses languages that are already downloaded to this Mac. When the lyrics need a pair of languages that is not, the status line in the Lab pane names the pair and a Download… button appears beside it; it brings up the system's own download prompt over the Settings window, and the lyrics are translated again once the download is done. Translation languages can also be managed in System Settings > General > Language & Region > Translation Languages.
 
-The lyrics are translated from the language they were recognized as being in, so a song needs only that language and the target downloaded; a line in another language, such as the English line of a Japanese song, is translated along with the rest. A line that comes back exactly as it went — one already in the target language, or romanized lyrics the models cannot read — is not saved as a translation.
+The lyrics are translated from the language they were recognized as being in, so a song needs only that language and the target downloaded. A line that comes back exactly as it went — one already in the target language, or romanized lyrics the models cannot read — is not saved as a translation.
+
+A line in another language, such as the English line of a Japanese song, goes to the translator along with the rest. On macOS 26.7 it comes back translated. On macOS 27.2 the Japanese-to-Chinese translation hands an English line back as it was, so that line goes without a translation; the probe `anEnglishLineInAJapaneseSongIsTranslatedWithTheRest` records this as a known issue, and fails once a macOS release translates the line again.
 
 Some pairs are not supported by the framework at all, Traditional to Simplified Chinese among them on macOS 26.7; the status line says so. On macOS 26.4 and later the framework is asked for its high-fidelity strategy, which uses Apple Intelligence where it is available and falls back to the traditional models where it is not.
 
