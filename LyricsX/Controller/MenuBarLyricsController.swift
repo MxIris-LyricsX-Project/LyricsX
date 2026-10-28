@@ -107,6 +107,11 @@ final class MenuBarLyricsController {
         }
     }
 
+    /// The lyrics on screen and the line playback is at, as last published.
+    /// Kept to show the line again when playback resumes. Read and written on
+    /// `DispatchQueue.lyricsDisplay`.
+    private var latestLyricsEvent: (lyrics: Lyrics?, index: Int?) = (nil, nil)
+
     private var cancelBag = Set<AnyCancellable>()
 
     private init() {
@@ -150,6 +155,20 @@ final class MenuBarLyricsController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] playbackState in
                 self?.marqueeLabel.setPlaybackPaused(!playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        // "Hide lyrics when paused" has to act on the pause itself, which
+        // moves neither the lyrics nor the line.
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] playbackState in
+                self?.showLyricsLine(isPlaying: playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        defaults.publisher(for: [.disableLyricsWhenPaused])
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] _ in
+                self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
             }
             .store(in: &cancelBag)
         selectedPlayer.currentTrackWillChange
@@ -245,12 +264,34 @@ final class MenuBarLyricsController {
     }
 
     private func handleLyricsDisplay(event: (lyrics: Lyrics?, index: Int?)) {
-        guard !defaults[.disableLyricsWhenPaused] || selectedPlayer.playbackState.isPlaying,
-              let lyrics = event.lyrics,
-              let index = event.index else {
-//            screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+        latestLyricsEvent = event
+        showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
+    }
+
+    /// Runs on `DispatchQueue.lyricsDisplay`.
+    private func showLyricsLine(isPlaying: Bool) {
+        let (lyrics, index) = latestLyricsEvent
+        let display = MenuBarLyricsLinePolicy.display(
+            lineCount: lyrics?.lines.count,
+            currentLineIndex: index,
+            isPlaying: isPlaying,
+            hidesLyricsWhenPaused: defaults[.disableLyricsWhenPaused]
+        )
+        switch display {
+        case .unchanged:
             return
+        case .placeholder:
+            if screenLyrics.lyrics != MenuBarLyricsController.defaultLyric {
+                screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+            }
+        case let .line(lineIndex):
+            if let lyrics {
+                showLine(at: lineIndex, of: lyrics)
+            }
         }
+    }
+
+    private func showLine(at index: Int, of lyrics: Lyrics) {
         let currentLine = lyrics.lines[index]
         var newScreenLyrics = currentLine.content
         if let converter = ChineseConverter.shared, lyrics.metadata.language?.hasPrefix("zh") == true {

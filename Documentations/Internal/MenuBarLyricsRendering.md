@@ -133,6 +133,20 @@ ad-hoc 签名，再用 `open -n -W` 启动；宿主把测量结果写成 JSON �
 - 测试进程里的 `NSTextField` 不裁剪溢出的字形，和真正的 App 不一样（见上文「裁剪」）。
 - macOS 27.2 beta 上，从终端启动、又开过窗口的测试进程会在 Dock 留下一个退出后也不消失的终端图标，每跑一次多一个。
 
+### 什么时候显示占位文字
+
+菜单栏这一行由 `MenuBarLyricsLinePolicy` 决定显示什么：当前行、占位文字「LyricsX」（启动后还没有歌词时就是它），
+或者保持不变。
+
+- **没有歌词，显示占位文字。** 换歌时 `AppController` 先把歌词清空，所以新歌的前奏、找不到歌词的歌都是占位文字。
+  原来这里什么也不做，菜单栏一直停在上一首的最后一句：上游会清空，2024 年 9 月改用占位文字时清空那一行被注释掉了。
+- **开着「暂停时隐藏歌词」时暂停，显示占位文字。** 原来这个设置只在换行时检查，暂停本身既不换歌词也不换行，所以从来
+  没起过作用。现在控制器也跟着播放状态和这个设置的变化重新判断，继续播放时换回当前行。
+- **有歌词但没有行号，保持不变。** 每次换下屏幕上的歌词（翻译到了、换了一条候选），`AppController` 都先把行号清空、
+  马上再设回来；这时换成占位文字会闪一下，当前行还会从头滚。新歌开头本来就已经是占位文字，所以不受影响。代价是
+  同一首歌里往回拖到第一行之前，菜单栏还停在拖动前那一行，直到唱到第一行。
+- 行号超出歌词的行数时也保持不变，不去读那一行。
+
 ## 模块结构
 
 ```
@@ -153,7 +167,9 @@ LyricsXPackage/
 ```
 
 App 端：`MenuBarLyricsController` 按系统版本选视图（唯一一处 `#available`），经私有协议 `MenuBarLyricsMarquee`
-转发文字、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond`。
+转发文字、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond`。显示哪一行由
+`LyricsXFoundation` 里的 `MenuBarLyricsLinePolicy` 决定，测试是 `LyricsXFoundationTests` 里的
+`MenuBarLyricsLinePolicyTests.swift`。
 
 ## 核心数据流
 
