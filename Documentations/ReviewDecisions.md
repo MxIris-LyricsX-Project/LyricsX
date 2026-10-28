@@ -77,3 +77,63 @@
 [把歌词写进「音乐」](Internal/MusicLyricsWriting.md#已知问题自动写入会覆盖用户原有的歌词)。
 
 **若理由失效**：1.9.0 正式版发布之后，这条就该修了，不能再以「发版前」为由跳过。
+
+---
+
+## 2026-10-28 · 发 RC2 前的取舍
+
+上面那次审查列为「可以等」的发现里，这次修了四条：菜单栏残留上一首的歌词、app 退出后小组件仍显示正在播放、往歌词源
+列表拖数字会崩溃、高清封面存到别的歌名下。下面这些决定留到 1.9.0 正式版之后。除了最后一条（系统翻译是 rc.1 新加的功能），
+它们在 1.9.0-beta.14 里就有，不是这一版引入的。
+
+**若理由失效**（这一节每条都一样）：1.9.0 正式版发布之后，不能再以「发版前」为由跳过，要逐条复核再修。
+
+### 设置了 Apple Music token 时，启动后第一首歌搜不到歌词 —— 确认为真，暂缓
+
+**发现内容**：`AppController` 初始化时 `lyricsManager` 是空的 `LyricsProviders.Group()`。设置了 `media-user-token` 时，
+`updateLyricsManager()` 要先联网等 `isAuthorized` 返回，才把真正的歌词源装上，这之前开始的搜索一个歌词源都没有。
+
+**裁决：暂缓。** 只影响设置了 token 的用户，而且只影响启动后的第一首，切一首歌或用「下一条候选歌词」就恢复。要修得改
+搜索的初始化顺序：先同步装上不依赖 token 的歌词源，验证通过后再补上 Apple Music。
+
+### `media-user-token` 明文存在偏好设置里 —— 确认为真，暂缓
+
+**发现内容**：Apple Music 的 `media-user-token` 存在 `UserDefaults`（`AppleMusicMediaUserToken`），没有放进钥匙串。
+
+**裁决：暂缓。** 搬进钥匙串还要迁移已有用户的值，发版前不动。AI 翻译的 API key 已经存在钥匙串里（`AITranslationService`），
+照它的做法改。
+
+### Intel 双显卡的 Mac 会切到独立显卡 —— 疑似，暂缓
+
+**发现内容**：歌词面板的背景用 `MTLCreateSystemDefaultDevice()` 取 Metal 设备，在双显卡的 Intel Mac 上会选中独立显卡，
+让系统切过去，开着面板更费电。
+
+**裁决：暂缓。** 只影响开着 Apple Music 风格窗口的 Intel 双显卡 Mac，手上没有这类机器，改了也验证不了。修法方向：优先选
+`isLowPower` 的设备，并在 Info.plist 里声明 `NSSupportsAutomaticGraphicsSwitching`。
+
+### 从右到左的文字，扫光方向是反的 —— 未复现，暂缓
+
+**发现内容**：卡拉 OK 的扫光从左往右推进，阿拉伯语、希伯来语这类从右到左的歌词会反着扫。
+
+**裁决：暂缓。** 审查是读代码推出来的，没有用真实的从右到左歌词复现过，这类歌词也少。
+
+### 泰文等文字的附加符号可能被裁掉 —— 疑似，暂缓
+
+**发现内容**：泰文这类在字母上下叠附加符号的文字，符号可能超出行的绘制范围被裁掉。
+
+**裁决：暂缓。** 要先写 probe 用真实字形确认是不是真的会裁。
+
+### 发版流程在 GitHub Release 建好之后不能重跑 —— 确认为真，暂缓
+
+**发现内容**：`release.yml` 中途失败、而 GitHub Release 已经建好时，重跑会在建 Release 那一步因为 Release 已存在而失败。
+
+**裁决：暂缓。** 只影响发版出故障时的补救，用户碰不到。现在的办法是手动删掉那个 Release 再重跑。
+
+### 系统翻译在 macOS 27 上不翻日文歌里的英文行 —— 确认为真，暂缓
+
+**发现内容**：macOS 27.2 上，日译中的会话把「Baby I love you」原样返回，原样返回的行不保存，于是这一行没有译文，也不算失败。
+macOS 26.7 上会翻。
+
+**裁决：暂缓。** 要翻这些行，得再开一个英译中的会话，用户就要多下载一个语言，属于改方案，要单独写提案。行为差别已写进
+[Lyrics translation](LyricsTranslation.md)，探针 `anEnglishLineInAJapaneseSongIsTranslatedWithTheRest` 在 macOS 27 上
+把它记为已知问题，哪天系统又会翻了，探针会失败提醒。
