@@ -1,15 +1,6 @@
 {
-  "originHash" : "493f7b491cf8f9f0119e318381b7e333f6335e839f707e3141113ce55679fbb9",
+  "originHash" : "21f109f8e91db3f91277a2933e19bf3f006a096aa7064bef41fddd0efdf5fb08",
   "pins" : [
-    {
-      "identity" : "appkitplus-release",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/AppKitSupportProgram/AppKitPlus-Release",
-      "state" : {
-        "revision" : "70a2305ba1be432591746fc6732b22a4e578536a",
-        "version" : "0.19.0"
-      }
-    },
     {
       "identity" : "associatedobject",
       "kind" : "remoteSourceControl",
@@ -42,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
       "state" : {
-        "revision" : "44c3241abfba2bbd22e6a3887f6b85bb3c3b9211",
-        "version" : "0.14.0"
+        "revision" : "c87146b7f3ab69aebb461c1128f4326e462a6fbc",
+        "version" : "0.15.0"
       }
     },
     {
@@ -240,8 +231,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/UIFoundation",
       "state" : {
-        "revision" : "a073bb277d1655e49d6b5f362a9e2c64278cfc26",
-        "version" : "0.33.0"
+        "branch" : "feature/playback-slider",
+        "revision" : "6292d0bfd87ad3b9c01257b5de12c637fb38bc23"
       }
     }
   ],

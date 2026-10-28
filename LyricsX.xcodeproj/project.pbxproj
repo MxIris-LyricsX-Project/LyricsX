@@ -692,10 +692,11 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.0;
+				branch = "feature/playback-slider";
+				kind = branch;
 			};
 			traits = (
+				AppleInternal,
 			);
 		};
 		F00DA0020A0A0A0A0A0A0A02 /* XCRemoteSwiftPackageReference "MSDisplayLink" */ = {

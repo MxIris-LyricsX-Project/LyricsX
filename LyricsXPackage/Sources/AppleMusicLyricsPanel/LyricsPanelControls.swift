@@ -1,5 +1,4 @@
 import AppKit
-import AppKitPlus
 import UIFoundation
 
 /// Pure-AppKit chrome controls for the lyrics panel (playback scrubber + buttons).
@@ -35,7 +34,7 @@ extension AppleMusicLyrics {
         }
     }
 
-    /// Playback scrubber: AppKitPlus's `NSPlaybackSlider` — the time slider of
+    /// Playback scrubber: UIFoundation's `PlaybackSlider` — the time slider of
     /// Music's full-screen player — over elapsed / remaining labels. Press or drag
     /// the bar to scrub; the labels are inert.
     ///
@@ -44,10 +43,10 @@ extension AppleMusicLyrics {
     /// the 10 Hz chrome tick would otherwise pull it back from under the pointer.
     /// The arrow keys and VoiceOver move the slider without pressing it, and seek
     /// at once.
-    final class PlaybackProgressView: NSView, NSPlaybackSliderDelegate {
+    final class PlaybackProgressView: NSView, PlaybackSliderDelegate {
         var onSeek: ((TimeInterval) -> Void)?
 
-        private let timeSlider = NSPlaybackSlider()
+        private let timeSlider = PlaybackSlider()
         private let elapsedLabel = NSTextField(labelWithString: "0:00")
         private let remainingLabel = NSTextField(labelWithString: "-0:00")
 
@@ -89,7 +88,7 @@ extension AppleMusicLyrics {
             timeSlider.minValue = 0
             timeSlider.maxValue = 0
             timeSlider.scrubbingDelegate = self
-            timeSlider.primaryAction = NSAction { [weak self] _ in
+            timeSlider.box.actionBlock = { [weak self] _ in
                 self?.timeSliderValueDidChange()
             }
             timeSlider.translatesAutoresizingMaskIntoConstraints = false
@@ -135,14 +134,14 @@ extension AppleMusicLyrics {
             showTime(currentTime)
         }
 
-        // MARK: NSPlaybackSliderDelegate
+        // MARK: PlaybackSliderDelegate
 
-        func playbackSliderDidBeginScrubbing(_ playbackSlider: NSPlaybackSlider) {
+        func playbackSliderDidBeginScrubbing(_ playbackSlider: PlaybackSlider) {
             isScrubbing = true
             showTime(playbackSlider.doubleValue)
         }
 
-        func playbackSliderDidEndScrubbing(_ playbackSlider: NSPlaybackSlider) {
+        func playbackSliderDidEndScrubbing(_ playbackSlider: PlaybackSlider) {
             isScrubbing = false
             seek(to: playbackSlider.doubleValue)
         }

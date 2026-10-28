@@ -42,7 +42,7 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         accessory.applyLockState()
 
         dragNDropView.dragDelegate = self
-        lyricsScrollView.delegate = self
+        lyricsScrollView.lyricsViewDelegate = self
         noLyricsLabel.contextMenuProvider = { [weak self] _ in
             self?.lyricsViewContextMenu()
         }

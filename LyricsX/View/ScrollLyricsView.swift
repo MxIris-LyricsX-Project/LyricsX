@@ -15,7 +15,10 @@ final class LyricsTextView: LyricsInteractionTextView {}
 final class LyricsPlaceholderTextField: LyricsContextMenuTextField {}
 
 class ScrollLyricsView: NSScrollView {
-    weak var delegate: ScrollLyricsViewDelegate?
+    /// Not `delegate`: with UIFoundation's `AppleInternal` trait on, AppKit's private
+    /// headers declare `NSScrollView.delegate`, and a property of that name here
+    /// no longer compiles.
+    weak var lyricsViewDelegate: ScrollLyricsViewDelegate?
 
     private var textView: LyricsTextView {
         // swiftlint:disable:next force_cast
@@ -65,7 +68,7 @@ class ScrollLyricsView: NSScrollView {
             self?.handleDoubleClick(with: event)
         }
         textView.contextMenuProvider = { [weak self] _ in
-            guard let menu = self?.delegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+            guard let menu = self?.lyricsViewDelegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
                 return nil
             }
             return menu
@@ -151,12 +154,12 @@ class ScrollLyricsView: NSScrollView {
             return bounding.contains(clickPoint)
         }
         if let (position, _) = clickRange.first {
-            delegate?.doubleClickLyricsLine(at: position)
+            lyricsViewDelegate?.doubleClickLyricsLine(at: position)
         }
     }
 
     override func rightMouseDown(with event: NSEvent) {
-        guard let menu = delegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+        guard let menu = lyricsViewDelegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
             super.rightMouseDown(with: event)
             return
         }
@@ -167,10 +170,10 @@ class ScrollLyricsView: NSScrollView {
         super.scrollWheel(with: event)
         switch event.momentumPhase {
         case .began:
-            delegate?.scrollWheelDidStartScroll()
+            lyricsViewDelegate?.scrollWheelDidStartScroll()
         case .ended,
              .cancelled:
-            delegate?.scrollWheelDidEndScroll()
+            lyricsViewDelegate?.scrollWheelDidEndScroll()
         default:
             break
         }
