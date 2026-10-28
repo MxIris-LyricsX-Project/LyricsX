@@ -143,7 +143,9 @@ retry semantics — is documented in
 `SystemLyricsTranslatorProbes` (in `LyricsXFoundationTests`) runs System
 Translation against the real Translation framework; each probe covers one
 state of the Mac's downloaded languages and skips itself in any other, so
-which of them ran is in the test output.
+which of them ran is in the test output. On macOS 27 the English line of a
+Japanese song comes back untranslated, which the mixed-language probe records
+as a known issue; it fails, on purpose, once a release translates it again.
 
 `MenuBarLyricsTests` guards the menu bar lyric line (`MenuBarMarqueeLabel`,
 which replaced MarqueeLabel's `NSTextField` on macOS 26+). Run them on any
