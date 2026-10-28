@@ -1,9 +1,9 @@
 import AppKit
-import AppKitPlus
+import UIFoundation
 import Testing
 @testable import AppleMusicLyricsPanel
 
-/// The panel's scrubber: AppKitPlus's `NSPlaybackSlider` over Music's elapsed
+/// The panel's scrubber: UIFoundation's `PlaybackSlider` over Music's elapsed
 /// and remaining time labels.
 ///
 /// Which view a click reaches is asserted on the window's hit test, not on a
@@ -14,8 +14,9 @@ import Testing
 ///
 /// Scrubbing is driven the way AppKit's tracking drives the slider: through its
 /// cell's three tracking methods, with the action AppKit sends on the press,
-/// after every movement and once more after the release — the order
-/// `NSPlaybackSlider` documents and AppKitPlus pins in its own tests.
+/// after every movement and once more after the release — the order AppKit
+/// sends a continuous slider's action in, as UIFoundation's `PlaybackSlider`
+/// guide documents.
 @MainActor
 struct PlaybackScrubberProbes {
     private nonisolated static let trackDuration: TimeInterval = 217.699
@@ -151,12 +152,12 @@ struct PlaybackScrubberProbes {
     private final class MountedScrubber {
         let window: NSWindow
         let scrubber: AppleMusicLyrics.PlaybackProgressView
-        let slider: NSPlaybackSlider
-        private let sliderCell: NSPlaybackSliderCell
+        let slider: PlaybackSlider
+        private let sliderCell: PlaybackSliderCell
         private(set) var recordedSeeks: [TimeInterval] = []
         private var lastTrackingPoint = NSPoint.zero
 
-        init(window: NSWindow, scrubber: AppleMusicLyrics.PlaybackProgressView, slider: NSPlaybackSlider, sliderCell: NSPlaybackSliderCell) {
+        init(window: NSWindow, scrubber: AppleMusicLyrics.PlaybackProgressView, slider: PlaybackSlider, sliderCell: PlaybackSliderCell) {
             self.window = window
             self.scrubber = scrubber
             self.slider = slider
@@ -227,8 +228,8 @@ struct PlaybackScrubberProbes {
         scrubber.update(currentTime: 6, duration: duration)
         contentView.layoutSubtreeIfNeeded()
 
-        let slider = try #require(scrubber.subviews.lazy.compactMap { $0 as? NSPlaybackSlider }.first, "the scrubber carries an NSPlaybackSlider")
-        let sliderCell = try #require(slider.cell as? NSPlaybackSliderCell)
+        let slider = try #require(scrubber.subviews.lazy.compactMap { $0 as? PlaybackSlider }.first, "the scrubber carries a PlaybackSlider")
+        let sliderCell = try #require(slider.cell as? PlaybackSliderCell)
         let mounted = MountedScrubber(window: window, scrubber: scrubber, slider: slider, sliderCell: sliderCell)
         try #require(mounted.timeLabels.count == 2, "the scrubber carries an elapsed and a remaining label")
         try #require(slider.bounds.width == 300 && slider.bounds.height == 16, "slider laid out at \(slider.frame)")

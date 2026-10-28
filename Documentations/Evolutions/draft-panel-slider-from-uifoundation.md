@@ -1,6 +1,6 @@
 # Draft - 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **创建日期**: 2026-10-28
 - **最后更新**: 2026-10-29
 - **关联提案**: [0022 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](0022-panel-playback-slider.md)（本提案撤回其中的依赖选择）
@@ -48,6 +48,36 @@
 7. **清理构建目录**：改了 trait 之后，Xcode 的增量构建感知不到这个变化，agent 的和用户自己的 DerivedData 都要清一次。
    到时会提醒用户。
 
+## 落地进度
+
+- [ ] 第 1 步：UIFoundation 还没发版。Xcode 工程和 `Package.swift` 暂时都依赖它的 `feature/playback-slider` 分支，发版后改成
+  版本号要求；改之前不能发 RC2。
+- [x] 第 2–6 步：依赖、代码、测试、文档。核对结果见下。
+- [ ] 第 7 步：清理构建目录，合进 develop 后做。
+
+2026-10-29 的核对结果：
+
+- **构建**：app 的 Debug 构建通过，构建日志里有 21 处 `-DAppleInternal`，`UIFoundationAppleInternal` 模块参与了编译。
+  app 包里不再有 `AppKitPlus.framework`，新增了 FrameworkToolbox 的 `ObjCRuntimeToolbox.framework`（约 450 KB）。
+- **`Package.resolved`** 只变了三处：去掉 `appkitplus-release`；FrameworkToolbox 从 0.14.0 升到 0.15.0；UIFoundation 从
+  0.33.0 改为 `feature/playback-slider` 分支的 `6292d0b`。没有带进别的依赖变动。
+- **测试**（`--no-parallel`）全部通过，退出码 0：`PlaybackScrubberProbes` 10 个、面板整套 172 个、
+  `LyricsXFoundationTests` 161 个（其中一个是已登记的 macOS 27 系统翻译 known issue）、`LyricsXWidgetSharedTests` 36 个。
+  `MenuBarLyricsTests` 没有跑，因为菜单栏歌词不依赖 UIFoundation。
+- **UIFoundation 从 0.33.0 到功能分支的改动**：逐个核对了 LyricsX 用到的 API。除了进度条本身，没有看得见的变化，
+  也没有破坏源码兼容的改动（决策日志里记的 `ScrollLyricsView` 撞名是打开 trait 引起的，不是这些提交）。方案里点名的三处都与 LyricsX
+  无关：
+  - `Label` 的悬停提示同步：LyricsX 不用 `Label`。
+  - 换成 `Mutex` 的锁：只在 `AsyncDocument`、工具栏构建器和 `QuickActionBar` 里，LyricsX 都不用；`Mutex` 基于
+    `os_unfair_lock`，macOS 12 上可用。
+  - 删掉的旧兼容代码：只在过滤控件和 TabBar 里。
+
+  `LayerBackgroundRenderer` 现在每次都会写 `cornerCurve`，但默认值与 Core Animation 的默认值相同，外观不变。
+- **`AppleInternal` 额外带进来的代码**：`BackdropView`、玻璃效果的复刻视图、自定义 tooltip 管理器等用私有 API 的代码
+  也会编进来，但 LyricsX 都不调用。它们没有 `+load`，启动时不会运行任何代码。链接到的私有符号在 macOS 12.0.1 的
+  dyld shared cache 里都存在，所以不会重演 `Logger.disabled` 那样的启动崩溃。
+- **FrameworkToolbox 0.15.0** 只新增了 `NotificationCenter.Backport`，宏的展开与 0.14.0 相同，不引用 `Logger.disabled`。
+
 ## 决策日志
 
 | 日期 | 决定 | 理由 |
@@ -56,3 +86,6 @@
 | 2026-10-28 | RC2 之前一起升级 UIFoundation | 用户选定。代价是一并带进 0.34–0.41 的改动，逐条核对后再发 RC2 |
 | 2026-10-28 | 打开 UIFoundation 的 `AppleInternal` trait | 用户选定。plus-lighter 混合是私有 API，UIFoundation 只在这个 trait 下使用；LyricsX 不上 App Store |
 | 2026-10-29 | 用户批准，开始实现 | UIFoundation 的新版本要等用户批准才能发布，所以先依赖 UIFoundation 的 `feature/playback-slider` 分支实现；发版后在收尾时改成版本号要求 |
+| 2026-10-29 | `ScrollLyricsView` 的 `delegate` 属性改名为 `lyricsViewDelegate` | 方案没有预料到这一处。打开 `AppleInternal` 后，UIFoundation 重新导出的 AppKit 私有头文件给 `NSScrollView` 声明了 `delegate`，同名的 Swift 属性就编不过了；它是打开 trait 的必要改动 |
+| 2026-10-29 | 接受 FrameworkToolbox 从 0.14.0 升到 0.15.0 | UIFoundation 现在要求 `from: "0.15.0"`；这一版只新增 API，宏的展开不变 |
+| 2026-10-29 | 接受新嵌入的 `ObjCRuntimeToolbox.framework` | UIFoundation 的 `AppleInternal` target 依赖它，FrameworkToolbox 把它声明成动态库。约 450 KB，随 app 一起签名；能否通过公证要等 CI 试运行确认 |

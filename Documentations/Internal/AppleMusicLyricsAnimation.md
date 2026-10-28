@@ -3,7 +3,8 @@
 > 对应提案：[对齐 Apple Music 26.6 歌词动画](../Evolutions/0007-apple-music-lyrics-animation-parity.md)、
 > [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)、
 > [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/draft-apple-music-line-interaction-parity.md)、
-> [歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](../Evolutions/0022-panel-playback-slider.md)
+> [歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](../Evolutions/0022-panel-playback-slider.md)、
+> [歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](../Evolutions/draft-panel-slider-from-uifoundation.md)
 >
 > 面向维护者。这里记录最终数据链、动画状态所有权和降级边界；旧的探索文档保留为历史记录，
 > 不再作为 26.6 行为的实现依据。
@@ -587,9 +588,15 @@ occlusion、最小化、还原通知和 `viewDidMoveToWindow`。「补一帧」�
 
 ## 进度条
 
-左栏的进度条是 AppKitPlus 的 `NSPlaybackSlider`——Music 全屏播放器那根时间条的移植——由 `PlaybackProgressView`
-包着，时间标签在它下方 6 pt（Music 的间距）。外观全由控件决定：静止时是 7 pt 的胶囊，已播放部分白 45%、其余白 18%，
-以 plus-lighter 叠在背景上；按下时用弹簧长到 16 pt，已播放部分变成纯白。它不支持改色，背景偏亮时条会很淡，Music 也一样。
+左栏的进度条是 UIFoundation 的 `PlaybackSlider`——Music 全屏播放器那根时间条的移植，最初用的是 AppKitPlus 的
+`NSPlaybackSlider`，后来搬进 UIFoundation 用 Swift 重写——由 `PlaybackProgressView` 包着，时间标签在它下方 6 pt
+（Music 的间距）。外观全由控件决定：静止时是 7 pt 的胶囊，已播放部分白 45%、其余白 18%，以 plus-lighter 叠在背景上；
+按下时用弹簧长到 16 pt，已播放部分变成纯白。它不支持改色，背景偏亮时条会很淡，Music 也一样。
+
+plus-lighter 是 Core Animation 的私有滤镜，UIFoundation 只在 `AppleInternal` trait 下使用，所以 Xcode 工程和
+`LyricsXPackage/Package.swift` 两处都打开了这个 trait。没打开时条照样能用，只是改成普通混合、颜色略暗，也不会报错；
+确认它生效要在构建日志里找 `-DAppleInternal`。改过 trait 之后要删掉那份构建的 DerivedData：Xcode 的增量构建
+察觉不到 trait 的变化，会继续用旧的那组 `-D` 参数。
 
 - **只在松手时 seek。** `playbackSliderDidBeginScrubbing` 到 `playbackSliderDidEndScrubbing` 之间，滑块跟着指针走，
   时间标签显示指针处的时间，`update(currentTime:duration:)` 送来的播放位置只更新时长、不动滑块——否则 10 Hz 的

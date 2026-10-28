@@ -100,15 +100,15 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/Mx-Iris/UIFoundation",
-            from: "0.21.0"
+            branch: "feature/playback-slider",
+            // The panel's scrubber, PlaybackSlider, draws Music's colours with
+            // plus-lighter blending, a private Core Animation filter that
+            // UIFoundation compiles in only under this trait.
+            traits: ["AppleInternal"]
         ),
         .package(
             url: "https://github.com/Lakr233/MSDisplayLink",
             from: "2.0.0"
-        ),
-        .package(
-            url: "https://github.com/AppKitSupportProgram/AppKitPlus-Release",
-            from: "0.19.0"
         ),
     ],
     targets: [
@@ -134,7 +134,6 @@ let package = Package(
                 .product(name: "OSToolbox", package: "FrameworkToolbox"),
                 .product(name: "UIFoundation", package: "UIFoundation"),
                 .product(name: "MSDisplayLink", package: "MSDisplayLink"),
-                .product(name: "AppKitPlus", package: "AppKitPlus-Release"),
             ],
             resources: [
                 .process("ArtworkGradientShaders.metal"),
@@ -151,7 +150,7 @@ let package = Package(
             name: "AppleMusicLyricsPanelTests",
             dependencies: [
                 "AppleMusicLyricsPanel",
-                .product(name: "AppKitPlus", package: "AppKitPlus-Release"),
+                .product(name: "UIFoundation", package: "UIFoundation"),
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v5),
