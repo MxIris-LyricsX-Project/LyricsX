@@ -187,6 +187,18 @@ holds the rest, so a track change — a burst of changes over about two seconds
 cd LyricsXPackage && swift test --filter WidgetReloadPolicyTests
 ```
 
+Its `WidgetExtensionProcessPolicyTests` pin down which running widget
+extension processes the app ends at launch. Sparkle installs an update after
+the app quits and leaves the widget extension running the old, deleted files,
+so on macOS 26 the widgets keep the old code until logout — and went black
+when the old code met rc.1's configuration. Run them on any change to
+`StaleWidgetExtensionTerminator` (<1s); how to try the terminator itself is in
+`Documentations/Internal/DesktopWidget.md`:
+
+```bash
+cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
+```
+
 The widget is a `StaticConfiguration` on purpose: anything it can show two
 ways follows an app setting passed in its snapshot, because each widget the
 user edits forms a configuration of its own and puts the others five seconds
