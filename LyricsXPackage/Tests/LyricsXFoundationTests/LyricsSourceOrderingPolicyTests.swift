@@ -290,3 +290,52 @@ func theRunningMaximumAndTheInsertionSortAgreeOnTheWinner() {
         }
     }
 }
+
+// MARK: - Reordering the source list
+
+// The Sources pane reorders its list by drag and drop: a drop names the row it
+// moves and the gap it lands in. The row used to come off the drag as plain
+// text, which any app can put there, so dragging the text "7" onto the list
+// from a text editor crashed the app, and a smaller number moved that row.
+
+private let sourceList = ["NetEase", "QQMusic", "Kugou", "LRCLIB", "Musixmatch"]
+
+@Test
+func aSourceDraggedDownLandsInTheGapItWasDroppedIn() {
+    // Row 0 dropped in the gap above row 3 ends up after row 2.
+    #expect(
+        LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: 0, toDropRow: 3)
+            == ["QQMusic", "Kugou", "NetEase", "LRCLIB", "Musixmatch"]
+    )
+}
+
+@Test
+func aSourceDraggedUpLandsInTheGapItWasDroppedIn() {
+    #expect(
+        LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: 4, toDropRow: 1)
+            == ["NetEase", "Musixmatch", "QQMusic", "Kugou", "LRCLIB"]
+    )
+}
+
+@Test
+func aSourceDroppedBelowTheLastRowMovesToTheEnd() {
+    #expect(
+        LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: 1, toDropRow: 5)
+            == ["NetEase", "Kugou", "LRCLIB", "Musixmatch", "QQMusic"]
+    )
+}
+
+@Test(arguments: [2, 3])
+func aSourceDroppedNextToItselfStaysWhereItWas(dropRow: Int) {
+    #expect(LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: 2, toDropRow: dropRow) == sourceList)
+}
+
+@Test(arguments: [5, 7, 99, -1])
+func aRowTheListDoesNotHaveMovesNothing(sourceRow: Int) {
+    #expect(LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: sourceRow, toDropRow: 0) == nil)
+}
+
+@Test(arguments: [6, -1])
+func aGapTheListDoesNotHaveMovesNothing(dropRow: Int) {
+    #expect(LyricsSourceOrderingPolicy.reorderedSources(sourceList, movingRowAt: 0, toDropRow: dropRow) == nil)
+}

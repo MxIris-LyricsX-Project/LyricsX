@@ -12,6 +12,10 @@ class PreferenceSourceViewController: PreferenceViewController {
     private var availableSources: [String] = []
     private var sourcePriorityOrder: [String] = []
 
+    /// Carries the dragged row. A type of its own, so that text dragged in
+    /// from another app is not taken for a row.
+    private static let sourceRowPasteboardType = NSPasteboard.PasteboardType("com.JH.LyricsX.lyrics-source-row")
+
     private var orderingModeButtons: [NSButton] {
         [
             orderByQualityOnlyButton,
@@ -35,7 +39,7 @@ class PreferenceSourceViewController: PreferenceViewController {
 
         sourceTableView.delegate = self
         sourceTableView.dataSource = self
-        sourceTableView.registerForDraggedTypes([.string])
+        sourceTableView.registerForDraggedTypes([Self.sourceRowPasteboardType])
 
         updateUI()
     }
@@ -89,25 +93,31 @@ extension PreferenceSourceViewController: NSTableViewDataSource {
     func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
         guard let row = rowIndexes.first else { return false }
 
-        pboard.declareTypes([.string], owner: self)
-        pboard.setString("\(row)", forType: .string)
+        pboard.declareTypes([Self.sourceRowPasteboardType], owner: self)
+        pboard.setString("\(row)", forType: Self.sourceRowPasteboardType)
         return true
     }
 
     func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int, proposedDropOperation dropOperation: NSTableView.DropOperation) -> NSDragOperation {
-        if dropOperation == .above {
-            return .move
+        guard dropOperation == .above, info.draggingSource as? NSTableView === tableView else {
+            return []
         }
-        return []
+        return .move
     }
 
     func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo, row: Int, dropOperation: NSTableView.DropOperation) -> Bool {
-        guard let data = info.draggingPasteboard.string(forType: .string),
-              let sourceRow = Int(data) else { return false }
-
-        let targetRow = row > sourceRow ? row - 1 : row
-        let movedItem = sourcePriorityOrder.remove(at: sourceRow)
-        sourcePriorityOrder.insert(movedItem, at: targetRow)
+        guard info.draggingSource as? NSTableView === tableView,
+              let data = info.draggingPasteboard.string(forType: Self.sourceRowPasteboardType),
+              let sourceRow = Int(data),
+              let reorderedSources = LyricsSourceOrderingPolicy.reorderedSources(
+                  sourcePriorityOrder,
+                  movingRowAt: sourceRow,
+                  toDropRow: row
+              )
+        else {
+            return false
+        }
+        sourcePriorityOrder = reorderedSources
 
         savePriorityOrder()
         tableView.reloadData()

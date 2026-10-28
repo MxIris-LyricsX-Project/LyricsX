@@ -49,7 +49,8 @@ still the text LyricsX wrote there), editing eligibility, HUD window configurati
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
-the property tests that keep the ordering transitive), plus the lyrics
+the property tests that keep the ordering transitive) and dragging a source to
+another place in the list, plus the lyrics
 translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine
