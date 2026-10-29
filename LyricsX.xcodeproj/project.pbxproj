@@ -692,8 +692,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
 			requirement = {
-				branch = "feature/playback-slider";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.42.0;
 			};
 			traits = (
 				AppleInternal,

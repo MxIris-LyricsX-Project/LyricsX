@@ -100,7 +100,8 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/Mx-Iris/UIFoundation",
-            branch: "feature/playback-slider",
+            // 0.42.0 is the first release with PlaybackSlider.
+            from: "0.42.0",
             // The panel's scrubber, PlaybackSlider, draws Music's colours with
             // plus-lighter blending, a private Core Animation filter that
             // UIFoundation compiles in only under this trait.

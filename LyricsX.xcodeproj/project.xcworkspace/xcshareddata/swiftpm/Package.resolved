@@ -1,5 +1,5 @@
 {
-  "originHash" : "21f109f8e91db3f91277a2933e19bf3f006a096aa7064bef41fddd0efdf5fb08",
+  "originHash" : "ec9b91121ecca3d6b158e14957e5431a39f0206e2458c1327ed3bcf7d0a49dd9",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -231,8 +231,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Mx-Iris/UIFoundation",
       "state" : {
-        "branch" : "feature/playback-slider",
-        "revision" : "6292d0bfd87ad3b9c01257b5de12c637fb38bc23"
+        "revision" : "ddfd0f4300e69e4780ed5f04021098aa745cec68",
+        "version" : "0.42.0"
       }
     }
   ],
