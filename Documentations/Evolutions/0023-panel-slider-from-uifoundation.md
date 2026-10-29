@@ -1,10 +1,11 @@
-# Draft - 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus
+# 0023 - 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **创建日期**: 2026-10-28
 - **最后更新**: 2026-10-29
 - **关联提案**: [0022 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](0022-panel-playback-slider.md)（本提案撤回其中的依赖选择）
 - **实现分支**: `feature/panel-slider-from-uifoundation`
+- **配套文档**: [Apple Music 26.6 歌词动画](../Internal/AppleMusicLyricsAnimation.md) 的「进度条」一节（实现说明）
 
 ## 摘要
 
@@ -15,7 +16,7 @@
 - 二进制里静态编进了 LGPL-2.1 授权的 OpenSoftLinking；
 - 发版 CI 用的 Xcode 26.4 能不能编过它，还没有验证。
 
-同一个控件用 Swift 移植进 UIFoundation，即 UIFoundation 的提案《PlaybackSlider：Music 全屏播放器的时间进度条》。LyricsX
+同一个控件用 Swift 移植进 UIFoundation，即 UIFoundation 的提案 0033《PlaybackSlider：Music 全屏播放器的时间进度条》。LyricsX
 改用那个实现，并去掉 AppKitPlus 依赖。进度条的外观和交互都不变。
 
 ## 方案
@@ -50,10 +51,10 @@
 
 ## 落地进度
 
-- [ ] 第 1 步：UIFoundation 还没发版。Xcode 工程和 `Package.swift` 暂时都依赖它的 `feature/playback-slider` 分支，发版后改成
-  版本号要求；改之前不能发 RC2。
+- [x] 第 1 步：UIFoundation 2026-10-29 发布了 `0.42.0`（它的提案 0033），Xcode 工程和 `Package.swift` 都改成 `0.42.0` 起的
+  版本要求。RC2 的这个前提已经满足。
 - [x] 第 2–6 步：依赖、代码、测试、文档。核对结果见下。
-- [ ] 第 7 步：清理构建目录，合进 develop 后做。
+- [x] 第 7 步：agent 的构建目录在改版本要求时删掉重建了；用户自己的 DerivedData 要清一次，已提醒。
 
 2026-10-29 的核对结果：
 
@@ -78,6 +79,20 @@
   dyld shared cache 里都存在，所以不会重演 `Logger.disabled` 那样的启动崩溃。
 - **FrameworkToolbox 0.15.0** 只新增了 `NotificationCenter.Backport`，宏的展开与 0.14.0 相同，不引用 `Logger.disabled`。
 
+改成版本要求之后的核对（2026-10-29，公司那台 Mac，macOS 26.7）：
+
+- **`Package.resolved`** 只变了 UIFoundation 一条：从分支的 `6292d0b` 改为 `0.42.0`（`ddfd0f4`）。两者之间 UIFoundation 的
+  源码和 `Package.swift` 都没有变，只多了示例 app 和文档。
+- **Xcode 27 解析不到刚打的 tag**：第一次解析报 `no versions of 'uifoundation' match the requirement 0.42.0..<1.0.0`。
+  Xcode 27 选版本之前不更新 SwiftPM 的 git 缓存（`~/Library/Caches/org.swift.swiftpm/repositories/`），缓存里还没有
+  `0.42.0`；对缓存执行 `git fetch --tags --prune` 之后就解析通过了。两台 Mac 的全局缓存都已补上。
+- **构建**：用 Xcode 26.6 构建 app 的 Debug 版，退出码 0，构建日志里有 21 处 `-DAppleInternal`，可见 Xcode 26 也认得工程里的
+  trait 设置（发版 CI 用的是 Xcode 26.4）。12 条警告都是原有的，没有一条来自 UIFoundation。app 包里没有
+  `AppKitPlus.framework`，有 `ObjCRuntimeToolbox.framework`。没用 Xcode 27.2，是因为这台 Mac 上它的 Metal 工具链挂在用户
+  读不到的位置，编 `.metal` 时报 `missing Metal Toolchain`；这是本机环境的问题，与这次改动无关。
+- **测试**（Xcode 26.6 的工具链，退出码 0）：`PlaybackScrubberProbes` 10 个加 `LyricsXFoundationTests` 161 个，共 171 个，
+  168 个通过，3 个系统翻译探针按这台 Mac 已下载的语言自行跳过。
+
 ## 决策日志
 
 | 日期 | 决定 | 理由 |
@@ -89,3 +104,7 @@
 | 2026-10-29 | `ScrollLyricsView` 的 `delegate` 属性改名为 `lyricsViewDelegate` | 方案没有预料到这一处。打开 `AppleInternal` 后，UIFoundation 重新导出的 AppKit 私有头文件给 `NSScrollView` 声明了 `delegate`，同名的 Swift 属性就编不过了；它是打开 trait 的必要改动 |
 | 2026-10-29 | 接受 FrameworkToolbox 从 0.14.0 升到 0.15.0 | UIFoundation 现在要求 `from: "0.15.0"`；这一版只新增 API，宏的展开不变 |
 | 2026-10-29 | 接受新嵌入的 `ObjCRuntimeToolbox.framework` | UIFoundation 的 `AppleInternal` target 依赖它，FrameworkToolbox 把它声明成动态库。约 450 KB，随 app 一起签名；能否通过公证要等 CI 试运行确认 |
+| 2026-10-29 | UIFoundation 发布 `0.42.0`，两处依赖都改成 `0.42.0` 起的版本要求 | 用户批准发版。`0.42.0` 是第一个带 `PlaybackSlider` 的版本，所以下限就是它。写法沿用升级前的形式：Xcode 工程是 Up to Next Major，`Package.swift` 是 `from:`；原来两处下限不一致（`0.9.0` 和 `0.21.0`），这次统一成 `0.42.0` |
+| 2026-10-29 | 实现完成，合进 develop，编号 0023，状态改 Implemented | 用户批准收尾。Ultra 上先合进来的合并提交 `6eb6c0d2` 原样推送，改版本要求和落地文档是它之后的两个提交。与方案的偏离只有上面记的 `ScrollLyricsView` 改名；没有没做完的项 |
+| 2026-10-29 | 文档：实现说明沿用《Apple Music 26.6 歌词动画》的「进度条」一节，登记为配套文档；不需要使用指南；没有新术语 | 进度条的外观和交互都没变，用户不需要说明；`PlaybackSlider` 是库里的类型名，不是本项目的自造词 |
+| 2026-10-29 | 补记：LGPL-2.1 授权的 OpenSoftLinking 本来就在 app 里 | mediaremote-adapter 的 `MediaRemoteAdapterObjC` 依赖它，`Package.resolved` 在本提案之前就锁着 0.1.0，它的 `_osl_dlopen` 等符号在 app 内嵌的 `MediaRemoteAdapter.framework` 里。所以摘要里 LGPL-2.1 那条只说明 AppKitPlus 会再带进一份，去掉 AppKitPlus 之后 app 里仍有 LGPL-2.1 代码。另外三条理由不受影响 |

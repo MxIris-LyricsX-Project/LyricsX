@@ -65,9 +65,9 @@
   - [0022 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](Evolutions/0022-panel-playback-slider.md)
     —— 手写的细条换成 Music 全屏播放器那根时间条的移植（按下长高、plus-lighter），新增 AppKitPlus 依赖
     （`from: "0.19.0"`）；拖动期间不再逐事件 seek，松手时 seek 一次。
-  - [草案：歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](Evolutions/draft-panel-slider-from-uifoundation.md)
+  - [0023 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](Evolutions/0023-panel-slider-from-uifoundation.md)
     —— 0022 的进度条控件搬进 UIFoundation 用 Swift 重写，LyricsX 改用它并去掉 AppKitPlus（预编译二进制、启动即加载、
-    带 LGPL-2.1 组件）；连带把 UIFoundation 从 0.33.0 升到新版、打开它的 `AppleInternal` trait。
+    带 LGPL-2.1 组件）；连带把 UIFoundation 从 0.33.0 升到 0.42.0（`from: "0.42.0"`）、打开它的 `AppleInternal` trait。
   - [草案：歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](Evolutions/draft-apple-music-line-interaction-parity.md)
     —— 行的图层结构改成 Music 的「背景 + 容器（主歌词 + 翻译）」；补上悬停（去模糊、提亮）和按下（白底、
     缩到 0.95）；非当前行从整行 0.55 改为文字白 40%，切行时颜色走切行弹簧；翻译改粗体、白 50% / 40%、间距 7 pt。
