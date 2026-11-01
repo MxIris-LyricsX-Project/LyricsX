@@ -14918,6 +14918,12 @@
             "state" : "translated",
             "value" : "允许将修改写回音轨同目录歌词文件"
           }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允許將修改寫回音軌同目錄歌詞檔案"
+          }
         }
       }
     },
