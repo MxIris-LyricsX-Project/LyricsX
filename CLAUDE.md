@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LyricsX is a macOS menu-bar application (`LSUIElement`) that automatically searches, downloads, and displays synchronized lyrics for the currently playing song. It supports multiple music players and lyrics sources, with desktop karaoke overlay and menu-bar lyrics display. This is a personally maintained fork of `ddddxxx/LyricsX`.
 
-- **Platform**: macOS 11+ only
+- **Platform**: macOS 12+ only; the desktop widget needs macOS 15+
 - **Language**: Swift 5 (project setting), Swift 6.2 toolchain (Package.swift)
 - **Bundle ID**: `com.JH.LyricsX`
 
