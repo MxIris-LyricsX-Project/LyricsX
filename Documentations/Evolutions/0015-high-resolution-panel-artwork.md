@@ -1,8 +1,8 @@
 # 0015 - 歌词面板封面改用联网取到的高清图
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **创建日期**: 2026-09-10
-- **最后更新**: 2026-09-10
+- **最后更新**: 2026-11-01
 - **所属愿景**: 无
 - **配套文档**: [面板高清封面](../Internal/HighResolutionPanelArtwork.md)
 
@@ -112,3 +112,4 @@ app 侧新增 `LyricsX/Component/HighResolutionArtworkService.swift`（actor）�
 | 2026-09-10 | 下载过的候选按曲目留在内存，后续只重新校验 | 让「重看一次」几乎免费，否则三次触发就是三倍流量 |
 | 2026-09-10 | 负结果只在歌词落定后才记 | 换歌那一刻记会把歌词源这条路封死七天 |
 | 2026-09-10 | Accepted → In Progress | 代码写完并通过构建与 85 项 package 测试，等实机确认 |
+| 2026-11-01 | In Progress → Implemented | 用户批准。功能随 1.9.0 的 beta 发布，实机用过；快速切歌时封面存错曲目的问题已在 1.9.0-rc.2 修掉（缓存目录换成 `HighResolutionArtwork-2`）。配套文档沿用《面板高清封面》；不需要使用指南；没有新术语 |

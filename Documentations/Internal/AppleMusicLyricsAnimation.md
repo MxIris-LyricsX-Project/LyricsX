@@ -2,7 +2,7 @@
 
 > 对应提案：[对齐 Apple Music 26.6 歌词动画](../Evolutions/0007-apple-music-lyrics-animation-parity.md)、
 > [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)、
-> [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/draft-apple-music-line-interaction-parity.md)、
+> [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/0024-apple-music-line-interaction-parity.md)、
 > [歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](../Evolutions/0022-panel-playback-slider.md)、
 > [歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](../Evolutions/0023-panel-slider-from-uifoundation.md)
 >

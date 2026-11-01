@@ -21,9 +21,9 @@
 | [0010](0010-apple-music-now-playing-backdrop.md) | 歌词面板背景改按 Music 26「正在播放」的 MediaCoreUI 管线重做 | Implemented |
 | [0011](0011-apple-music-syllable-lift.md) | 行内抬高改成 Music 26.6 的逐音节软弹簧 | Implemented |
 | [0012](0012-inline-tag-syllable-lift.md) | 行内标签歌词也走 Music 26.6 的逐音节抬高 | Implemented |
-| [0013](0013-now-playing-lyrics-sizing-parity.md) | 歌词面板的字号、行距、锚点与边缘渐隐改按 Music 26.6「正在播放」模式 | In Progress |
-| [0014](0014-panel-full-screen-titlebar.md) | 歌词面板全屏时收起标题栏，pin 按钮改挂标题栏视图 | In Progress |
-| [0015](0015-high-resolution-panel-artwork.md) | 歌词面板封面改用联网取到的高清图 | In Progress |
+| [0013](0013-now-playing-lyrics-sizing-parity.md) | 歌词面板的字号、行距、锚点与边缘渐隐改按 Music 26.6「正在播放」模式 | Implemented |
+| [0014](0014-panel-full-screen-titlebar.md) | 歌词面板全屏时收起标题栏，pin 按钮改挂标题栏视图 | Implemented |
+| [0015](0015-high-resolution-panel-artwork.md) | 歌词面板封面改用联网取到的高清图 | Implemented |
 | [0016](0016-lsuielement-tradeoff.md) | 重新评估 LSUIElement：这个应用还算不算纯菜单栏应用 | Draft |
 | [0017](0017-menu-bar-lyrics-without-text-field.md) | 菜单栏歌词改为自绘，不再用 NSTextField | Implemented |
 | [0018](0018-lab-apple-music-group.md) | 实验室页的 Apple Music 设置归入一组并补齐翻译 | Implemented |
@@ -32,4 +32,4 @@
 | [0021](0021-system-lyrics-translation.md) | 实验室：用系统翻译（Translation 框架）翻译歌词 | Implemented |
 | [0022](0022-panel-playback-slider.md) | 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider | Implemented |
 | [0023](0023-panel-slider-from-uifoundation.md) | 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus | Implemented |
-| [draft](draft-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | In Progress |
+| [0024](0024-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | Implemented |
