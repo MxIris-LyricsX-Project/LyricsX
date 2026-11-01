@@ -137,3 +137,20 @@ macOS 26.7 上会翻。
 **裁决：暂缓。** 要翻这些行，得再开一个英译中的会话，用户就要多下载一个语言，属于改方案，要单独写提案。行为差别已写进
 [Lyrics translation](LyricsTranslation.md)，探针 `anEnglishLineInAJapaneseSongIsTranslatedWithTheRest` 在 macOS 27 上
 把它记为已知问题，哪天系统又会翻了，探针会失败提醒。
+
+---
+
+## 2026-11-01 · 写 1.9.0 正式版发布说明时的核对
+
+### Apple Music 风格歌词窗口的开关在 macOS 15 以下是灰的 —— 确认为真，暂缓
+
+**发现内容**：窗口本身从 1.9.0-beta.9 起已能在 macOS 12–14 上运行（`bf48beac` 去掉了面板里的 macOS 15 限制），
+但实验室页的「Use Apple Music-style lyrics window」开关仍被 `PreferenceLabViewController` 里的
+`#available(macOS 15, *)` 禁用，提示「Requires macOS 15 or later」。所以 12–14 的用户只能用
+`defaults write com.JH.LyricsX UseAppleMusicLyricsWindow -bool true` 打开，beta.9 发布说明里「12–14 可用」的说法言过其实。
+
+**裁决：1.9.0 维持 macOS 15 起，暂缓到 1.9.x。** 放开要改代码，就得再发一个 RC、重新观察一周；而窗口在 12–14 上
+没有经过界面打开的实测。正式版发布说明照现状写「macOS 15 或更高版本」。
+
+**若理由失效**：1.9.0 发布后，在 macOS 12–14 的虚拟机里用上面的 `defaults write` 打开窗口实测；没有问题就删掉这个
+版本判断，并在那一版的发布说明里写明支持范围。
