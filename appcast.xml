@@ -5,6 +5,35 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-rc.2</title>
+            <pubDate>Sun, 01 Nov 2026 10:13:19 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900202</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-rc.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Upgrading</h3>
+<ul>
+<li>If you added desktop widgets in an earlier beta, remove them and add them again so they all update on time.</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li>The progress bar in the Apple Music-style lyrics window now looks and works like Music's, growing while you hold it.</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li>Fixed desktop widgets going black or staying on the previous version after an update until you logged out.</li>
+<li>The widget no longer shows the last song as playing after you quit the app.</li>
+<li><strong>Wrong Lyrics</strong> and <strong>Disable Lyrics for Entire Album</strong> no longer erase lyrics you added in Music yourself.</li>
+<li>Fixed lyrics reappearing after <strong>Disable Lyrics for Entire Album</strong>, or after <strong>Wrong Lyrics</strong> while <strong>Next Lyrics Candidate</strong> was searching.</li>
+<li>The Apple Music-style lyrics window no longer shows another song's cover after you skip songs quickly.</li>
+<li>The menu bar no longer shows the previous song's last line until the next song's lyrics begin.</li>
+<li>The menu bar lyrics now also hide while paused when <strong>Disable lyrics when: Music is not playing</strong> is on.</li>
+<li>Fixed a crash when dragging text from another app onto the list in <strong>Preferences → Source</strong>.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-rc.2/LyricsX_1.9.0-rc.2+10900202.zip" length="11304510" type="application/octet-stream" sparkle:edSignature="mNQ/XAyObQ8uWlQcJ+2vW4qJTGxtyQuiouUPbkzpKUI1Sdd+oWrh/pSNGw/RrIK6dudoZICUviJdlkkgF7WmAQ==" />
+        </item>
+        <item>
             <title>1.9.0-rc.1</title>
             <pubDate>Tue, 27 Oct 2026 10:10:29 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
