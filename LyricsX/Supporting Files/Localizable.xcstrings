@@ -2983,6 +2983,98 @@
         }
       }
     },
+    "Local Lyrics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local Lyrics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機歌詞"
+          }
+        }
+      },
+      "comment" : "Local lyrics submenu title"
+    },
+    "Embedded Lyrics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Embedded Lyrics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嵌入歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "內嵌歌詞"
+          }
+        }
+      },
+      "comment" : "Local lyrics menu option"
+    },
+    "Loading Local Lyrics…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading Local Lyrics…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在载入本地歌词…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入本機歌詞…"
+          }
+        }
+      },
+      "comment" : "Local lyrics menu loading status"
+    },
+    "No Local Lyrics Available" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Local Lyrics Available"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有可用的本地歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有可用的本機歌詞"
+          }
+        }
+      },
+      "comment" : "Local lyrics menu empty status"
+    },
     "Searching for other lyrics…" : {
       "comment" : "Transient message shown when the next-candidate shortcut has to run a search first, because nothing else was in the pool.",
       "localizations" : {
