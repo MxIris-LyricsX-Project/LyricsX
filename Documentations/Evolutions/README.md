@@ -33,3 +33,4 @@
 | [0022](0022-panel-playback-slider.md) | 歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider | Implemented |
 | [0023](0023-panel-slider-from-uifoundation.md) | 歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus | Implemented |
 | [0024](0024-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | Implemented |
+| [draft](draft-menu-bar-hide-lyrics-when-paused.md) | 菜单栏歌词的暂停隐藏改用独立开关 | In Progress |

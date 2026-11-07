@@ -1596,6 +1596,7 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="Wah-Ax-79z"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="MBP-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="MHL-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="AML-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="HRA-Ro-W01"/>
@@ -1788,6 +1789,19 @@
                                             </buttonCell>
                                             <connections>
                                                 <binding destination="DdU-cn-wN1" name="value" keyPath="values.MenuBarPlaybackControlsEnabled" id="MBP-Bn-D01"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
+                                    <gridCell row="MHL-Ro-W01" column="8ba-lF-U7s" id="MHL-Ce-L01"/>
+                                    <gridCell row="MHL-Ro-W01" column="4uA-B7-Dvh" id="MHL-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MHL-Bt-N01">
+                                            <rect key="frame" x="170" y="308" width="234" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Hide menu bar lyrics when paused" bezelStyle="regularSquare" imagePosition="left" inset="2" id="MHL-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.MenuBarHidesLyricsWhenPaused" id="MHL-Bn-D01"/>
                                             </connections>
                                         </button>
                                     </gridCell>

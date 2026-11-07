@@ -6,6 +6,8 @@
 	<true/>
 	<key>MenuBarPlaybackControlsEnabled</key>
 	<true/>
+	<key>MenuBarHidesLyricsWhenPaused</key>
+	<false/>
 	<key>HideLyricsWhenMousePassingBy</key>
 	<true/>
 	<key>DisableLyricsWhenPaused</key>
