@@ -90,6 +90,29 @@ app 调 `WidgetCenter.shared.reloadAllTimelines()` 之后，系统里负责小�
 
 不等更久，是因为网络搜歌词可能要好几秒，等太久小组件就一直停在上一首。
 
+### 5 秒节流绕不开，私有接口也一样
+
+2026-11-01 在 macOS 27.2（26B123）上逆向了 `chronod`（逻辑在私有框架 ChronoCore 里），确认这道节流 app 绕不开，
+只能像上一节那样少发、攒着发：
+
+- 节流由 `ExternalRequestReloadFilter` 执行，只管 app 发起的刷新（`ReloadReason.externalRequest`）。窗口是代码里的
+  常数 5.0 秒，不读实例属性，也不读任何偏好设置，没有开关可调。
+- 只在宿主 app 被判为「可见」时节流。依据是 RunningBoard 给进程的可见性标记，`chronod` 的 `processmonitor` 日志记作
+  `began running visibly` / `ceased running visibly`；实测 LyricsX 一直被判为可见。节流放行的刷新不扣刷新预算；
+  app 不可见时这道节流不拦，但每次刷新都要扣预算，对歌词这样频繁的刷新更糟。
+- app 能用的入口最后都是同一种请求：公开的 `reloadAllTimelines()`、`reloadTimelines(ofKind:)`，WidgetKit 内部带
+  `inBundle:` 的版本，以及私有框架 ChronoServices 的 `CHSTimelineController`。最后这个还要 Apple 专用的 entitlement
+  `com.apple.chronoservices`，第三方签不进去；它多出的 `allowCostOverride` 只管预算，不管节流。
+- 豁免都用不上：写死的 Apple 白名单（来源进程 `com.apple.homed`、`com.apple.healthd`；「小组件可见就免费刷新」只给
+  `com.apple.HeartRate.HeartRateWidgetExtension`），以及蓝牙、助听器设备的策略。调试器附着在宿主 app 上、Now Playing
+  或导航会话、扩展持有 keep-alive assertion 这几条，只在 app 不可见时才检查。
+- 不经过这道节流的刷新只有三种来源：用户点小组件上的按钮（`interaction`）、经 APNs 下发的小组件推送（`push`，要有
+  服务器），以及系统自己发起的刷新。app 都无法自己触发。
+
+逆向用的数据库是 `ChronoCore+ChronoServices+ChronoKit+WidgetKit.i64`（从 27.2 的 dyld cache 用 idax 建库）：判断在
+`sub_23903FDEC`，5.0 秒的比较在 `0x239041F00`，可见与各种豁免标志由 `sub_238E5EB2C` 算出。系统大版本更新后要复查，
+从日志串 "Throttling additional refresh request while foreground" 在 ChronoCore 里的引用找起。
+
 ### 节流按小组件种类算，请求按配置拆分
 
 上面说的 5 秒节流，对象是「扩展 + 小组件 kind」（日志里写作 `dev.JH.LyricsX.LyricsWidget-com.JH.LyricsX.LyricsWidget`），
@@ -359,7 +382,8 @@ descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从
   结尾 1.5 秒内的暂停、播放，以及跳转进度，小组件约 1 秒后才跟上。小组件上的播放按钮不受影响。
 - 「单纯的暂停」靠进度判断：要是哪个播放器换歌时先报一次暂停，报的却是上一首、离结尾还远的进度，这次暂停会被当成
   单纯的暂停立刻刷新，用掉 5 秒的窗口，换歌后的正确内容要等窗口过去。目前只见过报新歌开头进度的情况。
-- 5 秒的节流是从 `chronod` 日志里量出来的，Apple 没有写进文档，系统版本变了可能跟着变。
+- 5 秒的节流写死在 `chronod` 里，app 用公开接口、私有接口都绕不开（macOS 27.2 逆向确认，见「5 秒节流绕不开，私有接口
+  也一样」）。Apple 没有写进文档，系统版本变了可能跟着变。
 - 按钮写好状态再返回这一段没有自动化测试：intent 由系统在 app 进程里调用，只能看日志、在桌面上点按钮来确认。
 - 每行换上的时刻前后有约半秒的抖动，来自系统合并计时器，app 这边消除不了；提前量只能让它的中位数对上歌词。
 - 小组件不能各自设置：所有小组件显示不显示译文都跟着 app 的「Prefer bilingual lyrics」，显示哪种跟着 app 的显示语言，
