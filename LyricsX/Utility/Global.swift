@@ -112,6 +112,11 @@ extension UserDefaults.DefaultsKeys {
     static let menuBarLyricsEnabled = Key<Bool>("MenuBarLyricsEnabled")
     static let touchBarLyricsEnabled = Key<Bool>("TouchBarLyricsEnabled")
     static let menuBarPlaybackControlsEnabled = Key<Bool>("MenuBarPlaybackControlsEnabled")
+    /// While paused, the menu bar shows its placeholder instead of the line.
+    /// The menu bar's own switch: `disableLyricsWhenPaused` sits with the
+    /// desktop lyrics and is on by default, and following it showed the
+    /// placeholder on every pause for everyone who had never touched it.
+    static let menuBarHidesLyricsWhenPaused = Key<Bool>("MenuBarHidesLyricsWhenPaused")
     /// Hidden, for comparing scroll smoothness against CPU by eye: the most
     /// frames a second a long menu bar lyric moves at on macOS 26 and later.
     /// Zero or absent means `MenuBarMarqueeLabel`'s default, 60; anything

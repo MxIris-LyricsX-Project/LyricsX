@@ -157,15 +157,15 @@ final class MenuBarLyricsController {
                 self?.marqueeLabel.setPlaybackPaused(!playbackState.isPlaying)
             }
             .store(in: &cancelBag)
-        // "Hide lyrics when paused" has to act on the pause itself, which
-        // moves neither the lyrics nor the line.
+        // "Hide menu bar lyrics when paused" has to act on the pause itself,
+        // which moves neither the lyrics nor the line.
         selectedPlayer.playbackStateWillChange
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] playbackState in
                 self?.showLyricsLine(isPlaying: playbackState.isPlaying)
             }
             .store(in: &cancelBag)
-        defaults.publisher(for: [.disableLyricsWhenPaused])
+        defaults.publisher(for: [.menuBarHidesLyricsWhenPaused])
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] _ in
                 self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
@@ -275,7 +275,7 @@ final class MenuBarLyricsController {
             lineCount: lyrics?.lines.count,
             currentLineIndex: index,
             isPlaying: isPlaying,
-            hidesLyricsWhenPaused: defaults[.disableLyricsWhenPaused]
+            hidesLyricsWhenPaused: defaults[.menuBarHidesLyricsWhenPaused]
         )
         switch display {
         case .unchanged:

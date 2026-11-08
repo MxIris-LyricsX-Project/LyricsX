@@ -23,7 +23,9 @@ public enum MenuBarLyricsLinePolicy {
     ///     there are none.
     ///   - currentLineIndex: The line playback is at; `nil` before the first
     ///     line, and for a moment while the lyrics on screen are replaced.
-    ///   - hidesLyricsWhenPaused: The "Hide lyrics when paused" setting.
+    ///   - hidesLyricsWhenPaused: The menu bar's own "Hide menu bar lyrics
+    ///     when paused" setting, not the desktop lyrics' "Disable lyrics
+    ///     when: Music is not playing".
     public static func display(
         lineCount: Int?,
         currentLineIndex: Int?,

@@ -10195,6 +10195,114 @@
         }
       }
     },
+    "MHL-Cl-001.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Hide menu bar lyrics when paused\"; ObjectID = \"MHL-Cl-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إخفاء كلمات الأغاني في شريط القوائم عند الإيقاف المؤقت"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songtexte in der Menüleiste bei Pause ausblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hide menu bar lyrics when paused"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar la letra en la barra de menús al pausar"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پنهان کردن ترانه در نوار منو هنگام توقف"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les paroles dans la barre des menus en pause"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sembunyikan lirik di bilah menu saat dijeda"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi il testo nella barra dei menu in pausa"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中はメニューバーの歌詞を隠す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일시 정지 시 메뉴 막대의 가사 가리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Songteksten in menubalk verbergen bij pauzeren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ukrywaj tekst na pasku menu podczas pauzy"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar a letra na barra de menus ao pausar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скрывать текст песни в строке меню на паузе"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приховувати текст пісні в рядку меню на паузі"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停时隐藏菜单栏歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停時隱藏選單列歌詞"
+          }
+        }
+      }
+    },
     "mnU-3V-ZCW.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Use system wide now playing application\"; ObjectID = \"mnU-3V-ZCW\";",
       "extractionState" : "extracted_with_value",

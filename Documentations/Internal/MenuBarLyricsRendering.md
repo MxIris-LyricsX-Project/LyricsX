@@ -140,8 +140,11 @@ ad-hoc 签名，再用 `open -n -W` 启动；宿主把测量结果写成 JSON �
 
 - **没有歌词，显示占位文字。** 换歌时 `AppController` 先把歌词清空，所以新歌的前奏、找不到歌词的歌都是占位文字。
   原来这里什么也不做，菜单栏一直停在上一首的最后一句：上游会清空，2024 年 9 月改用占位文字时清空那一行被注释掉了。
-- **开着「暂停时隐藏歌词」时暂停，显示占位文字。** 原来这个设置只在换行时检查，暂停本身既不换歌词也不换行，所以从来
-  没起过作用。现在控制器也跟着播放状态和这个设置的变化重新判断，继续播放时换回当前行。
+- **开着「暂停时隐藏菜单栏歌词」时暂停，显示占位文字。** 这个开关在实验室页，键是 `MenuBarHidesLyricsWhenPaused`，
+  默认关，所以默认暂停时菜单栏保留当前那一句。暂停本身既不换歌词也不换行，所以控制器还跟着播放状态和这个设置的变化
+  重新判断，继续播放时换回当前行。
+- **菜单栏不看桌面歌词的「隐藏歌词：暂停播放时」。** 1.9.0-rc.2 曾让菜单栏也跟着这个设置走，可它放在桌面歌词的选项卡里、
+  默认开着，结果没碰过设置的人每次暂停都只看到「LyricsX」。所以菜单栏改用自己的开关，桌面歌词那个设置回到只管桌面歌词。
 - **有歌词但没有行号，保持不变。** 每次换下屏幕上的歌词（翻译到了、换了一条候选），`AppController` 都先把行号清空、
   马上再设回来；这时换成占位文字会闪一下，当前行还会从头滚。新歌开头本来就已经是占位文字，所以不受影响。代价是
   同一首歌里往回拖到第一行之前，菜单栏还停在拖动前那一行，直到唱到第一行。
@@ -167,7 +170,7 @@ LyricsXPackage/
 ```
 
 App 端：`MenuBarLyricsController` 按系统版本选视图（唯一一处 `#available`），经私有协议 `MenuBarLyricsMarquee`
-转发文字、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond`。显示哪一行由
+转发文字、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond` 和暂停开关 `menuBarHidesLyricsWhenPaused`。显示哪一行由
 `LyricsXFoundation` 里的 `MenuBarLyricsLinePolicy` 决定，测试是 `LyricsXFoundationTests` 里的
 `MenuBarLyricsLinePolicyTests.swift`。
 
