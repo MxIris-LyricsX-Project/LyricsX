@@ -73,6 +73,8 @@
     缩到 0.95）；非当前行从整行 0.55 改为文字白 40%，切行时颜色走切行弹簧；翻译改粗体、白 50% / 40%、间距 7 pt。
   - [0025 菜单栏歌词的暂停隐藏改用独立开关](Evolutions/0025-menu-bar-hide-lyrics-when-paused.md) —— 菜单栏不再跟着
     桌面歌词默认开着的「隐藏歌词：暂停播放时」，改用实验室页默认关的「暂停时隐藏菜单栏歌词」。
+  - [草案：系统级正在播放检测到 Music 时也启用原名恢复](Evolutions/draft-system-now-playing-name-recovery.md)
+    —— `SystemMedia` 按来源 App 的 bundle ID 报出播放器名；原名恢复插件改为常驻、按每次搜索的标记决定是否运行。
 
 ## 使用说明
 
