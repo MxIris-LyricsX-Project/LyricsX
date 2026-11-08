@@ -680,6 +680,26 @@ plus-lighter 是 Core Animation 的私有滤镜，UIFoundation 只在 `AppleInte
 `PlaybackScrubberProbes` 守住这两条：点击落在哪里断言在窗口的 hit-test 上（条上每一点都到滑块，标签到不了）；seek 的
 时机经滑块 cell 的三个 tracking 方法驱动，并像 AppKit 一样在按下、每次移动和松手之后发 action。
 
+## 拖动窗口
+
+面板根视图 `DraggablePanelView` 在 `mouseDragged` 里自己挪窗口，而不打开 `isMovableByWindowBackground`：后者让
+AppKit 开一层嵌套的 event tracking 循环，拖动期间默认模式的回调都停着。自己挪窗口也让面板知道拖动何时开始、何时
+结束，`GradientBackgroundView` 据此在拖动时暂停背景渲染，复杂封面下拖动才不掉帧（见
+[0008](../Evolutions/0008-apple-music-metal-gradient.md)）。
+
+例外是窗口顶部标题栏和空工具栏占的那一条：在这里按下时，窗口服务器自己就会拖窗口，面板只通知背景暂停，不再挪
+窗口。AppKit 要把标题栏底下的视图从窗口服务器的拖动区域里挖掉，前提是视图能成为 first responder，且自己覆盖了
+`mouseDown:`（macOS 27.2 的 `-[NSView _opaqueRectForWindowMoveWhenInTitlebar]`，两条不满足就返回空矩形）；
+`mouseDownCanMoveWindow` 在标题栏底下不起作用。根视图不接受 first responder，所以这一条始终归窗口服务器拖。1.9.0-beta.9 到 rc.3 面板在这里
+也挪窗口，两边各按自己拿到的指针位置摆放窗口，时间上差一点，窗口就在指针下来回跳 10–24 pt。
+
+这一条的范围取 `window.contentLayoutRect` 的上沿：它正好止于标题栏和工具栏开始的地方；全屏隐藏标题栏时它就是
+整个窗口，这一条不存在。整个面板都改用 `NSWindow.performDrag(with:)` 交给窗口服务器也能消除抖动，但拖动的开始与
+结束就只能从窗口移动通知里推断，背景暂停要跟着重写，所以没有采用。
+
+`PanelWindowDragTests` 守住两边：从这一条拖，面板不动窗口、照样报告拖动；从下面拖，窗口跟着指针走。测试直接调用
+根视图的鼠标方法，不经过窗口服务器，窗口只会被面板挪动。
+
 ## 性能诊断
 
 歌词动画使用 `com.JH.LyricsX.AppleMusicLyricsPanel.Lyrics` subsystem，并把不同边界分到四个 category；背景

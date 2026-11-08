@@ -564,12 +564,27 @@ extension AppleMusicLyrics {
     /// default mode (unlike `isMovableByWindowBackground`, which spins a nested
     /// `NSEventTrackingRunLoopMode` loop). Playback and lyric updates can
     /// therefore keep draining while the window is dragged.
+    ///
+    /// Except from the strip the title bar and the empty toolbar cover: the
+    /// window server drags the window from there by itself, and this view does
+    /// not take the strip away from it (under a title bar, AppKit leaves a view
+    /// out of the window server's drag region only when the view accepts first
+    /// responder and overrides `mouseDown`). Moving the window from there too
+    /// made the two fight over it, and the window jittered under the pointer.
     final class DraggablePanelView: LayerBackedView {
         var onWindowDraggingChanged: ((Bool) -> Void)?
+
+        /// Where the pointer is, in screen coordinates. Read live rather than
+        /// from the event: the window moves under the pointer during the drag.
+        /// Tests substitute a location of their own.
+        var currentPointerLocation: () -> NSPoint = { NSEvent.mouseLocation }
 
         private var initialMouseScreen: NSPoint?
         private var initialWindowOrigin: NSPoint?
         private var isDraggingWindow = false
+        /// The press landed in the title bar strip, where the window server
+        /// moves the window. The drag still counts as one for the backdrop.
+        private var windowServerMovesWindow = false
 
         override func setup() {
             backgroundColor = .black
@@ -598,8 +613,11 @@ extension AppleMusicLyrics {
         override func mouseDown(with event: NSEvent) {
             guard let window else { return }
             finishWindowDrag()
-            initialMouseScreen = NSEvent.mouseLocation
+            initialMouseScreen = currentPointerLocation()
             initialWindowOrigin = window.frame.origin
+            // `contentLayoutRect` ends where the title bar and toolbar begin;
+            // in full screen, with the title bar hidden, it is the whole window.
+            windowServerMovesWindow = event.locationInWindow.y > window.contentLayoutRect.maxY
         }
 
         override func mouseDragged(with event: NSEvent) {
@@ -610,7 +628,8 @@ extension AppleMusicLyrics {
                 isDraggingWindow = true
                 onWindowDraggingChanged?(true)
             }
-            let currentMouseScreen = NSEvent.mouseLocation
+            guard !windowServerMovesWindow else { return }
+            let currentMouseScreen = currentPointerLocation()
             window.setFrameOrigin(NSPoint(
                 x: initialWindowOrigin.x + (currentMouseScreen.x - initialMouseScreen.x),
                 y: initialWindowOrigin.y + (currentMouseScreen.y - initialMouseScreen.y)
@@ -631,6 +650,7 @@ extension AppleMusicLyrics {
         private func finishWindowDrag() {
             initialMouseScreen = nil
             initialWindowOrigin = nil
+            windowServerMovesWindow = false
             if isDraggingWindow {
                 isDraggingWindow = false
                 onWindowDraggingChanged?(false)

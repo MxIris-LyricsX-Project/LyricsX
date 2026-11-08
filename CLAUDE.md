@@ -131,6 +131,15 @@ swift test --filter LineTransitionProbes
 # PlaybackProgressView or to the views around it.
 swift test --filter PlaybackScrubberProbes
 
+# Dragging the panel window: a press in the strip the title bar and toolbar
+# cover leaves the move to the window server, which drags the window from
+# there by itself, and still pauses the backdrop; anywhere else the panel
+# moves the window with the pointer. Headless (<1s). Red on the old drag,
+# which also moved the window from the title bar and fought the window server
+# over it, so the window jittered. Run on any change to DraggablePanelView or
+# to the panel window's title bar or toolbar.
+swift test --filter PanelWindowDragTests
+
 # When the panel's display link and chrome timer tick: full rate only while
 # playback plays lyrics in a window on screen, one frame per change while
 # paused, nothing while hidden, occluded, minimized or without lyrics. Plus
