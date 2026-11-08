@@ -46,7 +46,7 @@
 2. [x] LyricsXFoundation：`isForAppleMusicTrack`、`AppleMusicTrackNameRecoveryPlugin` 与测试。
 3. [x] LyricsX app：挂载、请求标记、重建订阅、「写入音乐」菜单项；Debug 构建通过。
 4. [x] 文案与文档：中文开关文案、CLAUDE.md、术语表、`docs/apple-music-lyrics.md`。
-5. [ ] 发 MusicPlayer 1.11.0 并改锁定版本（打 tag、推送前先问用户）。
+5. [x] 发 MusicPlayer 1.11.0 并改锁定版本（打 tag、推送前先问用户）。
 
 没有询问就采用的假设：
 
@@ -64,3 +64,5 @@
 | 2026-11-08 | 按每次搜索判断，不再按播放器重建歌词源组 | 重建是异步的（填了 Apple Music 令牌时还要先联网验证），切到 Music 后的第一首歌常赶在重建完成前就用不带插件的旧组搜完；系统级正在播放下来源 App 随时会变，这个时序问题会频繁出现 |
 | 2026-11-08 | 用户批准，开始实现；放到 1.9.0 正式版之后发 | 1.9.0 的候选版已观察一周，不在最后关头改系统级正在播放的代码 |
 | 2026-11-08 | 提案随功能分支提交，不先落 develop；1.9.0 打 tag 之前不合进 develop；打 tag、推送之前先问用户 | develop 在 1.9.0 正式版之前不加东西；推送与发版由用户决定 |
+| 2026-11-08 | 用户批准后，MusicPlayer 的 `v1.11.0` 打在功能分支的最新提交上，MusicPlayer 的 develop 暂不动 | 本地工作区构建用的是 MusicPlayer 主检出，1.9.0 之前不该带上这次改动；功能分支比 develop 只多两个提交，日后快进合并后这个 tag 就在 develop 上 |
+| 2026-11-08 | 实现完成，待用户看过后收尾 | 五步都已完成：MusicPlayer 与 `LyricsXFoundationTests` 全部通过，接上 1.11.0 的 Debug 构建通过；实机效果尚未验证。发布说明留到 1.9.0 之后那一版再写 |
