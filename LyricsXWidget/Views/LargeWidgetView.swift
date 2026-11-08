@@ -11,15 +11,30 @@ struct LargeWidgetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(entry.trackTitle)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                    Text(entry.artist)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.6))
-                        .lineLimit(1)
+                HStack(spacing: 10) {
+                    // Smaller than the extra-large widget's 60 pt cover: the
+                    // large widget is about half as wide, and every point the
+                    // header grows comes out of the lyrics area below it.
+                    if let coverImage = entry.coverImage {
+                        Image(decorative: coverImage, scale: 1)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 44, height: 44)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(entry.trackTitle)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                        Text(entry.artist)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .lineLimit(1)
+                    }
+
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
