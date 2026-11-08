@@ -121,7 +121,13 @@ extension AppleMusicLyrics {
         /// is the only thing anyone sees. `fillMode = .both` is what makes the
         /// stagger work: a glyph whose `beginTime` has not arrived yet keeps
         /// showing its *old* value rather than snapping to the new one.
-        func run(afterDelay delay: TimeInterval = 0) {
+        ///
+        /// `startsFromModel` animates from the model values the layers held just
+        /// before the changes instead of from the screen. Use it right after the
+        /// caller has itself set a model value with actions disabled in the same
+        /// turn: the screen has not caught up with that value yet, so the
+        /// default would start from where the layer was before it.
+        func run(afterDelay delay: TimeInterval = 0, startsFromModel: Bool = false) {
             // What changed is decided from the model, which is what the closures
             // write; where it animates from is read off the screen. Animating from
             // the model would skip whatever a previous batch still has in flight,
@@ -133,7 +139,9 @@ extension AppleMusicLyrics {
             // same two layers, one for opacity and one for the transform
             // (`sub_10019D630`), so that is not hypothetical.
             let modelBefore = layers.map(Snapshot.init(of:))
-            let visibleBefore = layers.map { Snapshot(of: $0.presentation() ?? $0) }
+            let visibleBefore = startsFromModel
+                ? modelBefore
+                : layers.map { Snapshot(of: $0.presentation() ?? $0) }
 
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -194,6 +202,18 @@ extension AppleMusicLyrics {
             for property in AnimatedProperty.allCases {
                 layer.removeAnimation(forKey: property.animationKey)
             }
+        }
+
+        /// Drop only the position animation this type added to `layer`, leaving
+        /// anything else in flight — the sweep's fade, say — alone.
+        static func removePositionAnimation(from layer: CALayer) {
+            layer.removeAnimation(forKey: AnimatedProperty.position.animationKey)
+        }
+
+        /// The position animation this type added to `layer`, if one is still
+        /// attached.
+        static func positionAnimation(on layer: CALayer) -> CAAnimation? {
+            layer.animation(forKey: AnimatedProperty.position.animationKey)
         }
     }
 }

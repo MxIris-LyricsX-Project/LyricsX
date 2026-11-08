@@ -45,6 +45,24 @@ extension AppleMusicLyrics {
             return animation
         }
     }
+
+    /// A fixed-duration animation at constant speed — Music's
+    /// `AnimationCurve.linear(_:)`, which the sung sweep rides from one
+    /// syllable's end to the next (`sub_100169874`).
+    struct LinearTimingParameters: LayerAnimationTiming {
+        let duration: TimeInterval
+
+        var totalDuration: TimeInterval {
+            duration
+        }
+
+        func makePropertyAnimation(keyPath: String) -> CABasicAnimation {
+            let animation = CABasicAnimation(keyPath: keyPath)
+            animation.duration = duration
+            animation.timingFunction = CAMediaTimingFunction(name: .linear)
+            return animation
+        }
+    }
 }
 
 extension AppleMusicLyrics.SpringTimingParameters: AppleMusicLyrics.LayerAnimationTiming {

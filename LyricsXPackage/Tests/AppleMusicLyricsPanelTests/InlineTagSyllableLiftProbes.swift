@@ -107,10 +107,12 @@ struct InlineTagSyllableLiftProbes {
         var failures: [String] = []
 
         for track in tracks {
-            // 1. Nothing moves before the segment is sung: no head start.
+            // 1. Nothing moves before the segment is due: Music's head start
+            //    (`animationHeadstart`, 0.1 s) is the only lead.
+            let dueTime = track.timeRange.lowerBound - AppleMusicLyrics.LyricsSpecs.animationHeadstart
             for (glyphIndex, glyphTrack) in track.glyphTracks.enumerated() {
-                if let early = glyphTrack.first(where: { $0.elapsedTime < track.timeRange.lowerBound - 0.001 && abs($0.lift) > 0.25 }) {
-                    failures.append(String(format: "word %d glyph %d moved %.2f pt at %.2fs, before its segment starts at %.2fs", track.wordIndex, glyphIndex, early.lift, early.elapsedTime, track.timeRange.lowerBound))
+                if let early = glyphTrack.first(where: { $0.elapsedTime < dueTime - 0.001 && abs($0.lift) > 0.25 }) {
+                    failures.append(String(format: "word %d glyph %d moved %.2f pt at %.2fs, before its segment is due at %.2fs", track.wordIndex, glyphIndex, early.lift, early.elapsedTime, dueTime))
                     break
                 }
             }

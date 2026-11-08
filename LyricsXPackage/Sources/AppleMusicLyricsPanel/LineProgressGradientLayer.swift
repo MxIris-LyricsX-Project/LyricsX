@@ -167,5 +167,18 @@ extension AppleMusicLyrics {
         func originXForCompletelyFilled() -> CGFloat {
             originX(forFillEdge: lineWidth + featherWidth)
         }
+
+        /// Where this layer's origin has to sit for the ramp's *clear* end — the
+        /// point past which nothing is lit — to land on `clearEdge`, measured from
+        /// the leading end of the text.
+        ///
+        /// This is how Music positions its sweep: the gradient layer's trailing
+        /// edge is the clear end of the ramp, and `sub_1001689D4` grows the layer
+        /// until that edge reaches the target ``SyllableSweepPlan`` gives. So 0 is
+        /// "nothing sung" with the ramp entirely before the text, and
+        /// `lineWidth + featherWidth` is "all sung" with it entirely past.
+        func originX(forClearEdge clearEdge: CGFloat) -> CGFloat {
+            originX(forFillEdge: clearEdge - featherWidth / 2)
+        }
     }
 }

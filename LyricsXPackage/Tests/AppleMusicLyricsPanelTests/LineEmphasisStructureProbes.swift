@@ -232,12 +232,16 @@ struct LineEmphasisStructureProbes {
         }, "each mask container that positions wrapped words must use the same y-down coordinates")
     }
 
+    /// The row-local colour containers, driven by the character-share sweep
+    /// this probe was written against; the Music sweep's row by row lighting
+    /// has its own probe in `SyllableSweepEngineTests`.
     @Test(arguments: generatedWrappedLyrics)
     func wrappedRowsUseIndependentSungColorContainers(text: String) throws {
         let layout = try #require(Self.generatedLayout(for: text))
         #expect(layout.visualLines.count >= 2)
 
         let contentLayer = AppleMusicLyrics.SyncedLyricsLineContentLayer()
+        contentLayer.sweepVariantProvider = { .characterFraction }
         contentLayer.isHighlighted = true
         contentLayer.rebuild(with: layout, contentsScale: 2)
 

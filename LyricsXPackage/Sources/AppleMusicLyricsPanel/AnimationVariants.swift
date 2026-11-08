@@ -62,6 +62,34 @@ extension AppleMusicLyrics {
         }
     }
 
+    /// How the selected line's sung/un-sung boundary moves across the text.
+    ///
+    /// Selected through a hidden user-defaults key, read when a line is laid
+    /// out and whenever it becomes the selected one, so the two can be compared
+    /// side by side without a rebuild.
+    enum LineProgressSweepVariant: String, CaseIterable, Sendable {
+        /// Music 26.6's sweep (`sub_1001689D4`): every visual row has its own
+        /// gradient, which travels at constant speed to the end of each syllable
+        /// as the syllable starts, measured on the laid-out glyphs and timed
+        /// `animationHeadstart` early. See ``SyllableSweepPlan``.
+        case appleMusic26
+        /// The sweep the panel had before: every frame the whole line's share of
+        /// sung characters is multiplied by its total width, and the ramp's middle
+        /// is put there — no head start, no glyph geometry.
+        case characterFraction
+
+        static let userDefaultsKey = "AppleMusicLyricsSweepVariant"
+        static let `default`: LineProgressSweepVariant = .appleMusic26
+
+        static func resolve(from userDefaults: UserDefaults = .standard) -> LineProgressSweepVariant {
+            guard let rawValue = userDefaults.string(forKey: userDefaultsKey),
+                  let variant = LineProgressSweepVariant(rawValue: rawValue) else {
+                return .default
+            }
+            return variant
+        }
+    }
+
     /// How much emphasis a word carrying structured (`SynchronizedTextTiming`)
     /// timing receives. Words that only carry inline start tags are unaffected:
     /// they keep the established full-strength phrase fallback either way.
