@@ -51,7 +51,8 @@ override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, what the menu bar's lyric line shows when there is
-no line to show, plus the lyrics
+no line to show, which standard item the status menu's custom row lines its
+label up with and the per-release insets it falls back to, plus the lyrics
 translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine
@@ -168,6 +169,23 @@ swift test --filter StatusItemTextParityProbes
 # nothing. Idle: the line must stop drawing once settled. Scroll: it must move
 # as often and in steps as fine as MarqueeLabel's animation, for less CPU.
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
+```
+
+The same suite guards the status menu's lyrics offset row, a custom view
+(`TitleAlignedMenuItemView`) that measures where the open menu starts its
+titles and moves its label there, because AppKit has no API for that place and
+macOS 27 moved it. Run this on any change to that view, to its storyboard
+wiring, or on a new macOS release; why it measures, and the AppKit layout
+behind its fallback table, are in
+`Documentations/Internal/StatusMenuTitleAlignment.md`:
+
+```bash
+# Opens a real menu four times inside the probe host — with and without a
+# state column, measured and from the fallback table — and compares where the
+# row's text and the titles' texts start, from each text field's laid-out
+# frame and its own rendering (~5 s; a menu flashes on screen each time).
+# Red on macOS 27 for the old fixed 24 pt inset.
+swift test --filter StatusMenuTitleAlignmentProbes
 ```
 
 `LyricsXWidgetSharedTests` covers the desktop widget's shared code. Its
@@ -392,7 +410,7 @@ Setting evaluation order (high overrides low): target xcconfig → project xccon
 - **LyricsKit** (`MxIris-LyricsX-Project/LyricsKit`, branch: main) — lyrics search/parsing engine
 - **MusicPlayer** (`MxIris-LyricsX-Project/MusicPlayer`, branch: master) — music player abstraction layer
 - **mediaremote-adapter** (`MxIris-LyricsX-Project/mediaremote-adapter`) — transitive dependency of MusicPlayer; provides the `MediaRemoteAdapter` product used by `SystemMedia` to bridge the private MediaRemote APIs
-- **LyricsXFoundation** (local package in `LyricsXPackage/`) — re-export wrapper (`@_exported import LyricsKit`) plus small shared extensions (`PlaybackState.lyricsDisplayTime`, `MusicTrack.resolvedArtwork`), the pure policies, and a few AppKit views the app uses — including `MenuBarMarqueeLabel`, the menu bar lyric line on macOS 26+
+- **LyricsXFoundation** (local package in `LyricsXPackage/`) — re-export wrapper (`@_exported import LyricsKit`) plus small shared extensions (`PlaybackState.lyricsDisplayTime`, `MusicTrack.resolvedArtwork`), the pure policies, and a few AppKit views the app uses — including `MenuBarMarqueeLabel`, the menu bar lyric line on macOS 26+, and `TitleAlignedMenuItemView`, the status menu's lyrics offset row
 - **AppleMusicLyricsPanel** (local package target in `LyricsXPackage/`) — the Apple Music-style lyrics panel: CALayer karaoke engine, panel view controller, gradient background. Extracted from the app target so it builds and probe-tests standalone (`swift test --filter LineEmphasisProbes`). All app coupling flows through one injection seam, `AppleMusicLyrics.HostEnvironment` (player, translation policy, lyric time delay), installed by the app-side glue
 - **UIFoundation** (`Mx-Iris/UIFoundation`, `from: "0.42.0"`, the first release with `PlaybackSlider`) — AppKit widgets and helpers used by the app and by `AppleMusicLyricsPanel`, whose scrubber is UIFoundation's `PlaybackSlider`. Its `AppleInternal` trait is on, in both the Xcode project's package reference and `LyricsXPackage/Package.swift`: the trait compiles in the private plus-lighter filter that gives the bar Music's colours, and without it the bar silently blends normally, a little darker. Check for `-DAppleInternal` in the build log, and delete the DerivedData of any build made before a trait change — Xcode's incremental build keeps passing the old `-D` flags. The trait also makes AppKit's private headers, which UIFoundation re-exports, visible to the whole app module: a property named like a private AppKit one stops compiling, which is why `ScrollLyricsView` has a `lyricsViewDelegate` rather than a `delegate`. It also embeds FrameworkToolbox's `ObjCRuntimeToolbox.framework` (about 450 KB) in the app. AppKitPlus, which supplied the scrubber before, is no longer a dependency
 

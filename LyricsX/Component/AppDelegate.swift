@@ -14,7 +14,9 @@ import FoundationToolbox
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
     static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
 
-    @IBOutlet var lyricsOffsetView: NSView!
+    /// The status menu's lyrics offset row, which lines its label up with the
+    /// menu's titles by itself.
+    @IBOutlet var lyricsOffsetView: TitleAlignedMenuItemView!
     @IBOutlet var lyricsOffsetTextField: NSTextField!
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
@@ -540,21 +542,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             .desktopLyricsXPositionFactor: 0.5,
             .desktopLyricsYPositionFactor: 0.9,
         ])
-    }
-
-    func menuWillOpen(_ menu: NSMenu) {
-        if #available(macOS 11, *) {
-            let menuHasOnState = statusBarMenu.items.filter { menuItem in
-                return menuItem.state == .on
-            }.count > 0
-
-            let lyricsOffsetConstraint = lyricsOffsetView.constraints.first(where: { $0.identifier == "lyricsOffsetConstraint" })
-
-            lyricsOffsetConstraint?.constant = 14
-            if menuHasOnState {
-                lyricsOffsetConstraint?.constant += 10
-            }
-        }
     }
 }
 

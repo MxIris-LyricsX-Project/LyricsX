@@ -119,6 +119,7 @@ let package = Package(
                 .product(name: "LyricsKit", package: "LyricsKit"),
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
                 .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+                .product(name: "OSToolbox", package: "FrameworkToolbox"),
             ]
         ),
         .target(

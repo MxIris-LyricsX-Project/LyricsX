@@ -66,6 +66,21 @@ private enum SnapshotParityRun {
     }
 }
 
+/// Runs `MenuTitleAlignmentProbe` on one menu and writes its report.
+@MainActor
+private enum MenuTitleAlignmentRun {
+    static func runAndExit(_ menuCase: MenuTitleAlignmentCase, reportPath: String) -> Never {
+        let report = MenuTitleAlignmentProbe.run(menuCase)
+        do {
+            try JSONEncoder().encode(report).write(to: URL(fileURLWithPath: reportPath))
+            exit(0)
+        } catch {
+            FileHandle.standardError.write(Data("StatusItemProbeHost: \(error)\n".utf8))
+            exit(6)
+        }
+    }
+}
+
 /// Mounts the requested content, lets it settle, measures, writes the
 /// report and exits.
 @MainActor
@@ -85,6 +100,17 @@ private final class StatusItemProbeSession {
     func start() {
         if request.mode == .snapshotParity {
             SnapshotParityRun.runAndExit(reportPath: request.reportPath)
+        }
+        if request.mode == .menuTitleAlignment, let menuCase = request.menuTitleAlignmentCase {
+            // Out of `applicationDidFinishLaunching`, so the menu's tracking
+            // loop runs in an app that has finished launching.
+            let reportPath = request.reportPath
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    MenuTitleAlignmentRun.runAndExit(menuCase, reportPath: reportPath)
+                }
+            }
+            return
         }
         do {
             let views = request.content.makeViews(text: request.text, lineDisplayTime: ownTimingLineDisplayTime, drawTally: drawTally)

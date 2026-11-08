@@ -43,6 +43,53 @@ package enum StatusItemProbeMode: String, Sendable {
     case liveStatusItem
     /// Run `StatusItemSnapshotParity` offscreen and report.
     case snapshotParity
+    /// Open a real menu with a `TitleAlignedMenuItemView` row and report
+    /// where its label starts against the menu's titles.
+    case menuTitleAlignment
+}
+
+/// One menu `MenuTitleAlignmentProbe` opens.
+package struct MenuTitleAlignmentCase: Hashable, Sendable, Codable, CustomStringConvertible {
+    /// Whether an item of the menu is checked, which gives it a state column.
+    package var showsStateColumn: Bool
+    /// `TitleAlignedMenuItemView.measuresMenuTitles`: off, the row is placed
+    /// from the fallback table.
+    package var measuresMenuTitles: Bool
+
+    package init(showsStateColumn: Bool, measuresMenuTitles: Bool) {
+        self.showsStateColumn = showsStateColumn
+        self.measuresMenuTitles = measuresMenuTitles
+    }
+
+    package static let allCases: [MenuTitleAlignmentCase] = [
+        MenuTitleAlignmentCase(showsStateColumn: true, measuresMenuTitles: true),
+        MenuTitleAlignmentCase(showsStateColumn: false, measuresMenuTitles: true),
+        MenuTitleAlignmentCase(showsStateColumn: true, measuresMenuTitles: false),
+        MenuTitleAlignmentCase(showsStateColumn: false, measuresMenuTitles: false),
+    ]
+
+    package var description: String {
+        "\(showsStateColumn ? "state column" : "no state column"), \(measuresMenuTitles ? "measured" : "fallback table")"
+    }
+
+    var argument: String {
+        "stateColumn=\(showsStateColumn),measures=\(measuresMenuTitles)"
+    }
+
+    init?(argument: String) {
+        switch argument {
+        case "stateColumn=true,measures=true":
+            self.init(showsStateColumn: true, measuresMenuTitles: true)
+        case "stateColumn=false,measures=true":
+            self.init(showsStateColumn: false, measuresMenuTitles: true)
+        case "stateColumn=true,measures=false":
+            self.init(showsStateColumn: true, measuresMenuTitles: false)
+        case "stateColumn=false,measures=false":
+            self.init(showsStateColumn: false, measuresMenuTitles: false)
+        default:
+            return nil
+        }
+    }
 }
 
 /// What the test asks `StatusItemProbeHost` to do, passed as command-line
@@ -58,6 +105,8 @@ package struct StatusItemProbeRequest: Sendable {
     package var settleSeconds: Double
     package var measuredSeconds: Double
     package var reportPath: String
+    /// The menu a `.menuTitleAlignment` run opens.
+    package var menuTitleAlignmentCase: MenuTitleAlignmentCase?
 
     package init(
         mode: StatusItemProbeMode = .liveStatusItem,
@@ -67,7 +116,8 @@ package struct StatusItemProbeRequest: Sendable {
         maximumScrollFramesPerSecond: Double = 0,
         settleSeconds: Double,
         measuredSeconds: Double,
-        reportPath: String
+        reportPath: String,
+        menuTitleAlignmentCase: MenuTitleAlignmentCase? = nil
     ) {
         self.mode = mode
         self.content = content
@@ -77,6 +127,7 @@ package struct StatusItemProbeRequest: Sendable {
         self.settleSeconds = settleSeconds
         self.measuredSeconds = measuredSeconds
         self.reportPath = reportPath
+        self.menuTitleAlignmentCase = menuTitleAlignmentCase
     }
 
     /// A snapshot-parity run, which needs nothing but somewhere to report.
@@ -91,8 +142,21 @@ package struct StatusItemProbeRequest: Sendable {
         )
     }
 
+    /// A menu-alignment run: opens one menu and reports on it.
+    package static func menuTitleAlignment(_ menuCase: MenuTitleAlignmentCase, reportPath: String) -> StatusItemProbeRequest {
+        StatusItemProbeRequest(
+            mode: .menuTitleAlignment,
+            content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
+            text: "",
+            settleSeconds: 0,
+            measuredSeconds: 0,
+            reportPath: reportPath,
+            menuTitleAlignmentCase: menuCase
+        )
+    }
+
     package var arguments: [String] {
-        [
+        var arguments = [
             "--mode", mode.rawValue,
             "--content", content.description,
             "--text", text,
@@ -102,6 +166,10 @@ package struct StatusItemProbeRequest: Sendable {
             "--measured-seconds", String(measuredSeconds),
             "--report-path", reportPath,
         ]
+        if let menuTitleAlignmentCase {
+            arguments += ["--menu-title-alignment-case", menuTitleAlignmentCase.argument]
+        }
+        return arguments
     }
 
     package init(arguments: [String]) throws {
@@ -122,6 +190,10 @@ package struct StatusItemProbeRequest: Sendable {
               let reportPath = values["--report-path"] else {
             throw StatusItemProbeProtocolError.malformedArguments(arguments)
         }
+        let menuTitleAlignmentCase = values["--menu-title-alignment-case"].flatMap(MenuTitleAlignmentCase.init(argument:))
+        if mode == .menuTitleAlignment, menuTitleAlignmentCase == nil {
+            throw StatusItemProbeProtocolError.malformedArguments(arguments)
+        }
         self.init(
             mode: mode,
             content: content,
@@ -130,7 +202,8 @@ package struct StatusItemProbeRequest: Sendable {
             maximumScrollFramesPerSecond: maximumScrollFramesPerSecond,
             settleSeconds: settleSeconds,
             measuredSeconds: measuredSeconds,
-            reportPath: reportPath
+            reportPath: reportPath,
+            menuTitleAlignmentCase: menuTitleAlignmentCase
         )
     }
 }

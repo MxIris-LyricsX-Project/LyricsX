@@ -113,6 +113,9 @@
 - [菜单栏歌词的绘制](Internal/MenuBarLyricsRendering.md) —— 截图副本为什么让 `NSTextField` 间歇陷入每秒 300 次的
   重画循环、调它的属性为什么没用、为什么用 cell 画字并按外观缓存位图、滚动开销为什么由帧率和条目里的按钮决定，
   探针为什么必须打包成 App 并经 LaunchServices 启动，以及什么时候显示占位文字、行号暂时为空时为什么保持不变。
+- [状态栏菜单自定义行的对齐](Internal/StatusMenuTitleAlignment.md) —— 「歌词偏移」那一行的标签为什么改成在打开的菜单里
+  量出标题位置再对齐（macOS 27 把有勾选列时的标题右移了 6 pt），参照项怎么挑，约束常数为什么要比标题的 frame 多 2 pt，
+  逆向出的 AppKit 标题位置公式，以及量不到时退回的按版本常数表。
 - [桌面小组件](Internal/DesktopWidget.md) —— 播放按钮为什么走 `AudioPlaybackIntent` 而不是 `openAppWhenRun`
   （后者每按一次就弹出设置窗口），歌词区为什么按剩下的高度挑行，以及放不下的行为什么要按顺序排在区外；刷新为什么
   攒着发（系统每 5 秒只执行一次 app 的刷新请求），小组件为什么没有自己的设置项（编辑过的小组件自成一套配置，

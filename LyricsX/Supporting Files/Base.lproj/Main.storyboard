@@ -390,7 +390,7 @@
                         </menuItem>
                     </items>
                 </menu>
-                <customView id="LV9-pp-2tz" userLabel="Lyrics Offset View">
+                <customView id="LV9-pp-2tz" userLabel="Lyrics Offset View" customClass="TitleAlignedMenuItemView" customModule="LyricsXFoundation">
                     <rect key="frame" x="0.0" y="0.0" width="248" height="26"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                     <subviews>
@@ -459,6 +459,10 @@
                         <constraint firstItem="0ii-PC-ZCl" firstAttribute="leading" secondItem="FwA-Sj-odc" secondAttribute="trailing" constant="5" id="rbZ-oR-lp1"/>
                         <constraint firstItem="FwA-Sj-odc" firstAttribute="centerY" secondItem="LV9-pp-2tz" secondAttribute="centerY" id="wCe-8m-cvA"/>
                     </constraints>
+                    <connections>
+                        <outlet property="label" destination="DG2-8b-vTy" id="q7M-aL-nOt"/>
+                        <outlet property="labelLeadingConstraint" destination="826-cy-w1T" id="x2K-cT-lLc"/>
+                    </connections>
                 </customView>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="YC0-xP-lPo"/>
