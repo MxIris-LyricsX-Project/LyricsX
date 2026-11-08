@@ -4,7 +4,8 @@
 > [行间 cascade 对齐 Apple Music 26.6 并修复全屏掉帧](../Evolutions/0009-apple-music-line-cascade-parity.md)、
 > [歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6](../Evolutions/0024-apple-music-line-interaction-parity.md)、
 > [歌词面板进度条换成 AppKitPlus 的 NSPlaybackSlider](../Evolutions/0022-panel-playback-slider.md)、
-> [歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](../Evolutions/0023-panel-slider-from-uifoundation.md)
+> [歌词面板进度条改用 UIFoundation 的 PlaybackSlider，移除 AppKitPlus](../Evolutions/0023-panel-slider-from-uifoundation.md)、
+> [行内扫光改按 Music 26.6 的逐音节线性推进](../Evolutions/draft-apple-music-syllable-sweep.md)
 >
 > 面向维护者。这里记录最终数据链、动画状态所有权和降级边界；旧的探索文档保留为历史记录，
 > 不再作为 26.6 行为的实现依据。
@@ -148,13 +149,76 @@ return 只收回放大与横向挤压，**不收回抬高**：`sub_10018B2B4` �
 `.none` 的词按音节建 `SyllableLayer`（`sub_10018DA78`；单音节词直接以它充当词 layer），每帧 `sub_1001689D4`
 对每个音节调 `sub_1001897C0`：音节从未唱变为已唱时给 `Syllable.layer` 加 `translation(0, −syllableLift)`
 （change closure `sub_100189C0C`），动画是 `CASpringAnimation(mass 1, stiffness 14, damping 7)`，时长取它的
-`settlingDuration`，约一秒才收敛；时间退回音节之前用同一弹簧回恒等。没有 headstart，不分语言，transliteration
-行除外。它不改颜色，sweep 颜色始终是 `gradientLayer` 的事。
+`settlingDuration`，约一秒才收敛；时间退回音节之前用同一弹簧回恒等。不分语言，transliteration 行除外。它不改颜色，
+sweep 颜色始终是 `gradientLayer` 的事。
+
+`sub_1001897C0` 自己不加提前量，但它收到的时间已经是「播放时间 + `animationHeadstart` 0.1 秒」（见下文「扫光」），
+所以音节比它的开始时刻早 0.1 秒抬起。2026-11-08 之前本项目用的是不加提前量的播放时间，这一节原先也写着「没有
+headstart」，那只核对了被调函数本身、没看调用方。
 
 本项目对应 `SyllableLiftPlan`（同一组弹簧常量）与 `SyncedLyricsLineContentLayer.updateSyllableLifts`：结构化词按
 `LineTextLayout.Word.Syllable.glyphIndices` 分组，整组 glyph 用一个 `LayerPropertyAnimator` 移到 `sungOrigin` /
 `restingOrigin`；`.factor` 的词不参与，它的 swell 自带落点。`[tt]` 段没有更细的音节层级，整段一组，默认档下
 同样走这条软弹簧；`fullEmphasis` 档下 `decideEmphasis` 仍给它 swell 计划，音节组不用。
+
+### 扫光
+
+扫光是已唱与未唱之间那道宽 `lineProgressionGradientFeather`（30 pt）的渐变边界。2026-11-08 按 `Music.i64`（26.6）
+逐函数核对，此前的实现从没对照过二进制。
+
+**Music 的做法。** 每帧入口 `sub_10016E8FC` / `sub_10016E348` 把「播放时间 + `animationHeadstart`（specs+0x220，
+0.1 秒；`0x10016E95C` 的 `FADD`）」交给每个视觉行的 `sub_1001689D4`。这一个时间同时驱动逐音节抬高 `sub_1001897C0`、
+放大 `sub_10018B2B4` 和扫光，所以三者都提前 0.1 秒。扫光部分：
+
+- 每个视觉行（`SyncedLyricsLineLayer.Line`）一层 `LineProgressGradientLayer`：`sub_10016A8F8` 把它建在行的 x = −P 处，
+  P = |字体行高 × 1.14 + 2 × glowRadius − 行高| / 2；层内左边实色、右端 30 pt 渐变到透明（`sub_1001EB740`）。层的
+  原点不动，推进靠改宽度，层的右边缘就是渐变的透明端。
+- 时间落进某个音节 [start, end)、且它不是本行的 `lastProgressedToSyllable` 时，`sub_100169874` 发一次
+  `LayerPropertyAnimator(.linear(end − start))`（`AnimationCurve` 的 tag 4），把透明端推到 `X + D × 30`：
+  - `X` 是音节最后一个字形的右边缘（`word.frame.x + syllable.frame.maxX`）；音节是词的最后一个音节、本行还有下一个词
+    时，`X` 取下一个词的 `frame.x`，词后的空格在这个音节里扫过去。
+  - `D` 按顺序判断：本行最后一个音节 1；所在词 1–2 个字符（`Lyrics.Syllable.wordLength`）0.5；后面还有音节且音节
+    文本少于 3 个字符 0.25；其余 0.12（`0x3FBEB851EB851EB8`）。完全点亮的部分在透明端之前一整个羽化宽，所以 0.12 意味着
+    一个音节唱完时，它最后一个字母大半还在渐变里，等下一个音节接着推。
+- 音节之间、词之间的空隙不发新动画，渐变停在上一个目标；时间早于本行第一个音节时宽度 = P（全暗），并清掉
+  `lastProgressedToSyllable`；到达本行结束时刻后直接设成「最后一个音节末尾 + 30」（全亮），不做动画。
+- `sub_1001D8C08` 只在时间前进、或后退超过 0.5 秒时才调用每帧更新，小幅回退直接忽略。
+- 另有 `Line.AnimationKind.crossfade`（`sub_10018AEEC`：逐词背景色 easeInOut），何时启用没有查。
+
+**本项目。** `SyllableSweepPlan`（纯计划，`SyllableSweepPlan.swift`）由 `LineTextLayout` 算出每个视觉行的音节、
+透明端目标与行的起止时间，音节取法与 `makeSyllableGroups` 相同（结构化词按音节，`[tt]` 段与没有音节的结构化词整段
+一个；只看带时间的词，结构化词之间不带时间的空白就是 Music 的词间空格）。`SyncedLyricsLineContentLayer.updateSyllableSweep`
+每帧按 `播放时间 + 0.1 秒` 逐行走 `VisualRowNode.SweepPhase`：`waiting`（行开始前，全暗）→ `sweeping(lastSyllableIndex:)`
+（进入新音节时发一段 `LinearTimingParameters`，从画面上的位置出发）→ `filled`（行结束后全亮）。
+
+`LineProgressGradientLayer` 仍固定宽度、只动 `position.x`，用 `originX(forClearEdge:)` 以透明端定位：Music 改宽度时
+子层按 model bounds 布局，动画中途的羽化会被裁掉；平移的线性动画画出来与改宽度一样。
+
+与 Music 的三处有意差异，正常播放时都看不出来：
+
+- 刚建好、刚变成当前行、或时间跳变之后（`sweepPhase == .unsynchronized`），先把渐变直接放到「从行首连续播放到此刻」
+  的位置（`Row.clearEdge(at:)`），再把当前音节剩下的部分走完；Music 会从旧位置用整段音节时长慢慢追，落在空隙里则一直
+  不动。
+- 每段动画的时长是「音节结束 − 当前时间」，不是整段音节：正常播放时只差不到一帧，跳时间时不会拖过音节结束。
+- 行结束后的全亮按整行宽度算（Music 按最后一个音节末尾）：行尾若有不带时间的标点，Music 会让它一直停在渐变里。
+
+退出当前行时（`setHighlighted(false)`），正在走的动画停在画面上的位置，再随 0024 的颜色弹簧淡出，不边淡出边继续扫。
+
+旧扫光留在隐藏开关后面：`LineProgressSweepVariant`，键 `AppleMusicLyricsSweepVariant`，在行重建和变成当前行时读取。
+
+| | `appleMusic26`（默认） | `characterFraction` |
+|---|---|---|
+| 位置 | 每个视觉行按音节字形坐标的目标 | 已唱字符数 / 总字符数 × 整句宽度，跨行按累计宽度切分 |
+| 推进 | 进入音节时发一段线性动画，空隙不动 | 每帧直接摆位置 |
+| 渐变 | 透明端超出音节末尾 D × 30 | 渐变中点对齐进度点（行首未唱时第一个字已半亮） |
+| 提前量 | 0.1 秒 | 无 |
+
+```bash
+defaults write dev.JH.LyricsX AppleMusicLyricsSweepVariant characterFraction   # Debug 构建；Release 是 com.JH.LyricsX
+defaults delete dev.JH.LyricsX AppleMusicLyricsSweepVariant                    # 回到默认 appleMusic26
+```
+
+逐音节抬高的 0.1 秒提前量不跟这个开关走：它是移植时漏掉的一处，两档都加。
 
 glow 在 rasterized `WordLayer` 上，`shadowRadius = 5`、`shadowOffset = 0`；glyph layer 只负责 position
 与 affine transform，不再各自投影。word duration 到达后，glow 由独立的
@@ -1146,6 +1210,18 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   提案；没有新增需要登记的项目术语。
 - 未启动应用做交互式 UI 验证；悬停亮度的观感、按下的手感与 0.4 / 0.55 的对比待用户目测。
 
+### 2026-11-08 扫光改按 Music 的逐音节线性推进
+
+- 改动：见上文「扫光」；逐音节抬高改用带 0.1 秒提前量的时间；`LayerPropertyAnimator` 加了 `run(startsFromModel:)`
+  （刚直接设过 model 值、画面还没跟上时从 model 出发）与只移除 position 动画的辅助方法；新增 `LinearTimingParameters`。
+- 不开窗口的测试：新增 `SyllableSweepPlanTests`（四档 `D`、词尾取下一个词起点、按字形而非字符占比、`[tt]` 段、
+  换行各行的起止、连续轨迹、重叠音节、无时间的行、零时长音节）、`SyllableSweepEngineTests`（进入音节才发一段线性动画、
+  时长与目标、空隙不发、提前 0.1 秒、行尾全亮、第二行等自己的第一个音节、跳时间后的落点、旧开关保持原样、取消选中时
+  停住）与 `SyllableLiftHeadstartTests`。把扫光临时切回 `characterFraction`、抬高临时改回不加提前量时，这两组 9 项里 8 项
+  失败（只有「旧开关保持原样」照常通过），原始退出码 1；恢复后通过。
+- `LineEmphasisStructureProbes.wrappedRowsUseIndependentSungColorContainers` 写的是按字符占比的逐行推进，改为显式注入
+  `characterFraction`；`SyllableLiftProbes` 与 `InlineTagSyllableLiftProbes`「起点之前不动」的断言改成「提前量之前不动」。
+
 ## 以后重做版本核对时
 
 Apple Music 私有实现会随版本变化。升级验证时应分别核对：word factor 的语言门槛、rise/return delay、
@@ -1154,5 +1230,7 @@ deglow spring、`lineChangeSpringTimingParametersValues` 的消费端（包括 t
 「动画中不选新行」的 tick 门槛、tap line spring、selected baseline fraction、行 layer 的
 rasterize 生命周期、blur membership、viewport mask 分支、mask target 的 flipped 状态与 cubic curve，以及
 悬停的亮度值与 `focusStyle`、按下的两条曲线与两组弹簧和 0.1 秒延迟、高亮层的 specs、选中切换颜色用的弹簧、
-`deselectedTextColor` / `selectedUpcomingTextColor`、`translationSpacing` 与翻译的查重规则。
+`deselectedTextColor` / `selectedUpcomingTextColor`、`translationSpacing` 与翻译的查重规则，以及扫光的
+`animationHeadstart` 是否仍加在每帧时间上、羽化前沿的四档 `D`、词尾目标取下一个词起点、行首行尾的处理，和
+`crossfade` 动画何时启用。
 这些值集中在纯 plan、`LyricsSpecs` 与 `AnimationVariants`，不要先在 layer 执行代码里散改常数。

@@ -182,6 +182,20 @@ struct AnimationPlanTests {
         #expect(AppleMusicLyrics.LineCascadeVariant.resolve(from: userDefaults) == .appleMusic26)
     }
 
+    @Test func sweepVariantDefaultsToAppleMusicAndFollowsTheHiddenKey() throws {
+        let suiteName = "AnimationPlanTests.\(UUID().uuidString)"
+        let userDefaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        #expect(AppleMusicLyrics.LineProgressSweepVariant.resolve(from: userDefaults) == .appleMusic26)
+
+        userDefaults.set("characterFraction", forKey: AppleMusicLyrics.LineProgressSweepVariant.userDefaultsKey)
+        #expect(AppleMusicLyrics.LineProgressSweepVariant.resolve(from: userDefaults) == .characterFraction)
+
+        userDefaults.set("somethingElse", forKey: AppleMusicLyrics.LineProgressSweepVariant.userDefaultsKey)
+        #expect(AppleMusicLyrics.LineProgressSweepVariant.resolve(from: userDefaults) == .appleMusic26)
+    }
+
     @Test func relativeLineAnchorPlacesTheFirstBaselineAtFortyPercent() {
         let visibleHeight: CGFloat = 800
         let firstBaselineOffset: CGFloat = 60

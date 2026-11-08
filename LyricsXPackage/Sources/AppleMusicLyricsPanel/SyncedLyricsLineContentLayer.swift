@@ -40,10 +40,28 @@ extension AppleMusicLyrics {
         /// Keeping the mask row-local prevents a padded gradient from exposing
         /// glyphs in an adjacent row.
         private final class VisualRowNode {
+            /// Where the row's sweep is in Music's per-row state machine
+            /// (`sub_1001689D4`); only the `appleMusic26` sweep keeps one.
+            enum SweepPhase: Equatable {
+                /// Nothing is known about the gradient's position yet — a fresh
+                /// layout, a newly selected line, or a jump in the playback time.
+                /// The next update places it outright.
+                case unsynchronized
+                /// Before the row's first syllable: dark.
+                case waiting
+                /// Inside the row. `lastSyllableIndex` is the syllable the
+                /// gradient was last sent towards — Music's
+                /// `lastProgressedToSyllable` — so it is sent once per syllable.
+                case sweeping(lastSyllableIndex: Int?)
+                /// Past the row's last syllable: lit end to end.
+                case filled
+            }
+
             let colorContainerLayer: NoAnimationLayer
             let backgroundColorLayer: NoAnimationLayer
             let glyphMaskContainerLayer: NoAnimationLayer
             let progressGradientLayer: LineProgressGradientLayer
+            var sweepPhase: SweepPhase = .unsynchronized
 
             init(
                 colorContainerLayer: NoAnimationLayer,
@@ -179,11 +197,23 @@ extension AppleMusicLyrics {
             StructuredEmphasisPolicy.resolve()
         }
 
+        /// Which sweep the line runs; see `LineProgressSweepVariant`. Read when
+        /// the line is laid out and whenever it becomes the selected one, so the
+        /// hidden defaults key takes effect on the next line. Probes inject a
+        /// fixed variant, before `rebuild(with:contentsScale:)`.
+        var sweepVariantProvider: () -> LineProgressSweepVariant = {
+            LineProgressSweepVariant.resolve()
+        }
+
+        private var activeSweepVariant: LineProgressSweepVariant = .default
+
         // MARK: Layers
 
         private var visualRowNodes: [VisualRowNode] = []
         private var wordNodes: [WordNode] = []
         private var layout: LineTextLayout?
+        /// The `appleMusic26` sweep's targets for the current layout.
+        private var sweepPlan: SyllableSweepPlan?
         /// The first characters of the current line, so every diagnostics
         /// event below reads back to its lyric without an index.
         private var lineLabel = ""
@@ -234,9 +264,11 @@ extension AppleMusicLyrics {
             guard highlighted != highlightState else { return }
             highlightState = highlighted
             if highlighted {
+                activeSweepVariant = sweepVariantProvider()
                 resetSweep()
             } else {
                 resetGlyphEmphasis()
+                holdSweepWhereItIsShown()
             }
             let selectionLayers = visualRowNodes.flatMap { visualRowNode -> [CALayer] in
                 [visualRowNode.backgroundColorLayer, visualRowNode.progressGradientLayer]
@@ -278,6 +310,8 @@ extension AppleMusicLyrics {
             defer { #signpost(.end, rebuildInterval) }
             resetEmphasis()
             self.layout = layout
+            activeSweepVariant = sweepVariantProvider()
+            sweepPlan = SyllableSweepPlan.make(for: layout)
 
             visualRowNodes.forEach { visualRowNode in
                 visualRowNode.colorContainerLayer.removeFromSuperlayer()
@@ -497,7 +531,7 @@ extension AppleMusicLyrics {
                 )
                 gradient.opacity = highlightState ? 1 : 0
                 gradient.position = CGPoint(
-                    x: textOutset.width + gradient.originX(forFillEdge: 0),
+                    x: textOutset.width + emptySweepOriginX(of: gradient),
                     y: textOutset.height - gradient.verticalPadding
                 )
                 colorContainerLayer.addSublayer(gradient)
@@ -553,9 +587,19 @@ extension AppleMusicLyrics {
                 synchronizeEmphasisState(forElapsedTime: elapsedTime)
             }
             precedingElapsedTime = elapsedTime
-            updateSweep(layout: layout, fillFraction: fillFraction)
-            scheduleDueWords(elapsedTime: elapsedTime)
-            updateSyllableLifts(elapsedTime: elapsedTime)
+            // Music hands every per-row pass the playback time plus
+            // `animationHeadstart` (`sub_10016E8FC`), and the sweep, the
+            // syllable lift and the swell all read that same time, so all three
+            // start a tenth of a second ahead of the lyric timing.
+            let cursor = elapsedTime + LyricsSpecs.animationHeadstart
+            switch activeSweepVariant {
+            case .appleMusic26:
+                updateSyllableSweep(cursor: cursor)
+            case .characterFraction:
+                updateSweep(layout: layout, fillFraction: fillFraction)
+            }
+            scheduleDueWords(cursor: cursor)
+            updateSyllableLifts(cursor: cursor)
         }
 
         private func shouldSynchronizeEmphasisState(forElapsedTime elapsedTime: TimeInterval) -> Bool {
@@ -610,10 +654,146 @@ extension AppleMusicLyrics {
             CATransaction.commit()
         }
 
-        private func scheduleDueWords(elapsedTime: TimeInterval) {
+        // MARK: Syllable sweep
+
+        /// The `appleMusic26` sweep: `sub_1001689D4`'s per-row pass. A row's
+        /// gradient is sent once per syllable, at constant speed, to the target
+        /// `SyllableSweepPlan` worked out from the glyphs; between syllables it
+        /// waits; before the row it is dark and after it fully lit, both set
+        /// outright.
+        ///
+        /// Two departures from Music, both invisible in steady playback: a row
+        /// that has just been laid out, selected, or jumped through in time is
+        /// first put where continuous playback would have it (Music would crawl
+        /// there from wherever its gradient was, over a whole syllable, and stay
+        /// put through a gap); and each travel is timed to the syllable's
+        /// remaining time rather than its whole length, which differs by less
+        /// than a frame when the syllable is entered on time.
+        private func updateSyllableSweep(cursor: TimeInterval) {
+            guard let sweepPlan else { return }
+            for (rowIndex, visualRowNode) in visualRowNodes.enumerated() where rowIndex < sweepPlan.rows.count {
+                let row = sweepPlan.rows[rowIndex]
+                let gradient = visualRowNode.progressGradientLayer
+                if cursor < row.startTime {
+                    guard visualRowNode.sweepPhase != .waiting else { continue }
+                    placeSweep(of: gradient, atClearEdge: row.emptyClearEdge, droppingTravel: true)
+                    visualRowNode.sweepPhase = .waiting
+                    continue
+                }
+                if cursor >= row.endTime {
+                    guard visualRowNode.sweepPhase != .filled else { continue }
+                    // A travel still in flight is heading for the same place —
+                    // the last syllable's target is the row's end — so let it
+                    // land rather than cut it short.
+                    let isTravelling = visualRowNode.sweepPhase != .unsynchronized
+                    placeSweep(of: gradient, atClearEdge: row.filledClearEdge, droppingTravel: !isTravelling)
+                    visualRowNode.sweepPhase = .filled
+                    continue
+                }
+                let syllableIndex = row.indexOfSyllable(sungAt: cursor)
+                switch visualRowNode.sweepPhase {
+                case .unsynchronized:
+                    placeSweep(of: gradient, atClearEdge: row.clearEdge(at: cursor), droppingTravel: true)
+                    if let syllableIndex {
+                        sendSweep(of: gradient, towards: row.syllables[syllableIndex], cursor: cursor, startsFromModel: true)
+                    }
+                    visualRowNode.sweepPhase = .sweeping(lastSyllableIndex: syllableIndex)
+                case .waiting,
+                     .filled:
+                    if let syllableIndex {
+                        sendSweep(of: gradient, towards: row.syllables[syllableIndex], cursor: cursor, startsFromModel: false)
+                    }
+                    visualRowNode.sweepPhase = .sweeping(lastSyllableIndex: syllableIndex)
+                case .sweeping(let lastSyllableIndex):
+                    guard let syllableIndex, syllableIndex != lastSyllableIndex else { continue }
+                    sendSweep(of: gradient, towards: row.syllables[syllableIndex], cursor: cursor, startsFromModel: false)
+                    visualRowNode.sweepPhase = .sweeping(lastSyllableIndex: syllableIndex)
+                }
+            }
+        }
+
+        /// Set a row's gradient straight to `clearEdge`, without animating.
+        /// `droppingTravel` also removes a travel still in flight, which would
+        /// otherwise keep showing until it finished.
+        private func placeSweep(
+            of gradient: LineProgressGradientLayer,
+            atClearEdge clearEdge: CGFloat,
+            droppingTravel: Bool
+        ) {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            if droppingTravel {
+                LayerPropertyAnimator.removePositionAnimation(from: gradient)
+            }
+            gradient.position.x = textOutset.width + gradient.originX(forClearEdge: clearEdge)
+            CATransaction.commit()
+        }
+
+        /// `sub_100169874`: one linear travel to `syllable`'s target, from where
+        /// the gradient is on screen — or from its model position, when that has
+        /// just been set this turn and the screen has not caught up.
+        private func sendSweep(
+            of gradient: LineProgressGradientLayer,
+            towards syllable: SyllableSweepPlan.Syllable,
+            cursor: TimeInterval,
+            startsFromModel: Bool
+        ) {
+            let remainingDuration = max(0, syllable.timeRange.upperBound - cursor)
+            let currentLineLabel = lineLabel
+            let syllableStart = syllable.timeRange.lowerBound
+            let targetClearEdge = syllable.clearEdge
+            #log(
+                .debug,
+                """
+                Sweep sent line=\(currentLineLabel, privacy: .public) \
+                syllableStart=\(syllableStart, privacy: .public) \
+                clearEdge=\(targetClearEdge, privacy: .public) \
+                duration=\(remainingDuration, privacy: .public) cursor=\(cursor, privacy: .public)
+                """
+            )
+            let animator = LayerPropertyAnimator(
+                layers: [gradient],
+                timing: LinearTimingParameters(duration: remainingDuration)
+            )
+            let outsetWidth = textOutset.width
+            animator.addChange {
+                gradient.position.x = outsetWidth + gradient.originX(forClearEdge: syllable.clearEdge)
+            }
+            animator.run(startsFromModel: startsFromModel)
+        }
+
+        /// Where a gradient sits with nothing sung, for whichever sweep the line
+        /// runs: the `appleMusic26` ramp lies wholly before the text, the
+        /// `characterFraction` one is centred on its leading edge.
+        private func emptySweepOriginX(of gradient: LineProgressGradientLayer) -> CGFloat {
+            switch activeSweepVariant {
+            case .appleMusic26: gradient.originX(forClearEdge: 0)
+            case .characterFraction: gradient.originX(forFillEdge: 0)
+            }
+        }
+
+        /// A line that stops being the selected one fades its sung part out in
+        /// place: a travel still in flight would otherwise carry on sweeping
+        /// while it fades, so it is stopped where it is on screen.
+        private func holdSweepWhereItIsShown() {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            for visualRowNode in visualRowNodes {
+                let gradient = visualRowNode.progressGradientLayer
+                if LayerPropertyAnimator.positionAnimation(on: gradient) != nil,
+                   let shownPosition = gradient.presentation()?.position {
+                    gradient.position = shownPosition
+                }
+                LayerPropertyAnimator.removePositionAnimation(from: gradient)
+                visualRowNode.sweepPhase = .unsynchronized
+            }
+            CATransaction.commit()
+        }
+
+        private func scheduleDueWords(cursor: TimeInterval) {
             // Music starts a word's animation `animationHeadstart` before its own
-            // timing, otherwise the swell reads as half a beat late.
-            let cursor = elapsedTime + LyricsSpecs.animationHeadstart
+            // timing, otherwise the swell reads as half a beat late; `cursor`
+            // already carries it.
             for node in wordNodes where !node.isEmphasisScheduled {
                 guard let timeRange = node.word.timeRange, cursor >= timeRange.lowerBound else { continue }
                 node.isEmphasisScheduled = true
@@ -683,20 +863,25 @@ extension AppleMusicLyrics {
         /// sung rises by `syllableLift`, one that the time has rewound past
         /// settles back, both on Music's soft spring. Only `.none` words take
         /// part; a `.factor` word's swell carries its own lift.
-        private func updateSyllableLifts(elapsedTime: TimeInterval) {
+        ///
+        /// `cursor` is the playback time plus `animationHeadstart`: Music's
+        /// `sub_1001897C0` adds nothing of its own, but the time it is handed
+        /// already carries the head start, so a syllable rises a tenth of a
+        /// second before it is sung.
+        private func updateSyllableLifts(cursor: TimeInterval) {
             for node in wordNodes where !node.syllableGroups.isEmpty {
                 guard let wordStart = node.word.timeRange?.lowerBound else { continue }
-                let isDueOrLifted = elapsedTime >= wordStart || node.syllableGroups.contains(where: \.isLifted)
+                let isDueOrLifted = cursor >= wordStart || node.syllableGroups.contains(where: \.isLifted)
                 guard isDueOrLifted, case .syllableLift = decideEmphasis(for: node) else { continue }
                 for index in node.syllableGroups.indices {
-                    let shouldBeLifted = elapsedTime >= node.syllableGroups[index].timeRange.lowerBound
+                    let shouldBeLifted = cursor >= node.syllableGroups[index].timeRange.lowerBound
                     guard shouldBeLifted != node.syllableGroups[index].isLifted else { continue }
                     node.syllableGroups[index].isLifted = shouldBeLifted
                     moveSyllable(
                         node.syllableGroups[index],
                         of: node,
                         lifted: shouldBeLifted,
-                        elapsedTime: elapsedTime
+                        cursor: cursor
                     )
                 }
             }
@@ -706,7 +891,7 @@ extension AppleMusicLyrics {
             _ group: WordNode.SyllableGroup,
             of node: WordNode,
             lifted: Bool,
-            elapsedTime: TimeInterval
+            cursor: TimeInterval
         ) {
             let currentLineLabel = lineLabel
             let syllableText = group.text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -720,7 +905,7 @@ extension AppleMusicLyrics {
                 Syllable \(motion, privacy: .public) line=\(currentLineLabel, privacy: .public) \
                 text=\(syllableText, privacy: .public) \
                 glyphs=\(firstGlyphIndex, privacy: .public)-\(lastGlyphIndex, privacy: .public) \
-                start=\(syllableStart, privacy: .public) elapsedTime=\(elapsedTime, privacy: .public)
+                start=\(syllableStart, privacy: .public) cursor=\(cursor, privacy: .public)
                 """
             )
             let glyphLayers = group.glyphIndices.map { node.glyphLayers[$0] }
@@ -959,7 +1144,9 @@ extension AppleMusicLyrics {
             CATransaction.setDisableActions(true)
             for visualRowNode in visualRowNodes {
                 let gradient = visualRowNode.progressGradientLayer
-                gradient.position.x = textOutset.width + gradient.originX(forFillEdge: 0)
+                LayerPropertyAnimator.removePositionAnimation(from: gradient)
+                gradient.position.x = textOutset.width + emptySweepOriginX(of: gradient)
+                visualRowNode.sweepPhase = .unsynchronized
             }
             CATransaction.commit()
         }

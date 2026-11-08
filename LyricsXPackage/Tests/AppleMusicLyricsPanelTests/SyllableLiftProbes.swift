@@ -52,11 +52,13 @@ struct SyllableLiftProbes {
         var failures: [String] = []
 
         for track in tracks {
-            // 1. Nothing moves before the syllable is sung: no head start, no
-            //    per-word batch that fires at the word's own start.
+            // 1. Nothing moves before the syllable is due: Music's head start
+            //    (`animationHeadstart`, 0.1 s) is the only lead, and there is
+            //    no per-word batch that fires at the word's own start.
+            let dueTime = track.timeRange.lowerBound - AppleMusicLyrics.LyricsSpecs.animationHeadstart
             for (glyphIndex, glyphTrack) in track.glyphTracks.enumerated() {
-                if let early = glyphTrack.first(where: { $0.elapsedTime < track.timeRange.lowerBound - 0.001 && abs($0.lift) > 0.25 }) {
-                    failures.append(String(format: "word %d glyph %d moved %.2f pt at %.2fs, before its syllable starts at %.2fs", track.wordIndex, glyphIndex, early.lift, early.elapsedTime, track.timeRange.lowerBound))
+                if let early = glyphTrack.first(where: { $0.elapsedTime < dueTime - 0.001 && abs($0.lift) > 0.25 }) {
+                    failures.append(String(format: "word %d glyph %d moved %.2f pt at %.2fs, before its syllable is due at %.2fs", track.wordIndex, glyphIndex, early.lift, early.elapsedTime, dueTime))
                     break
                 }
             }
