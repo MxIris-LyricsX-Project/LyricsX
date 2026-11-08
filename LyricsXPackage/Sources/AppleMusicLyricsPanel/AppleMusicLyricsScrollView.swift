@@ -1004,7 +1004,8 @@ extension AppleMusicLyrics {
             lineView.updateKaraoke(
                 elapsedTime: elapsedTime,
                 lineDuration: lineDuration(forOriginalIndex: originalIndex),
-                mode: karaokeMode
+                mode: karaokeMode,
+                isPlaying: isPlaybackActive
             )
         }
 

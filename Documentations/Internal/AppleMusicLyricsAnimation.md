@@ -194,13 +194,17 @@ headstart」，那只核对了被调函数本身、没看调用方。
 `LineProgressGradientLayer` 仍固定宽度、只动 `position.x`，用 `originX(forClearEdge:)` 以透明端定位：Music 改宽度时
 子层按 model bounds 布局，动画中途的羽化会被裁掉；平移的线性动画画出来与改宽度一样。
 
-与 Music 的三处有意差异，正常播放时都看不出来：
+与 Music 的有意差异，正常播放时都看不出来：
 
 - 刚建好、刚变成当前行、或时间跳变之后（`sweepPhase == .unsynchronized`），先把渐变直接放到「从行首连续播放到此刻」
   的位置（`Row.clearEdge(at:)`），再把当前音节剩下的部分走完；Music 会从旧位置用整段音节时长慢慢追，落在空隙里则一直
   不动。
 - 每段动画的时长是「音节结束 − 当前时间」，不是整段音节：正常播放时只差不到一帧，跳时间时不会拖过音节结束。
-- 行结束后的全亮按整行宽度算（Music 按最后一个音节末尾）：行尾若有不带时间的标点，Music 会让它一直停在渐变里。
+- 本行最后一个能唱到的音节扫到整行宽度（Music 扫到它自己的末字形，行结束时设成「末字形 + 30」）：行尾若有不带时间
+  的标点，Music 会让它一直停在渐变里，这里随最后一个音节一起点亮；时长为零的音节先剔除再判断四档 `D`，否则整个羽化宽
+  的前沿会落在一个永远进不去的音节上，行结束时再突然点亮。
+- 暂停时（`update(isPlaying: false)`，面板暂停那一刻只渲染一帧）各行直接放到暂停时刻对应的位置、撤掉在走的动画，恢复
+  播放时按跳时间处理；否则已发出的线性动画会按自己的时钟把整个音节扫完。Music 暂停时怎么做没有核对。
 
 退出当前行时（`setHighlighted(false)`），正在走的动画停在画面上的位置，再随 0024 的颜色弹簧淡出，不边淡出边继续扫。
 
@@ -1219,6 +1223,10 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   时长与目标、空隙不发、提前 0.1 秒、行尾全亮、第二行等自己的第一个音节、跳时间后的落点、旧开关保持原样、取消选中时
   停住）与 `SyllableLiftHeadstartTests`。把扫光临时切回 `characterFraction`、抬高临时改回不加提前量时，这两组 9 项里 8 项
   失败（只有「旧开关保持原样」照常通过），原始退出码 1；恢复后通过。
+- 自审（`code-review` medium）十条，修四条：暂停时线性动画继续走（`pausingStopsTheSweepWhereThePausedTimeHasIt`）、行尾
+  不带时间的文字在行结束时突然点亮（`theLastSyllableSweepsToTheEndOfTheRow`）、时长为零的末音节抢走整个羽化宽
+  （`theLastReachableSyllableLeadsByAWholeFeather`），三条修前红、修后绿；扫光与抬高的音节分组合并成
+  `LineTextLayout.Word.animatedSyllables`。其余六条登记在 [已裁决的 code review 发现](../ReviewDecisions.md)。
 - `LineEmphasisStructureProbes.wrappedRowsUseIndependentSungColorContainers` 写的是按字符占比的逐行推进，改为显式注入
   `characterFraction`；`SyllableLiftProbes` 与 `InlineTagSyllableLiftProbes`「起点之前不动」的断言改成「提前量之前不动」。
 

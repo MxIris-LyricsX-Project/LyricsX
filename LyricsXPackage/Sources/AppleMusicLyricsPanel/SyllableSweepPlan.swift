@@ -101,6 +101,12 @@ extension AppleMusicLyrics {
         /// this order. The fully lit part of the ramp ends one feather before
         /// the clear end, so a small fraction leaves most of the syllable's last
         /// letter in the ramp until the next syllable takes over.
+        ///
+        /// `isFollowedBySyllable` is Music's own check that a next syllable
+        /// exists. On a left-to-right row it is only false for the row's last
+        /// syllable, which the first case has already taken, so it never decides
+        /// anything here; it is kept so the function reads like the code it
+        /// ports.
         static func featherLeadFraction(
             isLastSyllableOfRow: Bool,
             wordLength: Int,
@@ -147,12 +153,19 @@ extension AppleMusicLyrics {
         /// row, where that next word begins, so the space between the two is
         /// swept while the word is still being sung. Only timed words count:
         /// the untimed runs between structured words are those spaces.
+        ///
+        /// Two departures from Music, both about a row's end. Syllables that
+        /// last no time are dropped *before* the leads are decided, so the
+        /// whole-feather lead lands on the last syllable the row can reach. And
+        /// that syllable sweeps to the row's full width: a row ending in untimed
+        /// text, punctuation outside the spans say, is then lit by the time its
+        /// last syllable ends, where Music leaves that text in the ramp.
         private static func makeSyllables(
             inRow rowIndex: Int,
             of layout: LineTextLayout,
             featherWidth: CGFloat
         ) -> [Syllable] {
-            let rowLeadingEdge = layout.visualLines[rowIndex].typographicFrame.minX
+            let rowFrame = layout.visualLines[rowIndex].typographicFrame
             let timedWords = layout.words.filter { word in
                 word.visualLineIndex == rowIndex && word.timeRange != nil && !word.glyphs.isEmpty
             }
@@ -168,8 +181,9 @@ extension AppleMusicLyrics {
             for (wordPosition, word) in timedWords.enumerated() {
                 let wordLength = word.text.trimmingCharacters(in: .whitespacesAndNewlines).count
                 let nextWord = wordPosition + 1 < timedWords.count ? timedWords[wordPosition + 1] : nil
-                let syllables = sweptSyllables(of: word)
+                let syllables = word.animatedSyllables
                 for (syllablePosition, syllable) in syllables.enumerated() {
+                    guard syllable.timeRange.upperBound > syllable.timeRange.lowerBound else { continue }
                     let isLastSyllableOfWord = syllablePosition == syllables.count - 1
                     let glyphTrailingEdge = syllable.glyphIndices.map { glyphIndex in
                         word.frame.minX + word.glyphs[glyphIndex].frame.maxX
@@ -181,61 +195,27 @@ extension AppleMusicLyrics {
                     }
                     candidates.append(Candidate(
                         timeRange: syllable.timeRange,
-                        sungEdge: sungEdge - rowLeadingEdge,
+                        sungEdge: sungEdge - rowFrame.minX,
                         wordLength: wordLength,
                         syllableLength: syllable.text.trimmingCharacters(in: .whitespacesAndNewlines).count
                     ))
                 }
             }
 
-            return candidates.enumerated().compactMap { candidateIndex, candidate in
-                guard candidate.timeRange.upperBound > candidate.timeRange.lowerBound else { return nil }
+            return candidates.enumerated().map { candidateIndex, candidate in
+                let isLastSyllableOfRow = candidateIndex == candidates.count - 1
                 let leadFraction = featherLeadFraction(
-                    isLastSyllableOfRow: candidateIndex == candidates.count - 1,
+                    isLastSyllableOfRow: isLastSyllableOfRow,
                     wordLength: candidate.wordLength,
                     syllableLength: candidate.syllableLength,
-                    isFollowedBySyllable: candidateIndex + 1 < candidates.count
+                    isFollowedBySyllable: !isLastSyllableOfRow
                 )
+                let sungEdge = isLastSyllableOfRow ? max(candidate.sungEdge, rowFrame.width) : candidate.sungEdge
                 return Syllable(
                     timeRange: candidate.timeRange,
-                    clearEdge: candidate.sungEdge + leadFraction * featherWidth
+                    clearEdge: sungEdge + leadFraction * featherWidth
                 )
             }
-        }
-
-        private struct SweptSyllable {
-            let text: String
-            let timeRange: Range<TimeInterval>
-            let glyphIndices: [Int]
-        }
-
-        /// The syllables the sweep steps through for one word: a structured
-        /// word's own, or the whole word as one — an inline-tag segment, or a
-        /// structured word without syllables. The same grouping the syllable
-        /// lift uses.
-        private static func sweptSyllables(of word: LineTextLayout.Word) -> [SweptSyllable] {
-            guard let wordTimeRange = word.timeRange else { return [] }
-            let wordCharacters = Array(word.text)
-            let syllables = word.syllables
-                .filter { !$0.glyphIndices.isEmpty }
-                .map { syllable in
-                    let lowerBound = max(0, syllable.characterRange.lowerBound - word.characterRange.lowerBound)
-                    let upperBound = min(
-                        wordCharacters.count,
-                        syllable.characterRange.upperBound - word.characterRange.lowerBound
-                    )
-                    return SweptSyllable(
-                        text: lowerBound < upperBound ? String(wordCharacters[lowerBound ..< upperBound]) : word.text,
-                        timeRange: syllable.timeRange,
-                        glyphIndices: syllable.glyphIndices
-                    )
-                }
-            guard syllables.isEmpty else { return syllables }
-            return [SweptSyllable(
-                text: word.text,
-                timeRange: wordTimeRange,
-                glyphIndices: Array(word.glyphs.indices)
-            )]
         }
 
         /// When a row with nothing timed in it lights up: as the last timed

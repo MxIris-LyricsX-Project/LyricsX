@@ -224,6 +224,30 @@ struct SyllableSweepEngineTests {
         #expect(Self.travel(of: gradient) == nil)
     }
 
+    /// A travel runs on its own clock, so pausing halfway through a held
+    /// syllable must stop it where the paused time has it — otherwise the rest
+    /// of the syllable lights up while nothing plays. Resuming carries on from
+    /// there for what is left of the syllable.
+    @Test func pausingStopsTheSweepWhereThePausedTimeHasIt() throws {
+        let (contentLayer, layout) = try Self.makeContentLayer(text: Self.slowlyText, words: Self.slowlyWords)
+        let row = AppleMusicLyrics.SyllableSweepPlan.make(for: layout).rows[0]
+        let gradient = try #require(Self.visualRows(of: contentLayer).first?.progressGradientLayer)
+        Self.play(contentLayer, through: [-0.5, -0.2, 0.2])
+        try #require(Self.travel(of: gradient) != nil)
+
+        let pausedTime = 0.3
+        contentLayer.update(elapsedTime: pausedTime, fillFraction: 0, isPlaying: false)
+        #expect(Self.travel(of: gradient) == nil, "a paused line must not keep sweeping")
+        let pausedPosition = Self.positionX(of: gradient, clearEdge: row.clearEdge(at: pausedTime + Self.headstart), in: contentLayer)
+        #expect(abs(gradient.position.x - pausedPosition) < 0.001)
+
+        contentLayer.update(elapsedTime: pausedTime, fillFraction: 0, isPlaying: true)
+        let resumedTravel = try #require(Self.travel(of: gradient), "resuming must carry on with the syllable")
+        let resumedStart = try #require((resumedTravel.fromValue as? NSValue)?.pointValue.x)
+        #expect(abs(resumedStart - pausedPosition) < 0.001)
+        #expect(abs(resumedTravel.duration - (0.746 - (pausedTime + Self.headstart))) < 0.0001)
+    }
+
     /// Deselecting mid-travel stops the sweep where it is, so the sung part
     /// fades out in place rather than carrying on while it fades.
     @Test func deselectingStopsATravelInFlight() throws {

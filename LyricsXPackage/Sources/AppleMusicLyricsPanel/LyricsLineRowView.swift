@@ -812,7 +812,14 @@ extension AppleMusicLyrics {
 
         // MARK: Karaoke (per-frame, highlighted line only)
 
-        func updateKaraoke(elapsedTime: TimeInterval, lineDuration: TimeInterval, mode: KaraokeMode) {
+        /// `isPlaying` is false for the one frame the panel renders when
+        /// playback pauses (and for a seek while paused); the sweep stops there.
+        func updateKaraoke(
+            elapsedTime: TimeInterval,
+            lineDuration: TimeInterval,
+            mode: KaraokeMode,
+            isPlaying: Bool = true
+        ) {
             guard let line, isHighlighted else { return }
             if FramePerformanceDiagnosticsPolicy.detailedFrameSignpostingIsEnabled {
                 #signpostInterval("KaraokeLineUpdate") {
@@ -820,7 +827,8 @@ extension AppleMusicLyrics {
                         line: line,
                         elapsedTime: elapsedTime,
                         lineDuration: lineDuration,
-                        mode: mode
+                        mode: mode,
+                        isPlaying: isPlaying
                     )
                 }
             } else {
@@ -828,7 +836,8 @@ extension AppleMusicLyrics {
                     line: line,
                     elapsedTime: elapsedTime,
                     lineDuration: lineDuration,
-                    mode: mode
+                    mode: mode,
+                    isPlaying: isPlaying
                 )
             }
         }
@@ -837,7 +846,8 @@ extension AppleMusicLyrics {
             line: LyricsLine,
             elapsedTime: TimeInterval,
             lineDuration: TimeInterval,
-            mode: KaraokeMode
+            mode: KaraokeMode,
+            isPlaying: Bool
         ) {
             buildLayoutIfNeeded(forWidth: bounds.width)
             karaokeFraction = KaraokeFill.fraction(
@@ -850,7 +860,8 @@ extension AppleMusicLyrics {
             )
             contentLayer.update(
                 elapsedTime: elapsedTime,
-                fillFraction: karaokeFraction
+                fillFraction: karaokeFraction,
+                isPlaying: isPlaying
             )
         }
 

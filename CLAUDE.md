@@ -87,7 +87,8 @@ swift test --filter InlineTagSyllableLiftProbes
 # The sung sweep, Music's way: each visual row's gradient travels at constant
 # speed to the end of each syllable as it starts, measured on the glyphs and a
 # tenth of a second early (animationHeadstart), waits in gaps, and lights the
-# row once its last syllable ends; the syllable lift takes the same head start.
+# row once its last syllable ends; it stops where the paused time has it when
+# playback pauses; the syllable lift takes the same head start.
 # Headless (no window, <1s), so run them on any change to the sweep, to
 # SyllableSweepPlan or to when syllables lift. Red on the old character-share
 # sweep, which AppleMusicLyricsSweepVariant=characterFraction still selects.

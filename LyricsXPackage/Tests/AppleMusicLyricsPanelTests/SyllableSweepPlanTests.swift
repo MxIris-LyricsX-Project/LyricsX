@@ -262,6 +262,38 @@ struct SyllableSweepPlanTests {
         #expect(row.clearEdge(at: 0) == row.filledClearEdge)
     }
 
+    /// A row that ends in untimed text — punctuation outside the spans — is
+    /// swept to its end by its last syllable, so the row is already fully lit
+    /// when its last syllable ends instead of snapping the rest on afterwards.
+    @Test func theLastSyllableSweepsToTheEndOfTheRow() throws {
+        let layout = try Self.structuredLayout(
+            text: "Hello world!!!",
+            words: [
+                .init(characterRange: 0 ..< 5, timeRange: 0 ..< 0.5),
+                .init(characterRange: 6 ..< 11, timeRange: 0.5 ..< 1),
+            ]
+        )
+        let row = try #require(AppleMusicLyrics.SyllableSweepPlan.make(for: layout).rows.first)
+        let world = try #require(layout.words.first { $0.text == "world" })
+        #expect(Self.trailingEdge(of: world, in: layout) + Self.feather < row.filledClearEdge - 1, "the fixture must end in untimed glyphs")
+        #expect(abs((row.syllables.last?.clearEdge ?? 0) - row.filledClearEdge) < 0.001)
+    }
+
+    /// The full-feather lead goes to the last syllable the row can actually
+    /// reach, not to a zero-length one after it that is never entered.
+    @Test func theLastReachableSyllableLeadsByAWholeFeather() throws {
+        let layout = try Self.structuredLayout(
+            text: "one two",
+            words: [
+                .init(characterRange: 0 ..< 3, timeRange: 0 ..< 1),
+                .init(characterRange: 4 ..< 7, timeRange: 1 ..< 1),
+            ]
+        )
+        let row = try #require(AppleMusicLyrics.SyllableSweepPlan.make(for: layout).rows.first)
+        #expect(row.syllables.count == 1)
+        #expect(abs((row.syllables.last?.clearEdge ?? 0) - row.filledClearEdge) < 0.001)
+    }
+
     @Test func syllablesThatLastNoTimeAreLeftOut() throws {
         let layout = try Self.structuredLayout(
             text: "one two",

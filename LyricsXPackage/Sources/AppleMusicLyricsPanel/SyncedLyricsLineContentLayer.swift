@@ -459,38 +459,16 @@ extension AppleMusicLyrics {
         }
 
         /// Music builds a `.none` word from one `SyllableLayer` per syllable;
-        /// a structured word without syllables of its own is one syllable, and
-        /// so is an inline-tag segment — Kugou and QQ Music tags are real
-        /// per-word / per-character timing, the same grain as Music's
-        /// syllables. An untimed word gets none.
+        /// which glyphs rise together is `LineTextLayout.Word.animatedSyllables`,
+        /// the same grouping the sweep steps through.
         private static func makeSyllableGroups(for word: LineTextLayout.Word) -> [WordNode.SyllableGroup] {
-            guard let timeRange = word.timeRange else { return [] }
-            let wordCharacters = Array(word.text)
-            let groups = word.syllables
-                .filter { !$0.glyphIndices.isEmpty }
-                .map { syllable -> WordNode.SyllableGroup in
-                    let lowerBound = max(0, syllable.characterRange.lowerBound - word.characterRange.lowerBound)
-                    let upperBound = min(
-                        wordCharacters.count,
-                        syllable.characterRange.upperBound - word.characterRange.lowerBound
-                    )
-                    let syllableText = lowerBound < upperBound
-                        ? String(wordCharacters[lowerBound ..< upperBound])
-                        : word.text
-                    return WordNode.SyllableGroup(
-                        text: syllableText,
-                        timeRange: syllable.timeRange,
-                        glyphIndices: syllable.glyphIndices
-                    )
-                }
-            if groups.isEmpty, !word.glyphs.isEmpty {
-                return [WordNode.SyllableGroup(
-                    text: word.text,
-                    timeRange: timeRange,
-                    glyphIndices: Array(word.glyphs.indices)
-                )]
+            word.animatedSyllables.map { syllable in
+                WordNode.SyllableGroup(
+                    text: syllable.text,
+                    timeRange: syllable.timeRange,
+                    glyphIndices: syllable.glyphIndices
+                )
             }
-            return groups
         }
 
         /// Room an emphasized word needs beyond its own text box, on each side:
@@ -559,21 +537,27 @@ extension AppleMusicLyrics {
         /// glyphs directly: it only decides *when* to hand a word to
         /// `LayerPropertyAnimator`, which is what keeps the per-frame cost to a few
         /// comparisons even at 120Hz.
-        func update(elapsedTime: TimeInterval, fillFraction: CGFloat) {
+        ///
+        /// `isPlaying` false means the time is standing still — the one frame
+        /// the panel renders when playback pauses. The `appleMusic26` sweep's
+        /// travels run on their own clock, so they are stopped there instead.
+        func update(elapsedTime: TimeInterval, fillFraction: CGFloat, isPlaying: Bool = true) {
             guard let layout, isHighlighted else { return }
             if FramePerformanceDiagnosticsPolicy.detailedFrameSignpostingIsEnabled {
                 #signpostInterval("KaraokeSweepUpdate") {
                     updateSweepAndEmphasis(
                         layout: layout,
                         elapsedTime: elapsedTime,
-                        fillFraction: fillFraction
+                        fillFraction: fillFraction,
+                        isPlaying: isPlaying
                     )
                 }
             } else {
                 updateSweepAndEmphasis(
                     layout: layout,
                     elapsedTime: elapsedTime,
-                    fillFraction: fillFraction
+                    fillFraction: fillFraction,
+                    isPlaying: isPlaying
                 )
             }
         }
@@ -581,7 +565,8 @@ extension AppleMusicLyrics {
         private func updateSweepAndEmphasis(
             layout: LineTextLayout,
             elapsedTime: TimeInterval,
-            fillFraction: CGFloat
+            fillFraction: CGFloat,
+            isPlaying: Bool
         ) {
             if shouldSynchronizeEmphasisState(forElapsedTime: elapsedTime) {
                 synchronizeEmphasisState(forElapsedTime: elapsedTime)
@@ -594,7 +579,7 @@ extension AppleMusicLyrics {
             let cursor = elapsedTime + LyricsSpecs.animationHeadstart
             switch activeSweepVariant {
             case .appleMusic26:
-                updateSyllableSweep(cursor: cursor)
+                updateSyllableSweep(cursor: cursor, isPlaying: isPlaying)
             case .characterFraction:
                 updateSweep(layout: layout, fillFraction: fillFraction)
             }
@@ -669,11 +654,19 @@ extension AppleMusicLyrics {
         /// put through a gap); and each travel is timed to the syllable's
         /// remaining time rather than its whole length, which differs by less
         /// than a frame when the syllable is entered on time.
-        private func updateSyllableSweep(cursor: TimeInterval) {
+        private func updateSyllableSweep(cursor: TimeInterval, isPlaying: Bool) {
             guard let sweepPlan else { return }
             for (rowIndex, visualRowNode) in visualRowNodes.enumerated() where rowIndex < sweepPlan.rows.count {
                 let row = sweepPlan.rows[rowIndex]
                 let gradient = visualRowNode.progressGradientLayer
+                if !isPlaying {
+                    // Paused: a travel would carry on to the end of its syllable
+                    // on its own clock, so put the gradient where the paused time
+                    // has it and send nothing. Resuming re-synchronizes from here.
+                    placeSweep(of: gradient, atClearEdge: row.clearEdge(at: cursor), droppingTravel: true)
+                    visualRowNode.sweepPhase = .unsynchronized
+                    continue
+                }
                 if cursor < row.startTime {
                     guard visualRowNode.sweepPhase != .waiting else { continue }
                     placeSweep(of: gradient, atClearEdge: row.emptyClearEdge, droppingTravel: true)

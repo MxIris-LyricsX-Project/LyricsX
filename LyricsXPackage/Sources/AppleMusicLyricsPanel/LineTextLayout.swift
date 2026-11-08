@@ -85,6 +85,41 @@ extension AppleMusicLyrics {
     }
 }
 
+extension AppleMusicLyrics.LineTextLayout.Word {
+    /// One unit Music animates on its own — a `SyllableLayer` that lifts as a
+    /// whole, and one step of the sung sweep.
+    struct AnimatedSyllable {
+        /// The syllable's own characters.
+        let text: String
+        let timeRange: Range<TimeInterval>
+        /// Indices into the word's `glyphs`.
+        let glyphIndices: [Int]
+    }
+
+    /// The units the syllable lift and the sweep step through: a structured
+    /// word's own syllables, or the whole word as one — an inline-tag segment
+    /// (Kugou and QQ Music tags are real per-word / per-character timing, the
+    /// grain of Music's syllables) or a structured word without syllables. An
+    /// untimed word has none.
+    var animatedSyllables: [AnimatedSyllable] {
+        guard let timeRange else { return [] }
+        let wordCharacters = Array(text)
+        let syllables = syllables
+            .filter { !$0.glyphIndices.isEmpty }
+            .map { syllable in
+                let lowerBound = max(0, syllable.characterRange.lowerBound - characterRange.lowerBound)
+                let upperBound = min(wordCharacters.count, syllable.characterRange.upperBound - characterRange.lowerBound)
+                return AnimatedSyllable(
+                    text: lowerBound < upperBound ? String(wordCharacters[lowerBound ..< upperBound]) : text,
+                    timeRange: syllable.timeRange,
+                    glyphIndices: syllable.glyphIndices
+                )
+            }
+        guard syllables.isEmpty, !glyphs.isEmpty else { return syllables }
+        return [AnimatedSyllable(text: text, timeRange: timeRange, glyphIndices: Array(glyphs.indices))]
+    }
+}
+
 extension AppleMusicLyrics.LineTextLayout {
     /// Legacy inline timing does not carry Apple Music's word and syllable
     /// hierarchy. A source may instead emit a separate whitespace-delimited unit
