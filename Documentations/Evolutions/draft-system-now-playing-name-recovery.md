@@ -1,6 +1,6 @@
 # Draft - 系统级「正在播放」检测到 Music 在播放时，也启用 MusicKit 原名恢复
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **创建日期**: 2026-11-08
 - **最后更新**: 2026-11-08
 - **实现分支**: LyricsX `feature/system-now-playing-name-recovery`，MusicPlayer `feature/system-media-player-name`
@@ -42,8 +42,8 @@
 
 **落地步骤**（每步构建、测试通过后单独提交）
 
-1. [ ] MusicPlayer：`SystemMedia.name` 与 `MusicPlayerTests`。
-2. [ ] LyricsXFoundation：`isForAppleMusicTrack`、`AppleMusicTrackNameRecoveryPlugin` 与测试。
+1. [x] MusicPlayer：`SystemMedia.name` 与 `MusicPlayerTests`。
+2. [x] LyricsXFoundation：`isForAppleMusicTrack`、`AppleMusicTrackNameRecoveryPlugin` 与测试。
 3. [ ] LyricsX app：挂载、请求标记、重建订阅、「写入音乐」菜单项；Debug 构建通过。
 4. [ ] 文案与文档：中文开关文案、CLAUDE.md、术语表、`docs/apple-music-lyrics.md`。
 5. [ ] 发 MusicPlayer 1.11.0 并改锁定版本（打 tag、推送前先问用户）。
