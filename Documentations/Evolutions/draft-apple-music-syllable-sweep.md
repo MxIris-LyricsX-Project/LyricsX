@@ -90,3 +90,5 @@
 | 2026-11-08 | 自审（`code-review` medium） | 十条发现，修四条、六条登记进 [已裁决的 code review 发现](../ReviewDecisions.md)。修：暂停时已发出的线性动画继续走完（新引入，`pausingStopsTheSweepWhereThePausedTimeHasIt` 修前红）；行尾不带时间的文字在行结束时突然点亮、时长为零的末音节抢走整个羽化宽（`theLastSyllableSweepsToTheEndOfTheRow`、`theLastReachableSyllableLeadsByAWholeFeather` 修前红）；扫光与抬高各有一份音节分组，合并为 `LineTextLayout.Word.animatedSyllables`。 |
 | 2026-11-08 | 推翻「时长为零的音节仍参与 `D` 的判断」 | 照 Music 会让真正最后一个音节只超出 0.12 到 0.5 个羽化宽，行结束时再突然点亮；先剔除再判断。 |
 | 2026-11-08 | 暂停时扫光停住 | 面板暂停时只渲染一帧，`update` 带上 `isPlaying`；旧扫光每帧直接摆位置，本来就会停。 |
+| 2026-11-08 | 自审第二轮（只审修复那一批） | 七条，修两条：时长为零的音节仍在决定「是不是词的最后一个音节」和「下一个词」（`aZeroLengthLastSyllableDoesNotHoldTheWordBack`、`aWordThatLastsNoTimeIsPassedOver` 修前红）；其余五条登记进已裁决清单。按流程不再进行第三轮。 |
+| 2026-11-08 | 实现完成，待用户看过后收尾 | 不开窗口的 93 项、12 个 suite `--no-parallel` 通过，原始退出码 0；app Debug 构建成功；SwiftFormat lint 无差异。开窗口的探针与实机观感未验证。 |

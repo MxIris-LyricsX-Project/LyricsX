@@ -166,8 +166,15 @@ extension AppleMusicLyrics {
             featherWidth: CGFloat
         ) -> [Syllable] {
             let rowFrame = layout.visualLines[rowIndex].typographicFrame
-            let timedWords = layout.words.filter { word in
-                word.visualLineIndex == rowIndex && word.timeRange != nil && !word.glyphs.isEmpty
+            // Only what can be sung takes part: a syllable that lasts no time is
+            // never entered, and a word made only of such syllables is passed
+            // over, so neither decides a neighbour's target.
+            let reachableWords = layout.words.compactMap { word -> (word: LineTextLayout.Word, syllables: [LineTextLayout.Word.AnimatedSyllable])? in
+                guard word.visualLineIndex == rowIndex, !word.glyphs.isEmpty else { return nil }
+                let syllables = word.animatedSyllables.filter { syllable in
+                    syllable.timeRange.upperBound > syllable.timeRange.lowerBound
+                }
+                return syllables.isEmpty ? nil : (word, syllables)
             }
 
             struct Candidate {
@@ -178,13 +185,12 @@ extension AppleMusicLyrics {
             }
 
             var candidates: [Candidate] = []
-            for (wordPosition, word) in timedWords.enumerated() {
+            for (wordPosition, entry) in reachableWords.enumerated() {
+                let word = entry.word
                 let wordLength = word.text.trimmingCharacters(in: .whitespacesAndNewlines).count
-                let nextWord = wordPosition + 1 < timedWords.count ? timedWords[wordPosition + 1] : nil
-                let syllables = word.animatedSyllables
-                for (syllablePosition, syllable) in syllables.enumerated() {
-                    guard syllable.timeRange.upperBound > syllable.timeRange.lowerBound else { continue }
-                    let isLastSyllableOfWord = syllablePosition == syllables.count - 1
+                let nextWord = wordPosition + 1 < reachableWords.count ? reachableWords[wordPosition + 1].word : nil
+                for (syllablePosition, syllable) in entry.syllables.enumerated() {
+                    let isLastSyllableOfWord = syllablePosition == entry.syllables.count - 1
                     let glyphTrailingEdge = syllable.glyphIndices.map { glyphIndex in
                         word.frame.minX + word.glyphs[glyphIndex].frame.maxX
                     }.max() ?? word.frame.maxX

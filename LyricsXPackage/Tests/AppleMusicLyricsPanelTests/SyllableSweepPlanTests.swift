@@ -294,6 +294,42 @@ struct SyllableSweepPlanTests {
         #expect(abs((row.syllables.last?.clearEdge ?? 0) - row.filledClearEdge) < 0.001)
     }
 
+    /// A zero-length syllable at the end of a word does not stop the word's
+    /// last reachable syllable from sweeping on to the next word.
+    @Test func aZeroLengthLastSyllableDoesNotHoldTheWordBack() throws {
+        let layout = try Self.structuredLayout(
+            text: "hello world",
+            words: [
+                .init(characterRange: 0 ..< 5, timeRange: 0 ..< 0.5, syllables: [
+                    .init(characterRange: 0 ..< 3, timeRange: 0 ..< 0.5),
+                    .init(characterRange: 3 ..< 5, timeRange: 0.5 ..< 0.5),
+                ]),
+                .init(characterRange: 6 ..< 11, timeRange: 0.5 ..< 1),
+            ]
+        )
+        let world = try #require(layout.words.first { $0.text == "world" })
+        let row = try #require(AppleMusicLyrics.SyllableSweepPlan.make(for: layout).rows.first)
+        try #require(row.syllables.count == 2)
+        #expect(abs(row.syllables[0].clearEdge - (Self.leadingEdge(of: world, in: layout) + 0.12 * Self.feather)) < 0.001)
+    }
+
+    /// A word whose syllables all last no time is passed over: the word before
+    /// it sweeps on to the next word that can be sung.
+    @Test func aWordThatLastsNoTimeIsPassedOver() throws {
+        let layout = try Self.structuredLayout(
+            text: "one two three",
+            words: [
+                .init(characterRange: 0 ..< 3, timeRange: 0 ..< 1),
+                .init(characterRange: 4 ..< 7, timeRange: 1 ..< 1),
+                .init(characterRange: 8 ..< 13, timeRange: 1 ..< 2),
+            ]
+        )
+        let three = try #require(layout.words.first { $0.text == "three" })
+        let row = try #require(AppleMusicLyrics.SyllableSweepPlan.make(for: layout).rows.first)
+        try #require(row.syllables.count == 2)
+        #expect(abs(row.syllables[0].clearEdge - (Self.leadingEdge(of: three, in: layout) + 0.12 * Self.feather)) < 0.001)
+    }
+
     @Test func syllablesThatLastNoTimeAreLeftOut() throws {
         let layout = try Self.structuredLayout(
             text: "one two",
