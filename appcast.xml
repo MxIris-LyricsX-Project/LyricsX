@@ -5,6 +5,21 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0-rc.4</title>
+            <pubDate>Sun, 08 Nov 2026 11:23:30 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>10900204</sparkle:version>
+            <sparkle:shortVersionString>1.9.0-rc.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li>The Apple Music-style lyrics window no longer jitters when dragged by its top edge.</li>
+<li>The current line in the Apple Music-style lyrics window no longer flickers while the window is resized.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0-rc.4/LyricsX_1.9.0-rc.4+10900204.zip" length="11339309" type="application/octet-stream" sparkle:edSignature="MobqbYGtnff34aHfI9iEnrnyjzRRKXeKSmMaRC/Uu88HDkiwdhlcalFdbhXKOl6eYUdxSnqD0xGJ7UBr3k/HDw==" />
+        </item>
+        <item>
             <title>1.9.0-rc.3</title>
             <pubDate>Sun, 08 Nov 2026 07:15:22 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
