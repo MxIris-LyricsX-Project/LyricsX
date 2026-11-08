@@ -1227,6 +1227,10 @@ Release 构建的 bundle identifier 是 `com.JH.LyricsX`。无法解析的值按
   不带时间的文字在行结束时突然点亮（`theLastSyllableSweepsToTheEndOfTheRow`）、时长为零的末音节抢走整个羽化宽
   （`theLastReachableSyllableLeadsByAWholeFeather`），三条修前红、修后绿；扫光与抬高的音节分组合并成
   `LineTextLayout.Word.animatedSyllables`。其余六条登记在 [已裁决的 code review 发现](../ReviewDecisions.md)。
+- 开窗口的探针（用户同意后跑）：`LineInteractionProbes`、`WrappedRowOrderProbes`、`LineEmphasisStructureProbes`、
+  `TranslatedLineEmphasisProbes`、`LineBlurProbes`、`LineTransitionProbes`、`LineEmphasisProbes`、`SyllableLiftProbes`、
+  `InlineTagSyllableLiftProbes`、`LyricsLibraryFixtureProbes`（本机歌词库取样 40 个文件）、`LyricsDisplayLinkPolicyTests`、
+  `PanelLyricsRemovalProbes`，一次 `--no-parallel` 运行 55 项全部通过，原始退出码 0。未启动应用做交互式 UI 验证。
 - `LineEmphasisStructureProbes.wrappedRowsUseIndependentSungColorContainers` 写的是按字符占比的逐行推进，改为显式注入
   `characterFraction`；`SyllableLiftProbes` 与 `InlineTagSyllableLiftProbes`「起点之前不动」的断言改成「提前量之前不动」。
 

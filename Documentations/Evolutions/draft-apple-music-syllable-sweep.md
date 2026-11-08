@@ -72,8 +72,6 @@
 - Music 的 `Line.AnimationKind.crossfade`（`sub_10018AEEC`，逐词背景色 easeInOut）何时启用没有查。
 - 跳时间后即将唱完的词仍会从头放大一次：`synchronizeEmphasisState` 按不带提前量的时间标记已唱完的词，放大却按带
   提前量的时间判断；`develop` 上就有，见 [已裁决的 code review 发现](../ReviewDecisions.md)。
-- 开窗口的探针（`SyllableLiftProbes`、`InlineTagSyllableLiftProbes`、`LineEmphasisProbes`、`TranslatedLineEmphasisProbes`
-  等）这次没跑：从终端启动会在 macOS 27.2 的 Dock 上留下图标，要用户同意后再跑。
 
 ## 决策日志
 
@@ -91,4 +89,5 @@
 | 2026-11-08 | 推翻「时长为零的音节仍参与 `D` 的判断」 | 照 Music 会让真正最后一个音节只超出 0.12 到 0.5 个羽化宽，行结束时再突然点亮；先剔除再判断。 |
 | 2026-11-08 | 暂停时扫光停住 | 面板暂停时只渲染一帧，`update` 带上 `isPlaying`；旧扫光每帧直接摆位置，本来就会停。 |
 | 2026-11-08 | 自审第二轮（只审修复那一批） | 七条，修两条：时长为零的音节仍在决定「是不是词的最后一个音节」和「下一个词」（`aZeroLengthLastSyllableDoesNotHoldTheWordBack`、`aWordThatLastsNoTimeIsPassedOver` 修前红）；其余五条登记进已裁决清单。按流程不再进行第三轮。 |
-| 2026-11-08 | 实现完成，待用户看过后收尾 | 不开窗口的 93 项、12 个 suite `--no-parallel` 通过，原始退出码 0；app Debug 构建成功；SwiftFormat lint 无差异。开窗口的探针与实机观感未验证。 |
+| 2026-11-08 | 实现完成，待用户看过后收尾 | 不开窗口的 93 项、12 个 suite `--no-parallel` 通过，原始退出码 0；app Debug 构建成功；SwiftFormat lint 无差异。 |
+| 2026-11-08 | 开窗口的探针（用户同意后跑） | `LineInteractionProbes`、`WrappedRowOrderProbes`、`LineEmphasisStructureProbes`、`TranslatedLineEmphasisProbes`、`LineBlurProbes`、`LineTransitionProbes`、`LineEmphasisProbes`、`SyllableLiftProbes`、`InlineTagSyllableLiftProbes`、`LyricsLibraryFixtureProbes`（本机歌词库 2686 个文件中取样 40 个）、`LyricsDisplayLinkPolicyTests`、`PanelLyricsRemovalProbes`，一次 `--no-parallel` 运行 55 项、12 个 suite 全部通过，原始退出码 0。实机观感待用户确认。 |
