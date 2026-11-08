@@ -44,7 +44,7 @@
 
 1. [x] MusicPlayer：`SystemMedia.name` 与 `MusicPlayerTests`。
 2. [x] LyricsXFoundation：`isForAppleMusicTrack`、`AppleMusicTrackNameRecoveryPlugin` 与测试。
-3. [ ] LyricsX app：挂载、请求标记、重建订阅、「写入音乐」菜单项；Debug 构建通过。
+3. [x] LyricsX app：挂载、请求标记、重建订阅、「写入音乐」菜单项；Debug 构建通过。
 4. [ ] 文案与文档：中文开关文案、CLAUDE.md、术语表、`docs/apple-music-lyrics.md`。
 5. [ ] 发 MusicPlayer 1.11.0 并改锁定版本（打 tag、推送前先问用户）。
 

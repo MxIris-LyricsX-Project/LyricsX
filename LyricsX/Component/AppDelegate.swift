@@ -220,7 +220,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         switch menuItem.action {
         case #selector(writeToiTunes(_:))?:
-            return selectedPlayer.name == .appleMusic && AppController.shared.currentLyrics != nil
+            // Only a track the Music player itself reports can be written to.
+            // The system-wide now-playing source names Music as the player too,
+            // but its tracks carry no scripting object to write through.
+            return selectedPlayer.name == .appleMusic
+                && selectedPlayer.currentTrack?.originalTrack != nil
+                && AppController.shared.currentLyrics != nil
         case #selector(searchLyrics(_:))?:
             return selectedPlayer.currentTrack != nil
         case #selector(nextLyricsCandidate(_:))?:

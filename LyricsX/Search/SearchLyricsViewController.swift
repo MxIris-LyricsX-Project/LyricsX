@@ -84,13 +84,15 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         searchedTrack = track
         panelResults = LyricsSearchPanelResults(trackIdentifier: track?.id)
         let duration = track?.duration ?? 0
-        let req = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: searchArtist), duration: duration, limit: 8)
-        searchRequest = req
+        var request = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: searchArtist), duration: duration, limit: 8)
+        // Name recovery runs for the same tracks as the automatic search's.
+        request.isForAppleMusicTrack = selectedPlayer.name == .appleMusic
+        searchRequest = request
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
         searchTask = Task { @MainActor in
             do {
-                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: req)) { lyrics in
+                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: request)) { lyrics in
                     lyricsReceived(lyrics: lyrics)
                 }
                 // Cancelled by the search that replaced it, whose progress

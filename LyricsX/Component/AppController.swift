@@ -145,28 +145,22 @@ final class AppController: NSObject {
             }
             .store(in: &cancelBag)
 
-        // Rebuild the provider group when something that gates the Apple Music
-        // name-recovery plugin changes. The plugin is mounted only when the
-        // user toggle is on AND the active player is Apple Music, so we have
-        // to react to both the preference and any change in the active player:
-        //
-        // - the recovery toggle itself;
-        // - preferred-player switch in General settings;
-        // - NowPlaying / SystemMedia routing to a different app's track
-        //   (e.g. user starts playing in Apple Music while another player
-        //   was previously the active source).
-        Publishers.MergeMany(
-            defaults.publisher(for: [.appleMusicNameRecoveryEnabled]).signal().eraseToAnyPublisher(),
-            defaults.publisher(for: [.preferredPlayerIndex, .useSystemWideNowPlaying, .systemWideNowPlayingAppList]).signal().eraseToAnyPublisher(),
-            selectedPlayer.currentTrackWillChange.signal().eraseToAnyPublisher()
-        )
-        .receive(on: DispatchQueue.main)
-        .map { (defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name) }
-        .removeDuplicates(by: ==)
-        .sink { [weak self] _ in
-            Task { @MainActor in await self?.updateLyricsManager() }
-        }
-        .store(in: &cancelBag)
+        // Rebuild the provider group when the Apple Music name-recovery switch
+        // changes: the plugin is mounted while it is on. Which searches it runs
+        // for is decided per search, from the request's `isForAppleMusicTrack`,
+        // so a change of player, or of the app the system-wide now-playing
+        // track plays in, needs no rebuild. It used to need one, and the first
+        // track after a switch to Music was often searched before the rebuild
+        // finished, without the plugin.
+        defaults.publisher(for: [.appleMusicNameRecoveryEnabled])
+            .signal()
+            .receive(on: DispatchQueue.main)
+            .map { defaults[.appleMusicNameRecoveryEnabled] }
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                Task { @MainActor in await self?.updateLyricsManager() }
+            }
+            .store(in: &cancelBag)
 
         workspaceNC.publisher(for: NSWorkspace.didTerminateApplicationNotification, object: nil)
             .sink { notification in
@@ -287,10 +281,13 @@ final class AppController: NSObject {
         // Route B: for Apple Music tracks, a search plugin recovers the
         // native-script name via the Apple Music catalog so the providers
         // can match it. The plugin runs upstream of the providers — it
-        // widens the search, it is not a lyrics source itself.
+        // widens the search, it is not a lyrics source itself. It stays
+        // mounted while the switch is on and runs only for the searches
+        // `makeLyricsSearchRequest(for:)` and the search window mark as
+        // being for a track playing in Music.
         var plugins: [LyricsSearchRequestPlugin] = []
-        if #available(macOS 12.0, *), defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name == .appleMusic {
-            plugins.append(AppleMusicNameRecoveryPlugin())
+        if defaults[.appleMusicNameRecoveryEnabled] {
+            plugins.append(AppleMusicTrackNameRecoveryPlugin())
         }
         lyricsManager = LyricsProviders.Group(providers: providers, plugins: plugins)
     }
@@ -1548,12 +1545,16 @@ final class AppController: NSObject {
         // zero matches for the bracketed form. The full title still drives local
         // cache lookup and the lyrics metadata association.
         let searchTitle = defaults[.stripSearchTitleBracketsEnabled] ? title.strippingBrackets : title
-        return LyricsSearchRequest(
+        var request = LyricsSearchRequest(
             searchTerm: .info(title: searchTitle, artist: artist),
             duration: track.duration ?? 0,
-            limit: 5,
-            userInfo: [:]
+            limit: 5
         )
+        // The Apple Music player, or the system-wide now-playing source while
+        // Music is the app playing: SystemMedia names the player together
+        // with the track, so this is the player `track` plays in.
+        request.isForAppleMusicTrack = selectedPlayer.name == .appleMusic
+        return request
     }
 
     private func scheduleArtworkScoring(for lyrics: Lyrics, against track: MusicTrack) {
