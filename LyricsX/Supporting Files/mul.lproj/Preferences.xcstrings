@@ -3470,13 +3470,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通过 MusicKit 恢复原始的歌曲和艺人名称（仅限 Apple Music 播放源）"
+            "value" : "通过 MusicKit 恢复原始的歌曲和艺人名称（仅限 Apple Music）"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "透過 MusicKit 還原原始的歌曲與藝人名稱（僅限 Apple Music 播放源）"
+            "value" : "透過 MusicKit 還原原始的歌曲與藝人名稱（僅限 Apple Music）"
           }
         }
       }

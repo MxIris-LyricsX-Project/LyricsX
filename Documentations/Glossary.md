@@ -49,6 +49,10 @@ Apple Music 曲目本地化名恢复：先拿到曲目的原文（母语）名�
 这类结果比直连各歌词源慢，因此在优先级窗口之外**豁免**丢弃规则
 （`lyrics.isFromSearchPlugin` 为真的那些）。
 
+只对 Music 里正在播放的曲目运行：播放源选成 Apple Music，或用系统级正在播放（`SystemMedia`）时
+正在播放的 App 是 Music。是不是这样的曲目由每次搜索请求自己带着（`LyricsSearchRequest.isForAppleMusicTrack`），
+插件（`AppleMusicTrackNameRecoveryPlugin`）在开关打开时常驻，不随播放器切换挂载、卸载。
+
 ## 优先级窗口（priority window）
 
 首条歌词到达后的一段时间（`lyricsPriorityWindow`，默认 5 秒），窗口内允许更高优先级的

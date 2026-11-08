@@ -194,6 +194,7 @@ dump(`/Volumes/Code/Dump/DyldSharedCaches/macOS/26.4/MusicKit{,Internal}`)确认
 
 ### 6.1 偏好
 - `Global.swift` 加 `static let appleMusicNameRecoveryEnabled = Key<Bool>("AppleMusicNameRecoveryEnabled")`(默认 false)。开关展示在「偏好设置 → 实验室」中,标题 `Recover original song and artist names via MusicKit (Apple Music only)`;`AppController.updateLyricsManager()` 据此决定是否挂载 `AppleMusicNameRecoveryPlugin`。
+  - 2026-11 起改为:开关打开就挂载 `AppleMusicTrackNameRecoveryPlugin`(包住 `AppleMusicNameRecoveryPlugin`),只处理标了 `isForAppleMusicTrack` 的搜索——播放源是 Apple Music,或系统级正在播放下正在播放的 App 是 Music。原因见提案《系统级「正在播放」检测到 Music 在播放时，也启用 MusicKit 原名恢复》。
 
 ### 6.2 登录 UI
 - `PreferenceSourceViewController` 加:「连接 Apple Music」按钮、连接状态标签、Apple Music 歌词开关。
