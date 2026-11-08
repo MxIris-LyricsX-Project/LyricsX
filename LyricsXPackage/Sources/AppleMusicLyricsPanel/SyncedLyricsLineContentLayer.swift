@@ -219,6 +219,17 @@ extension AppleMusicLyrics {
         private var lineLabel = ""
         private var precedingElapsedTime: TimeInterval?
         private static let maximumContinuousElapsedTimeStep: TimeInterval = 0.5
+
+        /// What the last frame handed `update(elapsedTime:fillFraction:isPlaying:)`
+        /// since the line was selected.
+        private struct FrameInput {
+            let elapsedTime: TimeInterval
+            let fillFraction: CGFloat
+            let isPlaying: Bool
+        }
+
+        private var lastFrameInput: FrameInput?
+
         /// Cumulative text width before each visual row, so the sweep cascades row
         /// by row instead of lighting every wrapped row at once.
         private var cumulativeWidthBeforeRow: [CGFloat] = []
@@ -263,6 +274,9 @@ extension AppleMusicLyrics {
         func setHighlighted(_ highlighted: Bool, animatedWith timing: (any LayerAnimationTiming)?) {
             guard highlighted != highlightState else { return }
             highlightState = highlighted
+            // A newly selected line starts from an empty sweep and waits for
+            // its own first frame; an earlier selection's frame means nothing.
+            lastFrameInput = nil
             if highlighted {
                 activeSweepVariant = sweepVariantProvider()
                 resetSweep()
@@ -308,6 +322,7 @@ extension AppleMusicLyrics {
                 "visualRowCount=\(layout.visualLines.count, privacy: .public) wordCount=\(layout.words.count, privacy: .public)"
             )
             defer { #signpost(.end, rebuildInterval) }
+            let frameInputToReplay = highlightState ? lastFrameInput : nil
             resetEmphasis()
             self.layout = layout
             activeSweepVariant = sweepVariantProvider()
@@ -366,6 +381,30 @@ extension AppleMusicLyrics {
                 words=\(wordSummary, privacy: .public)
                 """
             )
+            if let frameInputToReplay {
+                replay(frameInputToReplay, on: layout)
+            }
+        }
+
+        /// Put a selected line that has just been rebuilt back where the last
+        /// frame had it, before anything is drawn: the sweep where the playing
+        /// time has it, sung syllables up without their spring.
+        ///
+        /// Every step of a window resize rebuilds every row for its new width.
+        /// Left to the next display link frame, the selected line was drawn
+        /// unsung with every glyph at rest in between, so it flickered between
+        /// its unsung and its sung look, and its sung syllables bounced.
+        private func replay(_ frameInput: FrameInput, on layout: LineTextLayout) {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            updateSweepAndEmphasis(
+                layout: layout,
+                elapsedTime: frameInput.elapsedTime,
+                fillFraction: frameInput.fillFraction,
+                isPlaying: frameInput.isPlaying,
+                springsLifts: false
+            )
+            CATransaction.commit()
         }
 
         private static func makeLineLabel(for layout: LineTextLayout) -> String {
@@ -543,6 +582,7 @@ extension AppleMusicLyrics {
         /// travels run on their own clock, so they are stopped there instead.
         func update(elapsedTime: TimeInterval, fillFraction: CGFloat, isPlaying: Bool = true) {
             guard let layout, isHighlighted else { return }
+            lastFrameInput = FrameInput(elapsedTime: elapsedTime, fillFraction: fillFraction, isPlaying: isPlaying)
             if FramePerformanceDiagnosticsPolicy.detailedFrameSignpostingIsEnabled {
                 #signpostInterval("KaraokeSweepUpdate") {
                     updateSweepAndEmphasis(
@@ -562,11 +602,14 @@ extension AppleMusicLyrics {
             }
         }
 
+        /// `springsLifts` false sets a syllable that is due up or down at once,
+        /// for a line put back after a rebuild, which has no motion to show.
         private func updateSweepAndEmphasis(
             layout: LineTextLayout,
             elapsedTime: TimeInterval,
             fillFraction: CGFloat,
-            isPlaying: Bool
+            isPlaying: Bool,
+            springsLifts: Bool = true
         ) {
             if shouldSynchronizeEmphasisState(forElapsedTime: elapsedTime) {
                 synchronizeEmphasisState(forElapsedTime: elapsedTime)
@@ -584,7 +627,7 @@ extension AppleMusicLyrics {
                 updateSweep(layout: layout, fillFraction: fillFraction)
             }
             scheduleDueWords(cursor: cursor)
-            updateSyllableLifts(cursor: cursor)
+            updateSyllableLifts(cursor: cursor, springs: springsLifts)
         }
 
         private func shouldSynchronizeEmphasisState(forElapsedTime elapsedTime: TimeInterval) -> Bool {
@@ -861,7 +904,7 @@ extension AppleMusicLyrics {
         /// `sub_1001897C0` adds nothing of its own, but the time it is handed
         /// already carries the head start, so a syllable rises a tenth of a
         /// second before it is sung.
-        private func updateSyllableLifts(cursor: TimeInterval) {
+        private func updateSyllableLifts(cursor: TimeInterval, springs: Bool) {
             for node in wordNodes where !node.syllableGroups.isEmpty {
                 guard let wordStart = node.word.timeRange?.lowerBound else { continue }
                 let isDueOrLifted = cursor >= wordStart || node.syllableGroups.contains(where: \.isLifted)
@@ -874,7 +917,8 @@ extension AppleMusicLyrics {
                         node.syllableGroups[index],
                         of: node,
                         lifted: shouldBeLifted,
-                        cursor: cursor
+                        cursor: cursor,
+                        springs: springs
                     )
                 }
             }
@@ -884,7 +928,8 @@ extension AppleMusicLyrics {
             _ group: WordNode.SyllableGroup,
             of node: WordNode,
             lifted: Bool,
-            cursor: TimeInterval
+            cursor: TimeInterval,
+            springs: Bool
         ) {
             let currentLineLabel = lineLabel
             let syllableText = group.text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -901,9 +946,7 @@ extension AppleMusicLyrics {
                 start=\(syllableStart, privacy: .public) cursor=\(cursor, privacy: .public)
                 """
             )
-            let glyphLayers = group.glyphIndices.map { node.glyphLayers[$0] }
-            let animator = LayerPropertyAnimator(layers: glyphLayers, timing: SyllableLiftPlan.springTiming)
-            animator.addChange {
+            let placeGlyphs = {
                 for glyphIndex in group.glyphIndices {
                     let target = lifted
                         ? node.sungOrigin(ofGlyphAt: glyphIndex)
@@ -911,6 +954,16 @@ extension AppleMusicLyrics {
                     Self.place(node.glyphLayers[glyphIndex], atRestingOrigin: target)
                 }
             }
+            guard springs else {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                placeGlyphs()
+                CATransaction.commit()
+                return
+            }
+            let glyphLayers = group.glyphIndices.map { node.glyphLayers[$0] }
+            let animator = LayerPropertyAnimator(layers: glyphLayers, timing: SyllableLiftPlan.springTiming)
+            animator.addChange(placeGlyphs)
             animator.run()
         }
 

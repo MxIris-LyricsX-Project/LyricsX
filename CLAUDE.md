@@ -95,6 +95,13 @@ swift test --filter InlineTagSyllableLiftProbes
 # sweep, which AppleMusicLyricsSweepVariant=characterFraction still selects.
 swift test --filter "SyllableSweepPlanTests|SyllableSweepEngineTests|SyllableLiftHeadstartTests"
 
+# A selected line laid out again mid-play (every step of a window resize
+# rebuilds every row for its new width) comes back as the last frame left it:
+# the sweep in place, sung syllables still up, nothing springing again.
+# Headless (<1s). Red on the old rebuild, which drew the line unsung and at
+# rest until the next frame, so it flickered while the window was resized.
+swift test --filter SelectedLineRebuildTests
+
 # Wrapped rows on screen: a two-row lyric mounted in a window (inside the real
 # container and on its own), each visual row projected into the window's root
 # layer. Red whenever the content layer's effective orientation comes out y-up.
