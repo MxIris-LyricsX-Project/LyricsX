@@ -73,7 +73,7 @@
     缩到 0.95）；非当前行从整行 0.55 改为文字白 40%，切行时颜色走切行弹簧；翻译改粗体、白 50% / 40%、间距 7 pt。
   - [0025 菜单栏歌词的暂停隐藏改用独立开关](Evolutions/0025-menu-bar-hide-lyrics-when-paused.md) —— 菜单栏不再跟着
     桌面歌词默认开着的「隐藏歌词：暂停播放时」，改用实验室页默认关的「暂停时隐藏菜单栏歌词」。
-  - [行内扫光改按 Music 26.6 的逐音节线性推进（草案）](Evolutions/draft-apple-music-syllable-sweep.md) —— 每个视觉行
+  - [0026 行内扫光改按 Music 26.6 的逐音节线性推进](Evolutions/0026-apple-music-syllable-sweep.md) —— 每个视觉行
     一层渐变，进入新音节时按字形坐标发线性动画、前沿超出音节末尾 0.12 / 0.25 / 0.5 / 1 个羽化宽；扫光与逐音节
     抬高都提前 0.1 秒；旧的按字符占比扫光留在隐藏开关 `AppleMusicLyricsSweepVariant` 后面。
 

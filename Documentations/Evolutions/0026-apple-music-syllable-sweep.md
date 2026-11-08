@@ -1,6 +1,6 @@
-# Draft - 行内扫光改按 Music 26.6 的逐音节线性推进
+# 0026 - 行内扫光改按 Music 26.6 的逐音节线性推进
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **作者**: JH
 - **创建日期**: 2026-11-08
 - **最后更新**: 2026-11-08
@@ -91,3 +91,4 @@
 | 2026-11-08 | 自审第二轮（只审修复那一批） | 七条，修两条：时长为零的音节仍在决定「是不是词的最后一个音节」和「下一个词」（`aZeroLengthLastSyllableDoesNotHoldTheWordBack`、`aWordThatLastsNoTimeIsPassedOver` 修前红）；其余五条登记进已裁决清单。按流程不再进行第三轮。 |
 | 2026-11-08 | 实现完成，待用户看过后收尾 | 不开窗口的 93 项、12 个 suite `--no-parallel` 通过，原始退出码 0；app Debug 构建成功；SwiftFormat lint 无差异。 |
 | 2026-11-08 | 开窗口的探针（用户同意后跑） | `LineInteractionProbes`、`WrappedRowOrderProbes`、`LineEmphasisStructureProbes`、`TranslatedLineEmphasisProbes`、`LineBlurProbes`、`LineTransitionProbes`、`LineEmphasisProbes`、`SyllableLiftProbes`、`InlineTagSyllableLiftProbes`、`LyricsLibraryFixtureProbes`（本机歌词库 2686 个文件中取样 40 个）、`LyricsDisplayLinkPolicyTests`、`PanelLyricsRemovalProbes`，一次 `--no-parallel` 运行 55 项、12 个 suite 全部通过，原始退出码 0。实机观感待用户确认。 |
+| 2026-11-08 | 合进 develop，落地为 0026，状态改 Implemented | 用户要求随 1.9.0-rc.3 一起发布，实机观感由 rc.3 检验；实现与方案一致，两条后续项（`crossfade` 何时启用、跳转后放大重放）保留。实现说明沿用已更新的《Apple Music 26.6 歌词动画》「扫光」一节；隐藏开关只供并排比较，不另写使用指南；没有新术语要登记。 |
