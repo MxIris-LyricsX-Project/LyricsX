@@ -319,7 +319,8 @@ class KaraokeLyricsWindowController: NSWindowController {
 
 extension NSScreen {
     fileprivate var isFullScreen: Bool {
-        guard let windowInfoList = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] else {
+        guard let primaryScreen = NSScreen.screens.first,
+              let windowInfoList = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] else {
             return false
         }
         return !windowInfoList.contains { info in
@@ -329,7 +330,13 @@ extension NSScreen {
                   let bounds = CGRect(dictionaryRepresentation: boundsDict) else {
                 return false
             }
-            return frame.contains(bounds)
+            // Window Server uses a top-left origin; NSScreen uses a bottom-left origin.
+            // Convert around the primary screen, not this screen (which may be offset).
+            let screenBounds = CGRect(x: bounds.minX,
+                                      y: primaryScreen.frame.maxY - bounds.maxY,
+                                      width: bounds.width,
+                                      height: bounds.height)
+            return frame.contains(screenBounds)
         }
     }
 }
