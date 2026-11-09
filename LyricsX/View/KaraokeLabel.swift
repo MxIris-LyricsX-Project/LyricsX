@@ -98,12 +98,13 @@ class KaraokeLabel: NSTextField {
                 ]
                 attrString.addAttributes(attr, range: tokenRange.asNS)
             }
-            if shouldDrawFurigana && !didApplySourceFurigana,
-               let (furigana, range) = tokenizer.currentFuriganaAnnotation(in: string) {
-                var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
-                attr[.ctForegroundColor] = textColor
-                let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
-                attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
+            if shouldDrawFurigana && !didApplySourceFurigana {
+                for (furigana, range) in tokenizer.currentFuriganaAnnotations(in: string) {
+                    var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
+                    attr[.ctForegroundColor] = textColor
+                    let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
+                    attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
+                }
             }
             if shouldDrawRomajin, let (romajin, range) = tokenizer.currentRomanjiAnnotation(in: string) {
                 romajinAnnotations.append((romajin as String, range))
@@ -218,8 +219,9 @@ class KaraokeLabel: NSTextField {
 
     func setProgressAnimation(color: NSColor, progress: [(TimeInterval, Int)]) {
         removeProgressAnimation()
-        guard let line = ctFrame().lines.first,
-              let origin = ctFrame().lineOrigins(range: CFRange(location: 0, length: 1)).first else {
+        let textFrame = ctFrame()
+        guard let line = textFrame.lines.first,
+              let origin = textFrame.lineOrigins(range: CFRange(location: 0, length: 1)).first else {
             return
         }
         var lineBounds = line.bounds()
@@ -237,6 +239,16 @@ class KaraokeLabel: NSTextField {
             lineBounds.size.width = bounds.width
         }
 
+        let originalLineBounds = lineBounds
+        let romajiBounds = drawRomajiAnnotations(in: nil, frame: textFrame)
+        if !romajiBounds.isNull {
+            // Romaji is drawn separately below the CoreText frame. Include its
+            // actual ink in the mask without changing the label's layout size.
+            let paddedBounds = CGRect(x: romajiBounds.minX - 1, y: romajiBounds.minY - 1,
+                                      width: romajiBounds.width + 2, height: romajiBounds.height + 2)
+            lineBounds = lineBounds.union(paddedBounds.applying(.flip(height: bounds.height)))
+        }
+
         progressLayer.anchorPoint = isVertical ? CGPoint(x: 0.5, y: 0) : CGPoint(x: 0, y: 0.5)
         progressLayer.frame = lineBounds
         progressLayer.backgroundColor = color.cgColor
@@ -246,14 +258,24 @@ class KaraokeLabel: NSTextField {
             let context = NSGraphicsContext.current!.cgContext
             let ori = lineBounds.applying(.flip(height: self.bounds.height)).origin
             context.concatenate(.translate(x: -ori.x, y: -ori.y))
-            CTFrameDraw(self.ctFrame(), context)
+            CTFrameDraw(textFrame, context)
+            self.drawRomajiAnnotations(in: context, frame: textFrame)
             return true
         }
         mask.contents = img.cgImage(forProposedRect: nil, context: nil, hints: nil)
         progressLayer.mask = mask
 
         guard let index = progress.firstIndex(where: { $0.0 > 0 }) else { return }
-        var map = progress.map { ($0.0, line.offset(charIndex: $0.1).primary) }
+        let leadingInset = isVertical ? originalLineBounds.minY - lineBounds.minY : originalLineBounds.minX - lineBounds.minX
+        let fullExtent = isVertical ? lineBounds.height : lineBounds.width
+        var map = progress.map { time, index -> (TimeInterval, CGFloat) in
+            var offset = line.offset(charIndex: index).primary + leadingInset
+            if !romajiBounds.isNull {
+                if index <= 0 { offset = 0 }
+                if index >= stringValue.count { offset = fullExtent }
+            }
+            return (time, offset)
+        }
         if index > 0 {
             let progress = map[index - 1].1 + CGFloat(map[index - 1].0) * (map[index].1 - map[index - 1].1) / CGFloat(map[index].0 - map[index - 1].0)
             map.replaceSubrange(..<index, with: [(0, progress)])
@@ -293,8 +315,11 @@ class KaraokeLabel: NSTextField {
         CATransaction.commit()
     }
 
-    private func drawRomajiAnnotations(in context: CGContext, frame: CTFrame) {
-        guard drawRomajin, !romajinAnnotations.isEmpty else { return }
+    @discardableResult
+    private func drawRomajiAnnotations(in context: CGContext?, frame: CTFrame) -> CGRect {
+        guard drawRomajin, !romajinAnnotations.isEmpty else { return .null }
+
+        var annotationBounds = CGRect.null
 
         let lines = frame.lines
         let origins = frame.lineOrigins(range: CFRangeMake(0, lines.count))
@@ -314,9 +339,10 @@ class KaraokeLabel: NSTextField {
                         var descent: CGFloat = 0
                         var leading: CGFloat = 0
                         let width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, &leading)
-                        var position = CGPoint.zero
-                        CTRunGetPositions(run, CFRangeMake(0, 1), &position)
-                        let glyphX = origin.x + position.x
+                        // Query the line's character offset instead of reading
+                        // run positions: the latter disturbs cached ruby layout
+                        // on subsequent draws of the same CoreText frame.
+                        let glyphX = origin.x + line.offset(charIndex: range.location).primary
 
                         let relativeOffset = CGFloat(annotationRange.location - range.location) / CGFloat(range.length) * width
                         let glyphBounds = CGRect(
@@ -355,8 +381,13 @@ class KaraokeLabel: NSTextField {
                             y: glyphBounds.minY - fontSize * 0.2
                         )
                         let rubyLine = CTLineCreateWithAttributedString(rubyString)
-                        context.textPosition = rubyPoint
-                        CTLineDraw(rubyLine, context)
+                        let inkBounds = CTLineGetBoundsWithOptions(rubyLine, [.useGlyphPathBounds])
+                            .applying(.translate(x: rubyPoint.x, y: rubyPoint.y))
+                        annotationBounds = annotationBounds.union(inkBounds)
+                        if let context = context {
+                            context.textPosition = rubyPoint
+                            CTLineDraw(rubyLine, context)
+                        }
 
                         subIndex += 1
                     } else {
@@ -375,9 +406,7 @@ class KaraokeLabel: NSTextField {
                 var descent: CGFloat = 0
                 var leading: CGFloat = 0
                 let width = CTRunGetTypographicBounds(lastRun, CFRangeMake(0, 0), &ascent, &descent, &leading)
-                var position = CGPoint.zero
-                CTRunGetPositions(lastRun, CFRangeMake(0, 1), &position)
-                let glyphX = lastOrigin.x + position.x + width
+                let glyphX = lastOrigin.x + lastLine.offset(charIndex: lastRun.stringRange.location).primary + width
                 let glyphBounds = CGRect(
                     x: glyphX,
                     y: lastOrigin.y - descent,
@@ -412,11 +441,17 @@ class KaraokeLabel: NSTextField {
                     y: glyphBounds.minY - 0.2 * fontSize
                 )
                 let rubyLine = CTLineCreateWithAttributedString(rubyString)
-                context.textPosition = rubyPoint
-                CTLineDraw(rubyLine, context)
+                let inkBounds = CTLineGetBoundsWithOptions(rubyLine, [.useGlyphPathBounds])
+                    .applying(.translate(x: rubyPoint.x, y: rubyPoint.y))
+                annotationBounds = annotationBounds.union(inkBounds)
+                if let context = context {
+                    context.textPosition = rubyPoint
+                    CTLineDraw(rubyLine, context)
+                }
             }
             annotationIndex += 1
         }
+        return annotationBounds
     }
 }
 
