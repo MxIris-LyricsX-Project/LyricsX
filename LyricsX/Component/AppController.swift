@@ -2393,6 +2393,12 @@ extension AppController {
             do {
                 let lyrics: Lyrics
                 var securityScopedDirectoryURL: URL?
+                var didStartSecurityScopedAccess = false
+                defer {
+                    if didStartSecurityScopedAccess {
+                        securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+                    }
+                }
                 switch choice.source {
                 case .embedded:
                     guard let parsedLyrics = Lyrics(choice.embeddedContents ?? "") else {
@@ -2407,6 +2413,7 @@ extension AppController {
                         guard securityScopedDirectoryURL.startAccessingSecurityScopedResource() else {
                             throw CocoaError(.fileReadNoPermission)
                         }
+                        didStartSecurityScopedAccess = true
                     }
                     let lyricsContents = try String(contentsOf: url, encoding: .utf8)
                     guard let parsedLyrics = Lyrics(lyricsContents) else {
@@ -2437,9 +2444,6 @@ extension AppController {
                         }
                         lyrics = managedLyrics
                     }
-                }
-                defer {
-                    securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
                 }
                 lyrics.associateWithTrack(choice.track)
                 if case .file(let url) = choice.source {
@@ -2482,17 +2486,42 @@ extension AppController {
         }
     }
 
+    private func embeddedLyricsForMenu(for track: MusicTrack, refresh: Bool) -> String? {
+        localLyricsMemoryLock.lock()
+        let cached = localLyricsVerifiedEmbeddedByTrackID[track.id]
+        let writeID = localLyricsEmbeddedWriteID
+        localLyricsMemoryLock.unlock()
+        guard refresh else { return cached }
+
+        // A verified write already established that this scripting object can
+        // read lyrics through KVC. Avoid the optional selector probe in that case.
+        // An empty string confirms deletion; nil is an unsuccessful read and
+        // must not discard a previously verified value.
+        let fresh: String?
+        if cached != nil, let originalTrack = track.originalTrack {
+            fresh = originalTrack.value(forKey: "lyrics") as? String
+        } else {
+            fresh = track.lyrics
+        }
+        localLyricsMemoryLock.lock()
+        defer { localLyricsMemoryLock.unlock() }
+        guard localLyricsEmbeddedWriteID == writeID else {
+            return localLyricsVerifiedEmbeddedByTrackID[track.id]
+        }
+        if cached != nil, let fresh {
+            localLyricsVerifiedEmbeddedByTrackID[track.id] = fresh
+        }
+        return fresh ?? cached
+    }
+
     private func localLyricsChoices(
         for track: MusicTrack,
         includeEmbedded: Bool
     ) -> [LocalLyricsChoice] {
         var choices: [LocalLyricsChoice] = []
-        localLyricsMemoryLock.lock()
-        let verifiedEmbedded = localLyricsVerifiedEmbeddedByTrackID[track.id]
-        localLyricsMemoryLock.unlock()
-        // Confirmed writes are available in the first, fast result too. The
-        // slower metadata stage must not replace them with an older snapshot.
-        let embeddedContents = verifiedEmbedded ?? (includeEmbedded ? track.lyrics : nil)
+        // The fast stage uses the snapshot; the background metadata stage
+        // revalidates it so edits made in Music are reflected in the menu.
+        let embeddedContents = embeddedLyricsForMenu(for: track, refresh: includeEmbedded)
         if let embedded = embeddedContents,
            !embedded.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             choices.append(LocalLyricsChoice(
@@ -2543,7 +2572,9 @@ extension AppController {
             guard directoryURL.startAccessingSecurityScopedResource() else {
                 return []
             }
-            defer {
+        }
+        defer {
+            if isSecurityScoped {
                 directoryURL.stopAccessingSecurityScopedResource()
             }
         }
