@@ -139,6 +139,7 @@ class PreferenceGeneralViewController: PreferenceViewController {
             loadHomonymLrcButton.isEnabled = false
             loadHomonymLrcButton.state = .off
             defaults[.loadLyricsBesideTrack] = false
+            defaults[.writeBackToLyricsBesideTrack] = false
         } else {
             loadHomonymLrcButton.isEnabled = true
         }

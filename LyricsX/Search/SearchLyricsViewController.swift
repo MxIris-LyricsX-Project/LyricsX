@@ -3,6 +3,7 @@ import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
 
+@Loggable(subsystem: "com.JH.LyricsX.SearchLyrics", category: "SearchLyricsViewController")
 class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate, StoryboardViewController {
     var imageCache = NSCache<NSURL, NSImage>()
 
@@ -16,7 +17,12 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     var lyricsManager: LyricsProvider { AppController.shared.lyricsManager }
     var searchRequest: LyricsSearchRequest?
     var searchTask: Task<Void, Never>?
-    var searchResult: [Lyrics] = []
+    /// The track the current search ran for, which a result the user applies
+    /// belongs to even once another track plays.
+    private var searchedTrack: MusicTrack?
+    private var panelResults = LyricsSearchPanelResults<Lyrics>(trackIdentifier: nil)
+    private var searchResult: [Lyrics] { panelResults.results }
+    var artworkScoringTasks: [Task<Void, Never>] = []
     var progressObservation: NSKeyValueObservation?
 
     @IBOutlet var artworkView: NSImageView!
@@ -43,7 +49,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     func reloadKeyword() {
         guard let track = selectedPlayer.currentTrack else {
             searchTask?.cancel()
-            searchResult = []
+            searchedTrack = nil
+            panelResults = LyricsSearchPanelResults(trackIdentifier: nil)
             searchArtist = ""
             searchTitle = ""
             artworkView.image = #imageLiteral(resourceName: "missing_artwork")
@@ -51,8 +58,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             tableView.reloadData()
             return
         }
-        let artist = track.artist ?? ""
-        let title = track.title ?? ""
+        var artist = track.artist ?? ""
+        var title = track.title ?? ""
+        // Prefer the native-script name a search plugin recovered for this
+        // track over the localized title/artist the player reports.
+        if case let .info(recoveredTitle, recoveredArtist)? = AppController.shared.currentLyrics?.searchPluginTerm {
+            title = recoveredTitle
+            artist = recoveredArtist
+        }
         if (searchArtist, searchTitle) != (artist, title) {
             (searchArtist, searchTitle) = (artist, title)
             searchAction(nil)
@@ -61,49 +74,97 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     @IBAction func searchAction(_ sender: Any?) {
         searchTask?.cancel()
+        artworkScoringTasks.forEach { $0.cancel() }
+        artworkScoringTasks.removeAll()
         progressObservation?.invalidate()
-        searchResult = []
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
         lyricsPreviewTextView.string = " "
 
         let track = selectedPlayer.currentTrack
+        searchedTrack = track
+        panelResults = LyricsSearchPanelResults(trackIdentifier: track?.id)
         let duration = track?.duration ?? 0
         let req = LyricsSearchRequest(searchTerm: .info(title: searchTitle, artist: searchArtist), duration: duration, limit: 8)
         searchRequest = req
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
-        searchTask = Task {
+        searchTask = Task { @MainActor in
             do {
-                for try await lyrics in lyricsManager.lyrics(for: req) {
+                let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: req)) { lyrics in
                     lyricsReceived(lyrics: lyrics)
                 }
+                // Cancelled by the search that replaced it, whose progress
+                // the indicator now shows.
+                guard completion == .finished else { return }
                 progressIndicator.stopAnimation(nil)
-            } catch is CancellationError {
-                // Search was cancelled
             } catch {
-                print(error)
+                #log(.error, "Lyrics search failed: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
 
     @IBAction func useLyricsAction(_ sender: Any) {
-        guard let index = tableView.selectedRowIndexes.first else {
+        guard let lrc = panelResults.selectedResult else {
             return
         }
+        switch panelResults.application(whilePlaying: selectedPlayer.currentTrack?.id) {
+        case .currentTrack:
+            guard let track = selectedPlayer.currentTrack else {
+                return
+            }
+            apply(lrc, to: track)
+        case .originalTrackOnly:
+            guard let searchedTrack else {
+                return
+            }
+            save(lrc, forTrackNoLongerPlaying: searchedTrack)
+        }
+    }
 
-        guard let track = selectedPlayer.currentTrack else {
-            return
-        }
+    /// Clears an earlier "wrong lyrics" or "don't search this album" verdict:
+    /// picking lyrics by hand contradicts it.
+    private func clearRejection(of track: MusicTrack) {
         if let index = defaults[.noSearchingTrackIds].firstIndex(of: track.id) {
             defaults[.noSearchingTrackIds].remove(at: index)
         }
         if let index = defaults[.noSearchingAlbumNames].firstIndex(of: track.album ?? "") {
             defaults[.noSearchingAlbumNames].remove(at: index)
         }
+    }
 
-        let lrc = searchResult[index]
-        lrc.associateWithTrack(track)
-        AppController.shared.currentLyrics = lrc
+    /// The search ran for a track that has stopped playing since, so the
+    /// pick is saved for that track — the next time it plays it gets these
+    /// lyrics — and the lyrics on screen, another track's, are left alone.
+    private func save(_ lrc: Lyrics, forTrackNoLongerPlaying track: MusicTrack) {
+        clearRejection(of: track)
+        performOnLyricsDisplayQueue {
+            lrc.associateWithTrack(track)
+            lrc.markAsUserPicked(origin: .searchPanel)
+            lrc.metadata.needsPersist = true
+            lrc.persist()
+        }
+    }
+
+    private func apply(_ lrc: Lyrics, to track: MusicTrack) {
+        clearRejection(of: track)
+        // On the lyrics display queue, like every other change to the lyrics
+        // on screen: a write from here would race one from there.
+        performOnLyricsDisplayQueue {
+            lrc.associateWithTrack(track)
+            // Applying a result from this panel is the clearest statement of intent
+            // there is, so the file records that a person chose it — the "ignore
+            // saved lyrics" switch skips what LyricsX saved on its own, not this.
+            lrc.markAsUserPicked(origin: .searchPanel)
+            AppController.shared.currentLyrics = lrc
+            // Written now rather than at the next track change: the mark is only
+            // worth anything once it is on disk, and the choice is already made.
+            lrc.metadata.needsPersist = true
+            lrc.persist()
+        }
+        // Hand the whole sorted list over, not just the pick: the
+        // next-candidate shortcut should carry on from what the user chose
+        // here instead of walking a pool built by the automatic search.
+        AppController.shared.adoptLyricsCandidates(searchResult, selecting: lrc, for: track)
         if defaults[.writeToiTunesAutomatically] {
             AppController.shared.writeToiTunes(overwrite: true)
         }
@@ -111,21 +172,51 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
 
     // MARK: - LyricsSourceDelegate
 
+    @MainActor
     func lyricsReceived(lyrics: Lyrics) {
-        guard lyrics.metadata.request == searchRequest else {
+        // Match by session id so plugin-expanded requests still belong.
+        guard lyrics.metadata.request?.id == searchRequest?.id else {
             return
         }
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
-        if let idx = searchResult.firstIndex(where: { lyricsHasHigherPriority(lyrics, over: $0) }) {
-            searchResult.insert(lyrics, at: idx)
-        } else {
-            searchResult.append(lyrics)
+        panelResults.insert(lyrics, outranks: { lyricsHasHigherPriority($0, over: $1) })
+        scheduleArtworkScoring(for: lyrics)
+        reloadResultsKeepingSelection()
+    }
+
+    /// Reloads the table and puts the selection back on the selected result,
+    /// which ranking may have moved to another row.
+    private func reloadResultsKeepingSelection() {
+        tableView.reloadData()
+        if let selectedIndex = panelResults.selectedIndex, selectedIndex != tableView.selectedRow {
+            tableView.selectRowIndexes(IndexSet(integer: selectedIndex), byExtendingSelection: false)
         }
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
+    }
+
+    private func scheduleArtworkScoring(for lyrics: Lyrics) {
+        guard defaults[.artworkSimilarityBoostEnabled],
+              let url = lyrics.metadata.artworkURL else { return }
+        let task = Task.detached {
+            let matched = await ArtworkSimilarityScorer.shared.matches(artworkURL: url)
+            guard matched, !Task.isCancelled else { return }
+            await MainActor.run { [weak self] in 
+                guard let self else { return }
+                self.applyArtworkBonus(to: lyrics)
+            }
         }
+        artworkScoringTasks.append(task)
+    }
+
+    @MainActor
+    private func applyArtworkBonus(to lyrics: Lyrics) {
+        // The lyrics object may belong to a previous search whose results
+        // have already been cleared; identity-check before mutating.
+        guard searchResult.contains(where: { $0 === lyrics }) else { return }
+        lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        panelResults.rerank(outranks: { lyricsHasHigherPriority($0, over: $1) })
+        reloadResultsKeepingSelection()
     }
 
     // MARK: - TableViewDelegate
@@ -146,13 +237,28 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             return searchResult[row].idTags[.artist] ?? "[lacking]"
         case .searchResultColumnSource:
             return searchResult[row].metadata.service ?? "[lacking]"
+        case .searchResultColumnQuality:
+            return qualityDisplayText(for: searchResult[row])
         default:
             return nil
         }
     }
 
+    // The score the row was ranked by, plus — when the artwork-similarity boost
+    // actually moved it — the part of that score the boost contributed. Without
+    // the second half a boosted row just looks inexplicably good.
+    private func qualityDisplayText(for lyrics: Lyrics) -> String {
+        let total = String(format: "%.2f", effectiveQuality(lyrics))
+        let artworkBonus = effectiveArtworkBonus(lyrics)
+        guard artworkBonus != 0 else {
+            return total
+        }
+        return total + String(format: " (%+.2f)", artworkBonus)
+    }
+
     func tableViewSelectionDidChange(_ notification: Notification) {
         let index = tableView.selectedRow
+        panelResults.select(at: index >= 0 ? index : nil)
         guard index >= 0 else {
             return
         }
@@ -224,10 +330,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         guard index >= 0 else {
             return
         }
-        guard let url = searchResult[index].metadata.artworkURL else {
+        let lyrics = searchResult[index]
+        guard let url = lyrics.metadata.artworkURL else {
+            NSLog("[SearchArtwork] index=%d, service=%@, artworkURL=nil", index, lyrics.metadata.service ?? "unknown")
             artworkView.image = #imageLiteral(resourceName: "missing_artwork")
             return
         }
+
+        NSLog("[SearchArtwork] index=%d, service=%@, url=%@", index, lyrics.metadata.service ?? "unknown", url.absoluteString)
 
         if let cacheImage = imageCache.object(forKey: url as NSURL) {
             artworkView.image = cacheImage
@@ -235,44 +345,26 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
 
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
-//        DispatchQueue.global().async {
-//            guard let image = NSImage(contentsOf: url) else {
-//                return
-//            }
-//            self.imageCache.setObject(image, forKey: url as NSURL)
-//            DispatchQueue.main.async {
-//                self.updateImage()
-//            }
-//        }
 
-        // Use URLSession for asynchronous network requests to avoid blocking threads.
-        // This is the recommended way to fetch remote data.
         URLSession.shared.dataTask(with: url) { data, response, error in
-            // This completion handler is executed on a background thread
-            // once the network request is complete.
-
-            // 1. Check for errors and ensure we received valid data.
             guard let data = data, error == nil else {
-                print("Failed to download image data: \(error?.localizedDescription ?? "Unknown error")")
+                NSLog("[SearchArtwork] download FAILED: %@", error?.localizedDescription ?? "unknown")
                 return
             }
 
-            // 2. Create the image from the downloaded data.
-            // This is now very fast because the data is already in memory.
+            let httpResponse = response as? HTTPURLResponse
+            NSLog("[SearchArtwork] download OK: %d bytes, HTTP %d, contentType=%@", data.count, httpResponse?.statusCode ?? 0, httpResponse?.value(forHTTPHeaderField: "Content-Type") ?? "unknown")
+
             guard let image = NSImage(data: data) else {
-                print("Failed to create image from data.")
+                let preview = String(data: data.prefix(200), encoding: .utf8) ?? "(binary)"
+                NSLog("[SearchArtwork] NSImage init FAILED, data preview: %@", preview)
                 return
             }
 
-            // 3. The completion handler is already on a background thread,
-            // so it's safe to update the cache here.
             self.imageCache.setObject(image, forKey: url as NSURL)
-
-            // 4. Switch back to the main thread to perform any UI updates.
             DispatchQueue.main.async {
                 self.updateImage()
             }
-
-        }.resume() // IMPORTANT: Don't forget to start the task!
+        }.resume()
     }
 }

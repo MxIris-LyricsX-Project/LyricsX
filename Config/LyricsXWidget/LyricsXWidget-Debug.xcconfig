@@ -1,0 +1,6 @@
+// LyricsXWidget Debug.
+
+#include "LyricsXWidget.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS = LyricsXWidget/Supporting Files/LyricsXWidget-Debug.entitlements
+PRODUCT_BUNDLE_IDENTIFIER = $(LX_BUNDLE_ID_PREFIX).LyricsX.LyricsWidget

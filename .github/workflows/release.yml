@@ -24,7 +24,6 @@ jobs:
     runs-on: macos-26
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
-      LYRICSX_SKIP_BUILD_BUMP: "1"
       LYRICSX_USE_LOCAL_DEPENDENCY: "0"
       SPARKLE_VERSION: "2.6.4"
     steps:
@@ -50,16 +49,24 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           LYRICSX_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_DEVID_PROFILE_BASE64 }}
           LYRICSX_HELPER_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_HELPER_DEVID_PROFILE_BASE64 }}
+          LYRICSX_WIDGET_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_WIDGET_DEVID_PROFILE_BASE64 }}
         run: bash Scripts/release/setup-keychain.sh
 
       - name: Install Sparkle tools
         run: bash Scripts/release/install-sparkle-tools.sh
 
+      - name: Ensure Metal toolchain
+        # AppleMusicLyricsPanel compiles a .metal shader, and from Xcode 26 the
+        # Metal toolchain is a separately downloadable component rather than
+        # part of Xcode itself. Whether a runner image ships with it depends on
+        # the Xcode version pinned in DEVELOPER_DIR, and actions/runner-images
+        # has had it come and go on macOS 26 images. Without it the archive
+        # fails with "cannot execute tool 'metal' due to missing Metal
+        # Toolchain". The check short-circuits when the component is present,
+        # so a runner that already has it pays nothing.
+        run: xcrun metal --version >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
+
       - name: Build
-        env:
-          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ISSUER_ID }}
         run: bash Scripts/release/build.sh
 
       - name: Upload xcresult on failure
@@ -102,13 +109,13 @@ jobs:
         run: bash Scripts/release/create-release.sh
 
       - name: Update canonical appcast
-        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash Scripts/release/publish-appcast.sh canonical
 
       - name: Mirror to legacy Pages repo
-        if: ${{ !inputs.dry_run && env.IS_PRERELEASE == 'false' }}
+        if: ${{ !inputs.dry_run }}
         env:
           PAGES_MIRROR_TOKEN: ${{ secrets.PAGES_MIRROR_TOKEN }}
         run: bash Scripts/release/publish-appcast.sh mirror

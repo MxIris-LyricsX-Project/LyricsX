@@ -1,7 +1,7 @@
 import AppKit
 
 protocol DragNDropDelegate: AnyObject {
-    func dragFinished(content: String)
+    func dragFinished(content: String, filePath: String?)
 }
 
 class DragNDropView: NSView {
@@ -25,7 +25,7 @@ class DragNDropView: NSView {
 
         if pboard.types?.contains(.string) == true,
            let str = pboard.string(forType: .string) {
-            dragDelegate?.dragFinished(content: str)
+            dragDelegate?.dragFinished(content: str, filePath: nil)
             return true
         }
 
@@ -34,7 +34,7 @@ class DragNDropView: NSView {
                let files = pboard.propertyList(forType: .fileNames) as? [Any],
                let path = files.first as? String {
                 let str = try String(contentsOf: URL(fileURLWithPath: path))
-                dragDelegate?.dragFinished(content: str)
+                dragDelegate?.dragFinished(content: str, filePath: path)
                 return true
             } else {
                 let errorInfo = [

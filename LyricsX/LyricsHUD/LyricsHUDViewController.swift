@@ -6,7 +6,7 @@ import MusicPlayer
 class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsViewDelegate, DragNDropDelegate {
     @IBOutlet var dragNDropView: DragNDropView!
     @IBOutlet var lyricsScrollView: ScrollLyricsView!
-    @IBOutlet var noLyricsLabel: NSTextField!
+    @IBOutlet var noLyricsLabel: LyricsPlaceholderTextField!
 
     @IBOutlet var lyricsScrollViewTopMargin: NSLayoutConstraint!
     @IBOutlet var lyricsScrollViewLeftMargin: NSLayoutConstraint!
@@ -34,12 +34,18 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
             $0.delegate = self
         }
         // swiftlint:disable:next force_cast
-        let accessory = NSStoryboard.main!.instantiateController(withIdentifier: .lyricsHUDAccessory) as! NSTitlebarAccessoryViewController
+        let accessory = NSStoryboard.main!.instantiateController(withIdentifier: .lyricsHUDAccessory) as! LyricsHUDAccessoryViewController
         accessory.layoutAttribute = .right
+        // Force Storyboard to connect outlets before applying the initial control state.
+        _ = accessory.view
         view.window?.addTitlebarAccessoryViewController(accessory)
+        accessory.applyLockState()
 
         dragNDropView.dragDelegate = self
-        lyricsScrollView.delegate = self
+        lyricsScrollView.lyricsViewDelegate = self
+        noLyricsLabel.contextMenuProvider = { [weak self] _ in
+            self?.lyricsViewContextMenu()
+        }
         lyricsScrollView.setupTextContents(lyrics: AppController.shared.currentLyrics)
 
         lyricsScrollView.bind(\.fontName, withDefaultName: .lyricsWindowFontName)
@@ -75,6 +81,7 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
 
     override func viewWillAppear() {
         noLyricsLabel.isHidden = AppController.shared.currentLyrics != nil
+        updateBackgroundContextMenu()
         displayLyrics(animation: false)
     }
 
@@ -85,8 +92,13 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
             let newLyrics = AppController.shared.currentLyrics
             self.lyricsScrollView.setupTextContents(lyrics: newLyrics)
             self.noLyricsLabel.isHidden = newLyrics != nil
+            self.updateBackgroundContextMenu()
             self.displayLyrics(animation: false)
         }
+    }
+
+    private func updateBackgroundContextMenu() {
+        dragNDropView.menu = lyricsViewContextMenu()
     }
 
     private func displayLyrics(animation: Bool = true) {
@@ -116,6 +128,51 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
         isTracking = true
     }
 
+    func lyricsViewContextMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+
+        guard let appDelegate = NSApp.delegate as? AppDelegate else {
+            return menu
+        }
+
+        let searchItem = menu.addItem(
+            withTitle: NSLocalizedString("Search", comment: "Lyrics window context menu"),
+            action: #selector(AppDelegate.searchLyrics(_:)),
+            keyEquivalent: ""
+        )
+        searchItem.target = appDelegate
+        searchItem.isEnabled = selectedPlayer.currentTrack != nil
+        if #available(macOS 11.0, *) {
+            searchItem.image = NSImage(
+                systemSymbolName: "magnifyingglass",
+                accessibilityDescription: searchItem.title
+            )
+        }
+
+        let editItem = menu.addItem(
+            withTitle: NSLocalizedString("Edit", comment: "Lyrics window context menu"),
+            action: #selector(AppDelegate.editCurrentLyrics(_:)),
+            keyEquivalent: ""
+        )
+        editItem.target = appDelegate
+        editItem.isEnabled = appDelegate.canEditCurrentLyrics
+        if #available(macOS 11.0, *) {
+            editItem.image = NSImage(
+                systemSymbolName: "pencil",
+                accessibilityDescription: editItem.title
+            )
+        }
+        if AppController.shared.currentLyrics != nil, !editItem.isEnabled {
+            editItem.toolTip = NSLocalizedString(
+                "Embedded lyrics cannot be edited.",
+                comment: "Disabled Edit menu explanation"
+            )
+        }
+
+        return menu
+    }
+
     func scrollWheelDidStartScroll() {
         isTracking = false
     }
@@ -132,9 +189,9 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
 
     // MARK: DragNDropDelegate
 
-    func dragFinished(content: String) {
+    func dragFinished(content: String, filePath: String?) {
         do {
-            try AppController.shared.importLyrics(content)
+            try AppController.shared.importLyrics(content, filePath: filePath)
         } catch {
             let alert = NSAlert(error: error)
             alert.beginSheetModal(for: view.window!)
@@ -152,11 +209,17 @@ class LyricsHUDViewController: NSViewController, NSWindowDelegate, ScrollLyricsV
 }
 
 class LyricsHUDAccessoryViewController: NSTitlebarAccessoryViewController {
+    @IBOutlet var lockButton: NSButton!
+
+    func applyLockState() {
+        setWindowLevel(for: lockButton.state)
+    }
+
     @IBAction func lockAction(_ sender: NSButton) {
-        if sender.state == .on {
-            view.window?.level = .modalPanel
-        } else {
-            view.window?.level = .normal
-        }
+        setWindowLevel(for: sender.state)
+    }
+
+    private func setWindowLevel(for state: NSControl.StateValue) {
+        view.window?.level = state == .on ? .modalPanel : .normal
     }
 }

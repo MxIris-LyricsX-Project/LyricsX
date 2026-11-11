@@ -4,26 +4,28 @@
 # step can find it without needing ASC API write permissions.
 #
 # Inputs (env):
-#   APPLE_DEV_ID_CERT_P12_BASE64    base64-encoded .p12
-#   APPLE_DEV_ID_CERT_PASSWORD      password for the .p12
-#   KEYCHAIN_PASSWORD               password to create the temp keychain with
-#   LYRICSX_DEVID_PROFILE_BASE64        (optional) base64 of the main app's
-#                                       Developer ID Application provisioning
-#                                       profile (.provisionprofile). When
-#                                       present, it is decoded into the user's
-#                                       local provisioning-profile directory so
-#                                       export can sign with Developer ID
-#                                       without fetching from App Store Connect.
-#   LYRICSX_HELPER_DEVID_PROFILE_BASE64 (optional) same, for the embedded
-#                                       LyricsXHelper login item. It carries the
-#                                       App Groups entitlement too, so it needs
-#                                       its own profile or export leaves it
-#                                       unsigned for that entitlement.
+#   APPLE_DEV_ID_CERT_P12_BASE64        base64-encoded .p12
+#   APPLE_DEV_ID_CERT_PASSWORD          password for the .p12
+#   KEYCHAIN_PASSWORD                   password to create the temp keychain with
+#   LYRICSX_DEVID_PROFILE_BASE64        base64 of the main app's Developer ID
+#                                       Application provisioning profile.
+#   LYRICSX_HELPER_DEVID_PROFILE_BASE64 base64 of the embedded LyricsXHelper
+#                                       login item's Developer ID profile.
+#   LYRICSX_WIDGET_DEVID_PROFILE_BASE64 base64 of the LyricsXWidget extension's
+#                                       Developer ID profile.
+#
+# All three profile env vars are required. With Scripts/release/build.sh in
+# RuntimeViewer-style mode (archive skips signing via CODE_SIGNING_ALLOWED=NO,
+# exportArchive runs with signingStyle=automatic + method=developer-id),
+# exportArchive auto-discovers each target's profile by bundle id from the
+# installed .provisionprofile files. Missing any one fails the export with
+# "No profiles for <bundle id>".
 #
 # Side effects:
-#   Creates ~/Library/Keychains/lyricsx-release.keychain-db and adds it to the
-#   user's keychain search list. Unlocks it and allows codesign access.
-#   Installs LyricsX Developer ID profile when its env var is set.
+#   Creates ~/Library/Keychains/lyricsx-release.keychain-db, adds it to the
+#   user's keychain search list, unlocks it, allows codesign access.
+#   Installs the three Developer ID profiles under
+#   ~/Library/MobileDevice/Provisioning Profiles/.
 #
 # To clean up, call this script with the "cleanup" argument.
 
@@ -83,14 +85,17 @@ security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 PROFILE_DIR="${HOME}/Library/MobileDevice/Provisioning Profiles"
 mkdir -p "$PROFILE_DIR"
 
-# Both the main app and the embedded LyricsXHelper login item carry the
-# App Groups entitlement, so each needs its own Developer ID profile installed
-# for the export step to sign them without fetching from App Store Connect.
+# All three targets (main app, embedded LyricsXHelper login item, and the
+# LyricsXWidget extension) carry capabilities that require a Developer ID
+# provisioning profile (App Groups, iCloud, etc.). Each is installed here so
+# Scripts/release/build.sh can archive under CODE_SIGN_STYLE=Manual without
+# calling ASC API (which would mint a throwaway "Apple Development: Created
+# via API" cert per archive — burns the per-individual Apple Development cert
+# quota).
 install_devid_profile() {
     local base64_value="$1" file_name="$2" human_name="$3"
     if [ -z "$base64_value" ]; then
-        log_warn "${human_name} profile env not set; its export may fail (App Groups unsigned)."
-        return
+        die "${human_name} profile env not set. Manual signing requires all three: LYRICSX_DEVID_PROFILE_BASE64, LYRICSX_HELPER_DEVID_PROFILE_BASE64, LYRICSX_WIDGET_DEVID_PROFILE_BASE64."
     fi
     local profile_path="${PROFILE_DIR}/${file_name}.provisionprofile"
     printf '%s' "$base64_value" | base64 --decode > "$profile_path"
@@ -99,3 +104,4 @@ install_devid_profile() {
 
 install_devid_profile "${LYRICSX_DEVID_PROFILE_BASE64:-}" "lyricsx-devid" "LyricsX"
 install_devid_profile "${LYRICSX_HELPER_DEVID_PROFILE_BASE64:-}" "lyricsx-helper-devid" "LyricsXHelper"
+install_devid_profile "${LYRICSX_WIDGET_DEVID_PROFILE_BASE64:-}" "lyricsx-widget-devid" "LyricsXWidget"

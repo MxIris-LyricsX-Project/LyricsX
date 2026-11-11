@@ -1,0 +1,9 @@
+// Project-level Release configuration. Acts as the base layer for every
+// target's Release configuration unless the target's xcconfig overrides it.
+
+#include "Shared-Release.xcconfig"
+
+PRODUCT_NAME = $(TARGET_NAME)
+MACOSX_DEPLOYMENT_TARGET = 12.0
+
+ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES

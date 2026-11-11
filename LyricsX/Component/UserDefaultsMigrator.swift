@@ -19,6 +19,7 @@ final class UserDefaultsMigrator {
     static let shared = UserDefaultsMigrator()
 
     private static let migrationCompletionKey = "Migration.SandboxToNonSandbox.v1"
+    private static let sourceOrderingModeMigrationCompletionKey = "Migration.SourceOrderingMode.v1"
 
     private let bundleIdentifier: String
     private let userDefaults: UserDefaults
@@ -67,6 +68,32 @@ final class UserDefaultsMigrator {
         } catch {
             #log(.error, "Migration failed: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    /// Seeds `LyricsSourceOrderingMode` from the boolean checkbox it replaced,
+    /// so nobody's ranking behaviour changes across the upgrade. The third mode
+    /// has no legacy equivalent and is only ever reached by choosing it.
+    ///
+    /// Idempotent, and — like the sandbox migration — it must run before
+    /// `register(defaults:)`. Registered values are visible to
+    /// `object(forKey:)`, so registering a default for the new key first would
+    /// make it look like the user had already chosen a mode, and the legacy
+    /// setting would be silently dropped.
+    func migrateSourceOrderingModeIfNeeded() {
+        guard !userDefaults.bool(forKey: Self.sourceOrderingModeMigrationCompletionKey) else { return }
+        defer { userDefaults.set(true, forKey: Self.sourceOrderingModeMigrationCompletionKey) }
+
+        let orderingModeKey = UserDefaults.DefaultsKeys.lyricsSourceOrderingMode.key
+        guard userDefaults.object(forKey: orderingModeKey) == nil else {
+            #log(.info, "Ordering mode already set; nothing to seed from the legacy checkbox")
+            return
+        }
+
+        let legacyKey = UserDefaults.DefaultsKeys.lyricsSourcePriorityEnabled.key
+        let legacySourcePriorityEnabled = userDefaults.bool(forKey: legacyKey)
+        let mode: LyricsSourceOrderingMode = legacySourcePriorityEnabled ? .sourceFirst : .qualityOnly
+        userDefaults.set(mode.rawValue, forKey: orderingModeKey)
+        #log(.info, "Seeded ordering mode \(mode.rawValue, privacy: .public) from \(legacyKey, privacy: .public)=\(legacySourcePriorityEnabled, privacy: .public)")
     }
 
     private var sandboxContainerPlistURL: URL {

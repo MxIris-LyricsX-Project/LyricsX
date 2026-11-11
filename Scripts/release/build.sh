@@ -2,18 +2,25 @@
 # Archive + exportArchive into build/Export/LyricsX.app
 #
 # Inputs (env):
-#   DEVELOPMENT_TEAM            (optional) team identifier; defaults to D5Q73692VW
-#   APPLE_API_KEY_P8_BASE64     (optional) base64 ASC API key, enables auto profile fetch
-#   APPLE_API_KEY_ID            (optional) ASC API Key ID
-#   APPLE_API_KEY_ISSUER_ID     (optional) ASC API Issuer UUID
+#   DEVELOPMENT_TEAM    (optional) team identifier; defaults to D5Q73692VW
 #
-# Requires: setup-keychain.sh must have run first so the Developer ID
-# Application identity is in the keychain search list.
+# Requires: setup-keychain.sh must have run first to import the Developer ID
+# Application identity into a temp keychain and install all three Developer ID
+# .provisionprofile files (main app + helper + widget) under
+# ~/Library/MobileDevice/Provisioning Profiles/.
 #
-# When APPLE_API_KEY_* are present, xcodebuild auto-fetches the Developer ID
-# provisioning profile (needed because LyricsX entitlements include iCloud and
-# other restricted capabilities). Without them, manual profile install would be
-# required.
+# Signing model: archive signs each target with the imported Developer ID
+# Application identity (overriding the Debug-default CODE_SIGN_IDENTITY =
+# "Apple Development" / "Mac Developer" in the per-target xcconfig), against
+# pre-installed Developer ID profiles. exportArchive then re-signs for the
+# developer-id distribution method, picking the same identity + profiles
+# automatically (ExportOptions.plist: method=developer-id, signingStyle=automatic).
+# No `-allowProvisioningUpdates`, no ASC API contact, so no throwaway
+# "Apple Development: Created via API" cert is minted per archive (which the
+# previous Automatic+API-key flow used to burn one slot off the per-individual
+# Apple Development cert quota of 2). Notarization (Scripts/release/notarize.sh)
+# still uses the ASC API key — that is unrelated to code-signing identity
+# selection.
 
 set -euo pipefail
 
@@ -28,33 +35,16 @@ EXPORT_PATH="build/Export"
 rm -rf "$ARCHIVE_PATH" "$EXPORT_PATH"
 mkdir -p build
 
-export LYRICSX_SKIP_BUILD_BUMP=1
 export LYRICSX_USE_LOCAL_DEPENDENCY=0
 
-AUTH_ARGS=()
-if [ -n "${APPLE_API_KEY_P8_BASE64:-}" ] && \
-   [ -n "${APPLE_API_KEY_ID:-}" ] && \
-   [ -n "${APPLE_API_KEY_ISSUER_ID:-}" ]; then
-    API_KEY_PATH="$(mktemp -t lyricsx-build-key).p8"
-    trap 'rm -f "$API_KEY_PATH"' EXIT
-    printf '%s' "$APPLE_API_KEY_P8_BASE64" | base64 --decode > "$API_KEY_PATH"
-    AUTH_ARGS=(
-        -allowProvisioningUpdates
-        -authenticationKeyPath "$API_KEY_PATH"
-        -authenticationKeyID "$APPLE_API_KEY_ID"
-        -authenticationKeyIssuerID "$APPLE_API_KEY_ISSUER_ID"
-    )
-    log_info "Auto-fetching provisioning profile via App Store Connect API key"
-else
-    log_warn "APPLE_API_KEY_* not set; xcodebuild will use only locally-installed profiles"
-fi
-
 log_info "Archiving LyricsX (team=${TEAM_ID})"
-# Use Automatic signing in archive: combined with -allowProvisioningUpdates
-# and an App Store Connect API key, xcodebuild downloads (or with App Manager
-# role, creates) the matching Developer ID provisioning profile for every
-# target. ExportOptions.plist (method=developer-id) re-signs the export with
-# the correct distribution identity.
+# All signing settings come from per-target Config/*-Release.xcconfig — they
+# pin Manual + Developer ID Application + the hardcoded asc-created profile
+# Name per target. The CLI here intentionally does NOT override
+# CODE_SIGN_IDENTITY / CODE_SIGN_STYLE because doing so under Automatic-style
+# SPM dependency targets (MASShortcut, SnapKit, FrameworkTool*Macros, etc.)
+# triggers "conflicting provisioning settings" errors — the override would
+# leak into those dependency targets globally.
 xcodebuild \
     -project LyricsX.xcodeproj \
     -scheme LyricsX \
@@ -63,8 +53,6 @@ xcodebuild \
     -archivePath "$ARCHIVE_PATH" \
     -skipMacroValidation \
     -skipPackagePluginValidation \
-    "${AUTH_ARGS[@]}" \
-    CODE_SIGN_STYLE=Automatic \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     OTHER_CODE_SIGN_FLAGS="--timestamp" \
     archive

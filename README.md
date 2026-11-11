@@ -27,13 +27,15 @@ To use **Musixmatch** as lyrics source, you need to follow the steps provided [h
 
 ### Requirements
 
-- macOS 11+
+- macOS 12+
+- Desktop widgets require macOS 15+
 
 ## Features
 
 - Work perfectly with your favorite music players. [List of supported players](https://github.com/ddddxxx/MusicPlayer#supported-players)
 - Automatically search & download live lyrics from various lyrics sources. [List of supported sources](https://github.com/ddddxxx/LyricsKit#supported-sources)
 - Display lyrics on desktop and menubar. you can customize font, color and position.
+- Optionally translate lyric lines that lack a translation, from Preferences > Lab: on this Mac with the system's Translation framework (macOS 26 or later), or through an OpenAI-compatible endpoint. See [Lyrics translation](Documentations/LyricsTranslation.md) for setup, privacy, and retry behavior.
 - Adjust lyrics offset on status menu.
 - Navigate the song with lyrics - Double click a line to jump to specific position.
 - Drag & Drop to import/export lyrics file.

@@ -4,6 +4,10 @@
 <dict>
 	<key>DesktopLyricsEnabled</key>
 	<true/>
+	<key>MenuBarPlaybackControlsEnabled</key>
+	<true/>
+	<key>MenuBarHidesLyricsWhenPaused</key>
+	<false/>
 	<key>HideLyricsWhenMousePassingBy</key>
 	<true/>
 	<key>DisableLyricsWhenPaused</key>
@@ -16,6 +20,8 @@
 	<integer>20</integer>
 	<key>DesktopLyricsEnableFurigana</key>
 	<false/>
+	<key>DesktopLyricsUseSourceKana</key>
+	<true/>
 	<key>DesktopLyricsFontName</key>
 	<string>Optima-Regular</string>
 	<key>DesktopLyricsFontSize</key>
@@ -74,6 +80,14 @@
 		<string>QQMusic</string>
 		<string>Spotify</string>
 	</array>
+	<key>UseAppleMusicLyricsWindow</key>
+	<false/>
+	<key>HighResolutionPanelArtworkEnabled</key>
+	<true/>
+	<key>StripSearchTitleBracketsEnabled</key>
+	<true/>
+	<key>WriteBackToLyricsBesideTrack</key>
+	<false/>
 	<key>NSApplicationCrashOnExceptions</key>
 	<true/>
 </dict>

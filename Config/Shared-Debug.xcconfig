@@ -1,0 +1,23 @@
+// Settings shared by every Debug build configuration.
+
+#include "Shared.xcconfig"
+
+// Optimization & debugging
+GCC_OPTIMIZATION_LEVEL = 0
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+GCC_DYNAMIC_NO_PIC = NO
+ENABLE_TESTABILITY = YES
+ONLY_ACTIVE_ARCH = YES
+DEBUG_INFORMATION_FORMAT = dwarf
+MTL_ENABLE_DEBUG_INFO = YES
+
+// Preprocessor / Swift compilation flags. The project historically uses
+// -DDEBUG via OTHER_SWIFT_FLAGS (and DEBUG=1 for Obj-C) rather than the
+// SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG convention; keep that.
+GCC_PREPROCESSOR_DEFINITIONS = DEBUG=1 $(inherited)
+OTHER_SWIFT_FLAGS = -DDEBUG
+
+// Bundle identifier / iCloud container — dev.JH prefix for Debug.
+LX_BUNDLE_ID_PREFIX = dev.JH
+LX_HELPER_BUNDLE_ID = dev.JH.LyricsXHelper
+LX_ICLOUD_CONTAINER = iCloud.dev.JH.LyricsX

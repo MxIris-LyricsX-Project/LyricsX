@@ -1,4 +1,5 @@
 import AppKit
+import SnapKit
 import Combine
 import GenericID
 import LyricsXFoundation
@@ -6,9 +7,11 @@ import MusicPlayer
 import OpenCC
 import SwiftCF
 import AccessibilityExt
+import OSLog
 import MarqueeLabel
+import UIFoundation
 
-class MenuBarLyricsController {
+final class MenuBarLyricsController {
     static let shared = MenuBarLyricsController()
 
     var statusBarMenu: NSMenu? {
@@ -22,7 +25,70 @@ class MenuBarLyricsController {
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
     private var buttonlength: CGFloat = 30
 
-    private let marqueeLabel = MarqueeLabel(frame: .init(x: 0, y: 0, width: 183, height: 22))
+    /// `MenuBarMarqueeLabel` from macOS 26 on, where the menu bar shows the
+    /// item through snapshots and an `NSTextField` in it keeps them coming
+    /// forever; MarqueeLabel's text field before that, where it is fine.
+    private let marqueeLabel: MenuBarLyricsMarquee = {
+        if #available(macOS 26, *) {
+            return MenuBarMarqueeLabel(frame: .zero)
+        }
+        return MarqueeLabel(frame: .zero)
+    }()
+
+    private let previousButton = MenuBarControlButton()
+    private let playPauseButton = MenuBarControlButton()
+    private let nextButton = MenuBarControlButton()
+
+    private static let controlButtonSize: CGFloat = 24
+    private static let lyricsToControlsGap: CGFloat = 6
+    private static let lyricsWidth: CGFloat = 183
+    private static let lyricsHeight: CGFloat = 24
+
+    private lazy var contentStackView = HStackView(
+        distribution: .fill,
+        alignment: .center,
+        spacing: 4
+    ) {
+        // `.box` is generic over the view's own type, so it needs the view,
+        // not the protocol it is reached through.
+        (marqueeLabel as NSView)
+            .box
+            .size(width: MenuBarLyricsController.lyricsWidth, height: MenuBarLyricsController.lyricsHeight)
+            .stackView
+            .customSpacing(MenuBarLyricsController.lyricsToControlsGap)
+        previousButton
+            .box
+            .size(MenuBarLyricsController.controlButtonSize)
+        playPauseButton
+            .box
+            .size(MenuBarLyricsController.controlButtonSize)
+        nextButton
+            .box
+            .size(MenuBarLyricsController.controlButtonSize)
+    }
+
+    private static let previousImage = NSImage(
+        systemSymbolName: "backward.end.fill",
+        accessibilityDescription: NSLocalizedString("Previous Track", comment: "Menu bar playback previous button")
+    )
+    private static let nextImage = NSImage(
+        systemSymbolName: "forward.end.fill",
+        accessibilityDescription: NSLocalizedString("Next Track", comment: "Menu bar playback next button")
+    )
+    private static let playImage = NSImage(
+        systemSymbolName: "play.fill",
+        accessibilityDescription: NSLocalizedString("Play", comment: "Menu bar playback play button")
+    )
+    private static let pauseImage = NSImage(
+        systemSymbolName: "pause.fill",
+        accessibilityDescription: NSLocalizedString("Pause", comment: "Menu bar playback pause button")
+    )
+
+    private var controlsVisible: Bool {
+        !defaults[.hideMenuBarItems]
+            && defaults[.menuBarLyricsEnabled]
+            && defaults[.menuBarPlaybackControlsEnabled]
+    }
 
     private var lastDisplayMode: DisplayMode?
 
@@ -41,9 +107,17 @@ class MenuBarLyricsController {
         }
     }
 
+    /// The lyrics on screen and the line playback is at, as last published.
+    /// Kept to show the line again when playback resumes. Read and written on
+    /// `DispatchQueue.lyricsDisplay`.
+    private var latestLyricsEvent: (lyrics: Lyrics?, index: Int?) = (nil, nil)
+
     private var cancelBag = Set<AnyCancellable>()
 
     private init() {
+        setupControlButtons()
+        updatePlayPauseIcon()
+        updateButtonsEnabledState()
         if !defaults[.hideMenuBarItems] {
             updateStatusItems()
         }
@@ -57,19 +131,167 @@ class MenuBarLyricsController {
             .signal()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
-        defaults.publisher(for: [.menuBarLyricsEnabled, .combinedMenubarLyrics, .hideMenuBarItems])
+        defaults.publisher(for: [
+            .menuBarLyricsEnabled,
+            .combinedMenubarLyrics,
+            .hideMenuBarItems,
+            .menuBarPlaybackControlsEnabled,
+        ])
             .prepend()
             .invoke(MenuBarLyricsController.updateStatusItems, weaklyOn: self)
             .store(in: &cancelBag)
+        selectedPlayer.playbackStateWillChange
+            .signal()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updatePlayPauseIcon, weaklyOn: self)
+            .store(in: &cancelBag)
+        defaults.publisher(for: [.menuBarLyricsScrollFramesPerSecond])
+            .prepend()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updateScrollFrameRate, weaklyOn: self)
+            .store(in: &cancelBag)
+        marqueeLabel.setPlaybackPaused(!selectedPlayer.playbackState.isPlaying)
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] playbackState in
+                self?.marqueeLabel.setPlaybackPaused(!playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        // "Hide menu bar lyrics when paused" has to act on the pause itself,
+        // which moves neither the lyrics nor the line.
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] playbackState in
+                self?.showLyricsLine(isPlaying: playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        defaults.publisher(for: [.menuBarHidesLyricsWhenPaused])
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] _ in
+                self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        selectedPlayer.currentTrackWillChange
+            .signal()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updateButtonsEnabledState, weaklyOn: self)
+            .store(in: &cancelBag)
+    }
+
+    // MARK: - Control Button Setup
+
+    private func setupControlButtons() {
+        configureControlButton(
+            previousButton,
+            image: MenuBarLyricsController.previousImage,
+            action: #selector(previousAction)
+        )
+        configureControlButton(
+            playPauseButton,
+            image: MenuBarLyricsController.playImage,
+            action: #selector(playPauseAction)
+        )
+        configureControlButton(
+            nextButton,
+            image: MenuBarLyricsController.nextImage,
+            action: #selector(nextAction)
+        )
+    }
+
+    private func configureControlButton(_ button: MenuBarControlButton, image: NSImage?, action: Selector) {
+        button.isBordered = false
+        button.imagePosition = .imageOnly
+        button.imageScaling = .scaleProportionallyDown
+        button.bezelStyle = .regularSquare
+        button.image = image
+        button.target = self
+        button.action = action
+    }
+
+    // MARK: - Control Button Actions
+
+    @objc private func previousAction() {
+        selectedPlayer.skipToPreviousItem()
+    }
+
+    @objc private func playPauseAction() {
+        selectedPlayer.playPause()
+    }
+
+    @objc private func nextAction() {
+        selectedPlayer.skipToNextItem()
+    }
+
+    // MARK: - Layout
+
+    private func layoutLyricStatusItemContents() {
+        guard let button = lyricStatusItem?.button else { return }
+
+        if contentStackView.superview !== button {
+            button.addSubview(contentStackView)
+            contentStackView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+        }
+
+        let hidden = !controlsVisible
+        previousButton.isHidden = hidden
+        playPauseButton.isHidden = hidden
+        nextButton.isHidden = hidden
+
+        contentStackView.layoutSubtreeIfNeeded()
+        button.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: contentStackView.fittingSize.width,
+            height: NSStatusBar.system.thickness
+        )
+    }
+
+    // MARK: - State Update Helpers
+
+    private func updatePlayPauseIcon() {
+        playPauseButton.image = selectedPlayer.playbackState.isPlaying
+            ? MenuBarLyricsController.pauseImage
+            : MenuBarLyricsController.playImage
+    }
+
+    private func updateButtonsEnabledState() {
+        let hasTrack = selectedPlayer.currentTrack != nil
+        previousButton.isEnabled = hasTrack
+        playPauseButton.isEnabled = hasTrack
+        nextButton.isEnabled = hasTrack
     }
 
     private func handleLyricsDisplay(event: (lyrics: Lyrics?, index: Int?)) {
-        guard !defaults[.disableLyricsWhenPaused] || selectedPlayer.playbackState.isPlaying,
-              let lyrics = event.lyrics,
-              let index = event.index else {
-//            screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+        latestLyricsEvent = event
+        showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
+    }
+
+    /// Runs on `DispatchQueue.lyricsDisplay`.
+    private func showLyricsLine(isPlaying: Bool) {
+        let (lyrics, index) = latestLyricsEvent
+        let display = MenuBarLyricsLinePolicy.display(
+            lineCount: lyrics?.lines.count,
+            currentLineIndex: index,
+            isPlaying: isPlaying,
+            hidesLyricsWhenPaused: defaults[.menuBarHidesLyricsWhenPaused]
+        )
+        switch display {
+        case .unchanged:
             return
+        case .placeholder:
+            if screenLyrics.lyrics != MenuBarLyricsController.defaultLyric {
+                screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+            }
+        case let .line(lineIndex):
+            if let lyrics {
+                showLine(at: lineIndex, of: lyrics)
+            }
         }
+    }
+
+    private func showLine(at index: Int, of lyrics: Lyrics) {
         let currentLine = lyrics.lines[index]
         var newScreenLyrics = currentLine.content
         if let converter = ChineseConverter.shared, lyrics.metadata.language?.hasPrefix("zh") == true {
@@ -91,7 +313,7 @@ class MenuBarLyricsController {
 
     @objc private func updateStatusItems() {
         guard !defaults[.hideMenuBarItems] else {
-            marqueeLabel.removeFromSuperview()
+            contentStackView.removeFromSuperview()
             iconStatusItem = nil
             lyricStatusItem = nil
             lastDisplayMode = nil
@@ -99,7 +321,7 @@ class MenuBarLyricsController {
         }
 
         guard defaults[.menuBarLyricsEnabled] else {
-            marqueeLabel.removeFromSuperview()
+            contentStackView.removeFromSuperview()
             if iconStatusItem == nil {
                 setupIconStatusItem()
             }
@@ -122,8 +344,8 @@ class MenuBarLyricsController {
             setupIconStatusItem()
             setupLyricStatusItem()
         }
-
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        layoutLyricStatusItemContents()
+        updateMarqueeText()
     }
 
     private func updateCombinedStatusLyrics() {
@@ -131,18 +353,25 @@ class MenuBarLyricsController {
             iconStatusItem = nil
             setupLyricStatusItem()
         }
+        layoutLyricStatusItemContents()
+        updateMarqueeText()
+    }
 
+    private func updateScrollFrameRate() {
+        marqueeLabel.maximumScrollFramesPerSecond = Double(defaults[.menuBarLyricsScrollFramesPerSecond])
+    }
+
+    private func updateMarqueeText() {
         marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
     }
 
     private func setupLyricStatusItem() {
-        marqueeLabel.removeFromSuperview()
+        contentStackView.removeFromSuperview()
         lyricStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         lyricStatusItem?.button?.title = ""
         lyricStatusItem?.button?.image = nil
         lyricStatusItem?.length = NSStatusItem.variableLength
-        lyricStatusItem?.button?.frame = marqueeLabel.bounds
-        lyricStatusItem?.button?.addSubview(marqueeLabel)
+        layoutLyricStatusItemContents()
         setupStatusItemMenu()
     }
 
@@ -167,27 +396,42 @@ class MenuBarLyricsController {
     }
 }
 
-// MARK: - Status Item Visibility
+// MARK: - Lyric Line
 
-extension NSStatusItem {
-    fileprivate var isVisibe: Bool {
-        guard let buttonFrame = button?.frame,
-              let frame = button?.window?.convertToScreen(buttonFrame) else {
-            return false
+/// What the lyrics status item needs from its scrolling line, whichever of
+/// the two hosts it.
+private protocol MenuBarLyricsMarquee: NSView {
+    func setStringValue(_ value: String, lineDisplayTime: TimeInterval)
+    func setPlaybackPaused(_ isPaused: Bool)
+    /// Zero or less means the line's own default.
+    var maximumScrollFramesPerSecond: Double { get set }
+}
+
+@available(macOS 26, *)
+extension MenuBarMarqueeLabel: MenuBarLyricsMarquee {}
+
+extension MarqueeLabel: MenuBarLyricsMarquee {
+    /// MarqueeLabel keeps scrolling through a pause, as it always has.
+    fileprivate func setPlaybackPaused(_ isPaused: Bool) {}
+
+    /// MarqueeLabel's animation runs at the display's rate and takes no cap.
+    fileprivate var maximumScrollFramesPerSecond: Double {
+        get { 0 }
+        set {}
+    }
+}
+
+// MARK: - Menu Bar Control Button
+
+private final class MenuBarControlButton: NSButton {
+    override func draw(_ dirtyRect: NSRect) {
+        if isHighlighted {
+            let highlightRect = bounds.insetBy(dx: 2, dy: 2)
+            let path = NSBezierPath(roundedRect: highlightRect, xRadius: 4, yRadius: 4)
+            NSColor.controlAccentColor.setFill()
+            path.fill()
         }
-
-        let point = CGPoint(x: frame.midX, y: frame.midY)
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) else {
-            return false
-        }
-        let carbonPoint = CGPoint(x: point.x, y: screen.frame.height - point.y - 1)
-
-        guard let element = try? AXUIElement.systemWide().element(at: carbonPoint),
-              let pid = try? element.pid() else {
-            return false
-        }
-
-        return getpid() == pid
+        super.draw(dirtyRect)
     }
 }
 

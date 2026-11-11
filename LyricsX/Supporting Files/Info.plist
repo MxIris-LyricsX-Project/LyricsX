@@ -32,23 +32,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.8.9</string>
+	<string>1.9.0</string>
 	<key>CFBundleVersion</key>
-	<string>10809999</string>
-	<key>Fabric</key>
-	<dict>
-		<key>APIKey</key>
-		<string>b6f597788b967cd9a94ea2a85f54c27909939b87</string>
-		<key>Kits</key>
-		<array>
-			<dict>
-				<key>KitInfo</key>
-				<dict/>
-				<key>KitName</key>
-				<string>Crashlytics</string>
-			</dict>
-		</array>
-	</dict>
+	<string>2929</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
@@ -57,8 +43,6 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
 	<true/>
-	<key>LX_BUILD_TIME</key>
-	<integer>1782055862</integer>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -144,6 +128,8 @@
 	</dict>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>LyricsX needs to know what song you're currently playing, to show lyrics accordingly.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>LyricsX uses Apple Music to look up the original title and artist of a track so it can find lyrics for localized names.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2017-2020 Xander Deng. All rights reserved.</string>
 	<key>NSMainStoryboardFile</key>
@@ -167,7 +153,7 @@
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://mxiris-lyricsx-project.github.io/LyricsX/appcast.xml</string>
+	<string>https://mxiris-lyricsx-project.github.io/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>jlL11Arlrn0YtrQn66hxwUZeBI6dFxP2Wluq6eEYzss=</string>
 	<key>UTExportedTypeDeclarations</key>

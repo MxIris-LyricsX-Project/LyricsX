@@ -1,22 +1,27 @@
 import AppKit
+import AppleMusicLyricsPanel
+import Combine
 import GenericID
+import LyricsXFoundation
 import MASShortcut
+import MusicKit
 import MusicPlayer
 import Sparkle
 import Semver
+import FoundationToolbox
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenuDelegate {
-    static var shared: AppDelegate? {
-        return NSApplication.shared.delegate as? AppDelegate
-    }
+    static var shared: AppDelegate { NSApplication.shared.delegate as! AppDelegate }
 
-    @IBOutlet var lyricsOffsetView: NSView!
+    /// The status menu's lyrics offset row, which lines its label up with the
+    /// menu's titles by itself.
+    @IBOutlet var lyricsOffsetView: TitleAlignedMenuItemView!
     @IBOutlet var lyricsOffsetTextField: NSTextField!
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
-    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: nil, userDriverDelegate: self)
+    private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: self, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
 
@@ -26,10 +31,63 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     lazy var lyricsHUD: LyricsHUDWindowController = .create()
 
+    private var activeLyricsHUD: NSWindowController?
+    private var lyricsHUDCloseObserver: NSObjectProtocol?
+
+    private var lyricsCandidateSwitchCancellable: AnyCancellable?
+
+    private func openLyricsHUD() {
+        // Create the Apple Music lyrics window lazily, only when actually
+        // opened, and release it again on close (see `releaseActiveLyricsHUD`).
+        // Users who never open it keep no SwiftUI hosting view or 30fps refresh
+        // timer alive in the background. `lyricsHUD` stays a cached lazy
+        // property (lightweight) and is reused across opens.
+        let hud: NSWindowController
+        if defaults[.useAppleMusicLyricsWindow] {
+            hud = AppleMusicLyrics.WindowController()
+        } else {
+            hud = lyricsHUD
+        }
+        hud.showWindow(nil)
+        activeLyricsHUD = hud
+        observeLyricsHUDClose(hud)
+    }
+
+    /// Drop the strong reference to the HUD when its window closes (e.g. via the
+    /// window's own close button) so the Apple Music window's controller,
+    /// SwiftUI hosting view and 30fps timer are deallocated instead of lingering.
+    /// `lyricsHUD` has its own lazy owner and merely loses the `activeLyricsHUD`
+    /// pointer here.
+    private func observeLyricsHUDClose(_ hud: NSWindowController) {
+        if let observer = lyricsHUDCloseObserver {
+            NotificationCenter.default.removeObserver(observer)
+            lyricsHUDCloseObserver = nil
+        }
+        guard let window = hud.window else { return }
+        lyricsHUDCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            self?.releaseActiveLyricsHUD()
+        }
+    }
+
+    private func releaseActiveLyricsHUD() {
+        if let observer = lyricsHUDCloseObserver {
+            NotificationCenter.default.removeObserver(observer)
+            lyricsHUDCloseObserver = nil
+        }
+        activeLyricsHUD = nil
+    }
+
     lazy var preferencesWindowController: PreferenceWindowController = .create()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         UserDefaultsMigrator.shared.migrateFromSandboxIfNeeded()
+        // Both migrations read raw persisted values, so they have to run before
+        // `register(defaults:)` puts fallbacks in front of them.
+        UserDefaultsMigrator.shared.migrateSourceOrderingModeIfNeeded()
         registerUserDefaults()
 
         let controller = AppController.shared
@@ -55,8 +113,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         )
 
         setupShortcuts()
+        observeLyricsCandidateSwitches()
 
         NSRunningApplication.runningApplications(withBundleIdentifier: lyricsXHelperIdentifier).forEach { $0.terminate() }
+
+        // After an update the desktop widgets are still answered by the old
+        // version's widget extension until something ends it.
+        DispatchQueue.global(qos: .utility).async {
+            StaleWidgetExtensionTerminator().terminateStaleProcesses()
+        }
 
         // Mirror the keys LyricsXHelper reads from the shared suite. KVO on the
         // standard defaults is reliable; Cocoa Bindings to a bare UserDefaults
@@ -73,6 +138,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         updateController.updater.checkForUpdatesInBackground()
 
+        // Flipping the beta toggle should take effect immediately. Sparkle
+        // re-evaluates allowedChannels(for:) on every feed parse, so kicking
+        // a background check is enough — no feed-URL swap required.
+        observeDefaults(key: .receiveBetaUpdates, options: [.new]) { [weak self] _, _ in
+            self?.updateController.updater.checkForUpdatesInBackground()
+        }
+
         observeDefaults(key: .touchBarLyricsEnabled, options: [.new, .initial]) { _, change in
             if change.newValue, TouchBarLyricsController.shared == nil {
                 TouchBarLyricsController.shared = TouchBarLyricsController()
@@ -81,8 +153,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             }
         }
 
-        if defaults[.isShowLyricsHUD] {
-            lyricsHUD.showWindow(nil)
+        DispatchQueue.main.async { [self] in
+            if defaults[.isShowLyricsHUD] {
+                openLyricsHUD()
+            }
         }
     }
 
@@ -96,8 +170,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        if AppController.shared.currentLyrics?.metadata.needsPersist == true {
-            AppController.shared.currentLyrics?.persist()
+        performOnLyricsDisplayQueue {
+            if AppController.shared.currentLyrics?.metadata.needsPersist == true {
+                AppController.shared.currentLyrics?.persist()
+            }
+            AppController.shared.retireWidgetSnapshot()
         }
         if defaults[.launchAndQuitWithPlayer] {
             let url = Bundle.main.bundleURL
@@ -135,6 +212,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         binder.bindShortcut(.shortcutOffsetDecrease, to: #selector(decreaseOffset))
         binder.bindShortcut(.shortcutWriteToiTunes, to: #selector(writeToiTunes))
         binder.bindShortcut(.shortcutWrongLyrics, to: #selector(wrongLyrics))
+        binder.bindShortcut(.shortcutNextLyricsCandidate, to: #selector(nextLyricsCandidate))
         binder.bindShortcut(.shortcutSearchLyrics, to: #selector(searchLyrics))
         binder.bindShortcut(.shortcutTogglePreferences, to: #selector(togglePreferences))
     }
@@ -146,6 +224,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         case #selector(writeToiTunes(_:))?:
             return selectedPlayer.name == .appleMusic && AppController.shared.currentLyrics != nil
         case #selector(searchLyrics(_:))?:
+            return selectedPlayer.currentTrack != nil
+        case #selector(nextLyricsCandidate(_:))?:
             return selectedPlayer.currentTrack != nil
         default:
             return true
@@ -159,15 +239,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     // MARK: - Menubar Action
 
     @IBAction func showLyricsHUD(_ sender: Any?) {
-        if defaults[.isShowLyricsHUD] {
-            lyricsHUD.close()
-            defaults[.isShowLyricsHUD] = false
-        } else {
-            lyricsHUD.showWindow(nil)
+        let isWindowVisible = activeLyricsHUD?.window?.isVisible ?? false
+        let presentationAction = LyricsWindowPresentationDecision.action(
+            isWindowVisible: isWindowVisible,
+            isApplicationActive: NSApp.isActive
+        )
+        switch presentationAction {
+        case .show, .bringToFront:
+            if let activeLyricsHUD {
+                activeLyricsHUD.showWindow(nil)
+            } else {
+                openLyricsHUD()
+            }
             defaults[.isShowLyricsHUD] = true
+            NSApp.activate(ignoringOtherApps: true)
+        case .close:
+            activeLyricsHUD?.close()
+            activeLyricsHUD = nil
+            defaults[.isShowLyricsHUD] = false
         }
-
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     @IBAction func aboutLyricsXAction(_ sender: Any) {
@@ -206,15 +296,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     @IBAction func showCurrentLyricsInFinder(_ sender: Any?) {
-        guard let lyrics = AppController.shared.currentLyrics else {
+        let localURL = performOnLyricsDisplayQueue { () -> URL? in
+            guard let lyrics = AppController.shared.currentLyrics else {
+                return nil
+            }
+            if lyrics.metadata.needsPersist {
+                lyrics.persist()
+            }
+            return lyrics.metadata.localURL
+        }
+        guard let localURL else {
             return
         }
-        if lyrics.metadata.needsPersist {
-            lyrics.persist()
-        }
-        if let url = lyrics.metadata.localURL {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
-        }
+        NSWorkspace.shared.activateFileViewerSelecting([localURL])
     }
 
     @IBAction func writeToiTunes(_ sender: Any?) {
@@ -226,19 +320,177 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    var canEditCurrentLyrics: Bool {
+        let lyrics = AppController.shared.currentLyrics
+        let track = selectedPlayer.currentTrack
+        let canCreateBlankFile = track.flatMap {
+            defaults.lyricsSavingDestination(
+                title: $0.title,
+                artist: $0.artist
+            )
+        } != nil
+        return LyricsEditingPolicy.canEdit(
+            hasLyrics: lyrics != nil,
+            hasLocalFile: lyrics?.metadata.localURL != nil,
+            canPersist: lyrics?.metadata.needsPersist == true,
+            canCreateBlankFile: canCreateBlankFile
+        )
+    }
+
+    @IBAction func editCurrentLyrics(_ sender: Any?) {
+        guard let track = selectedPlayer.currentTrack else {
+            return
+        }
+
+        enum ExistingLyricsEditTarget {
+            case noLyrics
+            case file(URL, URL?)
+            case unavailable
+        }
+
+        let existingLyricsTarget = performOnLyricsDisplayQueue { () -> ExistingLyricsEditTarget in
+            guard let lyrics = AppController.shared.currentLyrics else {
+                return .noLyrics
+            }
+            guard selectedPlayer.currentTrack?.id == track.id else {
+                return .unavailable
+            }
+
+            // The mark has to be in the file before the editor gets it: the
+            // saving is done by the user in another app from here on, and
+            // LyricsX never sees the result to mark it afterwards.
+            //
+            // Only when the write lands on the file about to be opened, though.
+            // Lyrics that came from beside the track are read-only by default,
+            // so persisting them produces a library copy — and the user would
+            // then be editing a file the lookup never reaches, since the
+            // beside-track original still wins. Those files are not the switch's
+            // business anyway, so leaving them unmarked costs nothing.
+            if let localURL = lyrics.metadata.localURL {
+                if defaults.lyricsPersistRewritesFileInPlace(localURL) {
+                    lyrics.markAsUserPicked(origin: .edit)
+                    lyrics.metadata.needsPersist = true
+                    lyrics.persist()
+                }
+            } else if lyrics.metadata.needsPersist {
+                // Never written anywhere yet, so this creates the library file
+                // and the mark rides along with it.
+                lyrics.markAsUserPicked(origin: .edit)
+                lyrics.persist()
+            }
+            guard let localURL = lyrics.metadata.localURL else {
+                return .unavailable
+            }
+            // Opening should work for every local lyrics file, including user-owned
+            // beside-track files. Only the custom lyrics library needs a security scope.
+            return .file(
+                localURL,
+                defaults.lyricsSecurityScopedDirectory(containing: localURL)
+            )
+        }
+
+        let url: URL
+        let securityScopedDirectoryURL: URL?
+        switch existingLyricsTarget {
+        case .file(let localURL, let scopedDirectoryURL):
+            url = localURL
+            securityScopedDirectoryURL = scopedDirectoryURL
+        case .unavailable:
+            return
+        case .noLyrics:
+            guard let destination = defaults.lyricsSavingDestination(
+                title: track.title,
+                artist: track.artist
+            ) else {
+                NSSound.beep()
+                return
+            }
+            do {
+                // The new file opens with the mark already on its first line,
+                // so lyrics typed underneath count as the user's own choice.
+                url = try LyricsStoragePolicy.prepareEmptyFile(
+                    at: destination,
+                    initialContents: Lyrics.userPickMarkLine(origin: .edit)
+                )
+                securityScopedDirectoryURL = destination.securityScopedDirectoryURL
+            } catch {
+                log(error.localizedDescription)
+                NSSound.beep()
+                return
+            }
+        }
+
+        let workspace = NSWorkspace.shared
+        if let securityScopedDirectoryURL,
+           !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+            NSSound.beep()
+            return
+        }
+        guard let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") else {
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+            NSSound.beep()
+            return
+        }
+        workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
+            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
+            if error != nil {
+                DispatchQueue.main.async {
+                    NSSound.beep()
+                }
+            }
+        }
+    }
+
+    @IBAction func nextLyricsCandidate(_ sender: Any?) {
+        AppController.shared.advanceToNextLyricsCandidate()
+    }
+
+    /// The switch itself reports back asynchronously — the replenish path has to
+    /// finish a search first — so both paths are answered from one subscription
+    /// rather than from the action's return value.
+    private func observeLyricsCandidateSwitches() {
+        lyricsCandidateSwitchCancellable = AppController.shared.lyricsCandidateSwitchOutcomes
+            .receive(on: DispatchQueue.main)
+            .sink { outcome in
+                Task { @MainActor in
+                    guard let message = AppDelegate.message(for: outcome) else {
+                        NSSound.beep()
+                        return
+                    }
+                    TransientMessageWindowController.shared.present(message: message)
+                }
+            }
+    }
+
+    private static func message(for outcome: LyricsCandidateSwitchOutcome) -> String? {
+        switch outcome {
+        case .switched(let position, let total, let service):
+            guard let service, !service.isEmpty else {
+                let format = NSLocalizedString("Lyrics %1$d of %2$d", comment: "Transient message after switching to another lyrics candidate, when the source is unknown. %1$d is the 1-based position, %2$d the number of candidates.")
+                return String(format: format, position, total)
+            }
+            let format = NSLocalizedString("Lyrics %1$d of %2$d · %3$@", comment: "Transient message after switching to another lyrics candidate. %1$d is the 1-based position, %2$d the number of candidates, %3$@ the lyrics source name.")
+            return String(format: format, position, total, service)
+        case .searching:
+            return NSLocalizedString("Searching for other lyrics…", comment: "Transient message shown when the next-candidate shortcut has to run a search first, because nothing else was in the pool.")
+        case .exhausted:
+            return NSLocalizedString("No other lyrics found", comment: "Transient message shown when a search for other lyrics candidates turned up nothing but what is already displayed.")
+        case .unavailable:
+            return nil
+        }
+    }
+
     @IBAction func wrongLyrics(_ sender: Any?) {
         guard let track = selectedPlayer.currentTrack else {
             return
         }
         defaults[.noSearchingTrackIds].append(track.id)
         if defaults[.writeToiTunesAutomatically] {
-            track.setLyrics("")
+            AppController.shared.removeRejectedLyricsFromMusic(of: track)
         }
-        if let url = AppController.shared.currentLyrics?.metadata.localURL {
-            try? FileManager.default.removeItem(at: url)
-        }
+        removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
-        AppController.shared.searchTask?.cancel()
+        AppController.shared.cancelLyricsSearches()
     }
 
     @IBAction func doNotSearchLyricsForThisAlbum(_ sender: Any?) {
@@ -248,12 +500,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
         defaults[.noSearchingAlbumNames].append(album)
         if defaults[.writeToiTunesAutomatically] {
-            track.setLyrics("")
+            AppController.shared.removeRejectedLyricsFromMusic(of: track)
         }
-        if let url = AppController.shared.currentLyrics?.metadata.localURL {
-            try? FileManager.default.removeItem(at: url)
-        }
+        removeRejectedLyricsFile()
         AppController.shared.currentLyrics = nil
+        AppController.shared.cancelLyricsSearches()
+    }
+
+    /// Deletes LyricsX's own copy of the lyrics the user just rejected, so the
+    /// next lookup cannot bring them back. A file beside the track is left
+    /// alone: it is the user's, not LyricsX's to delete.
+    private func removeRejectedLyricsFile() {
+        guard let fileURL = LyricsStoragePolicy.fileToRemoveWhenRejected(
+            localURL: AppController.shared.currentLyrics?.metadata.localURL,
+            defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
+            customDirectoryURL: defaults.lyricsCustomSavingPath
+        ) else {
+            return
+        }
+        try? FileManager.default.removeItem(at: fileURL)
     }
 
     func registerUserDefaults() {
@@ -278,26 +543,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             .desktopLyricsYPositionFactor: 0.9,
         ])
     }
-
-    func menuWillOpen(_ menu: NSMenu) {
-        if #available(macOS 11, *) {
-            let menuHasOnState = statusBarMenu.items.filter { menuItem in
-                return menuItem.state == .on
-            }.count > 0
-
-            let lyricsOffsetConstraint = lyricsOffsetView.constraints.first(where: { $0.identifier == "lyricsOffsetConstraint" })
-
-            lyricsOffsetConstraint?.constant = 14
-            if menuHasOnState {
-                lyricsOffsetConstraint?.constant += 10
-            }
-        }
-    }
 }
 
 extension AppDelegate: SPUStandardUserDriverDelegate {
     func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool {
         return true
+    }
+}
+
+extension AppDelegate: SPUUpdaterDelegate {
+    // Sparkle's channel contract: items WITHOUT <sparkle:channel> are always
+    // eligible; items WITH a channel are only eligible if the channel name is
+    // in the returned set. So {} = "stable only", {"beta"} = "stable + beta".
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        return defaults[.receiveBetaUpdates] ? ["beta"] : []
     }
 }
 

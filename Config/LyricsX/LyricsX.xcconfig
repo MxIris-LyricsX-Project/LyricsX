@@ -1,0 +1,13 @@
+// Settings shared by LyricsX (main app) Debug and Release. Anything
+// configuration-specific lives in LyricsX-Debug.xcconfig and
+// LyricsX-Release.xcconfig.
+
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+CODE_SIGN_IDENTITY = Apple Development
+CODE_SIGN_STYLE = Automatic
+FRAMEWORK_SEARCH_PATHS = $(inherited) $(PROJECT_DIR)
+INFOPLIST_FILE = LyricsX/Supporting Files/Info.plist
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.music
+MACOSX_DEPLOYMENT_TARGET = 12.0
+PROVISIONING_PROFILE_SPECIFIER =
+REGISTER_APP_GROUPS = YES

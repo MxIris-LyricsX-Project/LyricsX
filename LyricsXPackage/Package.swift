@@ -17,7 +17,7 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
     }
 }
 
-let useLocalDependency = envEnable("LYRICSX_USE_LOCAL_DEPENDENCY")
+let useLocalDependency = envEnable("LYRICSX_USE_LOCAL_DEPENDENCY", default: false)
 
 extension Package.Dependency {
     enum LocalSearchPath {
@@ -54,11 +54,19 @@ extension Package.Dependency {
 
 let package = Package(
     name: "LyricsXPackage",
-    platforms: [.macOS(.v10_15)],
+    platforms: [.macOS(.v12)],
     products: [
         .library(
             name: "LyricsXFoundation",
             targets: ["LyricsXFoundation"]
+        ),
+        .library(
+            name: "AppleMusicLyricsPanel",
+            targets: ["AppleMusicLyricsPanel"]
+        ),
+        .library(
+            name: "LyricsXWidgetShared",
+            targets: ["LyricsXWidgetShared"]
         ),
     ],
     dependencies: [
@@ -70,7 +78,7 @@ let package = Package(
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/LyricsKit",
-                from: "1.8.0"
+                exact: "1.12.0"
             )
         ),
         .package(
@@ -81,12 +89,27 @@ let package = Package(
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
-                from: "1.8.0"
+                exact: "1.10.1"
             )
         ),
         .package(
             url: "https://github.com/Mx-Iris/FrameworkToolbox",
-            branch: "main"
+            // 0.12.0 and 0.13.0 expand @Loggable to `Logger.disabled`, which
+            // dyld cannot find below the 26.4 releases: the app dies at launch.
+            from: "0.14.0"
+        ),
+        .package(
+            url: "https://github.com/Mx-Iris/UIFoundation",
+            // 0.42.0 is the first release with PlaybackSlider.
+            from: "0.42.0",
+            // The panel's scrubber, PlaybackSlider, draws Music's colours with
+            // plus-lighter blending, a private Core Animation filter that
+            // UIFoundation compiles in only under this trait.
+            traits: ["AppleInternal"]
+        ),
+        .package(
+            url: "https://github.com/Lakr233/MSDisplayLink",
+            from: "2.0.0"
         ),
     ],
     targets: [
@@ -96,14 +119,71 @@ let package = Package(
                 .product(name: "LyricsKit", package: "LyricsKit"),
                 .product(name: "MusicPlayer", package: "MusicPlayer"),
                 .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+                .product(name: "OSToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "LyricsXWidgetShared",
+            dependencies: [
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "AppleMusicLyricsPanel",
+            dependencies: [
+                "LyricsXFoundation",
+                .product(name: "MusicPlayer", package: "MusicPlayer"),
+                .product(name: "OSToolbox", package: "FrameworkToolbox"),
+                .product(name: "UIFoundation", package: "UIFoundation"),
+                .product(name: "MSDisplayLink", package: "MSDisplayLink"),
+            ],
+            resources: [
+                .process("ArtworkGradientShaders.metal"),
+            ],
+            swiftSettings: [
+                // The sources moved here verbatim from the app target, which
+                // builds with SWIFT_VERSION 5 — this keeps them compiling
+                // identically instead of also taking on a strict-concurrency
+                // migration in the same change.
+                .swiftLanguageMode(.v5),
+            ]
+        ),
+        .testTarget(
+            name: "AppleMusicLyricsPanelTests",
+            dependencies: [
+                "AppleMusicLyricsPanel",
+                .product(name: "UIFoundation", package: "UIFoundation"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
             ]
         ),
         .testTarget(
             name: "LyricsXFoundationTests",
             dependencies: [
-                "LyricsXFoundation"
+                "LyricsXFoundation",
+            ]
+        ),
+        .testTarget(
+            name: "LyricsXWidgetSharedTests",
+            dependencies: ["LyricsXWidgetShared"]
+        ),
+        .target(
+            name: "StatusItemProbeSupport",
+            dependencies: ["LyricsXFoundation"],
+            path: "Tests/StatusItemProbeSupport"
+        ),
+        .executableTarget(
+            name: "StatusItemProbeHost",
+            dependencies: ["StatusItemProbeSupport"],
+            path: "Tests/StatusItemProbeHost"
+        ),
+        .testTarget(
+            name: "MenuBarLyricsTests",
+            dependencies: [
+                "StatusItemProbeSupport",
+                "StatusItemProbeHost",
             ]
         ),
     ]
 )
-

@@ -1,19 +1,28 @@
 import AppKit
+import Combine
 import LyricsXFoundation
 import OpenCC
 
 protocol ScrollLyricsViewDelegate: AnyObject {
     func doubleClickLyricsLine(at position: TimeInterval)
+    func lyricsViewContextMenu() -> NSMenu
     func scrollWheelDidStartScroll()
     func scrollWheelDidEndScroll()
 }
 
-class ScrollLyricsView: NSScrollView {
-    weak var delegate: ScrollLyricsViewDelegate?
+final class LyricsTextView: LyricsInteractionTextView {}
 
-    private var textView: NSTextView {
+final class LyricsPlaceholderTextField: LyricsContextMenuTextField {}
+
+class ScrollLyricsView: NSScrollView {
+    /// Not `delegate`: with UIFoundation's `AppleInternal` trait on, AppKit's private
+    /// headers declare `NSScrollView.delegate`, and a property of that name here
+    /// no longer compiles.
+    weak var lyricsViewDelegate: ScrollLyricsViewDelegate?
+
+    private var textView: LyricsTextView {
         // swiftlint:disable:next force_cast
-        return documentView as! NSTextView
+        return documentView as! LyricsTextView
     }
 
     var fadeStripWidth: CGFloat = 24
@@ -49,8 +58,36 @@ class ScrollLyricsView: NSScrollView {
 
     private var ranges: [(TimeInterval, NSRange)] = []
     private var highlightedRange: NSRange?
+    private var displayedLyrics: Lyrics?
+    private var preferenceObservers: Set<AnyCancellable> = []
+
+    override func awakeFromNib() {
+        super.awakeFromNib()
+
+        textView.doubleClickHandler = { [weak self] event in
+            self?.handleDoubleClick(with: event)
+        }
+        textView.contextMenuProvider = { [weak self] _ in
+            guard let menu = self?.lyricsViewDelegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+                return nil
+            }
+            return menu
+        }
+        defaults.publisher(for: [
+            .preferredLyricsTranslationLanguage,
+            .preferBilingualLyrics,
+            .chineseConversionIndex,
+        ])
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] in
+            guard let self else { return }
+            setupTextContents(lyrics: displayedLyrics)
+        }
+        .store(in: &preferenceObservers)
+    }
 
     func setupTextContents(lyrics: Lyrics?) {
+        displayedLyrics = lyrics
         guard let lyrics = lyrics else {
             ranges = []
             textView.string = ""
@@ -61,11 +98,11 @@ class ScrollLyricsView: NSScrollView {
         var lrcContent = ""
         var newRanges: [(TimeInterval, NSRange)] = []
         let enabledLrc = lyrics.lines.filter { $0.enabled && !$0.content.isEmpty }
-        let languageCode = lyrics.metadata.translationLanguages.first
+        let languageCode = lyrics.displayTranslationLanguage
 
         for line in enabledLrc {
             var lineStr = line.content
-            if var trans = line.attachments[.translation(languageCode: languageCode)], defaults[.preferBilingualLyrics],
+            if var trans = lyrics.displayTranslation(for: line), defaults[.preferBilingualLyrics],
                languageCode?.hasPrefix("zh") == true {
                 if let converter = ChineseConverter.shared {
                     trans = converter.convert(trans)
@@ -83,7 +120,7 @@ class ScrollLyricsView: NSScrollView {
         textView.string = lrcContent
         highlightedRange = nil
         let range = textView.string.fullRange
-        let font = NSFont(name: fontName, size: fontSize)!
+        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
         let style = NSMutableParagraphStyle().with {
             $0.alignment = .center
         }
@@ -107,24 +144,36 @@ class ScrollLyricsView: NSScrollView {
             return
         }
 
+        handleDoubleClick(with: event)
+    }
+
+    private func handleDoubleClick(with event: NSEvent) {
         let clickPoint = textView.convert(event.locationInWindow, from: nil)
         let clickRange = ranges.filter { _, range in
             let bounding = textView.layoutManager!.boundingRect(forGlyphRange: range, in: textView.textContainer!)
             return bounding.contains(clickPoint)
         }
         if let (position, _) = clickRange.first {
-            delegate?.doubleClickLyricsLine(at: position)
+            lyricsViewDelegate?.doubleClickLyricsLine(at: position)
         }
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        guard let menu = lyricsViewDelegate?.lyricsViewContextMenu(), !menu.items.isEmpty else {
+            super.rightMouseDown(with: event)
+            return
+        }
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
 
     override func scrollWheel(with event: NSEvent) {
         super.scrollWheel(with: event)
         switch event.momentumPhase {
         case .began:
-            delegate?.scrollWheelDidStartScroll()
+            lyricsViewDelegate?.scrollWheelDidStartScroll()
         case .ended,
              .cancelled:
-            delegate?.scrollWheelDidEndScroll()
+            lyricsViewDelegate?.scrollWheelDidEndScroll()
         default:
             break
         }
@@ -212,7 +261,7 @@ class ScrollLyricsView: NSScrollView {
 
     func updateFont() {
         let range = textView.string.fullRange
-        guard let font = NSFont(name: fontName, size: fontSize) else { return }
+        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
         textView.textStorage?.addAttribute(.font, value: font, range: range)
     }
 }
