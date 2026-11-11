@@ -5,6 +5,74 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.0</title>
+            <pubDate>Wed, 11 Nov 2026 12:18:15 +0000</pubDate>
+            <sparkle:version>10900999</sparkle:version>
+            <sparkle:shortVersionString>1.9.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<p>This version adds desktop widgets, an Apple Music-style lyrics window and lyrics translation.</p>
+<h3>Upgrading</h3>
+<ul>
+<li>This version requires macOS 12 or later.</li>
+<li>Lyrics searches now leave out bracketed parts of song titles; turn off <strong>Strip brackets from search title</strong> in <strong>Preferences → General</strong> to keep them.</li>
+</ul>
+<h3>New</h3>
+<ul>
+<li>Desktop widgets in four sizes show the current lyrics, on macOS 15 or later.</li>
+<li>An Apple Music-style lyrics window, with the cover beside animated lyrics, can be turned on in <strong>Preferences → Lab</strong> on macOS 15 or later.</li>
+<li>The menu bar shows playback buttons next to the lyrics; turn off <strong>Show playback controls in menu bar</strong> in <strong>Preferences → Lab</strong> to hide them.</li>
+<li>Turn on <strong>Hide menu bar lyrics when paused</strong> in <strong>Preferences → Lab</strong> to hide the menu bar lyrics while music is paused.</li>
+<li><strong>Lyrics translation</strong> in <strong>Preferences → Lab</strong> fills in missing translations using System Translation on macOS 26 or an OpenAI-compatible service.</li>
+<li><strong>Display language</strong> picks which translation is shown.</li>
+<li>Apple Music can serve as a lyrics source with word-by-word timing once you add your user token in <strong>Preferences → Lab</strong>.</li>
+<li><strong>Next Lyrics Candidate</strong> switches to the next search result, from the menu or a keyboard shortcut.</li>
+<li><strong>Preferences → Source</strong> offers three ways to rank results: by match score, by source order, or by score with source order breaking ties.</li>
+<li><strong>Preferences → General</strong> can now always search again instead of using saved lyrics, and write your edits back to lyrics files beside the track.</li>
+<li>The lyrics window has a right-click menu to search for or edit the lyrics.</li>
+<li><strong>Preferences → Lab</strong> can recover original song names through MusicKit and favor lyrics whose cover matches the song.</li>
+<li><strong>Receive beta updates</strong> in <strong>Preferences → General</strong> lets you try new versions early.</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li>Lyrics you pick by hand now stay with the song, even when it has embedded lyrics or a lyrics file beside it.</li>
+<li>Menu bar lyrics use much less CPU on macOS 26 and later.</li>
+<li>Search results rank instrumental and karaoke versions below the original song.</li>
+<li>The lyrics window now appears on every Space.</li>
+<li>Furigana uses the kana supplied by the lyrics source when there is one.</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li><strong>Wrong Lyrics</strong> and <strong>Disable Lyrics for Entire Album</strong> no longer delete your own lyrics, whether in a file beside the track or in Music.</li>
+<li>Fixed lyrics coming back after <strong>Disable Lyrics for Entire Album</strong>.</li>
+<li>Fixed <strong>Search Lyrics</strong> applying a different result than the one selected, or applying it to a song that started in the meantime.</li>
+<li>Skipping a song during a search no longer rewrites the next song's lyrics in Music.</li>
+<li>Fixed a crash when the lyrics window's font is no longer installed.</li>
+<li>The menu bar no longer shows the previous song's last line until the next song's lyrics begin.</li>
+<li>Fixed a crash when dragging text from another app onto the list in <strong>Preferences → Source</strong>.</li>
+<li>The <strong>Lyrics Offset</strong> row in the menu bar menu lines up with the other items again on macOS 27.</li>
+<li>Lyrics no longer get stuck on the last line when a song repeats.</li>
+<li>The desktop lyrics highlight is no longer clipped, misaligned or restarted by small position corrections.</li>
+<li>The last word of a word-timed line now fills in the desktop lyrics and on the Touch Bar.</li>
+<li>Desktop lyrics no longer cover the Dock on an external display that sits higher or lower than the main display.</li>
+<li>Lyrics no longer jump back to the first line on pause with some players.</li>
+<li>With the system Now Playing source, lyrics no longer jump back on pause or run ahead after resuming.</li>
+<li>Lyrics search no longer misjudges the length of songs playing in Spotify.</li>
+<li>QQ Music lyrics no longer lose text around parentheses.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<ul>
+<li>@dongge0210 (#204) added lyrics translation through OpenAI-compatible services.</li>
+<li>@vizmoe (#179, #181, #182, #184) improved the lyrics window and pausing, and laid the groundwork for AI translation.</li>
+<li>@SmallSquare (#198) cut the menu bar's CPU use.</li>
+<li>@garyyeap (#192) fixed the desktop lyrics highlight.</li>
+<li>@NickJi2019 (#208) fixed desktop lyrics covering the Dock on external displays.</li>
+<li>@Tosd0 (#148) fixed lyrics getting stuck on the last line.</li>
+<li>@Mihaly-Ma (#156) made furigana use the source's kana.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.0/LyricsX_1.9.0+10900999.zip" length="11339800" type="application/octet-stream" sparkle:edSignature="wzyfyuZFpOyqd8MV0B4yan0uoP4iDtksgf9gA4chMmMjdrOE4Mdfa1E+LsrC+0SHp+wAbOemosswqVACPFBGCQ==" />
+        </item>
+        <item>
             <title>1.9.0-rc.4</title>
             <pubDate>Sun, 08 Nov 2026 11:23:30 +0000</pubDate>
             <sparkle:channel>beta</sparkle:channel>
