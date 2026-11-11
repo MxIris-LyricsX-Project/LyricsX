@@ -65,6 +65,15 @@ public enum LyricsSelectionOverrideTable {
         return updatedTable
     }
 
+    /// Verification may finish after playback changes. Only the entry being
+    /// verified may be removed; a newer selection for this track must survive.
+    public static func reconcilingVerification(
+        forTrackId trackId: String, expectedEntry: String?, automaticLookupPrecedes: Bool, in table: [String: String]
+    ) -> [String: String] {
+        guard let expectedEntry, table[trackId] == expectedEntry, !automaticLookupPrecedes else { return table }
+        return removing(trackId: trackId, from: table)
+    }
+
     private static func decodeTimestamp(from entry: String) -> TimeInterval {
         guard let separatorIndex = entry.firstIndex(of: fieldSeparator) else {
             return 0

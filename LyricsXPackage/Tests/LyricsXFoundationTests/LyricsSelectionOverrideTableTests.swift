@@ -109,3 +109,23 @@ func stayingUnderTheCeilingNeverTrims() {
 
     #expect(table.count == LyricsSelectionOverrideTable.entryLimit)
 }
+
+@Test
+func verificationCanRemoveAnUnnecessaryOverrideAfterPlaybackMovesOn() {
+    let table = LyricsSelectionOverrideTable.recording(filePath: "/LyricsX/Song.lrcx", forTrackId: "previous",
+                                                     in: [:], at: referenceDate)
+    let updated = LyricsSelectionOverrideTable.reconcilingVerification(
+        forTrackId: "previous", expectedEntry: table["previous"], automaticLookupPrecedes: false, in: table
+    )
+    #expect(updated["previous"] == nil)
+}
+
+@Test
+func anOlderVerificationCannotRemoveANewerSelection() {
+    let old = LyricsSelectionOverrideTable.recording(filePath: "/LyricsX/old.lrcx", forTrackId: "song", in: [:], at: referenceDate)
+    let newer = LyricsSelectionOverrideTable.recording(filePath: "/LyricsX/new.lrcx", forTrackId: "song", in: old,
+                                                     at: referenceDate.addingTimeInterval(1))
+    #expect(LyricsSelectionOverrideTable.reconcilingVerification(
+        forTrackId: "song", expectedEntry: old["song"], automaticLookupPrecedes: false, in: newer
+    ) == newer)
+}

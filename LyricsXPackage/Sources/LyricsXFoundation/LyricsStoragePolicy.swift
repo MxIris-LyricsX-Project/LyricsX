@@ -115,6 +115,11 @@ public enum LyricsStoragePolicy {
         return contentsLyricsXWrote.contains { comparableLines(of: $0) == linesInMusic }
     }
 
+    public static func lyricsInMusicMatchesWrittenContent(_ lyricsInMusic: String?, written: String) -> Bool {
+        guard let lyricsInMusic else { return false }
+        return comparableLines(of: lyricsInMusic) == comparableLines(of: written)
+    }
+
     private static func comparableLines(of text: String) -> [String] {
         text.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
