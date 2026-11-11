@@ -29,6 +29,7 @@ final class AppController: NSObject {
     @Published private(set) var currentLocalLyricsSource: LocalLyricsSource?
 
     var lyricsManager: LyricsProvider
+    private let localLyricsIOQueue = DispatchQueue(label: "LocalLyricsIO", qos: .userInitiated)
     // A slow scripting-bridge read for one track must not hold up the quick
     // adjacent-file check for the next track.
     private let localLyricsRefreshQueue = DispatchQueue(
@@ -42,6 +43,7 @@ final class AppController: NSObject {
     private let musicIOQueue: DispatchQueue
     private let localLyricsCatalog: LocalLyricsCatalog
     private let localLyricsCoordinator: LocalLyricsCoordinator
+    var localLyricsActivations: AnyPublisher<LocalLyricsState.Session?, Never> { localLyricsCoordinator.activations }
     let localLyricsChanges = PassthroughSubject<LocalLyricsChange, Never>()
 
     @Published var currentLyrics: Lyrics? {
@@ -1476,6 +1478,20 @@ final class AppController: NSObject {
         localLyricsChanges.send(LocalLyricsChange(trackID: trackID, kind: change))
     }
 
+    func localLyricsSession(for trackID: String) -> LocalLyricsState.Session? {
+        performOnLyricsDisplayQueue {
+            guard selectedPlayer.currentTrack?.id == trackID else { return nil }
+            return localLyricsCatalog.captureSession(for: trackID)
+        }
+    }
+
+    func isCurrentLocalLyricsSession(_ session: LocalLyricsState.Session) -> Bool { localLyricsCatalog.isActive(session) }
+
+    func reconcileLocalLyricsChoices(_ choices: [LocalLyricsChoice], for track: MusicTrack,
+                                    session: LocalLyricsState.Session) -> [LocalLyricsChoice] {
+        localLyricsCatalog.reconcile(choices, for: track, session: session)
+    }
+
     func rejectCurrentLyrics(for trackID: String) {
         performOnLyricsDisplayQueue {
             guard selectedPlayer.currentTrack?.id == trackID else { return }
@@ -2121,6 +2137,111 @@ final class AppController: NSObject {
 }
 
 extension AppController {
+    func refreshLocalLyricsChoices(
+        session: LocalLyricsState.Session, completion: @escaping ([LocalLyricsChoice], LocalLyricsRefreshStage) -> Void
+    ) {
+        let track = performOnLyricsDisplayQueue { () -> MusicTrack? in
+            guard let track = selectedPlayer.currentTrack, track.id == session.trackID,
+                  localLyricsCatalog.isActive(session) else { return nil }
+            return track
+        }
+        guard let track else {
+            DispatchQueue.main.async { completion([], .cancelled) }
+            return
+        }
+        localLyricsRefreshQueue.async {
+            self.localLyricsCatalog.discoverChoices(for: track, session: session, libraryFiles: { track in
+                self.librarySearchFiles(title: track.title ?? "", artist: track.artist ?? "").map(\.fileURL)
+            }) { choices, stage in
+                DispatchQueue.main.async {
+                    guard self.localLyricsCatalog.isActive(session) else {
+                        if stage == .complete || stage == .cancelled { completion([], .cancelled) }
+                        return
+                    }
+                    completion(choices, stage)
+                }
+            }
+        }
+    }
+
+    func applyLocalLyrics(_ choice: LocalLyricsChoice, completion: @escaping (Bool, Error?) -> Void) {
+        performOnLyricsDisplayQueue {
+            guard selectedPlayer.currentTrack?.id == choice.track.id,
+                  let session = localLyricsCatalog.captureSession(for: choice.track.id), session.token == choice.sessionToken else {
+                DispatchQueue.main.async { completion(false, nil) }
+                return
+            }
+            if choice.source == .lyricsX, localLyricsCatalog.snapshot(for: session)?.libraryRejected != false {
+                DispatchQueue.main.async { completion(false, nil) }
+                return
+            }
+            cancelLyricsSearches()
+            let selectionID = UUID()
+            localLyricsSelectionID = selectionID
+            loadLocalLyrics(choice, session: session, selectionID: selectionID, completion: completion)
+        }
+    }
+
+    private func loadLocalLyrics(
+        _ choice: LocalLyricsChoice, session: LocalLyricsState.Session, selectionID: UUID, completion: @escaping (Bool, Error?) -> Void
+    ) {
+        if choice.source == .lyricsX, choice.memoryLyrics != nil {
+            // Provider results are already prepared. Reuse the latest retained
+            // object (which may now carry a translation) without filtering it again.
+            guard let lyrics = localLyricsCatalog.snapshot(for: session)?.managedLyrics else {
+                DispatchQueue.main.async { completion(false, nil) }
+                return
+            }
+            commitLocalLyrics(lyrics, choice: choice, selectionID: selectionID, completion: completion)
+            return
+        }
+        let queue = choice.source == .embedded ? localLyricsRefreshQueue : localLyricsIOQueue
+        queue.async {
+            do {
+                let lyrics = try self.readLocalLyrics(choice)
+                self.commitLocalLyrics(lyrics, choice: choice, selectionID: selectionID, completion: completion)
+            } catch {
+                DispatchQueue.main.async {
+                    let isCurrent = performOnLyricsDisplayQueue {
+                        self.localLyricsSelectionID == selectionID
+                    }
+                    completion(false, isCurrent ? error : nil)
+                }
+            }
+        }
+    }
+
+    /// Runs on the I/O queue. The LyricsX slot preserves its existing fallback order.
+    private func readLocalLyrics(_ choice: LocalLyricsChoice) throws -> Lyrics {
+        let lyrics: Lyrics
+        switch choice.source {
+        case .embedded:
+            guard let session = localLyricsCatalog.captureSession(for: choice.track.id), session.token == choice.sessionToken,
+                  let text = localLyricsCatalog.metadata(for: choice.track, read: .fresh, session: session)?.embeddedText,
+                  !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw invalidLocalLyricsError() }
+            lyrics = try parseLocalLyrics(text)
+            prepareEmbeddedLyrics(lyrics, title: choice.track.title ?? "", artist: choice.track.artist ?? "")
+        case .file(let url):
+            lyrics = try readLyricsFile(at: url, title: choice.track.title ?? "", artist: choice.track.artist ?? "")
+        case .lyricsX:
+            let fileCandidates = self.lyricsXFileCandidates(
+                for: choice.track,
+                preferredURL: choice.lyricsXFileURL
+            )
+            guard let managedLyrics = fileCandidates.lazy.compactMap({ candidateFile in
+                self.loadLyrics(
+                    at: candidateFile.fileURL,
+                    title: choice.track.title ?? "",
+                    artist: choice.track.artist ?? ""
+                )
+            }).first else {
+                throw invalidLocalLyricsError()
+            }
+            lyrics = managedLyrics
+        }
+        return lyrics
+    }
+
     private func parseLocalLyrics(_ contents: String) throws -> Lyrics {
         guard let lyrics = Lyrics(contents) else {
             throw invalidLocalLyricsError()
@@ -2132,6 +2253,22 @@ extension AppController {
         NSError(domain: lyricsXErrorDomain, code: 0, userInfo: [
             NSLocalizedDescriptionKey: NSLocalizedString("Invalid lyric file", comment: "Lyrics parsing error"),
         ])
+    }
+
+    /// Validate and publish together, so an older read cannot replace a newer selection.
+    private func commitLocalLyrics(
+        _ lyrics: Lyrics, choice: LocalLyricsChoice, selectionID: UUID,
+        completion: @escaping (Bool, Error?) -> Void
+    ) {
+        let didCommit = performOnLyricsDisplayQueue { () -> Bool in
+            guard localLyricsSelectionID == selectionID,
+                  selectedPlayer.currentTrack?.id == choice.track.id,
+                  localLyricsCatalog.captureSession(for: choice.track.id)?.token == choice.sessionToken else { return false }
+            currentLyrics = lyrics
+            currentLocalLyricsSource = choice.source
+            return true
+        }
+        DispatchQueue.main.async { completion(didCommit, nil) }
     }
 
     private func persistCurrentLyrics() {

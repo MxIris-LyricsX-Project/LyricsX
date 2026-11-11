@@ -21,6 +21,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
+    private var localLyricsMenuController: LocalLyricsMenuController?
+
     private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: self, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
@@ -97,6 +99,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
+        localLyricsMenuController = LocalLyricsMenuController(menu: statusBarMenu)
+        localLyricsMenuController?.startObserving()
 
         lyricsOffsetStepper.bind(
             .value,
@@ -234,6 +238,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.item(withTag: 202)?.isEnabled = AppController.shared.currentLyrics != nil
+        if menu === statusBarMenu {
+            localLyricsMenuController?.updateMenu()
+        }
     }
 
     // MARK: - Menubar Action
@@ -542,6 +549,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
             .desktopLyricsXPositionFactor: 0.5,
             .desktopLyricsYPositionFactor: 0.9,
         ])
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        if menu === statusBarMenu {
+            localLyricsMenuController?.refresh()
+            statusBarMenu.update()
+        }
     }
 }
 
