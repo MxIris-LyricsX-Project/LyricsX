@@ -867,14 +867,9 @@ final class AppController: NSObject {
               destination.fileURL != lyrics.metadata.localURL else {
             return [:]
         }
-        let securityScopedDirectoryURL = destination.securityScopedDirectoryURL
-        if let securityScopedDirectoryURL, !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
-            return [:]
-        }
-        defer {
-            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
-        }
-        guard let contents = try? String(contentsOf: destination.fileURL, encoding: .utf8),
+        guard let contents = try? withSecurityScopedAccess(to: destination.securityScopedDirectoryURL, perform: {
+            try String(contentsOf: destination.fileURL, encoding: .utf8)
+        }),
               let savedLyrics = Lyrics(contents) else {
             return [:]
         }
@@ -1183,7 +1178,8 @@ final class AppController: NSObject {
     /// without surrounding whitespace the two spellings coincide and this
     /// returns exactly the two files it always did.
     private func librarySearchFiles(title: String, artist: String) -> [LyricsLookupCandidateFile] {
-        let (directoryURL, isSecurityScoped) = defaults.lyricsSavingPath()
+        let directoryURL = defaults.lyricsSavingPath()
+        let isSecurityScoped = defaults.lyricsSecurityScopedDirectory(containing: directoryURL) != nil
         let baseURLs = LyricsStoragePolicy
             .libraryFileBaseNameCandidates(title: title, artist: artist)
             .map { directoryURL.appendingPathComponent($0) }
@@ -1518,16 +1514,14 @@ final class AppController: NSObject {
         return besideTrackURLs.contains { FileManager.default.fileExists(atPath: $0.path) }
     }
 
+    /// `securityScopedURL` may name the file or the custom directory itself;
+    /// either way the access is requested on the bookmarked directory, the
+    /// only URL that carries the grant.
     private func loadLyrics(at fileURL: URL, securityScopedURL: URL?, title: String, artist: String) -> Lyrics? {
-        if let securityScopedURL {
-            guard securityScopedURL.startAccessingSecurityScopedResource() else {
-                return nil
-            }
-        }
-        defer {
-            securityScopedURL?.stopAccessingSecurityScopedResource()
-        }
-        guard let fileContents = try? String(contentsOf: fileURL, encoding: String.Encoding.utf8),
+        let directoryURL = securityScopedURL.flatMap { defaults.lyricsSecurityScopedDirectory(containing: $0) }
+        guard let fileContents = try? withSecurityScopedAccess(to: directoryURL, perform: {
+            try String(contentsOf: fileURL, encoding: .utf8)
+        }),
               let lyrics = Lyrics(fileContents) else {
             return nil
         }

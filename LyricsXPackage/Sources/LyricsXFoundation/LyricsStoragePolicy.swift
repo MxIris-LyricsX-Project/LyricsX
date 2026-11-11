@@ -29,6 +29,14 @@ public struct LyricsStorageDestination: Equatable, Sendable {
 }
 
 public enum LyricsStoragePolicy {
+    /// Read, write and discovery use the same bookmark for any path inside the custom directory.
+    public static func securityScopedDirectory(containing fileURL: URL, customDirectoryURL: URL?) -> URL? {
+        guard let customDirectoryURL,
+              fileURL.standardizedFileURL == customDirectoryURL.standardizedFileURL
+                || contains(fileURL, in: customDirectoryURL) else { return nil }
+        return customDirectoryURL
+    }
+
     public static let lyricsFileExtension = "lrcx"
 
     public static func contains(_ fileURL: URL, in directoryURL: URL) -> Bool {
@@ -137,15 +145,9 @@ public enum LyricsStoragePolicy {
                 ? localURL.pathExtension.lowercased() == Self.lyricsFileExtension
                 : allowUnmanagedLocalWriteBack
             if writesBackInPlace {
-                let securityScopedDirectoryURL: URL?
-                if let customDirectoryURL, contains(localURL, in: customDirectoryURL) {
-                    securityScopedDirectoryURL = customDirectoryURL
-                } else {
-                    securityScopedDirectoryURL = nil
-                }
                 return LyricsStorageDestination(
                     fileURL: localURL,
-                    securityScopedDirectoryURL: securityScopedDirectoryURL
+                    securityScopedDirectoryURL: securityScopedDirectory(containing: localURL, customDirectoryURL: customDirectoryURL)
                 )
             }
         }
@@ -182,24 +184,12 @@ public enum LyricsStoragePolicy {
     ) -> LyricsStorageDestination? {
         let location = LyricsSavingLocation(popUpIndex: locationRawValue)
 
-        let directoryURL: URL
-        let securityScopedDirectoryURL: URL?
-        if location == .customDirectory, let customDirectoryURL {
-            directoryURL = customDirectoryURL
-            securityScopedDirectoryURL = customDirectoryURL
-        } else {
-            directoryURL = defaultDirectoryURL
-            securityScopedDirectoryURL = nil
-        }
-
-        guard let baseName = libraryFileBaseName(title: title, artist: artist) else {
-            return nil
-        }
+        let directoryURL = location == .customDirectory ? (customDirectoryURL ?? defaultDirectoryURL) : defaultDirectoryURL
+        guard let baseName = libraryFileBaseName(title: title, artist: artist) else { return nil }
+        let fileURL = directoryURL.appendingPathComponent(baseName).appendingPathExtension(lyricsFileExtension)
         return LyricsStorageDestination(
-            fileURL: directoryURL
-                .appendingPathComponent(baseName)
-                .appendingPathExtension(lyricsFileExtension),
-            securityScopedDirectoryURL: securityScopedDirectoryURL
+            fileURL: fileURL,
+            securityScopedDirectoryURL: securityScopedDirectory(containing: fileURL, customDirectoryURL: customDirectoryURL)
         )
     }
 
@@ -241,40 +231,36 @@ public enum LyricsStoragePolicy {
         initialContents: String = "",
         fileManager: FileManager = .default
     ) throws -> URL {
-        let securityURL = destination.securityScopedDirectoryURL
-        if let securityURL,
-           !securityURL.startAccessingSecurityScopedResource() {
-            throw CocoaError(.fileWriteNoPermission)
-        }
-        defer {
-            securityURL?.stopAccessingSecurityScopedResource()
-        }
-
-        let fileURL = destination.fileURL
-        let directoryURL = fileURL.deletingLastPathComponent()
-        var isDirectory: ObjCBool = false
-        if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDirectory) {
-            guard isDirectory.boolValue else {
-                throw CocoaError(.fileWriteInvalidFileName)
+        try withSecurityScopedAccess(
+            to: destination.securityScopedDirectoryURL,
+            permissionError: .fileWriteNoPermission
+        ) {
+            let fileURL = destination.fileURL
+            let directoryURL = fileURL.deletingLastPathComponent()
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDirectory) {
+                guard isDirectory.boolValue else {
+                    throw CocoaError(.fileWriteInvalidFileName)
+                }
+            } else {
+                try fileManager.createDirectory(
+                    at: directoryURL,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
             }
-        } else {
-            try fileManager.createDirectory(
-                at: directoryURL,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-        }
 
-        isDirectory = false
-        if fileManager.fileExists(atPath: fileURL.path, isDirectory: &isDirectory) {
-            guard !isDirectory.boolValue else {
-                throw CocoaError(.fileWriteInvalidFileName)
+            isDirectory = false
+            if fileManager.fileExists(atPath: fileURL.path, isDirectory: &isDirectory) {
+                guard !isDirectory.boolValue else {
+                    throw CocoaError(.fileWriteInvalidFileName)
+                }
+                return fileURL
             }
+
+            try Data(initialContents.utf8).write(to: fileURL, options: .atomic)
             return fileURL
         }
-
-        try Data(initialContents.utf8).write(to: fileURL, options: .atomic)
-        return fileURL
     }
 
     private static func sanitizedPathComponent(_ value: String?) -> String? {

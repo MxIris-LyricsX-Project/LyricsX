@@ -92,12 +92,12 @@ extension UserDefaults {
 
     /// Reading and writing must resolve the pop-up index through the same rule,
     /// so both go through `LyricsSavingLocation`.
-    func lyricsSavingPath() -> (URL, security: Bool) {
+    func lyricsSavingPath() -> URL {
         let location = LyricsSavingLocation(popUpIndex: self[.lyricsSavingPathPopUpIndex])
         if location == .customDirectory, let path = lyricsCustomSavingPath {
-            return (path, true)
+            return path
         }
-        return (lyricsDefaultSavingDirectory, false)
+        return lyricsDefaultSavingDirectory
     }
 
     func lyricsSavingDestination(
@@ -123,11 +123,7 @@ extension UserDefaults {
     }
 
     func lyricsSecurityScopedDirectory(containing fileURL: URL) -> URL? {
-        guard let directoryURL = lyricsCustomSavingPath,
-              LyricsStoragePolicy.contains(fileURL, in: directoryURL) else {
-            return nil
-        }
-        return directoryURL
+        LyricsStoragePolicy.securityScopedDirectory(containing: fileURL, customDirectoryURL: lyricsCustomSavingPath)
     }
 
     var lyricsCustomSavingPath: URL? {
@@ -206,36 +202,24 @@ extension Lyrics {
             return false
         }
 
-        let securityURL = destination.securityScopedDirectoryURL
-        if let securityURL {
-            guard securityURL.startAccessingSecurityScopedResource() else {
-                return false
-            }
-        }
-        defer {
-            if let securityURL {
-                securityURL.stopAccessingSecurityScopedResource()
-            }
-        }
-
-        let fileURL = destination.fileURL
-        let directoryURL = fileURL.deletingLastPathComponent()
-        let fileManager = FileManager.default
-
         do {
-            var isDir: ObjCBool = false
-            if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDir) {
-                guard isDir.boolValue else {
-                    return false
+            return try withSecurityScopedAccess(
+                to: destination.securityScopedDirectoryURL, permissionError: .fileWriteNoPermission
+            ) {
+                let fileURL = destination.fileURL
+                let directoryURL = fileURL.deletingLastPathComponent()
+                let fileManager = FileManager.default
+                var isDir: ObjCBool = false
+                if fileManager.fileExists(atPath: directoryURL.path, isDirectory: &isDir) {
+                    guard isDir.boolValue else { throw CocoaError(.fileWriteInvalidFileName) }
+                } else {
+                    try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
                 }
-            } else {
-                try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+                try Data(description.utf8).write(to: fileURL, options: .atomic)
+                metadata.localURL = fileURL
+                metadata.needsPersist = false
+                return true
             }
-
-            try Data(description.utf8).write(to: fileURL, options: .atomic)
-            metadata.localURL = fileURL
-            metadata.needsPersist = false
-            return true
         } catch {
             log(error.localizedDescription)
             return false

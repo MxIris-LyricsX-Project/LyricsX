@@ -86,7 +86,7 @@ class PreferenceGeneralViewController: PreferenceViewController {
     }
 
     @IBAction func showInFinderAction(_ sender: Any) {
-        let url = defaults.lyricsSavingPath().0
+        let url = defaults.lyricsSavingPath()
         NSWorkspace.shared.open(url)
     }
 

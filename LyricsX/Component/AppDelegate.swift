@@ -421,21 +421,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         }
 
         let workspace = NSWorkspace.shared
-        if let securityScopedDirectoryURL,
-           !securityScopedDirectoryURL.startAccessingSecurityScopedResource() {
+        let access: SecurityScopedAccess
+        do {
+            access = try SecurityScopedAccess(to: securityScopedDirectoryURL)
+        } catch {
             NSSound.beep()
             return
         }
         guard let textEditURL = workspace.urlForApplication(withBundleIdentifier: "com.apple.TextEdit") else {
-            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
             NSSound.beep()
             return
         }
-        workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { _, error in
-            securityScopedDirectoryURL?.stopAccessingSecurityScopedResource()
-            if error != nil {
-                DispatchQueue.main.async {
-                    NSSound.beep()
+        workspace.open([url], withApplicationAt: textEditURL, configuration: .init()) { [access] _, error in
+            withExtendedLifetime(access) {
+                if error != nil {
+                    DispatchQueue.main.async {
+                        NSSound.beep()
+                    }
                 }
             }
         }

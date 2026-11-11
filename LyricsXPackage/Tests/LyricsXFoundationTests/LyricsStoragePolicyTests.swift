@@ -281,3 +281,26 @@ func lyricsXsWriteStillCountsWhenMusicStoresItsLineBreaksDifferently(lyricsInMus
 
     #expect(clears)
 }
+
+@Test
+func libraryDiscoveryAndFileReadsUseTheSameBookmarkedDirectory() {
+    let directory = URL(fileURLWithPath: "/Volumes/Media/Lyrics", isDirectory: true)
+    #expect(LyricsStoragePolicy.securityScopedDirectory(containing: directory, customDirectoryURL: directory) == directory)
+    #expect(LyricsStoragePolicy.securityScopedDirectory(
+        containing: directory.appendingPathComponent("Song.lrcx"), customDirectoryURL: directory
+    ) == directory)
+    #expect(LyricsStoragePolicy.securityScopedDirectory(
+        containing: URL(fileURLWithPath: "/Volumes/Media/Lyrics-other/Song.lrc"), customDirectoryURL: directory
+    ) == nil)
+}
+
+@Test
+func aDefaultSavingDirectoryInsideABookmarkUsesThatBookmarkForWritesToo() {
+    let directory = URL(fileURLWithPath: "/Volumes/Media", isDirectory: true)
+    let destination = LyricsStoragePolicy.destination(
+        locationRawValue: LyricsSavingLocation.lyricsXDirectory.rawValue,
+        title: "Song", artist: "Artist",
+        defaultDirectoryURL: directory.appendingPathComponent("Lyrics"), customDirectoryURL: directory
+    )
+    #expect(destination?.securityScopedDirectoryURL == directory)
+}
