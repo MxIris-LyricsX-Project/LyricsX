@@ -2,6 +2,7 @@ import AppKit
 import LyricsXFoundation
 import MusicPlayer
 import Regex
+import ScriptingBridge
 
 extension MusicPlayerName {
     init?(index: Int) {
@@ -43,15 +44,15 @@ extension MusicTrack {
         originalTrack.setValue(lyrics, forKey: "lyrics")
     }
 
-    var localFileURL: URL? {
-        if let url = fileURL {
-            return url
-        }
-        guard let originalTrack = originalTrack,
-              originalTrack.responds(to: Selector(("location"))) else {
-            return nil
-        }
-        return originalTrack.value(forKey: "location") as? URL
+    var lyricsLocationRead: LyricsLocationRead {
+        guard let originalTrack else { return fileURL.map(LyricsLocationRead.available) ?? .absent }
+        guard let object = originalTrack as? SBObject,
+              object.responds(to: Selector(("location"))) else { return .absent }
+        let value = object.value(forKey: "location")
+        let error = object.lastError()
+        if error != nil { return .failed }
+        if let url = value as? URL { return .available(url) }
+        return .absent
     }
 }
 
