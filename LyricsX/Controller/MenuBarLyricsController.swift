@@ -23,7 +23,6 @@ final class MenuBarLyricsController {
     private var iconStatusItem: NSStatusItem?
     private var lyricStatusItem: NSStatusItem?
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
-    private var buttonlength: CGFloat = 30
 
     /// `MenuBarMarqueeLabel` from macOS 26 on, where the menu bar shows the
     /// item through snapshots and an `NSTextField` in it keeps them coming
@@ -376,10 +375,12 @@ final class MenuBarLyricsController {
     }
 
     private func setupIconStatusItem() {
-        iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // Square, like every other icon-only item: the menu bar sizes it and
+        // its highlight. A fixed 30 pt around the 16 pt icon left the
+        // highlight about a third wider than its neighbours' (#214).
+        iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         iconStatusItem?.button?.title = ""
         iconStatusItem?.button?.image = buttonImage
-        iconStatusItem?.length = buttonlength
         setupStatusItemMenu()
     }
 
