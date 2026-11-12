@@ -44,8 +44,8 @@ jobs:
 
       - name: Setup keychain
         env:
-          APPLE_DEV_ID_CERT_P12_BASE64: ${{ secrets.APPLE_DEV_ID_CERT_P12_BASE64 }}
-          APPLE_DEV_ID_CERT_PASSWORD: ${{ secrets.APPLE_DEV_ID_CERT_PASSWORD }}
+          APPLE_DEV_ID_CERT_P12_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          APPLE_DEV_ID_CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           LYRICSX_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_DEVID_PROFILE_BASE64 }}
           LYRICSX_HELPER_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_HELPER_DEVID_PROFILE_BASE64 }}
@@ -83,9 +83,9 @@ jobs:
       - name: Notarize
         if: ${{ !inputs.dry_run }}
         env:
-          APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ISSUER_ID }}
+          APPLE_API_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_BASE64 }}
+          APPLE_API_KEY_ID: ${{ secrets.NOTARY_KEY_IDENTIFIER }}
+          APPLE_API_KEY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_IDENTIFIER }}
         run: bash Scripts/release/notarize.sh
 
       - name: Package
@@ -95,7 +95,7 @@ jobs:
       - name: Sparkle sign
         if: ${{ !inputs.dry_run }}
         env:
-          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: bash Scripts/release/sign-sparkle.sh
 
       - name: Compose release notes
