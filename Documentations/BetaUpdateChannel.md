@@ -69,6 +69,20 @@ appcast。Sparkle 的契约：
 - **`update-appcast.py` 的幂等性保留**：仍以
   `<sparkle:shortVersionString>` 作为去重键，重跑某个 tag 是 no-op。
 
+## 发版改由 AppRelease 完成之后
+
+上面「Release pipeline」一节列的脚本已随发版迁到 AppRelease 一起删除（见 `CLAUDE.md` 的
+「Release Workflow」）。channel 机制本身不变，只是条目换了地方生成：
+
+- 带后缀的 tag（`v1.9.1-beta.1`）由引擎判为预发布，Sparkle 的 `generate_appcast` 带
+  `--channel beta` 生成这一版的条目；`Release.zsh` 的 `release_deploy_appcast` 钩子再用
+  `Scripts/insert-appcast-item.py` 把条目插进两个线上更新源，channel 标签原样保留。
+- 两个更新源都会更新：1.9.0 起读组织站点的 `appcast.xml`（`SUFeedURL`），1.8.x 及更早版本
+  读本仓库 `master` 上的 `appcast.xml`。两份最早的几个条目并不相同，所以只插入新条目，
+  其余内容一个字节都不动，不让 `generate_appcast` 直接改写它们。
+- 去重键仍是 `<sparkle:shortVersionString>`（完整的 tag 版本）。重跑同一个版本会打出新的 zip，
+  所以已有的那一条会整条换成新包的签名和长度，不再只刷新说明。
+
 ## 验证
 
 - `python3 Scripts/release/update-appcast.py` 用 `IS_PRERELEASE=true`
