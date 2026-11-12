@@ -151,8 +151,16 @@ class KaraokeLabel: NSTextField {
 //        return ctFrame
 //    }
 
+    /// The bounds size `_ctFrame` was laid out for.
+    private var ctFrameLayoutSize: CGSize?
+
     private func ctFrame(_ dirtyRect: NSRect? = nil) -> CTFrame {
-        if let ctFrame = _ctFrame {
+        // The layout fits the text into the label's bounds, so it only holds
+        // for the size it was made at. A new or reused label draws once at its
+        // old, smaller frame before the stack view gives it the size of its
+        // new line, and a layout kept from that draw fits none of the text:
+        // the line stayed blank until the next line replaced it (#215).
+        if let ctFrame = _ctFrame, ctFrameLayoutSize == bounds.size {
             return ctFrame
         }
         if dirtyRect == nil {
@@ -162,10 +170,12 @@ class KaraokeLabel: NSTextField {
         let frameAttr: [CTFrame.AttributeKey: Any] = [.progression: progression.rawValue as NSNumber]
         let framesetter = CTFramesetter.create(attributedString: attrString)
         // A partial repaint must use the same layout as the progress mask.
-        let (suggestSize, fitRange) = framesetter.suggestFrameSize(constraints: bounds.size, frameAttributes: frameAttr)
+        let layoutSize = bounds.size
+        let (suggestSize, fitRange) = framesetter.suggestFrameSize(constraints: layoutSize, frameAttributes: frameAttr)
         let path = CGPath(rect: CGRect(origin: .zero, size: suggestSize), transform: nil)
         let ctFrame = framesetter.frame(stringRange: fitRange, path: path, frameAttributes: frameAttr)
         _ctFrame = ctFrame
+        ctFrameLayoutSize = layoutSize
         return ctFrame
     }
 
