@@ -12,16 +12,15 @@ struct SmallWidgetView: View {
         } else {
             ZStack(alignment: .bottomLeading) {
                 if let coverImage = entry.coverImage {
+                    // The accented mode the unfocused desktop uses would
+                    // otherwise paint the opaque cover solid white.
                     Image(decorative: coverImage, scale: 1)
                         .resizable()
+                        .widgetAccentedRenderingMode(.fullColor)
                         .aspectRatio(contentMode: .fill)
                 }
 
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.6)],
-                    startPoint: .center,
-                    endPoint: .bottom
-                )
+                CoverScrimView()
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(entry.trackTitle)

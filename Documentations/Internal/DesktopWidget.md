@@ -279,6 +279,22 @@ timeline，读到的仍是那份「正在播放」的快照，于是接着往后
 退出 LyricsX 之后音乐可能还在放，小组件说「没在播放」不一定对；但它已经无从知道播放状态，总比继续滚一份过时的
 歌词好。
 
+### 桌面失焦时封面要声明 `fullColor`
+
+macOS 26 起，桌面不在前台时，小组件改用 accented 渲染模式：背景换成玻璃，文字染成白色，**不透明的图片整块涂成白色，
+渐变也一律染白**（Apple 文章「Optimizing your widget for accented rendering mode and Liquid Glass」）。原来四个尺寸的
+封面都没声明怎么画，失焦时全成了灰白方块。小号还多一处：标题底下那层黑色渐变被染白，白字落在白底上，标题看不见了。
+
+- 四个封面都加 `.widgetAccentedRenderingMode(.fullColor)`。上面那篇文章建议封面这类媒体图片用 `fullColor`。
+  `fullColor` 的符号文档写着「Only applies to iOS」，那是 macOS 还没有 accented 模式时写的；2026-11-12 在
+  macOS 27.2 的桌面上实测，失焦时封面保持原色，macOS 上同样生效。
+- 小号的黑色渐变改成 `CoverScrimView`：在 CoreGraphics 里画成一张 1 像素宽的渐变图，同样声明 `fullColor`，失焦时
+  仍是黑色。渐变的样子和原来的 `LinearGradient` 一样：上半透明，下半渐变到 60% 黑。
+
+**以后加进小组件的图片都要想一下失焦时怎么画。** 封面这类照片用 `fullColor`；图标、装饰图用 `accented`、
+`desaturated` 或 `accentedDesaturated`，让它和系统的单色外观一致。要在失焦时保持颜色的渐变、半透明遮罩，只能画成
+图片再声明 `fullColor`，SwiftUI 的渐变一定会被染白。
+
 ## 模块结构
 
 | 文件 | 内容 |
@@ -292,6 +308,7 @@ timeline，读到的仍是那份「正在播放」的快照，于是接着往后
 | `LyricsX/Intents/WidgetPlaybackIntents.swift` | 三个播放按钮的 intent，同时编进 app 和小组件；在 app 里调 `AppController` 的 `togglePlaybackFromWidget()` 等方法 |
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetExtensionProcessPolicy.swift` | 纯规则：一个正在运行的小组件扩展进程是不是更新留下的旧进程 |
 | `LyricsX/Component/StaleWidgetExtensionTerminator.swift` | app 启动时枚举进程、读出每个小组件进程运行的文件，按上面的规则结束旧进程 |
+| `LyricsXWidget/Views/CoverScrimView.swift` | 小号封面底部的黑色渐变，画成声明 `fullColor` 的图片，桌面失焦时不被染白 |
 
 ## 验证
 
@@ -368,6 +385,8 @@ descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从
   切换「Prefer bilingual lyrics」，桌面上所有小组件应当在约 1 秒内一起显示或收起译文。上面那条日志里，每次刷新的 `record reload` 只应出现一个配置编号，`Throttling additional refresh request`
   不应紧跟在每次刷新后面出现。
 - 大号：放一首有长句的歌，折行的句子应当居中，当前行不再变成一行加省略号。
+- 失焦：放一首有封面的歌，点一下别的 app 的窗口让桌面失焦，四个尺寸的封面都应保持原色，小号的标题仍看得清。
+  再切到桌面，样子应和失焦前一样。
 
 ## 已知降级
 
@@ -398,7 +417,6 @@ descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从
   扩展进程」。
 - app 不是正常退出（崩溃、强制退出）时 `applicationWillTerminate` 不会运行，快照留着，小组件照旧滚下去，直到 app
   再启动写新快照。
-
 ## 后续工作
 
 - 发版时，发布说明里写上「更新后把桌面上的小组件全部删掉，再重新添加一次」。

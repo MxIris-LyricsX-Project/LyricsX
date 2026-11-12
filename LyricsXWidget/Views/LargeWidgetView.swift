@@ -15,9 +15,12 @@ struct LargeWidgetView: View {
                     // Smaller than the extra-large widget's 60 pt cover: the
                     // large widget is about half as wide, and every point the
                     // header grows comes out of the lyrics area below it.
+                    // The accented mode the unfocused desktop uses would
+                    // otherwise paint the opaque cover solid white.
                     if let coverImage = entry.coverImage {
                         Image(decorative: coverImage, scale: 1)
                             .resizable()
+                            .widgetAccentedRenderingMode(.fullColor)
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 44, height: 44)
                             .clipShape(RoundedRectangle(cornerRadius: 6))

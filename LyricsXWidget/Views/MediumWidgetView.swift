@@ -12,8 +12,11 @@ struct MediumWidgetView: View {
         } else {
             HStack(spacing: 16) {
                 if let coverImage = entry.coverImage {
+                    // The accented mode the unfocused desktop uses would
+                    // otherwise paint the opaque cover solid white.
                     Image(decorative: coverImage, scale: 1)
                         .resizable()
+                        .widgetAccentedRenderingMode(.fullColor)
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 80, height: 80)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
