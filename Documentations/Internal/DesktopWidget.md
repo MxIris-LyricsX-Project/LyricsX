@@ -367,11 +367,11 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metadata"
 ```
 
-**改了小组件的描述之后，先临时调高两个 Info.plist 的 `CFBundleVersion` 再构建，测完改回、不提交。** 描述指有没有
+**改了小组件的描述之后，先临时调高 `Config/Version.xcconfig` 的 `CURRENT_PROJECT_VERSION` 再构建，测完改回、不提交。**主 App 和小组件的 Info.plist 都引用它。 描述指有没有
 设置项、支持哪些尺寸、显示名这类内容。`chronod` 按版本号缓存描述，版本号不变就判定 "No updates required -
 descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从缓存里读。Debug 构建的版本号恒为 2929，所以换成
 静态配置后，编辑菜单还在。改成 2930 后，日志里出现 "Refetching descriptors due to extension version change, from
-2929-2929-… to 2930-2930-…"，菜单才消失。正式发版时 CI 会改版本号，用户不受影响。只改视图或 timeline 的话不用调，
+2929-2929-… to 2930-2930-…"，菜单才消失。正式发版时 AppRelease 会传入按 tag 编码的版本号，用户不受影响。只改视图或 timeline 的话不用调，
 它们每次刷新都会重新问小组件。
 
 下面这些只能在桌面上人工确认：

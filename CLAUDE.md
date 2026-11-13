@@ -252,7 +252,7 @@ ways follows an app setting passed in its snapshot, because each widget the
 user edits forms a configuration of its own and puts the others five seconds
 behind. Checking a change to what the widget declares — configuration,
 supported families, name — on the desktop needs a temporarily higher
-`CFBundleVersion` in both Info.plists (revert it, never commit it): `chronod`
+`CURRENT_PROJECT_VERSION` in `Config/Version.xcconfig` (revert it, never commit it): `chronod`
 caches widget descriptors by version, and a Debug build's never changes.
 `Documentations/Internal/DesktopWidget.md` has both.
 
@@ -276,9 +276,12 @@ advisory, not as a gate. The build is the gate.
 ## Release Workflow
 
 A LyricsX release is triggered by pushing a `v*` tag (e.g. `v1.9.0-beta.7`),
-which fires `.github/workflows/release.yml`. CI sets
-`LYRICSX_USE_LOCAL_DEPENDENCY=0`, so it resolves the three sibling packages
-from their **published tags**, not from local checkouts.
+which fires `.github/workflows/release.yml`. The workflow runs
+[AppRelease](https://github.com/Mx-Iris/AppRelease), the release engine the
+maintainer's apps share, at the version `Release.zsh` pins; what LyricsX adds
+to it is under "How a release runs" below. `Release.zsh` sets
+`LYRICSX_USE_LOCAL_DEPENDENCY=0`, so a release resolves the three sibling
+packages from their **published tags**, not from local checkouts.
 
 All three are pinned to an **exact version**: `LyricsXPackage/Package.swift`
 carries `exact: "1.12.0"` for LyricsKit and `exact: "1.10.1"` for MusicPlayer,
@@ -327,25 +330,67 @@ Then in **this** repo:
    intend to ship; a release should not carry dependency movement nobody asked
    for.
 6. Commit the updated `Package.resolved` and `Package.swift`.
-7. Bump `CFBundleShortVersionString` (marketing version) in
-   `LyricsX/Supporting Files/Info.plist` and
-   `LyricsXWidget/Supporting Files/Info.plist` if the new version's base
-   (`X.Y.Z` portion, stripping any `-beta.N` / `-rc.N` suffix) differs
-   from what's committed. **`CFBundleVersion` does not need to be
-   touched** — `Scripts/release/validate.sh` derives it from VERSION using
-   the encoded scheme (see `Documentations/BuildNumberScheme.md`) and
-   overwrites both plists at CI time, so the value committed in the repo
-   is informational only.
+7. Set `MARKETING_VERSION` in `Config/Version.xcconfig` to the new
+   version's base (`X.Y.Z`, without any `-beta.N` / `-rc.N` suffix) if it
+   differs from what's committed; every target's Info.plist reads it.
+   **The build number needs no change** — AppRelease encodes it from the
+   tag (see `Documentations/BuildNumberScheme.md`) and passes it to the
+   archive, so `CURRENT_PROJECT_VERSION` there is only what a build made in
+   Xcode carries.
 8. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`,
    following the conventions below.
 9. Push the branch, then tag and push `v<version>` to trigger the
-   release workflow.
+   release workflow. Before the first tag of a new version, a build-only
+   run is a cheap check of the signing secrets and the archive: run the
+   workflow by hand on the branch without a tag
+   (`gh workflow run release.yml --ref develop`). It archives, signs and
+   notarizes, keeps the zip as an artifact and publishes nothing. It fails
+   once `v<MARKETING_VERSION>` is tagged on another commit, so do it after
+   step 7.
+
+### How a release runs
+
+`Release.zsh` describes LyricsX to AppRelease, whose README explains every
+setting; its five stages (`target → archive → export → notary → product`)
+each check their own result and stop the release otherwise. What is
+particular to LyricsX:
+
+- The project's version stays numeric and a prerelease adds its suffix to
+  the tag only (`release_version_tag_match=base`); the build number is
+  encoded from the whole tag (`semantic-version-encoding`).
+- Release signs every target by hand against its Developer ID profile
+  (`Config/*/*-Release.xcconfig`), and `ExportOptions.plist` names the same
+  profiles. Do not add signing settings to `release_archive_arguments`:
+  overriding them on the command line leaks into the SwiftPM dependency
+  targets, which fail with "conflicting provisioning settings".
+- The hooks: `release_preflight` stops a release without both notes files
+  before anything is built; `release_verify_export` checks that the app's
+  and the helper's profiles authorize App Groups (1.8.6 shipped without);
+  `release_after_product` uploads the dSYMs as
+  `LyricsX_<version>+<build>.dSYMs.zip`; `release_deploy_appcast` puts the
+  release into both Sparkle feeds — the organization site's `appcast.xml`,
+  which 1.9.0 and later read, and `appcast.xml` on this repository's
+  `master`, which 1.8.x reads.
+- The feeds take only the new item, spliced in by
+  `Scripts/insert-appcast-item.py` from what Sparkle's `generate_appcast`
+  wrote, so their older items stay byte for byte. A Sparkle key that does
+  not match the app's `SUPublicEDKey` leaves the item unsigned and stops the
+  release there, before either feed changes. Run
+  `python3 -m unittest discover -s Scripts/Tests` after any change to that
+  script.
+- Secrets: the Developer ID certificate, the notary key and the Sparkle key
+  are organization secrets shared with the maintainer's other apps; the
+  three `LYRICSX_*_DEVID_PROFILE_BASE64` profiles and `PAGES_MIRROR_TOKEN`,
+  which pushes the organization site, belong to this repository.
+- Running a release again is safe: the tag and the GitHub Release are
+  reused, the zip is replaced, and each feed's item for that version is
+  replaced with the new zip's. A failed run uploads its logs as an
+  artifact.
 
 ### Release notes conventions
 
 - The GitHub Release **title** is the version string with a `v` prefix
-  (e.g. `v1.9.0-beta.7`). The `Scripts/release/create-release.sh`
-  script passes `--title "v${VERSION}"` to `gh release create`.
+  (e.g. `v1.9.0-beta.7`): AppRelease titles every release with its tag.
 - The version is shown **only** in the title — neither the English
   nor the Chinese notes file should repeat the version number or
   the project name "LyricsX" anywhere. Refer to the app implicitly
@@ -380,13 +425,13 @@ Then in **this** repo:
   `1.9.0-beta.11` uncredited until a follow-up commit 20 minutes after
   the tag. Also run `gh pr list --state closed` over the same range and
   credit every unmerged PR whose closing comment says its work landed.
-- The two notes files are concatenated by
-  `Scripts/release/compose-notes.sh` with a `---` separator, so the
-  English file goes first.
+- `release_compose_notes` in `Release.zsh` concatenates the two notes
+  files with a `---` separator, English first, for the GitHub Release.
+  The Sparkle update window shows the English file alone.
 
 If the pinned version of a dependency predates a product LyricsX needs — you
 updated the `exact:` string but never pushed the tag, or pointed it at an
-older release — CI fails fast in `Build` with
+older release — CI fails in the archive with
 `product 'X' required by package 'lyricsxpackage' target 'LyricsXFoundation' not found in package 'Y'`
 — treat that as the signal to go tag the dependency and correct the pin, not
 as a LyricsX-side bug.
@@ -404,6 +449,7 @@ All build settings are split out of `LyricsX.xcodeproj/project.pbxproj` into a l
 ```
 Config/
 ├── Shared.xcconfig                # cross-target, cross-config base (warnings, SDK, SWIFT_VERSION, code signing, hardened runtime, etc.)
+├── Version.xcconfig               # included by Shared: MARKETING_VERSION (raise it per release) and CURRENT_PROJECT_VERSION (2929 outside releases)
 ├── Shared-Debug.xcconfig          # includes Shared; adds Debug optimization, -DDEBUG, LX_BUNDLE_ID_PREFIX = dev.JH, ...
 ├── Shared-Release.xcconfig        # includes Shared; adds Release optimization, -DRELEASE, LX_BUNDLE_ID_PREFIX = com.JH, ...
 ├── Project-Debug.xcconfig         # includes Shared-Debug; project-wide Debug (MACOSX_DEPLOYMENT_TARGET = 12.0, asset symbols)

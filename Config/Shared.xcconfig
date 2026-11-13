@@ -2,6 +2,8 @@
 // Anything in here is the base layer that every other xcconfig file
 // builds on top of.
 
+#include "Version.xcconfig"
+
 // SDK / language
 SDKROOT = macosx
 SWIFT_VERSION = 5.0

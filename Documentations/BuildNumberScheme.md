@@ -79,33 +79,30 @@ build = MAJOR * 10_000_000
 
 ## 实现
 
-### 编码函数：`Scripts/release/lib.sh`
+### 编码在 AppRelease 里
 
-新增 `encode_build_number()` 函数，纯 bash，可被其他脚本 `source` 后
-调用：
+发版由通用发版引擎 AppRelease 完成（见 `CLAUDE.md` 的「Release Workflow」）。
+`Release.zsh` 里的 `release_build_number_source=semantic-version-encoding`
+让引擎按本文的公式从 tag 的完整版本算出 build 号，并在归档时以
+`CURRENT_PROJECT_VERSION=<build>` 传给 `xcodebuild`。这套公式最早写在
+已删除的 `Scripts/release/lib.sh` 里，迁移时原样搬进了引擎
+（`Sources/Support/Versioning.zsh` 的 `_app_release_encode_semantic_version`）。
 
-```bash
-source Scripts/release/lib.sh
-encode_build_number "1.9.0-beta.5"   # → 10900105
-```
+### Info.plist 引用 build setting
 
-### 写入时机：CI 的 `validate` 步骤
+主 App 和小组件的 Info.plist 写的是 `$(MARKETING_VERSION)` 与
+`$(CURRENT_PROJECT_VERSION)`，两个值都在 `Config/Version.xcconfig`：
 
-`Scripts/release/validate.sh` 在 release 流程的早期就把编码后的 BUILD
-通过 `PlistBuddy` 直接写入两个 plist：
+- `MARKETING_VERSION` 是不带后缀的版本（例如 `1.9.1`），发版前改它；
+  引擎的 `release_version_tag_match=base` 允许 tag 在它后面加预发布后缀
+  （`v1.9.1-beta.1`），对不上就在归档前停下。
+- `CURRENT_PROJECT_VERSION` 固定为 `2929`，只是在 Xcode 里构建时的值。
+  发版时引擎传入的编码值会覆盖它，导出后还会核对 App 的 `CFBundleVersion`
+  是否等于编码值，对不上就停下，不会发出错误的 build 号。
 
-- `LyricsX/Supporting Files/Info.plist`
-- `LyricsXWidget/Supporting Files/Info.plist`
-
-然后导出 `BUILD` 环境变量给后续步骤（archive、appcast 写入、
-Sparkle 签名、产物命名等）使用。
-
-### Info.plist 里 committed 的 `CFBundleVersion` 不再权威
-
-由于 CI 在 archive 之前会覆盖它，仓库里 committed 的值只是个
-"上一次有人手动改过的快照"，不必维护、不会影响 release。
-发版者只需要保证 `CFBundleShortVersionString`（marketing version 的
-基线，例如 `1.9.0`）与 tag 匹配即可——`validate.sh` 也会校验这一点。
+Info.plist 要是写回字面值，引擎在 `target` 段就会拒绝，因为注入的
+`CURRENT_PROJECT_VERSION` 到不了 App。登录项 LyricsXHelper 的
+`CFBundleVersion` 仍是自己的字面值 `11`，没有任何东西比较它。
 
 ### 删除的脚本/Phase
 
@@ -121,7 +118,7 @@ Sparkle 签名、产物命名等）使用。
   （代码、脚本、appcast、文档均不读它），属于纯粹的 git noise 源头。
   现已连同 Info.plist 里那一行 key 一起删除。
 
-附带清理：CI 工作流和 `Scripts/release/build.sh` 中原本用来抑制
+附带清理：CI 工作流和当时的 `Scripts/release/build.sh` 中原本用来抑制
 "Bump Build" 的 `LYRICSX_SKIP_BUILD_BUMP=1` 环境变量也一并移除，
 因为它现在已经是空操作。
 
@@ -173,13 +170,11 @@ marketing version 也回退（语义上不合理）时才会出现。
 
 ## 验证
 
-发版前可在本地直接验证：
+引擎自己的测试覆盖了编码公式（AppRelease 的 `Tests/Target/TestVersions.zsh`）。
+发版前想看某个 tag 会得到哪个 build 号，在本仓库根目录跑预检即可，它不构建任何东西：
 
 ```bash
-source Scripts/release/lib.sh
-for version in 1.8.7 1.9.0-beta.5 1.9.0-rc.1 1.9.0 1.8.8 1.9.1-beta.1; do
-    printf '%-20s -> %d\n' "$version" "$(encode_build_number "$version")"
-done
+app-release target --version-tag v1.9.1-beta.1 --dry-run
 ```
 
-预期输出严格对应上文"典型例子"表。
+输出的 `version … build …` 一行就是这次的版本与 build 号，应与上文「典型例子」表一致。
