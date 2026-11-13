@@ -203,9 +203,12 @@ class KaraokeLabel: NSTextField {
         cgContext.textMatrix = .identity
         cgContext.translateBy(x: 0, y: bounds.height)
         cgContext.scaleBy(x: 1.0, y: -1.0)
-        CTFrameDraw(ctFrame(dirtyRect), cgContext)
+        let textFrame = ctFrame(dirtyRect)
+        CTFrameDraw(textFrame, cgContext)
 
-        drawRomajiAnnotations(in: cgContext, frame: ctFrame())
+        // Paint text and romaji from one layout snapshot. Do not resolve or
+        // force a second layout after part of this draw pass is already painted.
+        drawRomajiAnnotations(in: cgContext, frame: textFrame)
     }
 
     // MARK: - Progress

@@ -76,6 +76,7 @@ class KaraokeLyricsWindowController: NSWindowController {
         lyricsView.bind(\.drawFurigana, withDefaultName: .desktopLyricsEnableFurigana, options: [.nullPlaceholder: false])
         lyricsView.bind(\.useSourceFurigana, withDefaultName: .desktopLyricsUseSourceKana, options: [.nullPlaceholder: true])
         lyricsView.bind(\.drawRomajin, withDefaultName: .desktopLyricsEnableRomajin, options: [.nullPlaceholder: false])
+        lyricsView.bind(\.isDraggable, withDefaultName: .desktopLyricsDraggable, options: [.nullPlaceholder: false])
 
         let negateOption = [NSBindingOption.valueTransformerName: NSValueTransformerName.negateBooleanTransformerName]
         window?.contentView?.bind(.hidden, withDefaultName: .desktopLyricsEnabled, options: negateOption)
@@ -282,8 +283,14 @@ class KaraokeLyricsWindowController: NSWindowController {
     private var vecToCenter: CGVector?
 
     override func mouseDown(with event: NSEvent) {
-        let location = lyricsView.convert(event.locationInWindow, from: nil)
-        vecToCenter = CGVector(from: location, to: lyricsView.bounds.center)
+        guard defaults[.desktopLyricsDraggable], let window = window else {
+            vecToCenter = nil
+            return
+        }
+        let pointer = window.convertToScreen(CGRect(origin: event.locationInWindow, size: .zero)).origin
+        let center = lyricsView.convert(lyricsView.bounds.center, to: nil)
+        let centerInScreen = window.convertToScreen(CGRect(origin: center, size: .zero)).origin
+        vecToCenter = CGVector(from: pointer, to: centerInScreen)
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -292,15 +299,17 @@ class KaraokeLyricsWindowController: NSWindowController {
               let window = window else {
             return
         }
-        let bounds = window.frame
-        var center = event.locationInWindow + vecToCenter
-        let centerInScreen = window.convertToScreen(CGRect(origin: center, size: .zero)).origin
+        let pointer = window.convertToScreen(CGRect(origin: event.locationInWindow, size: .zero)).origin
+        let centerInScreen = pointer + vecToCenter
         if let screen = NSScreen.screens.first(where: { $0.frame.contains(centerInScreen) }),
            screen != window.screen {
             updateWindowFrame(toScreen: screen, animate: false)
-            center = window.convertFromScreen(CGRect(origin: centerInScreen, size: .zero)).origin
-            return
         }
+
+        // The window can have moved/resized when crossing displays. Use its
+        // current coordinates and retain the original pointer-to-center offset.
+        let bounds = window.frame
+        let center = window.convertFromScreen(CGRect(origin: centerInScreen, size: .zero)).origin
 
         var xFactor = (center.x / bounds.width).clamped(to: 0 ... 1)
         var yFactor = (1 - center.y / bounds.height).clamped(to: 0 ... 1)
@@ -314,6 +323,10 @@ class KaraokeLyricsWindowController: NSWindowController {
         defaults[.desktopLyricsYPositionFactor] = yFactor
         makeConstraints()
         window.layoutIfNeeded()
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        vecToCenter = nil
     }
 }
 
