@@ -52,7 +52,9 @@ selection, how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, what the menu bar's lyric line shows when there is
 no line to show, which standard item the status menu's custom row lines its
-label up with and the per-release insets it falls back to, plus the lyrics
+label up with and the per-release insets it falls back to, where a step of
+that row's lyrics offset lands (the next multiple of 100 ms, so an offset
+the lyrics came with, such as Kugou's 51 ms, steps back to 0), plus the lyrics
 translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine

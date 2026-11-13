@@ -110,6 +110,31 @@ LyricsXPackage/Tests/
   `NSMenuEnableOutOfProcessMenus` 或剪贴板隐私开发者预览打开时才这样），窗口里找不到其他菜单项，会退回常数表。
 - 常数表只覆盖常规尺寸、默认字体的菜单；小尺寸菜单或改过 `NSMenu.font` 的菜单靠测量。
 
+## 偏移的步进与输入（2026-11-08 修正）
+
+这一节与对齐无关，记的是同一行里步进器和输入框的修正。
+
+**现象。** 这一行显示的是当前歌词自己的偏移，用户没动过也可能不是 0：酷狗的歌词文件常带 `[offset:51]` 这类
+标签（曲库里 9 份非零偏移全来自酷狗）。步进器和「提前/延后歌词」两个快捷键每次 ±100 ms，从 51 只能到 151
+或 -49，回不到 0。输入框从 2017 年这一行加进来起，在 storyboard 里就没开可选中、可编辑，点了进不去编辑状态。
+
+**修法。**
+
+- 步进规则是 `LyricsOffsetStepPolicy`（纯逻辑）：一步走到这个方向上的下一个 100 的整数倍（51 往上是 100、
+  往下是 0），不越出 ±10000；本来就在范围外的偏移（手改过的文件）只会往回走。步进器和两个快捷键都走它。
+- 步进器不再绑定偏移值，只表示方向：平时停在 0，点一下变成 1 或 -1，`AppDelegate.lyricsOffsetStepperClicked(_:)`
+  按正负走一步，再把它放回 0。绑定着偏移值时，它只会把自己的 increment 加上去，没有地方插入取整。
+- 输入框在 `applicationDidFinishLaunching` 里打开可选中、可编辑，storyboard 没改。绑定去掉了
+  `continuouslyUpdatesValue`：按回车或点到别处才写入，输入到一半的「-」还不是一个数。
+
+**风险。** Apple 的《Views in Menu Items》（Application Menu and Pop-up List Programming Topics，2014）写明
+菜单项视图「收得到鼠标事件，但不支持键盘事件」。打开可编辑之后能不能打字，只能在真实菜单里试；不行的话，
+改成点输入框时弹出一个输入窗口。
+
+**验证。** `LyricsOffsetStepPolicyTests`（在 `LyricsXFoundationTests` 里）：自带偏移能走回 0、整百偏移照常走一步、
+零头偏移走到下一个整百、范围两端。换回旧的 ±100 算法时 14 处断言失败。输入框没有自动化测试：菜单里的键盘输入
+只能在真实菜单里试。
+
 ## 延伸阅读
 
 - `apple-os27-regressions` skill 里对应的一行。
