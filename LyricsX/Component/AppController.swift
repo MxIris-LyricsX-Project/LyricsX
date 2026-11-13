@@ -525,21 +525,11 @@ final class AppController: NSObject {
         var candidateLyricsFiles: [LyricsLookupCandidateFile] = []
 
         if defaults[.loadLyricsBesideTrack] {
-            if let embeddedLyrics = track.lyrics, !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                if let lyrics = Lyrics(embeddedLyrics) {
-                    if lyrics.metadata.title == nil || lyrics.metadata.title?.isEmpty == true {
-                        lyrics.metadata.title = title
-                    }
-                    if lyrics.metadata.artist == nil || lyrics.metadata.artist?.isEmpty == true {
-                        lyrics.metadata.artist = artist
-                    }
-                    lyrics.applyQQMusicKanaFurigana()
-                    lyrics.filtrate()
-                    lyrics.recognizeLanguage()
-                    currentLyrics = lyrics
-                    adoptAsSoleLyricsCandidate(lyrics)
-                    return
-                }
+            if let embeddedLyrics = track.lyrics,
+               let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
+                currentLyrics = lyrics
+                adoptAsSoleLyricsCandidate(lyrics)
+                return
             }
             if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
                 candidateLyricsFiles += [
@@ -1540,6 +1530,23 @@ final class AppController: NSObject {
         return lyrics
     }
 
+    private func loadEmbeddedLyrics(_ embeddedLyrics: String, title: String, artist: String) -> Lyrics? {
+        guard !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let lyrics = Lyrics(embeddedLyrics) else {
+            return nil
+        }
+        if lyrics.metadata.title == nil || lyrics.metadata.title?.isEmpty == true {
+            lyrics.metadata.title = title
+        }
+        if lyrics.metadata.artist == nil || lyrics.metadata.artist?.isEmpty == true {
+            lyrics.metadata.artist = artist
+        }
+        lyrics.applyQQMusicKanaFurigana()
+        lyrics.filtrate()
+        lyrics.recognizeLanguage()
+        return lyrics
+    }
+
     private func makeLyricsSearchRequest(for track: MusicTrack) -> LyricsSearchRequest {
         let title = track.title ?? ""
         let artist = track.artist ?? ""
@@ -1602,6 +1609,99 @@ final class AppController: NSObject {
            lyricsHasHigherPriority(scoredLyrics, over: current) {
             currentLyrics = scoredLyrics
             lyricsCandidatePool.selectCandidate(identicalTo: scoredLyrics)
+        }
+    }
+
+    // MARK: Local Lyrics
+
+    /// Lyrics the Local Lyrics menu can put on screen, already read and
+    /// prepared the way the automatic lookup prepares them.
+    struct LocalLyricsChoice {
+        let source: LocalLyricsSource
+        /// The copy in LyricsX's own library, as opposed to a file beside the track.
+        let isLibraryFile: Bool
+        let lyrics: Lyrics
+    }
+
+    /// Every local source `track` has, in the order the automatic lookup
+    /// consults them: the embedded lyrics, the `.lrcx` and `.lrc` beside the
+    /// track, and the library copy the lookup would read.
+    ///
+    /// Blocks on the embedded lyrics, which come from the player over Apple
+    /// Events, and on reading the files, so call it off the main thread.
+    func localLyricsChoices(for track: MusicTrack) -> [LocalLyricsChoice] {
+        let title = track.title ?? ""
+        let artist = track.artist ?? ""
+        var choices: [LocalLyricsChoice] = []
+        if let embeddedLyrics = track.lyrics,
+           let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
+            choices.append(LocalLyricsChoice(source: .embedded, isLibraryFile: false, lyrics: lyrics))
+        }
+        if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
+            for pathExtension in ["lrcx", "lrc"] {
+                let fileURL = besideTrackBaseURL.appendingPathExtension(pathExtension)
+                if let lyrics = loadLyrics(at: fileURL, securityScopedURL: nil, title: title, artist: artist) {
+                    choices.append(LocalLyricsChoice(source: .file(fileURL), isLibraryFile: false, lyrics: lyrics))
+                }
+            }
+        }
+        for candidateFile in librarySearchFiles(title: title, artist: artist)
+            where !choices.contains(where: { $0.source == .file(candidateFile.fileURL) }) {
+            if let lyrics = loadLyrics(
+                at: candidateFile.fileURL,
+                securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
+                title: title,
+                artist: artist
+            ) {
+                choices.append(LocalLyricsChoice(source: .file(candidateFile.fileURL), isLibraryFile: true, lyrics: lyrics))
+                break
+            }
+        }
+        return choices
+    }
+
+    /// Puts a Local Lyrics menu choice on screen, the way the search panel
+    /// applies a result.
+    ///
+    /// The choice is not marked as picked by the user and not saved: it is a
+    /// file the user already has, or the track's own lyrics. It is remembered
+    /// the way a next-candidate pick is, in the selection override table, so the
+    /// next play of the track shows the same file; choosing the embedded
+    /// lyrics drops that entry, since the lookup reads them first anyway.
+    func applyLocalLyrics(_ choice: LocalLyricsChoice, for track: MusicTrack) {
+        guard selectedPlayer.currentTrack?.id == track.id else {
+            return
+        }
+        cancelLyricsSearches()
+        if let index = defaults[.noSearchingTrackIds].firstIndex(of: track.id) {
+            defaults[.noSearchingTrackIds].remove(at: index)
+        }
+        if let index = defaults[.noSearchingAlbumNames].firstIndex(of: track.album ?? "") {
+            defaults[.noSearchingAlbumNames].remove(at: index)
+        }
+        performOnLyricsDisplayQueue {
+            currentLyrics = choice.lyrics
+        }
+        // Into the pool rather than in place of it, so the next-candidate
+        // shortcut carries on from this choice and can come back to it.
+        let fingerprint = lyricsContentFingerprint(choice.lyrics)
+        let otherCandidates = candidatePoolTrackId == track.id
+            ? lyricsCandidatePool.candidates.filter { lyricsContentFingerprint($0) != fingerprint }
+            : []
+        adoptLyricsCandidates(otherCandidates + [choice.lyrics], selecting: choice.lyrics, for: track)
+        switch choice.source {
+        case .file(let fileURL):
+            defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.recording(
+                filePath: fileURL.path,
+                forTrackId: track.id,
+                in: defaults[.lyricsSelectionOverrides],
+                at: Date()
+            )
+        case .embedded:
+            defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.removing(
+                trackId: track.id,
+                from: defaults[.lyricsSelectionOverrides]
+            )
         }
     }
 
