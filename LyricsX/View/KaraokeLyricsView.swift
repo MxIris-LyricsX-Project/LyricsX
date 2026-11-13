@@ -18,6 +18,18 @@ class KaraokeLyricsView: NSView {
     @objc dynamic var useSourceFurigana = true
     @objc dynamic var drawRomajin = false
 
+    @objc dynamic var isDraggable = false {
+        didSet {
+            if !isDraggable, isDragging {
+                isDragging = false
+                NSCursor.arrow.set()
+            }
+            window?.invalidateCursorRects(for: self)
+        }
+    }
+
+    private var isDragging = false
+
     @objc dynamic var font = NSFont.labelFont(ofSize: 24) { didSet { updateFontSize() } }
     @objc dynamic var textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
     @objc dynamic var shadowColor = #colorLiteral(red: 0, green: 1, blue: 0.8333333333, alpha: 1)
@@ -151,6 +163,47 @@ class KaraokeLyricsView: NSView {
     }
 
     // MARK: - Event
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard let hit = super.hitTest(point) else { return nil }
+        // Keep the mouse-down target on this persistent container, not on a
+        // text field which can consume the press or be recycled mid-drag.
+        return isDraggable ? self : hit
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        return isDraggable || super.acceptsFirstMouse(for: event)
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        if isDraggable {
+            addCursorRect(bounds, cursor: isDragging ? .closedHand : .openHand)
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if isDraggable {
+            isDragging = true
+            NSCursor.closedHand.set()
+        }
+        super.mouseDown(with: event)
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        if isDragging { NSCursor.closedHand.set() }
+        super.mouseDragged(with: event)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        isDragging = false
+        window?.invalidateCursorRects(for: self)
+        if isDraggable {
+            let location = convert(event.locationInWindow, from: nil)
+            (bounds.contains(location) ? NSCursor.openHand : NSCursor.arrow).set()
+        }
+        super.mouseUp(with: event)
+    }
 
     private var trackingArea: NSTrackingArea?
 
