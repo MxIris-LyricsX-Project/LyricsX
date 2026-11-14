@@ -5,6 +5,28 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.1</title>
+            <pubDate>Sat, 14 Nov 2026 03:02:57 +0000</pubDate>
+            <sparkle:version>10901999</sparkle:version>
+            <sparkle:shortVersionString>1.9.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>Fixes</h3>
+<ul>
+<li>Fixed a line of desktop lyrics sometimes staying blank, most often in Japanese songs with a translation.</li>
+<li>Automatic furigana now puts each reading over its own kanji instead of across the whole word.</li>
+<li>Automatic romaji in desktop lyrics no longer shifts and now fills in with the highlight.</li>
+<li>Widgets no longer grey out the cover or hide the small widget's title while another app is in front.</li>
+<li>Stepping the lyrics offset now lands on whole 100 ms, so an offset that came with the lyrics can return to 0.</li>
+<li>The menu bar icon no longer takes more room than the icons next to it.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<ul>
+<li>@NickJi2019 (#209) fixed automatic furigana and romaji in desktop lyrics.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.1/LyricsX_1.9.1+10901999.zip" length="11354673" type="application/octet-stream" sparkle:edSignature="nUoB8FhW9dKqrf3iftYJvMRSQzitrNZ+Q0iDSlFHUijMst+Imare7Bj4xCKRkavQr7avDC8G7OpKwXEiaGINBQ==" />
+        </item>
+        <item>
             <title>1.9.0</title>
             <pubDate>Wed, 11 Nov 2026 12:18:15 +0000</pubDate>
             <sparkle:version>10900999</sparkle:version>
