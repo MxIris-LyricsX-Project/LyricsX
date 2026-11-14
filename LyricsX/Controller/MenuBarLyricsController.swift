@@ -223,6 +223,24 @@ final class MenuBarLyricsController {
 
     // MARK: - Layout
 
+    /// Width the lyric item asks the menu bar for.
+    ///
+    /// The menu bar host sizes a status item from `NSStatusItem.length`; it owns
+    /// the item's button frame. Assigning a frame to `button` ourselves (which
+    /// is what this used to do, with `contentStackView.fittingSize.width`) left
+    /// the item collapsed to a zero-width slot that was never laid out, so the
+    /// lyrics silently never appeared.
+    private var lyricStatusItemWidth: CGFloat {
+        let stackSpacing: CGFloat = 4
+        var width = MenuBarLyricsController.lyricsWidth
+        if controlsVisible {
+            width += MenuBarLyricsController.lyricsToControlsGap
+                + MenuBarLyricsController.controlButtonSize * 3
+                + stackSpacing * 2
+        }
+        return width
+    }
+
     private func layoutLyricStatusItemContents() {
         guard let button = lyricStatusItem?.button else { return }
 
@@ -238,13 +256,8 @@ final class MenuBarLyricsController {
         playPauseButton.isHidden = hidden
         nextButton.isHidden = hidden
 
+        lyricStatusItem?.length = lyricStatusItemWidth
         contentStackView.layoutSubtreeIfNeeded()
-        button.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: contentStackView.fittingSize.width,
-            height: NSStatusBar.system.thickness
-        )
     }
 
     // MARK: - State Update Helpers
