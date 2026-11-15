@@ -273,6 +273,19 @@ when the old code met rc.1's configuration. Run them on any change to
 cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
 ```
 
+Its `WidgetCoverArtworkTests` and `WidgetCoverEncodingProbes` pin down the
+cover file the app writes for the widget: a 400-pixel JPEG drawn on the CPU,
+prepared once per track rather than on every lyric line. The probe reads the
+process's GPU memory (`ledger_tag_graphics_footprint`) around one cover and is
+red on the old `NSImage.lockFocus` path, whose extended-range bitmap sent
+ImageIO's JPEG encoder through its Metal HDR converter (398 MiB for one
+cover). Run them on any change to `WidgetCoverArtwork` or to how
+`AppController` writes the cover (<1s):
+
+```bash
+cd LyricsXPackage && swift test --filter "WidgetCoverArtworkTests|WidgetCoverEncodingProbes"
+```
+
 The widget is a `StaticConfiguration` on purpose: anything it can show two
 ways follows an app setting passed in its snapshot, because each widget the
 user edits forms a configuration of its own and puts the others five seconds
