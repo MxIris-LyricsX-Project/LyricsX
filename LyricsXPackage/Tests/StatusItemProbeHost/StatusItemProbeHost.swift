@@ -66,6 +66,24 @@ private enum SnapshotParityRun {
     }
 }
 
+/// Runs `StatusItemKaraokeRendering` and writes its report.
+@MainActor
+private enum KaraokeRenderingRun {
+    static func runAndExit(reportPath: String) -> Never {
+        do {
+            guard #available(macOS 26, *) else {
+                preconditionFailure("MenuBarMarqueeLabel exists only on macOS 26 and later")
+            }
+            let report = try StatusItemKaraokeRendering.run()
+            try JSONEncoder().encode(report).write(to: URL(fileURLWithPath: reportPath))
+            exit(0)
+        } catch {
+            FileHandle.standardError.write(Data("StatusItemProbeHost: \(error)\n".utf8))
+            exit(7)
+        }
+    }
+}
+
 /// Runs `MenuTitleAlignmentProbe` on one menu and writes its report.
 @MainActor
 private enum MenuTitleAlignmentRun {
@@ -100,6 +118,9 @@ private final class StatusItemProbeSession {
     func start() {
         if request.mode == .snapshotParity {
             SnapshotParityRun.runAndExit(reportPath: request.reportPath)
+        }
+        if request.mode == .karaokeRendering {
+            KaraokeRenderingRun.runAndExit(reportPath: request.reportPath)
         }
         if request.mode == .menuTitleAlignment, let menuCase = request.menuTitleAlignmentCase {
             // Out of `applicationDidFinishLaunching`, so the menu's tracking

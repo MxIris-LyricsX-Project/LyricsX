@@ -43,6 +43,8 @@ package enum StatusItemProbeMode: String, Sendable {
     case liveStatusItem
     /// Run `StatusItemSnapshotParity` offscreen and report.
     case snapshotParity
+    /// Run `StatusItemKaraokeRendering` offscreen and report.
+    case karaokeRendering
     /// Open a real menu with a `TitleAlignedMenuItemView` row and report
     /// where its label starts against the menu's titles.
     case menuTitleAlignment
@@ -134,6 +136,18 @@ package struct StatusItemProbeRequest: Sendable {
     package static func snapshotParity(reportPath: String) -> StatusItemProbeRequest {
         StatusItemProbeRequest(
             mode: .snapshotParity,
+            content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
+            text: "",
+            settleSeconds: 0,
+            measuredSeconds: 0,
+            reportPath: reportPath
+        )
+    }
+
+    /// A karaoke-rendering run, which needs nothing but somewhere to report.
+    package static func karaokeRendering(reportPath: String) -> StatusItemProbeRequest {
+        StatusItemProbeRequest(
+            mode: .karaokeRendering,
             content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
             text: "",
             settleSeconds: 0,
