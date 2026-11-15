@@ -26,10 +26,11 @@ import QuartzCore
 /// because every frame the line moves costs one snapshot round trip.
 ///
 /// Given the line's karaoke timing, it also shows how much of the line has
-/// been sung: the sung part in the accent colour, the rest as before, the
-/// edge between them moving with playback. That edge costs what scrolling
-/// does — every step is a snapshot round trip — so it moves in whole device
-/// pixels, only when it reaches the next one, and no faster than scrolling.
+/// been sung: the sung part in `sungTextColor` — the accent colour unless
+/// set — the rest as before, the edge between them moving with playback.
+/// That edge costs what scrolling does — every step is a snapshot round
+/// trip — so it moves in whole device pixels, only when it reaches the next
+/// one, and no faster than scrolling.
 ///
 /// Only macOS 26 and later need it, so that is all it supports.
 @available(macOS 26, *)
@@ -69,16 +70,24 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// the edge back and forth. A pause, a resume or a jump moves further.
     private static let karaokeReanchorTolerance: TimeInterval = 0.1
 
-    /// The colour the sung part of a line is drawn in.
-    private static var sungTextColor: NSColor {
-        .controlAccentColor
+    /// The colour the sung part of a line is drawn in; `nil`, the default,
+    /// follows the system accent colour.
+    public var sungTextColor: NSColor? {
+        didSet {
+            guard sungTextColor != oldValue else { return }
+            discardSungBitmaps()
+        }
+    }
+
+    private var resolvedSungTextColor: NSColor {
+        sungTextColor ?? .controlAccentColor
     }
 
     private struct BitmapKey: Hashable {
         let appearanceName: NSAppearance.Name
         let scale: CGFloat
         let colorSpaceName: String
-        /// Drawn in `sungTextColor` rather than the cell's own colour.
+        /// Drawn in `resolvedSungTextColor` rather than the cell's own colour.
         let isSung: Bool
     }
 
@@ -387,7 +396,7 @@ public final class MenuBarMarqueeLabel: NSControl {
 
     private func textBitmap(for key: BitmapKey, colorSpace: CGColorSpace) -> CGImage? {
         if cachedBitmaps[key] == nil {
-            cachedBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: key.isSung ? Self.sungTextColor : nil)
+            cachedBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: key.isSung ? resolvedSungTextColor : nil)
         }
         return cachedBitmaps[key]
     }
@@ -616,6 +625,13 @@ public final class MenuBarMarqueeLabel: NSControl {
     }
 
     private func systemColorsDidChange() {
+        // A custom colour is not the accent colour, but it may be a system
+        // colour that follows the same settings.
+        discardSungBitmaps()
+    }
+
+    /// Drops the sung bitmaps, drawn in a colour that no longer applies.
+    private func discardSungBitmaps() {
         cachedBitmaps = cachedBitmaps.filter { !$0.key.isSung }
         if sungWidth != nil {
             needsDisplay = true

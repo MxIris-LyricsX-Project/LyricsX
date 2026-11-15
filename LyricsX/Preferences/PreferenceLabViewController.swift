@@ -31,6 +31,11 @@ class PreferenceLabViewController: PreferenceViewController {
     /// not downloaded; asks the system to download them.
     private let systemTranslationDownloadButton = NSButton()
 
+    /// The colour of the menu bar's karaoke progress, under its checkbox.
+    private let menuBarKaraokeProgressColorWell = NSColorWell()
+    /// Goes back from a picked colour to the system accent colour.
+    private let menuBarKaraokeAccentColorButton = NSButton()
+
     private let aiLyricsTranslator = OpenAICompatibleLyricsTranslator()
     private var aiConnectionTestTask: Task<Void, Never>?
     private var defaultsObservation: AnyCancellable?
@@ -59,6 +64,7 @@ class PreferenceLabViewController: PreferenceViewController {
         super.viewDidLoad()
 
         insertLyricsTranslationBox()
+        insertMenuBarKaraokeProgressColorRow()
         embedContentInScrollView()
         if #available(macOS 26.0, *) {
             // In the pane from the start, so the system's download prompt has
@@ -123,10 +129,12 @@ class PreferenceLabViewController: PreferenceViewController {
         lyricsTranslationTargetLanguageField.stringValue = defaults[.lyricsTranslationTargetLanguage]
         selectLyricsTranslationEngine(defaults.lyricsTranslationEngine)
         refreshLyricsTranslationStatusField()
+        refreshMenuBarKaraokeProgressColorControls()
         defaultsObservation = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshLyricsTranslationStatusField()
+                self?.refreshMenuBarKaraokeProgressColorControls()
             }
         languagePairToDownloadObservation = AppController.shared.$systemTranslationLanguagePairToDownload
             .receive(on: DispatchQueue.main)
@@ -156,6 +164,88 @@ class PreferenceLabViewController: PreferenceViewController {
             preconditionFailure("The Lab pane's storyboard scene lays its content out in a grid view.")
         }
         return gridView
+    }
+
+    /// Adds a row under "Show karaoke progress in menu bar lyrics" with the
+    /// progress colour: a colour well, and a button back to the accent
+    /// colour. Indented to the checkbox's title, the way a control that
+    /// belongs to a checkbox sits under it.
+    private func insertMenuBarKaraokeProgressColorRow() {
+        let gridView = contentGridView
+        guard let checkboxRow = gridView.cell(for: menuBarKaraokeProgressButton)?.row else {
+            preconditionFailure("The karaoke progress checkbox sits in the Lab pane's grid.")
+        }
+
+        let colorWell = menuBarKaraokeProgressColorWell
+        let colorName = NSLocalizedString(
+            "Karaoke progress color",
+            comment: "Tooltip and accessibility label of the colour well for the menu bar's karaoke progress, in the Lab pane."
+        )
+        colorWell.toolTip = colorName
+        colorWell.setAccessibilityLabel(colorName)
+        colorWell.target = self
+        colorWell.action = #selector(menuBarKaraokeProgressColorChanged(_:))
+        colorWell.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            colorWell.widthAnchor.constraint(equalToConstant: 44),
+            colorWell.heightAnchor.constraint(equalToConstant: 23),
+        ])
+
+        let accentColorButton = menuBarKaraokeAccentColorButton
+        accentColorButton.title = NSLocalizedString(
+            "Use Accent Color",
+            comment: "Button in the Lab pane that sets the menu bar's karaoke progress back to the system accent colour."
+        )
+        accentColorButton.bezelStyle = .rounded
+        accentColorButton.target = self
+        accentColorButton.action = #selector(useAccentColorForMenuBarKaraokeProgress(_:))
+
+        let checkbox = menuBarKaraokeProgressButton!
+        let titleRect = checkbox.cell?.titleRect(forBounds: checkbox.bounds) ?? .zero
+        let titleInset = checkbox.userInterfaceLayoutDirection == .rightToLeft
+            ? checkbox.bounds.maxX - titleRect.maxX
+            : titleRect.minX
+        // A spacer rather than edge insets: a stack view mirrors its views
+        // for a right-to-left language, but not its insets.
+        let indentation = NSView()
+        indentation.translatesAutoresizingMaskIntoConstraints = false
+        indentation.widthAnchor.constraint(equalToConstant: max(0, titleInset - 8)).isActive = true
+
+        let colorRow = NSStackView(views: [indentation, colorWell, accentColorButton])
+        colorRow.orientation = .horizontal
+        colorRow.alignment = .centerY
+        colorRow.spacing = 8
+        let row = gridView.insertRow(at: gridView.index(of: checkboxRow) + 1, with: [NSGridCell.emptyContentView, colorRow])
+        row.topPadding = 5
+    }
+
+    /// The colour well shows the stored colour, or the accent colour when
+    /// there is none; the button only does something when there is one.
+    /// Both follow the checkbox, which needs macOS 26.
+    private func refreshMenuBarKaraokeProgressColorControls() {
+        let customColor = defaults[.menuBarKaraokeProgressColor]
+        // Not while the colour panel is driving the well: setting its colour
+        // then would feed the panel back the colour it just sent.
+        if !menuBarKaraokeProgressColorWell.isActive {
+            menuBarKaraokeProgressColorWell.color = customColor ?? .controlAccentColor
+        }
+        let isAvailable: Bool
+        if #available(macOS 26, *) {
+            isAvailable = defaults[.menuBarKaraokeProgressEnabled]
+        } else {
+            isAvailable = false
+        }
+        menuBarKaraokeProgressColorWell.isEnabled = isAvailable
+        menuBarKaraokeAccentColorButton.isEnabled = isAvailable && customColor != nil
+    }
+
+    @objc private func menuBarKaraokeProgressColorChanged(_ sender: NSColorWell) {
+        defaults[.menuBarKaraokeProgressColor] = sender.color
+    }
+
+    @objc private func useAccentColorForMenuBarKaraokeProgress(_ sender: NSButton) {
+        menuBarKaraokeProgressColorWell.deactivate()
+        defaults.remove(.menuBarKaraokeProgressColor)
     }
 
     /// Adds the lyrics translation box above the Apple Music one, built the way

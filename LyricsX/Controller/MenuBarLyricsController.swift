@@ -171,6 +171,11 @@ final class MenuBarLyricsController {
             .receive(on: DispatchQueue.main)
             .invoke(MenuBarLyricsController.updateScrollFrameRate, weaklyOn: self)
             .store(in: &cancelBag)
+        defaults.publisher(for: [.menuBarKaraokeProgressColor])
+            .prepend()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updateKaraokeProgressColor, weaklyOn: self)
+            .store(in: &cancelBag)
         marqueeLabel.setPlaybackPaused(!selectedPlayer.playbackState.isPlaying)
         selectedPlayer.playbackStateWillChange
             .receive(on: DispatchQueue.main)
@@ -395,6 +400,10 @@ final class MenuBarLyricsController {
         updateMarqueeText()
     }
 
+    private func updateKaraokeProgressColor() {
+        marqueeLabel.sungTextColor = defaults[.menuBarKaraokeProgressColor]
+    }
+
     private func updateScrollFrameRate() {
         marqueeLabel.maximumScrollFramesPerSecond = Double(defaults[.menuBarLyricsScrollFramesPerSecond])
     }
@@ -452,6 +461,8 @@ final class MenuBarLyricsController {
 private protocol MenuBarLyricsMarquee: NSView {
     func setStringValue(_ value: String, lineDisplayTime: TimeInterval)
     func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval)
+    /// `nil` is the accent colour.
+    var sungTextColor: NSColor? { get set }
     func setPlaybackPaused(_ isPaused: Bool)
     /// Zero or less means the line's own default.
     var maximumScrollFramesPerSecond: Double { get set }
@@ -464,6 +475,12 @@ extension MarqueeLabel: MenuBarLyricsMarquee {
     /// MarqueeLabel shows no karaoke progress: the menu bar's progress needs
     /// macOS 26, where `MenuBarMarqueeLabel` draws the line.
     fileprivate func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval) {}
+
+    /// Nothing is sung, so there is nothing to colour.
+    fileprivate var sungTextColor: NSColor? {
+        get { nil }
+        set {}
+    }
 
     /// MarqueeLabel keeps scrolling through a pause, as it always has.
     fileprivate func setPlaybackPaused(_ isPaused: Bool) {}

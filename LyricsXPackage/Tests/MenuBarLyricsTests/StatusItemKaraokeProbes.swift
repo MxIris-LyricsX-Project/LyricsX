@@ -40,5 +40,7 @@ struct StatusItemKaraokeProbes {
         #expect(report.motionUpdatesForRepeatedAbsentProgress == 0, "telling a line without progress so again restarted its clocks \(report.motionUpdatesForRepeatedAbsentProgress) times")
         #expect(report.motionUpdatesForRepeatedConsistentProgress == 0, "re-sending a line's own timing at the time it shows restarted its clocks \(report.motionUpdatesForRepeatedConsistentProgress) times")
         #expect(report.jumpReanchoredProgress, "a jump in playback did not move the progress")
+        // The Lab's colour well: a custom colour, and back to the accent colour.
+        #expect(report.sungColorProblems.isEmpty, "\(report.sungColorProblems)")
     }
 }
