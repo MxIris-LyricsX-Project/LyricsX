@@ -59,8 +59,12 @@ translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine
 keeps of an answer: one line, never a line handed back unchanged, and that a
-translation leaves the lyrics' ranking as it was) — and is fast and headless
-enough to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
+translation leaves the lyrics' ranking as it was), and the panel's
+high-resolution cover: that a cover and its 100-pixel thumbnail fingerprint
+alike (`ArtworkFingerprint`, red on the old fingerprint that drew covers
+straight into the 9×8 hash grid), and the NetEase catalogue search it asks
+alongside the iTunes Store — and is fast and headless enough to run on every
+change. `AppleMusicLyricsPanelTests` is a real probe suite that
 renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
 its animation geometry and karaoke colour (no clipping, bounded lift, sweep
 actually paints white, no position drift):
