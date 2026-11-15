@@ -82,6 +82,12 @@ actor HighResolutionArtworkService {
     /// depends on whether the player has published artwork yet. Left `nil` when
     /// the search itself failed, so a later pass retries it.
     private var iTunesResults: [ArtworkCandidateSource]?
+    /// The same for NetEase Cloud Music's catalogue, which knows the Chinese
+    /// releases and doujin tracks the iTunes Store usually does not.
+    private var netEaseResults: [ArtworkCandidateSource]?
+    /// NetEase's `NMTID` session cookie, kept for the whole run: its search
+    /// refuses a request without one, and sets it on the refusal.
+    private var netEaseSessionCookie: String?
     /// Covers already downloaded for that track, kept so a later pass can
     /// re-run verification without re-fetching. A later pass can reach a
     /// different verdict than the first: the player often publishes its own
@@ -103,6 +109,7 @@ actor HighResolutionArtworkService {
             currentTrackIdentifier = request.trackIdentifier
             publishedLongestEdge = nil
             iTunesResults = nil
+            netEaseResults = nil
             downloadedCandidates = []
         }
 
@@ -198,25 +205,40 @@ actor HighResolutionArtworkService {
     private func candidateSources(
         for request: HighResolutionArtworkRequest
     ) async -> [ArtworkCandidateSource] {
-        let results: [ArtworkCandidateSource]
-        if let iTunesResults {
-            results = iTunesResults
-        } else if let fetched = await fetchITunesResults(for: request) {
-            if isCurrent(request) {
-                iTunesResults = fetched
+        let title = request.title
+        let artist = request.artist
+        let needsITunesSearch = iTunesResults == nil
+        let needsNetEaseSearch = netEaseResults == nil
+        // Each catalogue is searched once per song, both at the same time.
+        async let pendingITunesAnswer: [ArtworkCandidateSource]? = needsITunesSearch
+            ? await fetchITunesResults(title: title, artist: artist)
+            : nil
+        async let pendingNetEaseAnswer: [ArtworkCandidateSource]? = needsNetEaseSearch
+            ? await fetchNetEaseResults(title: title, artist: artist)
+            : nil
+        let (iTunesAnswer, netEaseAnswer) = await (pendingITunesAnswer, pendingNetEaseAnswer)
+        if isCurrent(request) {
+            if let iTunesAnswer {
+                iTunesResults = iTunesAnswer
             }
-            results = fetched
-        } else {
-            results = []
+            if let netEaseAnswer {
+                netEaseResults = netEaseAnswer
+            }
         }
 
-        var sources = selectedITunesResults(from: results, request: request)
+        var sources = selectedCatalogueResults(from: iTunesAnswer ?? iTunesResults ?? [], request: request)
+            + selectedCatalogueResults(from: netEaseAnswer ?? netEaseResults ?? [], request: request)
         if let lyricsArtwork = request.lyricsArtwork {
             sources.append(lyricsArtwork)
         }
-        return sources.map { source in
-            ArtworkCandidateSource(
-                url: HighResolutionArtworkPolicy.upgradedArtworkURL(source.url),
+        // NetEase's search and NetEase lyrics name the same cover, which must
+        // not be downloaded twice.
+        var seenURLs: Set<URL> = []
+        return sources.compactMap { source in
+            let upgradedURL = HighResolutionArtworkPolicy.upgradedArtworkURL(source.url)
+            guard seenURLs.insert(upgradedURL).inserted else { return nil }
+            return ArtworkCandidateSource(
+                url: upgradedURL,
                 title: source.title,
                 artist: source.artist,
                 duration: source.duration
@@ -224,15 +246,22 @@ actor HighResolutionArtworkService {
         }
     }
 
+    /// Whether either catalogue has answered for the current track — a search
+    /// that ran, as opposed to one the network or the service refused.
+    private var hasCatalogueAnswer: Bool {
+        iTunesResults != nil || netEaseResults != nil
+    }
+
     /// `nil` when the search could not be run or its answer could not be read,
     /// which is a different thing from a search that legitimately found nothing:
     /// only the latter is worth remembering for the rest of the song.
     private func fetchITunesResults(
-        for request: HighResolutionArtworkRequest
+        title: String?,
+        artist: String?
     ) async -> [ArtworkCandidateSource]? {
         guard let searchURL = HighResolutionArtworkPolicy.iTunesSearchURL(
-            title: request.title,
-            artist: request.artist,
+            title: title,
+            artist: artist,
             countryCode: defaults[.appleMusicStorefront]
         ) else {
             return []
@@ -257,11 +286,52 @@ actor HighResolutionArtworkService {
         }
     }
 
-    /// Which search results to spend a download on. Re-decided every pass: a
-    /// result that fails the metadata check is still worth fetching once there
-    /// is a local cover to fingerprint it against, and that cover routinely
-    /// arrives after the first pass has already run.
-    private func selectedITunesResults(
+    /// Same contract as `fetchITunesResults`. The first search of a run is
+    /// refused for want of a session cookie and sets one, so a refusal that
+    /// carries a cookie is retried once with it.
+    private func fetchNetEaseResults(
+        title: String?,
+        artist: String?
+    ) async -> [ArtworkCandidateSource]? {
+        for _ in 0 ..< 2 {
+            guard let searchRequest = HighResolutionArtworkPolicy.netEaseSearchRequest(
+                title: title,
+                artist: artist,
+                cookie: netEaseSessionCookie
+            ) else {
+                return []
+            }
+            guard let (data, response) = try? await urlSession.data(for: searchRequest) else {
+                return nil
+            }
+            if let entries = HighResolutionArtworkPolicy.netEaseSearchEntries(from: data) {
+                return entries.map { entry in
+                    ArtworkCandidateSource(
+                        url: entry.artworkURL,
+                        title: entry.title,
+                        artist: entry.artist,
+                        duration: entry.duration
+                    )
+                }
+            }
+            let setCookieHeader = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Set-Cookie")
+            guard let cookie = HighResolutionArtworkPolicy.netEaseSessionCookie(
+                fromSetCookieHeader: setCookieHeader
+            ) else {
+                break
+            }
+            netEaseSessionCookie = cookie
+        }
+        #log(.info, "NetEase refused the artwork search")
+        return nil
+    }
+
+    /// Which search results to spend a download on, for each catalogue on its
+    /// own. Re-decided every pass: a result that fails the metadata check is
+    /// still worth fetching once there is a local cover to fingerprint it
+    /// against, and that cover routinely arrives after the first pass has
+    /// already run.
+    private func selectedCatalogueResults(
         from results: [ArtworkCandidateSource],
         request: HighResolutionArtworkRequest
     ) -> [ArtworkCandidateSource] {
@@ -413,7 +483,30 @@ actor HighResolutionArtworkService {
         } catch {
             return nil
         }
+        removeRetiredMisses(in: directoryURL)
         return directoryURL
+    }
+
+    /// Misses are recorded under `missFileExtension`. Those under an older
+    /// extension were decided by a check since corrected — before the
+    /// fingerprint averaged each hash cell, a genuine large copy of a cover
+    /// routinely failed against its own 100-pixel thumbnail, and before NetEase
+    /// was searched only the iTunes Store was asked — so they say nothing about
+    /// whether the song has a better cover, and are dropped for the song to be
+    /// tried again. Verified `.artwork` files stay.
+    private static let missFileExtension = "miss-2"
+    private static let retiredMissFileExtensions: Set<String> = ["miss"]
+
+    private static func removeRetiredMisses(in directoryURL: URL) {
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: nil
+        ) else {
+            return
+        }
+        for entry in entries where retiredMissFileExtensions.contains(entry.pathExtension) {
+            try? FileManager.default.removeItem(at: entry)
+        }
     }
 
     private func artworkFileURL(forKey key: String) -> URL? {
@@ -421,7 +514,7 @@ actor HighResolutionArtworkService {
     }
 
     private func missFileURL(forKey key: String) -> URL? {
-        cacheDirectoryURL?.appendingPathComponent(key).appendingPathExtension("miss")
+        cacheDirectoryURL?.appendingPathComponent(key).appendingPathExtension(Self.missFileExtension)
     }
 
     private func loadCachedArtwork(forKey key: String) -> NSImage? {
@@ -470,7 +563,7 @@ actor HighResolutionArtworkService {
         // A search that could not be run at all — no network, a rejected
         // request — is not evidence that this song has no better cover, and
         // must not be written down as one for a week.
-        guard iTunesResults != nil else { return }
+        guard hasCatalogueAnswer else { return }
         guard request.mayRecordMiss, let fileURL = missFileURL(forKey: key) else { return }
         try? Data().write(to: fileURL, options: .atomic)
         pruneCacheDirectoryIfNeeded()
