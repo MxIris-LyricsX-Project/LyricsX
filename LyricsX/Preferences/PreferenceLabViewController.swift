@@ -10,6 +10,8 @@ class PreferenceLabViewController: PreferenceViewController {
 
     @IBOutlet var useAppleMusicLyricsWindowButton: NSButton!
 
+    @IBOutlet var menuBarKaraokeProgressButton: NSButton!
+
     @IBOutlet var appleMusicNameRecoveryButton: NSButton!
 
     @IBOutlet var artworkSimilarityBoostButton: NSButton!
@@ -78,6 +80,18 @@ class PreferenceLabViewController: PreferenceViewController {
             useAppleMusicLyricsWindowButton.toolTip = NSLocalizedString(
                 "Requires macOS 15 or later",
                 comment: "Tooltip on the Apple Music-style lyrics window toggle when the OS is too old."
+            )
+        }
+
+        // Bound to its key in the storyboard. Before macOS 26 the menu bar
+        // line is MarqueeLabel's text field, which draws no progress.
+        if #available(macOS 26, *) {
+            // Available — leave the checkbox interactive.
+        } else {
+            menuBarKaraokeProgressButton.isEnabled = false
+            menuBarKaraokeProgressButton.toolTip = NSLocalizedString(
+                "Requires macOS 26 or later",
+                comment: "Tooltip on a Lab setting that needs macOS 26 when the OS is older."
             )
         }
 

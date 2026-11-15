@@ -1,6 +1,7 @@
 # 菜单栏歌词的绘制：实现说明
 
-> 配套提案见 [菜单栏歌词改为自绘，不再用 NSTextField](../Evolutions/0017-menu-bar-lyrics-without-text-field.md)。
+> 配套提案见 [菜单栏歌词改为自绘，不再用 NSTextField](../Evolutions/0017-menu-bar-lyrics-without-text-field.md)；
+> 卡拉OK进度见 [菜单栏歌词的卡拉OK进度](../Evolutions/draft-menu-bar-karaoke-progress.md)。
 > 本文记录**实际落地的实现**、为什么这样做，以及已知降级。面向维护者。
 
 ## 背景与目标
@@ -150,38 +151,80 @@ ad-hoc 签名，再用 `open -n -W` 启动；宿主把测量结果写成 JSON �
   同一首歌里往回拖到第一行之前，菜单栏还停在拖动前那一行，直到唱到第一行。
 - 行号超出歌词的行数时也保持不变，不去读那一行。
 
+### 卡拉OK进度
+
+实验室页的「Show karaoke progress in menu bar lyrics」（键 `MenuBarKaraokeProgressEnabled`，默认关）打开后，
+有逐字时间标签的行把已唱的部分画成系统强调色，未唱的部分照旧。只有行时间的歌词没有进度，和桌面歌词一样。
+
+- **进度怎么算**：`LyricsXFoundation` 的 `KaraokeLineTiming` 从行的 `attachments.timetag` 算出某一时刻已唱了几个字符：
+  一个标签表示那个字符从这一刻开始唱，两个标签之间按时间线性增长，第一个之前、最后一个之后保持不动；
+  行有时长时在行末补一个「全部唱完」的关键帧。这和桌面歌词的进度动画读标签的方式一致。
+- **怎么画**：在原有的按外观缓存的位图之外，再按外观缓存一张强调色版本，由 cell 的副本画出、只换了文字色。
+  以进度为界，左边贴强调色位图、右边贴原位图；界线和文字的位置都对齐设备像素，所以两块都是纯拷贝，
+  没有哪个像素是两张位图混出来的。还没唱到第一个字时只贴原位图，和关掉开关时逐像素一致。
+  系统强调色一变（`NSColor.systemColorsDidChangeNotification`）就清掉强调色缓存。
+- **字符在哪**：用 Core Text 按 cell 的属性字符串排成一行，再加上 cell 的文字内边距 2 pt
+  （`MenuBarMarqueeLabelCell.horizontalTextPadding`，`cellSize` 比文字宽 4 pt 就是这两边的内边距）。
+  探针拿它和截图里的墨迹比：内边距写成 4 时两头都偏 2.2 pt、探针变红；写成 2 时偏差约 0.25 pt。
+  只要 Core Text 排出了一段从右到左的 run（从右到左的文字、混排），这一行就不记位置，也就不显示进度。判断看 run 的方向，
+  不看位置是否递增：英文里夹一个希伯来字母时，位置照样递增，只是那个字母的宽度被并进了它前面的空格。
+- **一份位图缓存**：原样的和强调色的位图放在同一个字典里，key 里多一位「是否已唱」，换行时一起清，强调色变化时只清已唱的。
+- **怎么走**：控制器每次给的是「此刻的歌词时间」（播放位置加上歌词偏移），视图记下它和当时的时钟，之后按自己的时钟推进。
+  暂停时锚点停在暂停那一刻，继续播放时和滚动的起点一起后移，所以暂停前后进度不跳。
+  推进期间和滚动共用同一个 display link 与帧率上限 `MenuBarLyricsScrollFramesPerSecond`，到下一个设备像素才重画；
+  还没唱到第一个字时挂一次性定时器，唱完就停。
+- **什么时候重新锚定**：换行、播放状态变化（跳转、暂停、继续）、歌词偏移变化（这首歌的和全局的）、开关变化。
+  跳到另一行时，新行到达前的一瞬间旧行会按新位置画成全满或全空，随即被新行替换。控制器每次切换 App
+  都会重发当前行（开关关着时也一样），带着刚从播放器读到的位置，它会抖动几十毫秒：所以「没有进度」再说一遍什么都不做，
+  同一行的时间和视图自己的时钟相差不到 0.1 秒也什么都不做，否则每次切换 App 都会重启滚动的 display link、
+  让进度边缘前后抖一下。暂停、继续、跳转都超过这个差值。
+- **主线程只读交给它的那一份**：控制器在歌词显示队列上写 `screenLyrics`，每次写完把整份（文字、时长、进度）交给主线程，
+  主线程只读这一份。原先主线程直接读 `screenLyrics`，既是跨线程读，也可能把这一行的文字和下一行的进度凑在一起。
+- **文字相同的连续两行**：关着进度时，菜单栏把它们当成同一行，不重新滚动（原有行为）。开着进度时第二行有自己的时间，
+  视图收到另一行的时间就从头滚动，否则长句第二遍的进度会从左边看不见的地方开始。
+- **只在 macOS 26 及以上**：更早的系统用 MarqueeLabel，`setKaraokeTiming` 是空实现，实验室页的勾选框不可用、
+  提示「Requires macOS 26 or later」。
+- **开销**：进度每走一步都是一轮截图往返，和长句滚动的每一帧一样，所以开关默认关。实测见下文「验证」。
+
 ## 模块结构
 
 ```
 LyricsXPackage/
 ├── Sources/LyricsXFoundation/MenuBarMarqueeLabel.swift     # 正式实现：滚动、位图缓存、绘制
 ├── Sources/LyricsXFoundation/MenuBarMarqueeLabelCell.swift # 它的 cell，复刻 MarqueeLabel 文字框的全部配置
+├── Sources/LyricsXFoundation/KaraokeLineTiming.swift       # 卡拉OK进度：从逐字时间标签算已唱的字符数
 ├── Tests/StatusItemProbeSupport/                           # 探针与宿主共用
 │   ├── StatusItemContentFixtures.swift                     # 复刻 MarqueeLabel 文字框、播放按钮、条目布局
 │   ├── LiveStatusItemHarness.swift                         # 真实状态栏条目、绘制与位置计数、进程 CPU 时间
 │   ├── StatusItemSnapshotParity.swift                      # 截图逐像素比对本身（在宿主里跑）
+│   ├── StatusItemKaraokeRendering.swift                    # 卡拉OK进度的离屏截图检查与时钟检查（在宿主里跑）
 │   └── StatusItemProbeProtocol.swift                       # 宿主的命令行请求与 JSON 报告
 ├── Tests/StatusItemProbeHost/StatusItemProbeHost.swift     # 探针宿主 App 的入口
 └── Tests/MenuBarLyricsTests/
     ├── StatusItemProbeHostLauncher.swift                   # 打包临时 .app、经 LaunchServices 启动、读报告
     ├── StatusItemTextParityProbes.swift                    # 截图逐像素比对（宿主里离屏渲染）
+    ├── StatusItemKaraokeProbes.swift                       # 卡拉OK进度的画法、字符位置与暂停（宿主里离屏渲染）
+    ├── StatusItemKaraokeCostProbes.swift                   # 卡拉OK进度推进时的步长、频率与开销（真实条目）
     ├── StatusItemIdleRedrawProbes.swift                    # 静止时是否还在重画（真实条目）
     └── StatusItemScrollCostProbes.swift                    # 滚动的流畅度与开销（真实条目）
 ```
 
 App 端：`MenuBarLyricsController` 按系统版本选视图（唯一一处 `#available`），经私有协议 `MenuBarLyricsMarquee`
-转发文字、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond` 和暂停开关 `menuBarHidesLyricsWhenPaused`。显示哪一行由
+转发文字、卡拉OK时间、播放状态和帧率偏好；`Global.swift` 声明隐藏偏好 `menuBarLyricsScrollFramesPerSecond`、暂停开关 `menuBarHidesLyricsWhenPaused`
+和卡拉OK开关 `menuBarKaraokeProgressEnabled`。显示哪一行由
 `LyricsXFoundation` 里的 `MenuBarLyricsLinePolicy` 决定，测试是 `LyricsXFoundationTests` 里的
 `MenuBarLyricsLinePolicyTests.swift`。
 
 ## 核心数据流
 
 1. 控制器把当前行和行时长交给 `setStringValue(_:lineDisplayTime:)`；空字符串和重复的同一行直接忽略。
-2. 新的一行会重建 cell、清空位图缓存、记下起始时间。
-3. `updateScrolling()` 按「停 → 走 → 停」的时间表算出当前位置：停的阶段挂一次性定时器，
-   走的阶段开 display link（加在 common modes 上，菜单展开时也会继续走）。每一帧把位置对齐到设备像素后写进
-   `scrollPosition`，变化时触发 `needsDisplay`；走完即关掉 display link。
-4. `draw(_:)` 取当前绘制外观对应的缓存位图，没有就现画一张，然后在像素对齐的位置拷贝。
+   开着卡拉OK进度时，紧接着用 `setKaraokeTiming(_:lyricsTime:)` 交上这一行的 `KaraokeLineTiming` 和此刻的歌词时间。
+2. 新的一行会重建 cell、清空位图缓存、量出每个字符的位置、丢掉上一行的进度、记下起始时间。
+3. `updateMotion()` 按「停 → 走 → 停」的时间表算出当前位置，并按歌词时间算出已唱的宽度：两者有一个在动就开
+   display link（加在 common modes 上，菜单展开时也会继续走），否则为先开始动的那个挂一次性定时器。每一帧把位置和
+   宽度对齐到设备像素后写进 `scrollPosition` 与 `sungWidth`，变化时触发 `needsDisplay`；都停了就关掉 display link。
+4. `draw(_:)` 取当前绘制外观对应的缓存位图，没有就现画一张，然后在像素对齐的位置拷贝；有进度时以已唱的宽度为界，
+   左边换成强调色位图。
 
 ## 与提案的差异
 
@@ -193,6 +236,10 @@ App 端：`MenuBarLyricsController` 按系统版本选视图（唯一一处 `#av
 cd LyricsXPackage
 # 截图逐像素比对：启动一次探针宿主，在里面离屏渲染，约 5 秒
 swift test --filter StatusItemTextParityProbes
+# 卡拉OK进度：同样在宿主里离屏截图，再检查字符位置与暂停（约 1 秒）
+swift test --filter StatusItemKaraokeProbes
+# 卡拉OK进度在真实条目上推进时的步长、频率与 CPU（约 15 秒，会在菜单栏出现测试条目）
+swift test --filter StatusItemKaraokeCostProbes
 # 真实条目：会启动一个临时 App，并在菜单栏出现几秒测试条目；空闲约 80 秒，滚动约 25 秒
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 ```
@@ -212,6 +259,19 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
   | 新视图 + 播放按钮 | 47.9% | 58.5 次 / 1 pt |
 
   同一场景几次运行之间有 ±5 个百分点的波动。
+- **卡拉OK进度（截图）**：两句短句（居中）加一句长句停在滚动中途，在 4 种外观下各截「还没唱」「唱完」「唱到一半」三张，
+  共 36 张：还没唱的与没有进度的逐像素一致；唱到一半的，界线左边与「唱完」、右边与没有进度的逐像素一致；唱完的必须看得出不同。
+  另外核对字符位置与墨迹（偏差不得超过 1 pt），以及暂停、继续、暂停时重新锚定之后的进度，和文字相同的另一行会让长句从头滚动。
+- **卡拉OK进度（真实条目）**：短句「Let It Go, let it go」在 4 秒里唱完，步长不得超过一个设备像素、每秒步数不得超过 60 的上限，
+  CPU 只打印。本机（Mac Studio M3 Ultra，macOS 27.2，Debug 构建）2026-11-15 的一次：
+
+  | | CPU | 每秒移动 / 每步 |
+  |---|---|---|
+  | 卡拉OK进度，只有歌词 | 43.9% | 47.5 次 / 0.5 pt |
+  | 卡拉OK进度 + 播放按钮 | 45.9% | 47.0 次 / 0.5 pt |
+  | 同一次运行里的长句滚动，只有歌词 | 46.0% | 58.2 次 / 1 pt |
+
+  步数由句子宽度和时长决定（这句约 110 pt 唱 4 秒），比上限低；和滚动一样，开销几乎全是每一步的截图往返。
 - **本次没有做**：在真实 App 里肉眼看菜单栏效果，以及用真实 App 测整体 CPU。
 
 ## 已知降级
@@ -219,6 +279,12 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 - **滚动时仍有开销**：带播放按钮的长句在走的那一段约 48% CPU，大头是 AppKit 每帧的截图往返和按钮重画，不在画字。
   滚动只发生在超长的句子、且只在一句里「走」的那一段，整首歌平均要低得多。
 - **静止开销**：画字部分为零。条目若因别的原因变化（播放按钮状态切换等），仍会照常截图。
+- **卡拉OK进度一直在走**：开着进度时，有逐字时间的歌整首都在推进，开销和长句滚动「走」的那一段相当，见「验证」里的实测；
+  所以开关默认关。
+- **卡拉OK进度的几处粗糙**：从右到左书写的文字、以及两种方向混排的行不显示进度（这类行
+  从左边填会先显示成全唱完、再从左往右变空）；只有行时间的歌词没有进度；换歌、跳到另一行、在行的交界处调偏移时，
+  新行到达前的一瞬间旧行会画成全满或全空。
+- **实机外观没看过**：探针比的是截图字节，真实菜单栏里强调色在各种壁纸、浅色深色菜单栏上的观感还没有肉眼确认。
 - **探针的副作用**：会在菜单栏短暂出现名为「LyricsX Status Item Probe」的测试条目，临时 App
   （bundle id `dev.JH.LyricsX.StatusItemProbe`）会在 LaunchServices 里留下一条记录，可能出现在系统设置的菜单栏 App 列表里。
 
@@ -227,6 +293,8 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 - 播放按钮也改成按外观缓存的贴图（每帧每个按钮约 5 次 SF Symbol 栅格化），是滚动开销里剩下最大的可变项。
 - PR 198 的静态分页（翻页式，不连续滚动）可以作为可见设置项另行提案。
 - 等最低系统升到 macOS 26，再删掉 MarqueeLabel 依赖和旧路径。
+- 卡拉OK进度的颜色目前固定为系统强调色；要的话可以另加颜色设置，但别沿用桌面歌词的进度色（默认青色在浅色菜单栏上看不清）。
+- 长句的滚动目前按固定时间表走，与演唱进度无关；可以改成跟着进度滚，让进度边缘始终在可见区域里。
 
 ## 延伸阅读
 

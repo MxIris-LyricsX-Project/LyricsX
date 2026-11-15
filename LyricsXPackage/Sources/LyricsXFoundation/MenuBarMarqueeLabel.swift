@@ -1,4 +1,5 @@
 import AppKit
+import CoreText
 import QuartzCore
 
 /// The menu bar's lyric line, drawn without an `NSTextField`.
@@ -24,6 +25,12 @@ import QuartzCore
 /// width. Each frame is a copy of a bitmap rendered once per appearance,
 /// because every frame the line moves costs one snapshot round trip.
 ///
+/// Given the line's karaoke timing, it also shows how much of the line has
+/// been sung: the sung part in the accent colour, the rest as before, the
+/// edge between them moving with playback. That edge costs what scrolling
+/// does — every step is a snapshot round trip — so it moves in whole device
+/// pixels, only when it reaches the next one, and no faster than scrolling.
+///
 /// Only macOS 26 and later need it, so that is all it supports.
 @available(macOS 26, *)
 public final class MenuBarMarqueeLabel: NSControl {
@@ -38,43 +45,67 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// would tell apart.
     public static let defaultMaximumScrollFramesPerSecond: Double = 60
 
-    /// The most frames a second a scrolling line moves at; zero or less means
-    /// `defaultMaximumScrollFramesPerSecond`, and anything above the
-    /// display's refresh rate follows the display. Every frame the line moves
-    /// costs a replicant snapshot round trip of the whole status item, so
-    /// this — not how the text is drawn — is what scrolling costs: a cap
-    /// trades smoothness for CPU.
+    /// The most frames a second a scrolling line, or its karaoke progress,
+    /// moves at; zero or less means `defaultMaximumScrollFramesPerSecond`,
+    /// and anything above the display's refresh rate follows the display.
+    /// Every frame the line moves costs a replicant snapshot round trip of
+    /// the whole status item, so this — not how the text is drawn — is what
+    /// moving costs: a cap trades smoothness for CPU.
     public var maximumScrollFramesPerSecond: Double = 0 {
         didSet {
             if maximumScrollFramesPerSecond != oldValue {
-                updateScrolling()
+                updateMotion()
             }
         }
     }
 
     private static let fallbackLineDisplayTime: TimeInterval = 5
 
+    /// How far a lyrics time given again for the same line may be from the
+    /// view's own clock and still be taken as the same moment. The
+    /// controller re-sends the line on every app activation with a position
+    /// freshly read from the player, which wobbles by a few hundredths;
+    /// re-anchoring on that wobble restarted the display link and nudged
+    /// the edge back and forth. A pause, a resume or a jump moves further.
+    private static let karaokeReanchorTolerance: TimeInterval = 0.1
+
+    /// The colour the sung part of a line is drawn in.
+    private static var sungTextColor: NSColor {
+        .controlAccentColor
+    }
+
     private struct BitmapKey: Hashable {
         let appearanceName: NSAppearance.Name
         let scale: CGFloat
         let colorSpaceName: String
+        /// Drawn in `sungTextColor` rather than the cell's own colour.
+        let isSung: Bool
     }
 
     private var lineDisplayTime = MenuBarMarqueeLabel.fallbackLineDisplayTime
     /// What MarqueeLabel's `sizeToFit` makes its field for the current line.
     package private(set) var fieldSize = NSSize.zero
     /// One bitmap per appearance: every snapshot flips the appearance and
-    /// back, so a single entry would be re-rendered twice per snapshot.
+    /// back, so a single entry would be re-rendered twice per snapshot. A
+    /// line with karaoke progress keeps a sung one per appearance as well.
     private var cachedBitmaps: [BitmapKey: CGImage] = [:]
 
     private var lineStartTime: CFTimeInterval = 0
     private var pausedTime: CFTimeInterval?
     private var isScreenAsleep = false
-    /// Wakes the view when a line's resting part ends.
+    /// Wakes the view when the line, or its karaoke progress, starts moving.
     private var restTimer: Timer?
-    /// Moves the line while it scrolls, in step with the screen's refresh.
+    /// Moves the line and its karaoke progress, in step with the screen's
+    /// refresh, while either is moving.
     private var displayLink: CADisplayLink?
-    private var screenSleepObservers: [NSObjectProtocol] = []
+    /// Each observer with the centre it was added to.
+    private var notificationObservers: [(notificationCenter: NotificationCenter, observer: NSObjectProtocol)] = []
+
+    private var karaokeTiming: KaraokeLineTiming?
+    /// The lyrics time `setKaraokeTiming(_:lyricsTime:)` was last given, and
+    /// the clock's time then — or, while paused, the time playback paused.
+    private var karaokeAnchorLyricsTime: TimeInterval = 0
+    private var karaokeAnchorClockTime: CFTimeInterval = 0
 
     /// Where the text's frame starts while a line wider than the view is
     /// scrolling: zero at rest, negative while moving.
@@ -87,8 +118,24 @@ public final class MenuBarMarqueeLabel: NSControl {
         }
     }
 
-    /// The clock the scroll timing reads. Probes replace it to place the line
-    /// at an exact moment.
+    /// How far into the text's frame the sung part reaches, in whole device
+    /// pixels; `nil` when the line shows no karaoke progress.
+    package private(set) var sungWidth: CGFloat? {
+        didSet {
+            if sungWidth != oldValue {
+                needsDisplay = true
+                sungWidthObserver?(sungWidth)
+            }
+        }
+    }
+
+    /// Where each character of the current line starts in the text's frame,
+    /// and finally where its last one ends: the karaoke progress after `n`
+    /// characters reaches `characterBoundaries[n]`.
+    package private(set) var characterBoundaries: [CGFloat] = []
+
+    /// The clock the scroll and karaoke timing read. Probes replace it to
+    /// place the line at an exact moment.
     package var clock: () -> CFTimeInterval = CACurrentMediaTime
 
     /// Called on every draw. Probes count with it.
@@ -97,6 +144,14 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// Called whenever the scroll position changes. Probes measure the motion
     /// with it.
     package var scrollPositionObserver: ((CGFloat) -> Void)?
+
+    /// Called whenever the sung width changes. Probes measure the karaoke
+    /// progress with it.
+    package var sungWidthObserver: ((CGFloat?) -> Void)?
+
+    /// Called whenever the view re-evaluates its motion, which stops and
+    /// restarts its display link or timer. Probes count with it.
+    package var motionUpdateObserver: (() -> Void)?
 
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -123,33 +178,72 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// An empty `value` is ignored and the previous line stays, as with
     /// MarqueeLabel. Calling again with the same line and duration does not
     /// restart its scrolling — the controller re-sends the current line
-    /// whenever another app becomes active.
+    /// whenever another app becomes active. A new `value` drops the karaoke
+    /// progress, which belonged to the line before.
     public func setStringValue(_ value: String, lineDisplayTime: TimeInterval) {
         guard !value.isEmpty else { return }
         let duration = lineDisplayTime.isFinite && lineDisplayTime > 0 ? lineDisplayTime : Self.fallbackLineDisplayTime
         guard value != super.stringValue || duration != self.lineDisplayTime else { return }
+        if value != super.stringValue {
+            karaokeTiming = nil
+        }
         super.stringValue = value
         self.lineDisplayTime = duration
         setAccessibilityValue(value)
         updateFieldSize()
-        lineStartTime = clock()
-        if pausedTime != nil {
-            pausedTime = lineStartTime
-        }
+        restartLine()
         needsDisplay = true
-        updateScrolling()
+        updateMotion()
     }
 
-    /// Freezes a scrolling line while playback is paused, and resumes it
-    /// from the same place.
+    /// Shows the karaoke progress of the current line: `timing` as it stands
+    /// at `lyricsTime`, the playback position at this moment with the lyrics'
+    /// offset applied. `nil` shows the line without progress.
+    ///
+    /// The progress then moves on with the view's own clock, and stops while
+    /// playback is paused; call again whenever playback jumps. A timing for
+    /// a different line than the one before — the same text sung again —
+    /// also starts the line's scrolling over, or the progress of a long line
+    /// would begin past the view's leading edge.
+    public func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval) {
+        // The controller sends the line again on every app activation, with
+        // the switch off too: no progress then and now, or the same progress
+        // at the moment the clock already shows, changes nothing, and must
+        // not restart a scrolling line's display link.
+        guard timing != nil || karaokeTiming != nil else { return }
+        if let karaokeTiming, timing == karaokeTiming,
+           abs(lyricsTime - currentLyricsTime) < Self.karaokeReanchorTolerance {
+            return
+        }
+        if let previousTiming = karaokeTiming, let timing, previousTiming != timing {
+            restartLine()
+        }
+        karaokeTiming = timing
+        karaokeAnchorLyricsTime = lyricsTime.isFinite ? lyricsTime : 0
+        karaokeAnchorClockTime = pausedTime ?? clock()
+        updateMotion()
+    }
+
+    /// Freezes a scrolling line and its karaoke progress while playback is
+    /// paused, and resumes them from the same place.
     public func setPlaybackPaused(_ isPaused: Bool) {
         if isPaused, pausedTime == nil {
             pausedTime = clock()
         } else if !isPaused, let pausedTime {
-            lineStartTime += clock() - pausedTime
+            let pauseDuration = clock() - pausedTime
+            lineStartTime += pauseDuration
+            karaokeAnchorClockTime += pauseDuration
             self.pausedTime = nil
         }
-        updateScrolling()
+        updateMotion()
+    }
+
+    /// Starts the line's scroll timing from now.
+    private func restartLine() {
+        lineStartTime = clock()
+        if pausedTime != nil {
+            pausedTime = lineStartTime
+        }
     }
 
     // MARK: - Layout
@@ -157,35 +251,35 @@ public final class MenuBarMarqueeLabel: NSControl {
     public override func setFrameSize(_ newSize: NSSize) {
         guard newSize != frame.size else { return }
         super.setFrameSize(newSize)
-        updateScrolling()
+        updateMotion()
         needsDisplay = true
     }
 
     public override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         if window == nil {
-            stopObservingScreenSleep()
+            stopObservingNotifications()
         } else {
-            startObservingScreenSleep()
+            startObservingNotifications()
         }
-        updateScrolling()
+        updateMotion()
     }
 
     public override func viewDidHide() {
         super.viewDidHide()
-        updateScrolling()
+        updateMotion()
     }
 
     public override func viewDidUnhide() {
         super.viewDidUnhide()
-        updateScrolling()
+        updateMotion()
     }
 
     public override func viewDidChangeBackingProperties() {
         super.viewDidChangeBackingProperties()
         // The field size is aligned to the old screen's pixels.
         updateFieldSize()
-        updateScrolling()
+        updateMotion()
     }
 
     /// Clicks belong to the status item's button, which tracks its menu.
@@ -200,15 +294,13 @@ public final class MenuBarMarqueeLabel: NSControl {
         guard let context = NSGraphicsContext.current?.cgContext, !stringValue.isEmpty else { return }
         let scale = Self.deviceScale(of: context)
         let colorSpace = context.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB)!
-        let key = BitmapKey(
-            appearanceName: NSAppearance.currentDrawing().name,
-            scale: scale,
-            colorSpaceName: (colorSpace.name as String?) ?? "unnamed"
-        )
-        if cachedBitmaps[key] == nil {
-            cachedBitmaps[key] = renderTextBitmap(scale: scale, colorSpace: colorSpace)
+        let appearanceName = NSAppearance.currentDrawing().name
+        let colorSpaceName = (colorSpace.name as String?) ?? "unnamed"
+        func bitmapKey(isSung: Bool) -> BitmapKey {
+            BitmapKey(appearanceName: appearanceName, scale: scale, colorSpaceName: colorSpaceName, isSung: isSung)
         }
-        guard let bitmap = cachedBitmaps[key] else { return }
+        guard let bitmap = textBitmap(for: bitmapKey(isSung: false), colorSpace: colorSpace) else { return }
+        let frame = textFrame
         // Positions are whole device pixels, so this is a plain copy. A
         // fractional position would make every one of the six draws a frame
         // costs resample the bitmap in software: at display rate that alone
@@ -216,14 +308,29 @@ public final class MenuBarMarqueeLabel: NSControl {
         // MarqueeLabel's, which moves in whole points.
         context.saveGState()
         context.interpolationQuality = .none
-        context.draw(bitmap, in: textFrame)
+        if let sungWidth, sungWidth > 0, let sungBitmap = textBitmap(for: bitmapKey(isSung: true), colorSpace: colorSpace) {
+            // The sung width is whole device pixels too, so each part is a
+            // copy of its own bitmap cut at a pixel edge: no pixel is blended
+            // from both.
+            let sungEdge = frame.minX + min(sungWidth, frame.width)
+            context.saveGState()
+            context.clip(to: NSRect(x: frame.minX, y: frame.minY, width: sungEdge - frame.minX, height: frame.height))
+            context.draw(sungBitmap, in: frame)
+            context.restoreGState()
+            if sungEdge < frame.maxX {
+                context.clip(to: NSRect(x: sungEdge, y: frame.minY, width: frame.maxX - sungEdge, height: frame.height))
+                context.draw(bitmap, in: frame)
+            }
+        } else {
+            context.draw(bitmap, in: frame)
+        }
         context.restoreGState()
     }
 
     /// Where MarqueeLabel's `-layoutTextField` puts its field: centred
     /// vertically (rounded up), centred horizontally when it fits, otherwise
     /// at the scroll position.
-    private var textFrame: NSRect {
+    package var textFrame: NSRect {
         let originY = ((bounds.height - fieldSize.height) * 0.5).rounded(.up)
         let originX = fieldSize.width <= bounds.width
             ? ((bounds.width - fieldSize.width) * 0.5).rounded()
@@ -246,10 +353,56 @@ public final class MenuBarMarqueeLabel: NSControl {
         guard let textCell, !stringValue.isEmpty else { return }
         fieldSize = backingAlignedRect(NSRect(origin: .zero, size: textCell.cellSize), options: .alignAllEdgesOutward).size
         cachedBitmaps.removeAll()
+        updateCharacterBoundaries()
     }
 
-    private func renderTextBitmap(scale: CGFloat, colorSpace: CGColorSpace) -> CGImage? {
+    /// Lays the line out the way the cell draws it — its attributed string on
+    /// one line, inset by the cell's text padding — and records where each
+    /// character starts.
+    ///
+    /// The progress fills from the leading edge, so it only fits a line
+    /// whose characters run left to right. A line with any right-to-left
+    /// run gets no boundaries and shows no progress: filled from the left, a
+    /// Hebrew line started out fully sung and emptied as it was sung. The
+    /// runs' direction is what tells, not the order of the boundaries — a
+    /// single Hebrew letter in an English line keeps them in order, its own
+    /// width folded into the space before it.
+    private func updateCharacterBoundaries() {
+        guard let textCell, !stringValue.isEmpty else {
+            characterBoundaries = []
+            return
+        }
+        let attributedText = textCell.attributedStringValue
+        let text = attributedText.string
+        let line = CTLineCreateWithAttributedString(attributedText)
+        let textOrigin = textCell.titleRect(forBounds: NSRect(origin: .zero, size: fieldSize)).minX
+            + MenuBarMarqueeLabelCell.horizontalTextPadding
+        let boundaries = (Array(text.indices) + [text.endIndex]).map { characterIndex in
+            textOrigin + CTLineGetOffsetForStringIndex(line, characterIndex.utf16Offset(in: text), nil)
+        }
+        let glyphRuns = CTLineGetGlyphRuns(line) as? [CTRun] ?? []
+        let runsLeftToRight = glyphRuns.allSatisfy { !CTRunGetStatus($0).contains(.rightToLeft) }
+        characterBoundaries = runsLeftToRight ? boundaries : []
+    }
+
+    private func textBitmap(for key: BitmapKey, colorSpace: CGColorSpace) -> CGImage? {
+        if cachedBitmaps[key] == nil {
+            cachedBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: key.isSung ? Self.sungTextColor : nil)
+        }
+        return cachedBitmaps[key]
+    }
+
+    /// The line drawn by the cell — or, given `textColor`, by a copy of the
+    /// cell in that colour, which leaves every other setting as it is.
+    private func renderTextBitmap(scale: CGFloat, colorSpace: CGColorSpace, textColor: NSColor?) -> CGImage? {
         guard let textCell else { return nil }
+        let drawingCell: NSTextFieldCell
+        if let textColor, let recolouredCell = textCell.copy() as? NSTextFieldCell {
+            recolouredCell.textColor = textColor
+            drawingCell = recolouredCell
+        } else {
+            drawingCell = textCell
+        }
         // Exactly the field's frame: in a running app the text field's layer
         // clips a glyph that overhangs it — a colour emoji at the end of a
         // line does — and so does this bitmap.
@@ -270,7 +423,7 @@ public final class MenuBarMarqueeLabel: NSControl {
         bitmapContext.scaleBy(x: scale, y: scale)
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(cgContext: bitmapContext, flipped: false)
-        textCell.draw(withFrame: NSRect(origin: .zero, size: fieldSize), in: self)
+        drawingCell.draw(withFrame: NSRect(origin: .zero, size: fieldSize), in: self)
         NSGraphicsContext.restoreGraphicsState()
         return bitmapContext.makeImage()
     }
@@ -301,32 +454,85 @@ public final class MenuBarMarqueeLabel: NSControl {
             let progress = min(1, max(0, (elapsed - restDuration) / movingDuration))
             return -travel * CGFloat(progress)
         }
+
+        func isMoving(at elapsed: TimeInterval) -> Bool {
+            travel > 0 && elapsed >= restDuration && elapsed < restDuration + movingDuration
+        }
     }
 
     private var scrollPlan: ScrollPlan {
         ScrollPlan(fieldWidth: fieldSize.width, visibleWidth: bounds.width, lineDisplayTime: lineDisplayTime)
     }
 
-    private func updateScrolling() {
-        stopScrollClocks()
+    // MARK: - Karaoke progress
+
+    /// The lyrics time now, as the last anchor and the clock since tell it;
+    /// stopped while paused.
+    private var currentLyricsTime: TimeInterval {
+        karaokeAnchorLyricsTime + ((pausedTime ?? clock()) - karaokeAnchorClockTime)
+    }
+
+    /// How far the sung part reaches at `lyricsTime`: nothing before the
+    /// first character, the whole frame once the last one is sung, and in
+    /// between the share of each character sung so far.
+    private func sungWidth(atLyricsTime lyricsTime: TimeInterval) -> CGFloat? {
+        guard let karaokeTiming, let lastBoundaryIndex = characterBoundaries.indices.last, lastBoundaryIndex > 0 else {
+            return nil
+        }
+        let sungCharacterCount = min(max(0, karaokeTiming.sungCharacterCount(atLyricsTime: lyricsTime)), Double(lastBoundaryIndex))
+        if sungCharacterCount <= 0 {
+            return 0
+        }
+        if sungCharacterCount >= Double(lastBoundaryIndex) {
+            // A glyph that overhangs the end of the line is sung too.
+            return fieldSize.width
+        }
+        let characterIndex = Int(sungCharacterCount.rounded(.down))
+        let characterShare = CGFloat(sungCharacterCount - Double(characterIndex))
+        let characterStart = characterBoundaries[characterIndex]
+        let characterEnd = characterBoundaries[characterIndex + 1]
+        return snappedToDevicePixels(characterStart + (characterEnd - characterStart) * characterShare)
+    }
+
+    // MARK: - Motion
+
+    /// Puts the line and its karaoke progress where the clock has them, and
+    /// keeps them moving: the display link while either moves, otherwise a
+    /// one-off timer for whichever starts moving first.
+    private func updateMotion() {
+        motionUpdateObserver?()
+        stopMotionClocks()
         let plan = scrollPlan
         let elapsed = (pausedTime ?? clock()) - lineStartTime
+        let lyricsTime = currentLyricsTime
         scrollPosition = snappedToDevicePixels(plan.position(at: elapsed))
+        sungWidth = sungWidth(atLyricsTime: lyricsTime)
 
-        guard plan.travel > 0, pausedTime == nil, !isScreenAsleep,
-              window != nil, !isHiddenOrHasHiddenAncestor,
-              elapsed < plan.restDuration + plan.movingDuration else {
+        guard pausedTime == nil, !isScreenAsleep, window != nil, !isHiddenOrHasHiddenAncestor else {
             return
         }
-        if elapsed < plan.restDuration {
-            let timer = Timer(timeInterval: plan.restDuration - elapsed, repeats: false) { [weak self] _ in
-                MainActor.assumeIsolated { self?.updateScrolling() }
+        var needsDisplayLink = plan.isMoving(at: elapsed)
+        var secondsUntilMoving: TimeInterval?
+        if plan.travel > 0, elapsed < plan.restDuration {
+            secondsUntilMoving = plan.restDuration - elapsed
+        }
+        if let karaokeTiming, sungWidth != nil {
+            let movingLyricsTimes = karaokeTiming.movingLyricsTimes
+            if lyricsTime < movingLyricsTimes.lowerBound {
+                secondsUntilMoving = min(secondsUntilMoving ?? .infinity, movingLyricsTimes.lowerBound - lyricsTime)
+            } else if lyricsTime < movingLyricsTimes.upperBound {
+                needsDisplayLink = true
+            }
+        }
+        if needsDisplayLink {
+            startDisplayLink()
+        } else if let secondsUntilMoving {
+            let timer = Timer(timeInterval: secondsUntilMoving, repeats: false) { [weak self] _ in
+                MainActor.assumeIsolated { self?.updateMotion() }
             }
             // Common modes, so the line keeps moving while a menu is open.
             RunLoop.main.add(timer, forMode: .common)
             restTimer = timer
-        } else {
-            startDisplayLink()
         }
     }
 
@@ -345,7 +551,7 @@ public final class MenuBarMarqueeLabel: NSControl {
         self.displayLink = displayLink
     }
 
-    private func stopScrollClocks() {
+    private func stopMotionClocks() {
         restTimer?.invalidate()
         restTimer = nil
         displayLink?.invalidate()
@@ -353,15 +559,20 @@ public final class MenuBarMarqueeLabel: NSControl {
     }
 
     @objc private func displayLinkDidFire(_ displayLink: CADisplayLink) {
-        advanceScrolling()
+        advanceMotion()
     }
 
-    private func advanceScrolling() {
+    private func advanceMotion() {
         let plan = scrollPlan
         let elapsed = clock() - lineStartTime
+        let lyricsTime = currentLyricsTime
         scrollPosition = snappedToDevicePixels(plan.position(at: elapsed))
-        if elapsed >= plan.restDuration + plan.movingDuration {
-            stopScrollClocks()
+        sungWidth = sungWidth(atLyricsTime: lyricsTime)
+        let karaokeIsMoving = karaokeTiming.map { sungWidth != nil && $0.movingLyricsTimes.contains(lyricsTime) } ?? false
+        if !plan.isMoving(at: elapsed), !karaokeIsMoving {
+            // Whatever moved has stopped: wait for the next thing to move, or
+            // for nothing.
+            updateMotion()
         }
     }
 
@@ -372,30 +583,42 @@ public final class MenuBarMarqueeLabel: NSControl {
         return (position * scale).rounded() / scale
     }
 
-    // MARK: - Screen sleep
+    // MARK: - Notifications
 
-    private func startObservingScreenSleep() {
-        guard screenSleepObservers.isEmpty else { return }
-        let notificationCenter = NSWorkspace.shared.notificationCenter
-        screenSleepObservers = [
-            notificationCenter.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+    private func startObservingNotifications() {
+        guard notificationObservers.isEmpty else { return }
+        let workspaceNotificationCenter = NSWorkspace.shared.notificationCenter
+        notificationObservers = [
+            (workspaceNotificationCenter, workspaceNotificationCenter.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.setScreenAsleep(true) }
-            },
-            notificationCenter.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+            }),
+            (workspaceNotificationCenter, workspaceNotificationCenter.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.setScreenAsleep(false) }
-            },
+            }),
+            // The accent colour is a system setting; the sung bitmaps were
+            // drawn in the old one.
+            (NotificationCenter.default, NotificationCenter.default.addObserver(forName: NSColor.systemColorsDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.systemColorsDidChange() }
+            }),
         ]
     }
 
-    private func stopObservingScreenSleep() {
-        for observer in screenSleepObservers {
-            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+    private func stopObservingNotifications() {
+        for (notificationCenter, observer) in notificationObservers {
+            notificationCenter.removeObserver(observer)
         }
-        screenSleepObservers = []
+        notificationObservers = []
     }
 
     private func setScreenAsleep(_ isAsleep: Bool) {
         isScreenAsleep = isAsleep
-        updateScrolling()
+        updateMotion()
+    }
+
+    private func systemColorsDidChange() {
+        cachedBitmaps = cachedBitmaps.filter { !$0.key.isSung }
+        if sungWidth != nil {
+            needsDisplay = true
+        }
     }
 }

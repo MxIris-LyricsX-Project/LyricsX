@@ -11,6 +11,9 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
     /// The lyric view moves itself — `MenuBarMarqueeLabel` — given a line
     /// whose moving part starts as the measured window does.
     case ownTiming
+    /// The line stays put and `MenuBarMarqueeLabel`'s karaoke progress
+    /// moves across it, sung evenly over the measured window.
+    case karaoke
 
     package var description: String {
         switch self {
@@ -20,6 +23,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             "marqueeAnimation"
         case .ownTiming:
             "ownTiming"
+        case .karaoke:
+            "karaoke"
         }
     }
 
@@ -31,6 +36,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             self = .marqueeAnimation
         case "ownTiming":
             self = .ownTiming
+        case "karaoke":
+            self = .karaoke
         default:
             return nil
         }
@@ -43,6 +50,8 @@ package enum StatusItemProbeMode: String, Sendable {
     case liveStatusItem
     /// Run `StatusItemSnapshotParity` offscreen and report.
     case snapshotParity
+    /// Run `StatusItemKaraokeRendering` offscreen and report.
+    case karaokeRendering
     /// Open a real menu with a `TitleAlignedMenuItemView` row and report
     /// where its label starts against the menu's titles.
     case menuTitleAlignment
@@ -134,6 +143,18 @@ package struct StatusItemProbeRequest: Sendable {
     package static func snapshotParity(reportPath: String) -> StatusItemProbeRequest {
         StatusItemProbeRequest(
             mode: .snapshotParity,
+            content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
+            text: "",
+            settleSeconds: 0,
+            measuredSeconds: 0,
+            reportPath: reportPath
+        )
+    }
+
+    /// A karaoke-rendering run, which needs nothing but somewhere to report.
+    package static func karaokeRendering(reportPath: String) -> StatusItemProbeRequest {
+        StatusItemProbeRequest(
+            mode: .karaokeRendering,
             content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
             text: "",
             settleSeconds: 0,

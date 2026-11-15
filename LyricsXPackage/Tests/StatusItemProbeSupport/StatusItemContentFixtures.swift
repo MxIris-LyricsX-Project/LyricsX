@@ -153,6 +153,7 @@ package enum LyricsRendering: String, CaseIterable, Sendable {
             let marqueeLabel = MenuBarMarqueeLabel(frame: NSRect(x: 0, y: 0, width: MenuBarLyricsGeometry.lyricsWidth, height: MenuBarLyricsGeometry.lyricsHeight))
             marqueeLabel.drawingObserver = { drawTally.recordDraw(source: "menuBarMarqueeLabel") }
             marqueeLabel.scrollPositionObserver = { drawTally.recordPosition($0) }
+            marqueeLabel.sungWidthObserver = { drawTally.recordPosition($0 ?? 0) }
             marqueeLabel.setStringValue(text, lineDisplayTime: lineDisplayTime)
             return marqueeLabel
         }

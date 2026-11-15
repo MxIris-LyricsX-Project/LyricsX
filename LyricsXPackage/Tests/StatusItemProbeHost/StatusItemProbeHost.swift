@@ -66,6 +66,24 @@ private enum SnapshotParityRun {
     }
 }
 
+/// Runs `StatusItemKaraokeRendering` and writes its report.
+@MainActor
+private enum KaraokeRenderingRun {
+    static func runAndExit(reportPath: String) -> Never {
+        do {
+            guard #available(macOS 26, *) else {
+                preconditionFailure("MenuBarMarqueeLabel exists only on macOS 26 and later")
+            }
+            let report = try StatusItemKaraokeRendering.run()
+            try JSONEncoder().encode(report).write(to: URL(fileURLWithPath: reportPath))
+            exit(0)
+        } catch {
+            FileHandle.standardError.write(Data("StatusItemProbeHost: \(error)\n".utf8))
+            exit(7)
+        }
+    }
+}
+
 /// Runs `MenuTitleAlignmentProbe` on one menu and writes its report.
 @MainActor
 private enum MenuTitleAlignmentRun {
@@ -101,6 +119,9 @@ private final class StatusItemProbeSession {
         if request.mode == .snapshotParity {
             SnapshotParityRun.runAndExit(reportPath: request.reportPath)
         }
+        if request.mode == .karaokeRendering {
+            KaraokeRenderingRun.runAndExit(reportPath: request.reportPath)
+        }
         if request.mode == .menuTitleAlignment, let menuCase = request.menuTitleAlignmentCase {
             // Out of `applicationDidFinishLaunching`, so the menu's tracking
             // loop runs in an app that has finished launching.
@@ -134,6 +155,7 @@ private final class StatusItemProbeSession {
         wallStart = CACurrentMediaTime()
         processCPUStart = ProcessCPUClock.seconds()
         startScrolling()
+        startKaraokeProgress()
         Timer.scheduledTimer(withTimeInterval: request.measuredSeconds, repeats: false) { _ in
             MainActor.assumeIsolated { self.finish() }
         }
@@ -161,6 +183,23 @@ private final class StatusItemProbeSession {
             context.timingFunction = CAMediaTimingFunction(name: .linear)
             box.textField.animator().frame = endFrame
         }
+    }
+
+    /// Sings the line evenly across the measured window, a character at a
+    /// time, so its karaoke progress moves from the first character to the
+    /// last as measuring runs.
+    private func startKaraokeProgress() {
+        guard request.scrollDriving == .karaoke, #available(macOS 26, *),
+              let marqueeLabel = lyricsView as? MenuBarMarqueeLabel else { return }
+        let characterCount = request.text.count
+        guard characterCount > 0 else { return }
+        let secondsPerCharacter = request.measuredSeconds / Double(characterCount)
+        let tags = (0 ..< characterCount).map {
+            LyricsLine.Attachments.InlineTimeTag.Tag(index: $0, time: Double($0) * secondsPerCharacter)
+        }
+        let timeTag = LyricsLine.Attachments.InlineTimeTag(tags: tags, duration: request.measuredSeconds)
+        guard let timing = KaraokeLineTiming(lineStart: 0, characterCount: characterCount, timeTag: timeTag) else { return }
+        marqueeLabel.setKaraokeTiming(timing, lyricsTime: 0)
     }
 
     private func finish() {
