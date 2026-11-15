@@ -99,6 +99,11 @@ final class AppController: NSObject {
 
     private let widgetDataStore = WidgetDataStore(groupIdentifier: lyricsXGroupIdentifier)
 
+    /// The widget's cover for the playing track, so a snapshot written on a
+    /// lyric line does not draw and encode it again. Read and written on
+    /// `DispatchQueue.lyricsDisplay`.
+    private var widgetCoverArtworkCache = WidgetCoverArtworkCache()
+
     private lazy var widgetReloadCoordinator = WidgetReloadCoordinator { [unowned self] playbackState in
         writeWidgetSnapshot(playbackState: playbackState)
     }
@@ -1726,12 +1731,14 @@ final class AppController: NSObject {
             }
         }
 
-        // Extract artwork color and cover data
+        // The cover and its colour are prepared once per track; this runs on
+        // every lyric line.
         var backgroundColor: CodableColor?
         if let artwork = track.resolvedArtwork {
-            backgroundColor = AlbumColorExtractor.dominantColor(from: artwork)
-            if let coverData = AlbumColorExtractor.compressedCoverData(from: artwork) {
-                try? widgetDataStore.writeCover(coverData)
+            if let artworkImage = artwork.cgImage(forProposedRect: nil, context: nil, hints: nil),
+               let cover = widgetCoverArtworkCache.artwork(for: artworkImage, trackIdentifier: track.id) {
+                backgroundColor = cover.backgroundColor
+                try? widgetDataStore.writeCover(cover.jpegData)
             }
         } else {
             widgetDataStore.clearCover()
