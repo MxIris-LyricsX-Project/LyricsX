@@ -720,6 +720,7 @@
                     </view>
                     <connections>
                         <outlet property="autoLaunchButton" destination="KCS-6F-vyn" id="021-dz-vmT"/>
+                        <outlet property="globalOffsetTextField" destination="a5h-Km-d1s" id="rLO-gO-001"/>
                         <outlet property="languagePopUp" destination="GuZ-fJ-k5o" id="oI6-FQ-yQ6"/>
                         <outlet property="loadHomonymLrcButton" destination="kmo-rQ-MLa" id="Rbj-Cg-qUq"/>
                         <outlet property="preferAudirvana" destination="Oaz-tx-V8o" id="5nw-qq-XwB"/>

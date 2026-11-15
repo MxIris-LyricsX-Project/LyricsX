@@ -52,7 +52,7 @@
 2. ✅ LyricsXFoundation：`PlaybackRoute`、`PlaybackRouteLyricsOffsets`（查表、设值、删条目、编解码）与 `LyricsXFoundationTests`。
 3. ✅ LyricsXFoundation：CoreAudio 读默认输出设备（`AudioOutputDevice`）、监听它的变化（`SystemDefaultAudioOutputDeviceObserver`），配一个列出本机输出设备的探针（`AudioOutputDeviceProbes`）；AirPlay 设备的 UID 形态见上文。
 4. ✅ App：识别当前播放器与输出设备、算出当前组合的偏移；`adjustedOffset` 加上它；三处重排时间的监听改为同一个信号。
-5. App：全局偏移旁的按钮与表单，新文案的本地化。
+5. ✅ App：全局偏移旁的按钮与表单，新文案的本地化。
 6. 文档：`CLAUDE.md` 的测试覆盖清单、按需的实现说明，提案改成实际做法。
 
 正式收尾时另做：原名恢复先合；MusicPlayer 这条分支合进它的 develop 并打 `v1.12.0`；LyricsX 把 `exact:` 改成 `"1.12.0"`、重新解析并提交 `Package.resolved`。实现期间 LyricsX 分支仍钉着 develop 的 1.10.1，app 对着本地的 MusicPlayer 分支编译。

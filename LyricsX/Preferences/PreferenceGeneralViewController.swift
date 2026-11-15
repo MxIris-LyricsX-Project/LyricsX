@@ -21,6 +21,17 @@ class PreferenceGeneralViewController: PreferenceViewController {
 
     @IBOutlet var languagePopUp: NSPopUpButton!
 
+    @IBOutlet var globalOffsetTextField: NSTextField!
+
+    private lazy var playbackRouteLyricsOffsetsButton = NSButton(
+        title: NSLocalizedString(
+            "Per Player & Output…",
+            comment: "Button beside the global lyrics offset in the General pane. Opens the sheet of lyrics offsets set per player and output device."
+        ),
+        target: self,
+        action: #selector(showPlaybackRouteLyricsOffsetsAction(_:))
+    )
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -63,6 +74,29 @@ class PreferenceGeneralViewController: PreferenceViewController {
            let idx = localizations.firstIndex(of: lan) {
             languagePopUp.selectItem(at: idx + 2)
         }
+
+        installPlaybackRouteLyricsOffsetsButton()
+    }
+
+    /// Puts the button for the offsets per player and output device beside
+    /// the global offset, in the same grid cell. A row of its own would make
+    /// this pane — the tallest one that does not scroll — taller than a 13-inch
+    /// MacBook Air's screen; see `Documentations/Internal/PreferenceWindowSizing.md`.
+    private func installPlaybackRouteLyricsOffsetsButton() {
+        guard let gridView = globalOffsetTextField.superview as? NSGridView,
+              let cell = gridView.cell(for: globalOffsetTextField) else {
+            return
+        }
+        cell.contentView = nil
+        let stackView = NSStackView(views: [globalOffsetTextField, playbackRouteLyricsOffsetsButton])
+        stackView.orientation = .horizontal
+        stackView.alignment = .firstBaseline
+        stackView.spacing = 8
+        cell.contentView = stackView
+    }
+
+    @objc private func showPlaybackRouteLyricsOffsetsAction(_ sender: NSButton) {
+        presentAsSheet(PlaybackRouteLyricsOffsetsViewController())
     }
 
     @IBAction func toggleAutoLaunchAction(_ sender: NSButton) {
