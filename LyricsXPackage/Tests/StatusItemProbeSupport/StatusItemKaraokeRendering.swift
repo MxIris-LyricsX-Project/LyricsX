@@ -27,13 +27,19 @@ package struct StatusItemKaraokeReport: Codable, Sendable {
     package var expectedReanchoredScrollPosition: Double
     /// Whether new text dropped the previous line's progress.
     package var newTextDroppedProgress: Bool
-    /// Whether a right-to-left line shows progress. Its characters run
-    /// against the edge's direction, so it must not.
-    package var rightToLeftLineShowsProgress: Bool
-    /// How often telling a line without progress that it has none, again,
-    /// restarted its motion clocks — the controller does it on every app
-    /// activation, with the switch off too.
+    /// Lines with right-to-left text that show progress. Their characters
+    /// run against the edge's direction, so none may.
+    package var rightToLeftLinesShowingProgress: [String]
+    /// How often telling a playing line without progress that it has none,
+    /// again, restarted its motion clocks — the controller does it on every
+    /// app activation, with the switch off too.
     package var motionUpdatesForRepeatedAbsentProgress: Int
+    /// The same for a playing line given its own timing again at the lyrics
+    /// time its clock already shows — the same activations, switch on.
+    package var motionUpdatesForRepeatedConsistentProgress: Int
+    /// Whether that line, given its own timing at a lyrics time well away
+    /// from its clock, moved its progress there: a jump still re-anchors.
+    package var jumpReanchoredProgress: Bool
 }
 
 /// `MenuBarMarqueeLabel`'s karaoke progress, snapshot by snapshot.
@@ -126,8 +132,10 @@ package enum StatusItemKaraokeRendering {
             reanchoredScrollPosition: Double(restartProbe.reanchored),
             expectedReanchoredScrollPosition: Double(longLineScrollPosition),
             newTextDroppedProgress: newTextDropsProgress(),
-            rightToLeftLineShowsProgress: rightToLeftLineShowsProgress(),
-            motionUpdatesForRepeatedAbsentProgress: motionUpdatesForRepeatedAbsentProgress()
+            rightToLeftLinesShowingProgress: rightToLeftLinesShowingProgress(),
+            motionUpdatesForRepeatedAbsentProgress: motionUpdatesForRepeatedAbsentProgress(),
+            motionUpdatesForRepeatedConsistentProgress: repeatedConsistentProgress().motionUpdateCount,
+            jumpReanchoredProgress: repeatedConsistentProgress().jumpReanchored
         )
     }
 
@@ -271,21 +279,58 @@ package enum StatusItemKaraokeRendering {
         return marqueeLabel.sungWidth == nil
     }
 
-    private static func rightToLeftLineShowsProgress() -> Bool {
-        let text = "שלום עולם"
-        let marqueeLabel = pausedMarqueeLabel(showing: text, scrolledTo: 0)
-        marqueeLabel.setKaraokeTiming(timing(for: text), lyricsTime: lineStart + 0.9)
-        return marqueeLabel.sungWidth != nil
+    /// A Hebrew line, a line with a Hebrew word in it, and a line with a
+    /// single Hebrew letter in it — the last of which keeps its character
+    /// boundaries in order and only Core Text's run direction gives away.
+    private static func rightToLeftLinesShowingProgress() -> [String] {
+        ["שלום עולם", "Love אהבה forever", "Hello א world"].filter { text in
+            let marqueeLabel = pausedMarqueeLabel(showing: text, scrolledTo: 0)
+            marqueeLabel.setKaraokeTiming(timing(for: text), lyricsTime: lineStart + 0.9)
+            return marqueeLabel.sungWidth != nil
+        }
+    }
+
+    /// A line playing on a clock the probe moves.
+    private static func playingMarqueeLabel(showing text: String, clock: @escaping () -> CFTimeInterval) -> MenuBarMarqueeLabel {
+        let marqueeLabel = MenuBarMarqueeLabel(frame: NSRect(x: 0, y: 0, width: MenuBarLyricsGeometry.lyricsWidth, height: MenuBarLyricsGeometry.lyricsHeight))
+        marqueeLabel.clock = clock
+        marqueeLabel.setStringValue(text, lineDisplayTime: lineDisplayTime)
+        return marqueeLabel
     }
 
     private static func motionUpdatesForRepeatedAbsentProgress() -> Int {
-        let marqueeLabel = pausedMarqueeLabel(showing: shortLines[0], scrolledTo: 0)
+        var currentTime: CFTimeInterval = 0
+        let marqueeLabel = playingMarqueeLabel(showing: shortLines[0]) { currentTime }
         var motionUpdateCount = 0
         marqueeLabel.motionUpdateObserver = { motionUpdateCount += 1 }
         for repetition in 0 ..< 3 {
+            currentTime += 0.5
             marqueeLabel.setKaraokeTiming(nil, lyricsTime: lineStart + Double(repetition))
         }
         return motionUpdateCount
+    }
+
+    /// Re-sends a playing line's own timing three times at the lyrics time
+    /// its clock shows, give or take player jitter, then once two seconds
+    /// off.
+    private static func repeatedConsistentProgress() -> (motionUpdateCount: Int, jumpReanchored: Bool) {
+        var currentTime: CFTimeInterval = 0
+        let text = shortLines[0]
+        let timing = timing(for: text)
+        let marqueeLabel = playingMarqueeLabel(showing: text) { currentTime }
+        marqueeLabel.setKaraokeTiming(timing, lyricsTime: lineStart)
+        var motionUpdateCount = 0
+        marqueeLabel.motionUpdateObserver = { motionUpdateCount += 1 }
+        for (elapsed, jitter) in [(0.5, 0.02), (1.0, -0.03), (1.5, 0.0)] {
+            currentTime = elapsed
+            marqueeLabel.setKaraokeTiming(timing, lyricsTime: lineStart + elapsed + jitter)
+        }
+        let consistentMotionUpdateCount = motionUpdateCount
+        let widthBeforeJump = marqueeLabel.sungWidth
+        marqueeLabel.setKaraokeTiming(timing, lyricsTime: lineStart + 3.5)
+        let jumpReanchored = marqueeLabel.sungWidth != widthBeforeJump
+            && marqueeLabel.sungWidth == directlyAnchoredSungWidth(text: text, timing: timing, lyricsTime: lineStart + 3.5)
+        return (consistentMotionUpdateCount, jumpReanchored)
     }
 
     /// How many pixels in `columns` differ between two snapshots of the

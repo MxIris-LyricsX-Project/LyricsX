@@ -61,6 +61,14 @@ public final class MenuBarMarqueeLabel: NSControl {
 
     private static let fallbackLineDisplayTime: TimeInterval = 5
 
+    /// How far a lyrics time given again for the same line may be from the
+    /// view's own clock and still be taken as the same moment. The
+    /// controller re-sends the line on every app activation with a position
+    /// freshly read from the player, which wobbles by a few hundredths;
+    /// re-anchoring on that wobble restarted the display link and nudged
+    /// the edge back and forth. A pause, a resume or a jump moves further.
+    private static let karaokeReanchorTolerance: TimeInterval = 0.1
+
     /// The colour the sung part of a line is drawn in.
     private static var sungTextColor: NSColor {
         .controlAccentColor
@@ -199,9 +207,14 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// would begin past the view's leading edge.
     public func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval) {
         // The controller sends the line again on every app activation, with
-        // the switch off too: no progress then and now changes nothing, and
-        // must not restart a scrolling line's display link.
+        // the switch off too: no progress then and now, or the same progress
+        // at the moment the clock already shows, changes nothing, and must
+        // not restart a scrolling line's display link.
         guard timing != nil || karaokeTiming != nil else { return }
+        if let karaokeTiming, timing == karaokeTiming,
+           abs(lyricsTime - currentLyricsTime) < Self.karaokeReanchorTolerance {
+            return
+        }
         if let previousTiming = karaokeTiming, let timing, previousTiming != timing {
             restartLine()
         }
@@ -348,10 +361,12 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// character starts.
     ///
     /// The progress fills from the leading edge, so it only fits a line
-    /// whose characters run left to right. Right-to-left text, and a line
-    /// mixing both directions, get no boundaries and show no progress:
-    /// filled from the left, a Hebrew line started out fully sung and
-    /// emptied as it was sung.
+    /// whose characters run left to right. A line with any right-to-left
+    /// run gets no boundaries and shows no progress: filled from the left, a
+    /// Hebrew line started out fully sung and emptied as it was sung. The
+    /// runs' direction is what tells, not the order of the boundaries — a
+    /// single Hebrew letter in an English line keeps them in order, its own
+    /// width folded into the space before it.
     private func updateCharacterBoundaries() {
         guard let textCell, !stringValue.isEmpty else {
             characterBoundaries = []
@@ -365,7 +380,8 @@ public final class MenuBarMarqueeLabel: NSControl {
         let boundaries = (Array(text.indices) + [text.endIndex]).map { characterIndex in
             textOrigin + CTLineGetOffsetForStringIndex(line, characterIndex.utf16Offset(in: text), nil)
         }
-        let runsLeftToRight = zip(boundaries, boundaries.dropFirst()).allSatisfy { $0 <= $1 }
+        let glyphRuns = CTLineGetGlyphRuns(line) as? [CTRun] ?? []
+        let runsLeftToRight = glyphRuns.allSatisfy { !CTRunGetStatus($0).contains(.rightToLeft) }
         characterBoundaries = runsLeftToRight ? boundaries : []
     }
 

@@ -34,9 +34,11 @@ struct StatusItemKaraokeProbes {
         #expect(report.newTextDroppedProgress, "new text kept the previous line's progress")
         // A right-to-left line laid its characters out against the edge: the
         // whole line started out sung and emptied from the left.
-        #expect(!report.rightToLeftLineShowsProgress, "a right-to-left line shows progress running the wrong way")
-        // Every app activation re-sends the line; with the switch off that
-        // stopped and restarted a scrolling line's display link each time.
+        #expect(report.rightToLeftLinesShowingProgress.isEmpty, "lines with right-to-left text show progress: \(report.rightToLeftLinesShowingProgress)")
+        // Every app activation re-sends the line, switch off or on; each time
+        // it stopped and restarted a scrolling line's display link.
         #expect(report.motionUpdatesForRepeatedAbsentProgress == 0, "telling a line without progress so again restarted its clocks \(report.motionUpdatesForRepeatedAbsentProgress) times")
+        #expect(report.motionUpdatesForRepeatedConsistentProgress == 0, "re-sending a line's own timing at the time it shows restarted its clocks \(report.motionUpdatesForRepeatedConsistentProgress) times")
+        #expect(report.jumpReanchoredProgress, "a jump in playback did not move the progress")
     }
 }
