@@ -214,6 +214,13 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 # is printed only. KaraokeLineTimingTests in LyricsXFoundationTests cover
 # how much of a line its inline time tags say is sung.
 swift test --filter "StatusItemKaraokeProbes|StatusItemKaraokeCostProbes"
+
+# The line draws in a real status item without CoreGraphics logging an error
+# (~5 s): the host reads its own log back. Red on the old draw, which asked
+# every context for `colorSpace` (CGBitmapContextGetColorSpace) and logged
+# "invalid context" for each display-list draw, hundreds a second while the
+# karaoke progress moved.
+swift test --filter StatusItemDrawingErrorProbes
 ```
 
 The same suite guards the status menu's lyrics offset row, a custom view

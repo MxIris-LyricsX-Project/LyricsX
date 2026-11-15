@@ -244,6 +244,10 @@ package struct StatusItemProbeReport: Codable, Sendable {
     /// bar shows the item from snapshots instead.
     package var statusBarWindowIsOnScreen: Bool
     package var buttonAppearanceName: String
+    /// The error and fault messages CoreGraphics logged in the host over the
+    /// whole run, read back from the host's own log; nil when the host could
+    /// not read its log.
+    package var coreGraphicsErrorMessages: [String]?
 
     package init(
         content: String,
@@ -255,7 +259,8 @@ package struct StatusItemProbeReport: Codable, Sendable {
         settleDrawCount: Int,
         statusBarWindowNumber: Int,
         statusBarWindowIsOnScreen: Bool,
-        buttonAppearanceName: String
+        buttonAppearanceName: String,
+        coreGraphicsErrorMessages: [String]?
     ) {
         self.content = content
         self.bundleIdentifier = bundleIdentifier
@@ -267,6 +272,7 @@ package struct StatusItemProbeReport: Codable, Sendable {
         self.statusBarWindowNumber = statusBarWindowNumber
         self.statusBarWindowIsOnScreen = statusBarWindowIsOnScreen
         self.buttonAppearanceName = buttonAppearanceName
+        self.coreGraphicsErrorMessages = coreGraphicsErrorMessages
     }
 
     /// Share of one core — how Activity Monitor's %CPU column reads.
