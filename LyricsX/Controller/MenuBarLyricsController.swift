@@ -204,6 +204,7 @@ final class MenuBarLyricsController {
         // is on screen.
         AppController.shared.publisher(for: \.lyricsOffset)
             .signal()
+            .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)

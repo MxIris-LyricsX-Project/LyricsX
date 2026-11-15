@@ -134,11 +134,13 @@ final class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.playbackStateChanged, weaklyOn: self)
             .store(in: &cancelBag)
-        // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` dynamically, so a
-        // change must reschedule `currentLineIndex`. Per-track offset is handled
-        // by the `lyricsOffset` setter; the global key has no setter path here.
+        // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` and the
+        // current playback route's offset dynamically, so a change to either
+        // must reschedule `currentLineIndex`. Per-track offset is handled by
+        // the `lyricsOffset` setter; neither of these has a setter path here.
         defaults.publisher(for: [.globalLyricsOffset])
             .signal()
+            .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 self?.scheduleCurrentLineCheck()
