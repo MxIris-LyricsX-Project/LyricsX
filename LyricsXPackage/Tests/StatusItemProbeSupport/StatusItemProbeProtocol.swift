@@ -11,6 +11,9 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
     /// The lyric view moves itself — `MenuBarMarqueeLabel` — given a line
     /// whose moving part starts as the measured window does.
     case ownTiming
+    /// The line stays put and `MenuBarMarqueeLabel`'s karaoke progress
+    /// moves across it, sung evenly over the measured window.
+    case karaoke
 
     package var description: String {
         switch self {
@@ -20,6 +23,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             "marqueeAnimation"
         case .ownTiming:
             "ownTiming"
+        case .karaoke:
+            "karaoke"
         }
     }
 
@@ -31,6 +36,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             self = .marqueeAnimation
         case "ownTiming":
             self = .ownTiming
+        case "karaoke":
+            self = .karaoke
         default:
             return nil
         }

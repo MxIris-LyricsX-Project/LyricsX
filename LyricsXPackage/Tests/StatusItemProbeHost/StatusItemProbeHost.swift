@@ -155,6 +155,7 @@ private final class StatusItemProbeSession {
         wallStart = CACurrentMediaTime()
         processCPUStart = ProcessCPUClock.seconds()
         startScrolling()
+        startKaraokeProgress()
         Timer.scheduledTimer(withTimeInterval: request.measuredSeconds, repeats: false) { _ in
             MainActor.assumeIsolated { self.finish() }
         }
@@ -182,6 +183,23 @@ private final class StatusItemProbeSession {
             context.timingFunction = CAMediaTimingFunction(name: .linear)
             box.textField.animator().frame = endFrame
         }
+    }
+
+    /// Sings the line evenly across the measured window, a character at a
+    /// time, so its karaoke progress moves from the first character to the
+    /// last as measuring runs.
+    private func startKaraokeProgress() {
+        guard request.scrollDriving == .karaoke, #available(macOS 26, *),
+              let marqueeLabel = lyricsView as? MenuBarMarqueeLabel else { return }
+        let characterCount = request.text.count
+        guard characterCount > 0 else { return }
+        let secondsPerCharacter = request.measuredSeconds / Double(characterCount)
+        let tags = (0 ..< characterCount).map {
+            LyricsLine.Attachments.InlineTimeTag.Tag(index: $0, time: Double($0) * secondsPerCharacter)
+        }
+        let timeTag = LyricsLine.Attachments.InlineTimeTag(tags: tags, duration: request.measuredSeconds)
+        guard let timing = KaraokeLineTiming(lineStart: 0, characterCount: characterCount, timeTag: timeTag) else { return }
+        marqueeLabel.setKaraokeTiming(timing, lyricsTime: 0)
     }
 
     private func finish() {

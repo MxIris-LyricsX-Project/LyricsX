@@ -51,7 +51,8 @@ override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, what the menu bar's lyric line shows when there is
-no line to show, which standard item the status menu's custom row lines its
+no line to show, how much of a line its inline time tags say is sung (the menu
+bar's karaoke progress), which standard item the status menu's custom row lines its
 label up with and the per-release insets it falls back to, where a step of
 that row's lyrics offset lands (the next multiple of 100 ms, so an offset
 the lyrics came with, such as Kugou's 51 ms, steps back to 0), plus the lyrics
@@ -197,6 +198,16 @@ swift test --filter StatusItemTextParityProbes
 # nothing. Idle: the line must stop drawing once settled. Scroll: it must move
 # as often and in steps as fine as MarqueeLabel's animation, for less CPU.
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
+
+# The Lab's karaoke progress (MenuBarKaraokeProgressEnabled, macOS 26+), in
+# the probe host offscreen (~1 s): a line with progress is the accent-coloured
+# drawing up to one pixel edge and the plain one after it, an unsung line is
+# the plain line pixel for pixel, the measured characters sit on the drawn ink,
+# and the progress stops while paused. The cost probe sings a line in a real
+# status item (~15 s): one-device-pixel steps, never above the 60 fps cap; CPU
+# is printed only. KaraokeLineTimingTests in LyricsXFoundationTests cover
+# how much of a line its inline time tags say is sung.
+swift test --filter "StatusItemKaraokeProbes|StatusItemKaraokeCostProbes"
 ```
 
 The same suite guards the status menu's lyrics offset row, a custom view
