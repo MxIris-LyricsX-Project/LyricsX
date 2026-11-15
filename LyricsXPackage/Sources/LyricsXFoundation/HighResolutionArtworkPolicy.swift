@@ -39,6 +39,8 @@ public enum HighResolutionArtworkPolicy {
 
     public static let iTunesSearchResultLimit = 5
 
+    public static let netEaseSearchResultLimit = 5
+
     /// How far a candidate's duration may sit from the playing track's before
     /// the two are considered different recordings.
     public static let durationTolerance: TimeInterval = 3
@@ -79,11 +81,7 @@ public enum HighResolutionArtworkPolicy {
         artist: String?,
         countryCode: String?
     ) -> URL? {
-        let searchTerm = [title, artist]
-            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-        guard !searchTerm.isEmpty else {
+        guard let searchTerm = searchTerm(title: title, artist: artist) else {
             return nil
         }
         var components = URLComponents(string: "https://itunes.apple.com/search")
@@ -97,6 +95,123 @@ public enum HighResolutionArtworkPolicy {
         }
         components?.queryItems = queryItems
         return components?.url
+    }
+
+    /// NetEase Cloud Music's catalogue, searched by title and artist. It is the
+    /// catalogue the NetEase client itself plays from, so it knows the Chinese
+    /// releases and Japanese doujin tracks the iTunes Store usually does not —
+    /// and the client hands Now Playing only a 100-pixel cover.
+    ///
+    /// The endpoint is the one LyricsKit's NetEase lyrics source searches. It
+    /// refuses a request without the `NMTID` session cookie (code -462) and sets
+    /// the cookie on that refusal, so a caller without one sends the request
+    /// again with `cookie` taken from `netEaseSessionCookie(fromSetCookieHeader:)`.
+    public static func netEaseSearchRequest(
+        title: String?,
+        artist: String?,
+        cookie: String?
+    ) -> URLRequest? {
+        guard let searchTerm = searchTerm(title: title, artist: artist) else {
+            return nil
+        }
+        var components = URLComponents(string: "http://music.163.com/api/search/pc")
+        components?.queryItems = [
+            URLQueryItem(name: "s", value: searchTerm),
+            URLQueryItem(name: "offset", value: "0"),
+            URLQueryItem(name: "limit", value: String(netEaseSearchResultLimit)),
+            URLQueryItem(name: "type", value: "1"),
+        ]
+        guard let url = components?.url else {
+            return nil
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("http://music.163.com/", forHTTPHeaderField: "Referer")
+        request.setValue(netEaseUserAgent, forHTTPHeaderField: "User-Agent")
+        // The cookie is managed by hand, so whether a request carries one never
+        // depends on what a cookie store happens to hold.
+        request.httpShouldHandleCookies = false
+        if let cookie {
+            request.setValue(cookie, forHTTPHeaderField: "Cookie")
+        }
+        return request
+    }
+
+    /// The `name=value` pair a `Set-Cookie` header opens with — the part a
+    /// following request sends back.
+    public static func netEaseSessionCookie(fromSetCookieHeader setCookieHeader: String?) -> String? {
+        guard let pair = setCookieHeader?
+            .split(separator: ";", maxSplits: 1)
+            .first?
+            .trimmingCharacters(in: .whitespaces),
+            pair.contains("=")
+        else {
+            return nil
+        }
+        return pair
+    }
+
+    /// The songs a NetEase search returned, each with its album cover. `nil`
+    /// when the answer is not a search result at all — a refusal such as the
+    /// cookie challenge, or something unreadable — which is a different thing
+    /// from a search that found nothing (`[]`): only the latter says this song
+    /// has no cover there.
+    public static func netEaseSearchEntries(from data: Data) -> [ArtworkCatalogueEntry]? {
+        guard let response = try? JSONDecoder().decode(NetEaseSearchResponse.self, from: data),
+              response.code == 200
+        else {
+            return nil
+        }
+        return (response.result?.songs ?? []).compactMap { song in
+            guard let pictureURLString = song.album?.picUrl,
+                  let pictureURL = URL(string: pictureURLString)
+            else {
+                return nil
+            }
+            let artistNames = (song.artists ?? []).compactMap(\.name).filter { !$0.isEmpty }
+            return ArtworkCatalogueEntry(
+                artworkURL: pictureURL,
+                title: song.name,
+                artist: artistNames.isEmpty ? nil : artistNames.joined(separator: "/"),
+                duration: song.duration.map { TimeInterval($0) / 1000 }
+            )
+        }
+    }
+
+    private static let netEaseUserAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15"
+
+    private struct NetEaseSearchResponse: Decodable {
+        struct Result: Decodable {
+            let songs: [Song]?
+        }
+
+        struct Song: Decodable {
+            struct Artist: Decodable {
+                let name: String?
+            }
+
+            struct Album: Decodable {
+                let picUrl: String?
+            }
+
+            let name: String?
+            let artists: [Artist]?
+            let album: Album?
+            /// Milliseconds.
+            let duration: Int?
+        }
+
+        let code: Int
+        let result: Result?
+    }
+
+    private static func searchTerm(title: String?, artist: String?) -> String? {
+        let searchTerm = [title, artist]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        return searchTerm.isEmpty ? nil : searchTerm
     }
 
     /// Rewrites a cover URL to ask its host for a larger rendition. Hosts we
@@ -320,5 +435,21 @@ public enum HighResolutionArtworkPolicy {
             return nil
         }
         return trimmed
+    }
+}
+
+/// One song a catalogue search returned, reduced to what choosing its cover
+/// needs: where the cover is, and what the catalogue says the recording is.
+public struct ArtworkCatalogueEntry: Equatable, Sendable {
+    public let artworkURL: URL
+    public let title: String?
+    public let artist: String?
+    public let duration: TimeInterval?
+
+    public init(artworkURL: URL, title: String?, artist: String?, duration: TimeInterval?) {
+        self.artworkURL = artworkURL
+        self.title = title
+        self.artist = artist
+        self.duration = duration
     }
 }
