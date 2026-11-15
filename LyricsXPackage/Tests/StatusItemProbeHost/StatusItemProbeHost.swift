@@ -1,5 +1,6 @@
 import AppKit
 import LyricsXFoundation
+import OSLog
 import QuartzCore
 import StatusItemProbeSupport
 
@@ -216,7 +217,8 @@ private final class StatusItemProbeSession {
             settleDrawCount: settleDrawCount,
             statusBarWindowNumber: button?.window?.windowNumber ?? 0,
             statusBarWindowIsOnScreen: Self.isOnScreen(button?.window),
-            buttonAppearanceName: button?.effectiveAppearance.name.rawValue ?? "none"
+            buttonAppearanceName: button?.effectiveAppearance.name.rawValue ?? "none",
+            coreGraphicsErrorMessages: Self.coreGraphicsErrorMessages()
         )
         liveStatusItem?.remove()
         do {
@@ -226,6 +228,20 @@ private final class StatusItemProbeSession {
             exit(4)
         }
         exit(0)
+    }
+
+    /// What CoreGraphics logged at error or fault level in this process since
+    /// it started — the "invalid context" kind of complaint a draw makes when
+    /// it asks a context for something it does not have.
+    private static func coreGraphicsErrorMessages() -> [String]? {
+        guard let logStore = try? OSLogStore(scope: .currentProcessIdentifier),
+              let entries = try? logStore.getEntries(matching: NSPredicate(format: "subsystem == %@", "com.apple.coregraphics")) else {
+            return nil
+        }
+        return entries
+            .compactMap { $0 as? OSLogEntryLog }
+            .filter { $0.level == .error || $0.level == .fault }
+            .map(\.composedMessage)
     }
 
     private static func isOnScreen(_ window: NSWindow?) -> Bool {

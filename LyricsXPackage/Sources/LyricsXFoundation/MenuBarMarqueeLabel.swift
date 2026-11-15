@@ -302,7 +302,13 @@ public final class MenuBarMarqueeLabel: NSControl {
         drawingObserver?()
         guard let context = NSGraphicsContext.current?.cgContext, !stringValue.isEmpty else { return }
         let scale = Self.deviceScale(of: context)
-        let colorSpace = context.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB)!
+        // The window's colour space, not the context's. `context.colorSpace`
+        // is CGBitmapContextGetColorSpace, and only the replicant snapshot
+        // draws into a bitmap context, in the window's colour space; the
+        // other draws of a status item go to a display list, where it logged
+        // "invalid context" each time — hundreds of lines a second while the
+        // line moved.
+        let colorSpace = window?.colorSpace?.cgColorSpace ?? CGColorSpace(name: CGColorSpace.sRGB)!
         let appearanceName = NSAppearance.currentDrawing().name
         let colorSpaceName = (colorSpace.name as String?) ?? "unnamed"
         func bitmapKey(isSung: Bool) -> BitmapKey {

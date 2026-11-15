@@ -71,6 +71,13 @@ macOS 26 起，菜单栏上看到的状态栏条目不是 App 自己的窗口。
 因为每次截图都会把外观切走再切回，一个视图每张截图要按两种外观各画一次。只缓存一份位图的话，
 每次切换都会重新渲染，和直接画 cell 没有区别。按外观（以及缩放、色彩空间）分别缓存后，每次绘制都只是一次拷贝。
 
+色彩空间取**窗口的**，不向绘制用的 context 要。探针实测，一个条目每张截图的几次绘制里，只有画进截图本身的那一次是
+bitmap context，色彩空间就是窗口的；其余几次画进 display list。`CGContext.colorSpace` 其实是
+`CGBitmapContextGetColorSpace`，在 display list 上每调一次都会记一条
+「CGBitmapContextGetColorSpace: invalid context」错误日志并返回 nil。早先的写法就是这样，滚动时每秒几条，
+卡拉OK进度推进时每秒几百条：调试版跑半小时往 Xcode 控制台写了约 180 MB，App 退出后 Xcode 还要花不少时间渲染这些积压。
+`StatusItemDrawingErrorProbes` 守着这一点：它在真实条目里推进卡拉OK进度，断言宿主自己的日志里没有 CoreGraphics 错误。
+
 ### 滚动的开销：每帧一轮截图往返，其中大半不由我们控制
 
 用 swizzle 数 AppKit 私有方法的调用次数得到的结构（诊断代码已删除）：
@@ -246,6 +253,8 @@ swift test --filter StatusItemTextParityProbes
 swift test --filter StatusItemKaraokeProbes
 # 卡拉OK进度在真实条目上推进时的步长、频率与 CPU（约 15 秒，会在菜单栏出现测试条目）
 swift test --filter StatusItemKaraokeCostProbes
+# 真实条目里绘制时 CoreGraphics 不报错（约 5 秒，会在菜单栏出现测试条目）
+swift test --filter StatusItemDrawingErrorProbes
 # 真实条目：会启动一个临时 App，并在菜单栏出现几秒测试条目；空闲约 80 秒，滚动约 25 秒
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 ```
