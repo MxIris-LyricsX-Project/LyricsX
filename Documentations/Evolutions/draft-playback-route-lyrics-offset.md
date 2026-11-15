@@ -1,6 +1,6 @@
 # Draft - 按播放器与输出设备设置歌词偏移
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **创建日期**: 2026-11-15
 - **最后更新**: 2026-11-15
 - **实现分支**: LyricsX `feature/playback-route-lyrics-offset`（从 develop 切）；MusicPlayer `feature/system-media-player-bundle-id`（叠在 `feature/system-media-player-name`，即 1.11.0 之上）
@@ -16,10 +16,10 @@
 - 指定了脚本播放器（Music、Spotify 等五个）时取 `MusicPlayers.Scriptable.playerBundleID`；自动模式取其中正在播放的那个。
 - 系统级正在播放（QQ 音乐、网易云都走这条）目前拿不到来源 App：MusicPlayer 1.11.0 的 `SystemMedia.name` 只认得那五个播放器，其余一律 `nil`。在 MusicPlayer 上给 `SystemMedia` 加 `public var playerBundleID: String?`，命名照 `Scriptable.playerBundleID`，取值与 1.11.0 的 `name` 同源（客户端有宿主 App 时取宿主），和曲目一起写、一起清，发 MusicPlayer 1.12.0。这个改动叠在 1.11.0 之上。
 
-**识别输出设备：CoreAudio 系统默认输出设备的 UID。**
+**识别输出设备：CoreAudio 系统默认输出设备，按 UID；AirPlay 统一算一台。**
 
 - 读 `kAudioHardwarePropertyDefaultOutputDevice`，以设备的 `kAudioDevicePropertyDeviceUID` 为键（Apple 文档说明它跨重启保持不变），设备名只用于显示；监听默认输出设备的变化，切设备立即生效。
-- 实现时先用一个探针确认 AirPlay 接收端（HomePod）在 CoreAudio 里是各自独立的设备、UID 能区分不同的 HomePod；若它们共用一个设备、靠 data source 区分，键里再加上 data source。
+- **AirPlay 例外**：探针查明，HomePod 当输出时在 CoreAudio 里是一台名字只叫「AirPlay」的设备，UID 形如 `<UUID>-<数字>-Audio`，每次连接都换一个——coreaudiod 的设置里，同一对 HomePod 留下了 7 个这样的 UID，前缀相同、数字不同，前缀本身历史上也出现过 16 种。它没有 data source，自定义属性里也没有接收端的名字或身份，和 Bonjour 广播的 `gid`、`pi`、`psi` 都对不上。所以所有 AirPlay 输出共用一个标识（`AudioOutputDevice.persistentIdentifier` 为 `transport.airplay`），按 UID 存的话下次连接就找不回来。QQ 音乐的写死补偿也是对所有 AirPlay 一视同仁，「播放器 × AirPlay」正好对得上它。
 
 **怎么叠加。**
 
@@ -42,14 +42,15 @@
 
 **已知局限。**
 
+- 分不清是哪一台 AirPlay 接收端：HomePod mini 1 和 mini 2、HomePod 和 Apple TV 共用同一个偏移。要分开得经私有框架（AVFoundation 的 `AVOutputContext` 或 MediaRemote 的输出设备）取接收端的稳定身份，列为后续项。
 - 播放器绕过系统输出、自己选设备时（Music 自带的 AirPlay 选择器、Spotify Connect、Audirvana 独占设备），读到的仍是系统默认输出，对不上。
 - QQ 音乐交给系统「正在播放」的进度有没有带上那 −2.205 秒还没查。这只决定 QQ 音乐 × HomePod 要不要填 +2205，装好后实测即知，不影响方案。
 
 **落地步骤。**
 
-1. MusicPlayer：`SystemMedia.playerBundleID` 与测试。
-2. LyricsXFoundation：`PlaybackRoute`、`PlaybackRouteLyricsOffsets`（查表、设值、删条目、编解码）与 `LyricsXFoundationTests`。
-3. LyricsXFoundation：CoreAudio 读默认输出设备、监听它的变化，配一个列出本机输出设备的探针，确认 AirPlay 设备的 UID 形态。
+1. ✅ MusicPlayer：`SystemMedia.playerBundleID` 与测试。
+2. ✅ LyricsXFoundation：`PlaybackRoute`、`PlaybackRouteLyricsOffsets`（查表、设值、删条目、编解码）与 `LyricsXFoundationTests`。
+3. ✅ LyricsXFoundation：CoreAudio 读默认输出设备（`AudioOutputDevice`）、监听它的变化（`SystemDefaultAudioOutputDeviceObserver`），配一个列出本机输出设备的探针（`AudioOutputDeviceProbes`）；AirPlay 设备的 UID 形态见上文。
 4. App：识别当前播放器与输出设备、算出当前组合的偏移；`adjustedOffset` 加上它；三处重排时间的监听改为同一个信号。
 5. App：全局偏移旁的按钮与表单，新文案的本地化。
 6. 文档：`CLAUDE.md` 的测试覆盖清单、按需的实现说明，提案改成实际做法。
@@ -70,3 +71,5 @@
 | 2026-11-15 | LyricsX 分支从 develop 切，不叠在原名恢复分支上；提案作为功能分支的第一个提交，不先提交到 develop | 原名恢复分支落后 develop 40 个提交，缺菜单栏卡拉OK进度改过的偏移监听；develop 上还有别的会话没推送的 12 个提交，正在收尾 |
 | 2026-11-15 | 实现期间不推 MusicPlayer 的 tag | tag 推出去就不能再动；API 等用户看过再定版，收尾时再打 |
 | 2026-11-15 | 设置入口从「通用页加一行」改为全局偏移旁的按钮加表单 | 通用页再高一行就放不进 13 寸 MacBook Air 的屏幕 |
+| 2026-11-15 | 所有 AirPlay 输出共用一个设备标识，其余设备照旧按 UID；分清具体接收端列为后续项 | 探针查明 AirPlay 设备的 UID 每次连接都变，CoreAudio 里也没有接收端的名字或身份；靠私有框架识别接收端会扩大范围 |
+| 2026-11-15 | `PlaybackRoute` 的设备字段叫 `outputDeviceIdentifier`，不叫 `outputDeviceUID` | AirPlay 存的不是 UID |
