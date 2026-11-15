@@ -35,4 +35,4 @@
 | [0024](0024-apple-music-line-interaction-parity.md) | 歌词面板的悬停与按下反馈、非当前行亮度和翻译样式对齐 Music 26.6 | Implemented |
 | [0025](0025-menu-bar-hide-lyrics-when-paused.md) | 菜单栏歌词的暂停隐藏改用独立开关 | Implemented |
 | [0026](0026-apple-music-syllable-sweep.md) | 行内扫光改按 Music 26.6 的逐音节线性推进 | Implemented |
-| [draft](draft-menu-bar-karaoke-progress.md) | 菜单栏歌词的卡拉OK进度 | In Progress |
+| [0027](0027-menu-bar-karaoke-progress.md) | 菜单栏歌词的卡拉OK进度 | Implemented |

@@ -1,7 +1,7 @@
 # 菜单栏歌词的绘制：实现说明
 
 > 配套提案见 [菜单栏歌词改为自绘，不再用 NSTextField](../Evolutions/0017-menu-bar-lyrics-without-text-field.md)；
-> 卡拉OK进度见 [菜单栏歌词的卡拉OK进度](../Evolutions/draft-menu-bar-karaoke-progress.md)。
+> 卡拉OK进度见 [菜单栏歌词的卡拉OK进度](../Evolutions/0027-menu-bar-karaoke-progress.md)。
 > 本文记录**实际落地的实现**、为什么这样做，以及已知降级。面向维护者。
 
 ## 背景与目标
