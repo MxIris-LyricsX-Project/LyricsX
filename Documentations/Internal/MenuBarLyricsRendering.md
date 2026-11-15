@@ -156,13 +156,19 @@ ad-hoc 签名，再用 `open -n -W` 启动；宿主把测量结果写成 JSON �
 实验室页的「Show karaoke progress in menu bar lyrics」（键 `MenuBarKaraokeProgressEnabled`，默认关）打开后，
 有逐字时间标签的行把已唱的部分画成系统强调色，未唱的部分照旧。只有行时间的歌词没有进度，和桌面歌词一样。
 
+- **颜色**：勾选框下面那一行可以另选颜色（键 `MenuBarKaraokeProgressColor`，keyed archive 存的 `NSColor`），
+  「Use Accent Color」删掉这个键、回到强调色。键不存在就是强调色，所以不注册默认值：注册一个固定颜色就跟不上系统设置了。
+  这一行由代码插进实验室页的网格，缩进到勾选框文字的位置；缩进用一个占位视图而不是 stack view 的 edge insets，
+  因为从右到左的语言里 stack view 会镜像子视图，却不镜像 insets。颜色选择框正被颜色面板驱动时，偏好变化的回调不去改它的颜色，
+  否则会把面板刚发来的颜色再推回面板。
+
 - **进度怎么算**：`LyricsXFoundation` 的 `KaraokeLineTiming` 从行的 `attachments.timetag` 算出某一时刻已唱了几个字符：
   一个标签表示那个字符从这一刻开始唱，两个标签之间按时间线性增长，第一个之前、最后一个之后保持不动；
   行有时长时在行末补一个「全部唱完」的关键帧。这和桌面歌词的进度动画读标签的方式一致。
 - **怎么画**：在原有的按外观缓存的位图之外，再按外观缓存一张强调色版本，由 cell 的副本画出、只换了文字色。
   以进度为界，左边贴强调色位图、右边贴原位图；界线和文字的位置都对齐设备像素，所以两块都是纯拷贝，
   没有哪个像素是两张位图混出来的。还没唱到第一个字时只贴原位图，和关掉开关时逐像素一致。
-  系统强调色一变（`NSColor.systemColorsDidChangeNotification`）就清掉强调色缓存。
+  系统强调色一变（`NSColor.systemColorsDidChangeNotification`）、或者换了颜色（`sungTextColor`），就清掉已唱位图的缓存。
 - **字符在哪**：用 Core Text 按 cell 的属性字符串排成一行，再加上 cell 的文字内边距 2 pt
   （`MenuBarMarqueeLabelCell.horizontalTextPadding`，`cellSize` 比文字宽 4 pt 就是这两边的内边距）。
   探针拿它和截图里的墨迹比：内边距写成 4 时两头都偏 2.2 pt、探针变红；写成 2 时偏差约 0.25 pt。
@@ -261,7 +267,8 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
   同一场景几次运行之间有 ±5 个百分点的波动。
 - **卡拉OK进度（截图）**：两句短句（居中）加一句长句停在滚动中途，在 4 种外观下各截「还没唱」「唱完」「唱到一半」三张，
   共 36 张：还没唱的与没有进度的逐像素一致；唱到一半的，界线左边与「唱完」、右边与没有进度的逐像素一致；唱完的必须看得出不同。
-  另外核对字符位置与墨迹（偏差不得超过 1 pt），以及暂停、继续、暂停时重新锚定之后的进度，和文字相同的另一行会让长句从头滚动。
+  另外核对字符位置与墨迹（偏差不得超过 1 pt），以及暂停、继续、暂停时重新锚定之后的进度，和文字相同的另一行会让长句从头滚动；
+  换成红色时已唱部分的墨迹必须是红的，换回强调色必须和最初那张逐像素一致（两次都要替换掉已缓存的位图）。
 - **卡拉OK进度（真实条目）**：短句「Let It Go, let it go」在 4 秒里唱完，步长不得超过一个设备像素、每秒步数不得超过 60 的上限，
   CPU 只打印。本机（Mac Studio M3 Ultra，macOS 27.2，Debug 构建）2026-11-15 的一次：
 
@@ -293,7 +300,6 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 - 播放按钮也改成按外观缓存的贴图（每帧每个按钮约 5 次 SF Symbol 栅格化），是滚动开销里剩下最大的可变项。
 - PR 198 的静态分页（翻页式，不连续滚动）可以作为可见设置项另行提案。
 - 等最低系统升到 macOS 26，再删掉 MarqueeLabel 依赖和旧路径。
-- 卡拉OK进度的颜色目前固定为系统强调色；要的话可以另加颜色设置，但别沿用桌面歌词的进度色（默认青色在浅色菜单栏上看不清）。
 - 长句的滚动目前按固定时间表走，与演唱进度无关；可以改成跟着进度滚，让进度边缘始终在可见区域里。
 
 ## 延伸阅读

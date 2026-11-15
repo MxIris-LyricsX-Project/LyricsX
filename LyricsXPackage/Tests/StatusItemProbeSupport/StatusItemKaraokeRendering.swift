@@ -40,6 +40,9 @@ package struct StatusItemKaraokeReport: Codable, Sendable {
     /// Whether that line, given its own timing at a lyrics time well away
     /// from its clock, moved its progress there: a jump still re-anchors.
     package var jumpReanchoredProgress: Bool
+    /// What went wrong drawing a sung line in a custom colour and back in the
+    /// accent colour, if anything.
+    package var sungColorProblems: [String]
 }
 
 /// `MenuBarMarqueeLabel`'s karaoke progress, snapshot by snapshot.
@@ -135,7 +138,8 @@ package enum StatusItemKaraokeRendering {
             rightToLeftLinesShowingProgress: rightToLeftLinesShowingProgress(),
             motionUpdatesForRepeatedAbsentProgress: motionUpdatesForRepeatedAbsentProgress(),
             motionUpdatesForRepeatedConsistentProgress: repeatedConsistentProgress().motionUpdateCount,
-            jumpReanchoredProgress: repeatedConsistentProgress().jumpReanchored
+            jumpReanchoredProgress: repeatedConsistentProgress().jumpReanchored,
+            sungColorProblems: sungColorProblems(snapshotter: snapshotter)
         )
     }
 
@@ -331,6 +335,60 @@ package enum StatusItemKaraokeRendering {
         let jumpReanchored = marqueeLabel.sungWidth != widthBeforeJump
             && marqueeLabel.sungWidth == directlyAnchoredSungWidth(text: text, timing: timing, lyricsTime: lineStart + 3.5)
         return (consistentMotionUpdateCount, jumpReanchored)
+    }
+
+    /// A fully sung line in the accent colour, then in red, then back: the
+    /// red one must draw red ink, and going back must give the accent
+    /// drawing again, pixel for pixel. Either change has to replace the sung
+    /// bitmap the view has already cached.
+    private static func sungColorProblems(snapshotter: ReplicantSnapshotter) throws -> [String] {
+        guard let appearance = NSAppearance(named: .aqua) else {
+            throw StatusItemSnapshotParityError.missingAppearance(NSAppearance.Name.aqua.rawValue)
+        }
+        let text = shortLines[0]
+        let timing = timing(for: text)
+        let marqueeLabel = pausedMarqueeLabel(showing: text, scrolledTo: 0)
+        marqueeLabel.setKaraokeTiming(timing, lyricsTime: timing.movingLyricsTimes.upperBound + 1)
+        let accent = try snapshotter.snapshot(of: marqueeLabel, appearance: appearance)
+        marqueeLabel.sungTextColor = NSColor(srgbRed: 1, green: 0, blue: 0, alpha: 1)
+        let red = try snapshotter.snapshot(of: marqueeLabel, appearance: appearance)
+        marqueeLabel.sungTextColor = nil
+        let accentAgain = try snapshotter.snapshot(of: marqueeLabel, appearance: appearance)
+
+        var problems: [String] = []
+        let (redInk, inkedPixelCount) = redDominantInk(of: red)
+        if inkedPixelCount == 0 || redInk < inkedPixelCount * 9 / 10 {
+            problems.append("red: \(redInk) of \(inkedPixelCount) inked pixels are red")
+        }
+        if redDominantInk(of: accent).redDominant > 0 {
+            problems.append("the accent drawing has red ink")
+        }
+        let returnDifference = try differingPixelCount(accent, accentAgain, columns: 0 ..< accent.pixelsWide)
+        if returnDifference > 0 {
+            problems.append("back to the accent colour: \(returnDifference) px differ from the first accent drawing")
+        }
+        return problems
+    }
+
+    /// Of the pixels with solid ink, how many are clearly red.
+    private static func redDominantInk(of snapshot: NSBitmapImageRep) -> (redDominant: Int, inked: Int) {
+        guard snapshot.bitsPerPixel == 32, let bytes = snapshot.bitmapData else { return (0, 0) }
+        var redDominant = 0
+        var inked = 0
+        for row in 0 ..< snapshot.pixelsHigh {
+            for column in 0 ..< snapshot.pixelsWide {
+                let offset = row * snapshot.bytesPerRow + column * 4
+                guard bytes[offset + 3] >= 200 else { continue }
+                inked += 1
+                let red = Int(bytes[offset])
+                let green = Int(bytes[offset + 1])
+                let blue = Int(bytes[offset + 2])
+                if red >= 150, red > 2 * max(green, blue) {
+                    redDominant += 1
+                }
+            }
+        }
+        return (redDominant, inked)
     }
 
     /// How many pixels in `columns` differ between two snapshots of the

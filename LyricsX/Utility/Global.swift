@@ -122,6 +122,11 @@ extension UserDefaults.DefaultsKeys {
     /// by default: every step of the progress costs a replicant snapshot of
     /// the status item, as scrolling does.
     static let menuBarKaraokeProgressEnabled = Key<Bool>("MenuBarKaraokeProgressEnabled")
+    /// The colour the menu bar's karaoke progress draws the sung part in.
+    /// Absent — the default, and what "Use Accent Color" goes back to — is
+    /// the system accent colour, which follows System Settings; so it has
+    /// no registered default.
+    static let menuBarKaraokeProgressColor = Key<NSColor>("MenuBarKaraokeProgressColor", transformer: .keyedArchive)
     /// Hidden, for comparing scroll smoothness against CPU by eye: the most
     /// frames a second a long menu bar lyric, or its karaoke progress, moves
     /// at on macOS 26 and later.
