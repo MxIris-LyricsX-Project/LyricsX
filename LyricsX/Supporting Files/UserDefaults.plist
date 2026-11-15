@@ -8,6 +8,8 @@
 	<true/>
 	<key>MenuBarHidesLyricsWhenPaused</key>
 	<false/>
+	<key>MenuBarKaraokeProgressEnabled</key>
+	<false/>
 	<key>HideLyricsWhenMousePassingBy</key>
 	<true/>
 	<key>DisableLyricsWhenPaused</key>

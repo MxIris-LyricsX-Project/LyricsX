@@ -117,8 +117,14 @@ extension UserDefaults.DefaultsKeys {
     /// desktop lyrics and is on by default, and following it showed the
     /// placeholder on every pause for everyone who had never touched it.
     static let menuBarHidesLyricsWhenPaused = Key<Bool>("MenuBarHidesLyricsWhenPaused")
+    /// The menu bar line draws its sung part in the accent colour as the line
+    /// is sung, for lines with inline time tags, on macOS 26 and later. Off
+    /// by default: every step of the progress costs a replicant snapshot of
+    /// the status item, as scrolling does.
+    static let menuBarKaraokeProgressEnabled = Key<Bool>("MenuBarKaraokeProgressEnabled")
     /// Hidden, for comparing scroll smoothness against CPU by eye: the most
-    /// frames a second a long menu bar lyric moves at on macOS 26 and later.
+    /// frames a second a long menu bar lyric, or its karaoke progress, moves
+    /// at on macOS 26 and later.
     /// Zero or absent means `MenuBarMarqueeLabel`'s default, 60; anything
     /// above the display's refresh rate simply follows the display. Read at
     /// runtime, so `defaults write` takes effect on the next frame.
