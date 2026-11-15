@@ -107,20 +107,26 @@ final class MenuBarLyricsController {
         let timeDelay: TimeInterval
     }
 
-    private var screenLyrics: (lyrics: String, duration: TimeInterval, karaokeProgress: KaraokeProgress?) = (MenuBarLyricsController.defaultLyric, 2, nil) {
+    private typealias ScreenLyrics = (lyrics: String, duration: TimeInterval, karaokeProgress: KaraokeProgress?)
+
+    private static let placeholderScreenLyrics: ScreenLyrics = (MenuBarLyricsController.defaultLyric, 2, nil)
+
+    /// The line to show. Read and written on `DispatchQueue.lyricsDisplay`.
+    private var screenLyrics: ScreenLyrics = MenuBarLyricsController.placeholderScreenLyrics {
         didSet {
-            let karaokeProgress = screenLyrics.karaokeProgress
+            let screenLyricsToDisplay = screenLyrics
             DispatchQueue.main.async {
-                self.displayedKaraokeProgress = karaokeProgress
+                self.displayedScreenLyrics = screenLyricsToDisplay
                 self.updateStatusItems()
             }
         }
     }
 
-    /// `screenLyrics.karaokeProgress` as last handed to the main queue, so the
-    /// main queue anchors the line's progress without reading `screenLyrics`
-    /// while `DispatchQueue.lyricsDisplay` writes it.
-    private var displayedKaraokeProgress: KaraokeProgress?
+    /// `screenLyrics` as last handed to the main queue, which shows it. The
+    /// main queue reads only this: reading `screenLyrics` there raced the
+    /// lyrics display queue's writes, and could pair one line's text with
+    /// the next line's karaoke timing.
+    private var displayedScreenLyrics: ScreenLyrics = MenuBarLyricsController.placeholderScreenLyrics
 
     /// The lyrics on screen and the line playback is at, as last published.
     /// Kept to show the line again when playback resumes. Read and written on
@@ -309,7 +315,7 @@ final class MenuBarLyricsController {
             return
         case .placeholder:
             if screenLyrics.lyrics != MenuBarLyricsController.defaultLyric {
-                screenLyrics = (MenuBarLyricsController.defaultLyric, 2, nil)
+                screenLyrics = MenuBarLyricsController.placeholderScreenLyrics
             }
         case let .line(lineIndex):
             if let lyrics {
@@ -394,14 +400,14 @@ final class MenuBarLyricsController {
     }
 
     private func updateMarqueeText() {
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        marqueeLabel.setStringValue(displayedScreenLyrics.lyrics, lineDisplayTime: displayedScreenLyrics.duration)
         updateKaraokeProgress(playbackState: selectedPlayer.playbackState)
     }
 
     /// Anchors the line's karaoke progress at where `playbackState` has
     /// playback now. Runs on the main queue.
     private func updateKaraokeProgress(playbackState: PlaybackState) {
-        let karaokeProgress = displayedKaraokeProgress
+        let karaokeProgress = displayedScreenLyrics.karaokeProgress
         let playbackPosition = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
         marqueeLabel.setKaraokeTiming(karaokeProgress?.timing, lyricsTime: playbackPosition + (karaokeProgress?.timeDelay ?? 0))
     }

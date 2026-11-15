@@ -203,7 +203,8 @@ swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
 # the probe host offscreen (~1 s): a line with progress is the accent-coloured
 # drawing up to one pixel edge and the plain one after it, an unsung line is
 # the plain line pixel for pixel, the measured characters sit on the drawn ink,
-# and the progress stops while paused. The cost probe sings a line in a real
+# the progress stops while paused, and right-to-left lines show none, which
+# filled from the left ran backwards. The cost probe sings a line in a real
 # status item (~15 s): one-device-pixel steps, never above the 60 fps cap; CPU
 # is printed only. KaraokeLineTimingTests in LyricsXFoundationTests cover
 # how much of a line its inline time tags say is sung.

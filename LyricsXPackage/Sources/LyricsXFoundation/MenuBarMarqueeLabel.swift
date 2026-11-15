@@ -70,16 +70,17 @@ public final class MenuBarMarqueeLabel: NSControl {
         let appearanceName: NSAppearance.Name
         let scale: CGFloat
         let colorSpaceName: String
+        /// Drawn in `sungTextColor` rather than the cell's own colour.
+        let isSung: Bool
     }
 
     private var lineDisplayTime = MenuBarMarqueeLabel.fallbackLineDisplayTime
     /// What MarqueeLabel's `sizeToFit` makes its field for the current line.
     package private(set) var fieldSize = NSSize.zero
     /// One bitmap per appearance: every snapshot flips the appearance and
-    /// back, so a single entry would be re-rendered twice per snapshot.
+    /// back, so a single entry would be re-rendered twice per snapshot. A
+    /// line with karaoke progress keeps a sung one per appearance as well.
     private var cachedBitmaps: [BitmapKey: CGImage] = [:]
-    /// The same, drawn in `sungTextColor`, for the sung part of the line.
-    private var cachedSungBitmaps: [BitmapKey: CGImage] = [:]
 
     private var lineStartTime: CFTimeInterval = 0
     private var pausedTime: CFTimeInterval?
@@ -140,6 +141,10 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// progress with it.
     package var sungWidthObserver: ((CGFloat?) -> Void)?
 
+    /// Called whenever the view re-evaluates its motion, which stops and
+    /// restarts its display link or timer. Probes count with it.
+    package var motionUpdateObserver: (() -> Void)?
+
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true
@@ -193,6 +198,10 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// also starts the line's scrolling over, or the progress of a long line
     /// would begin past the view's leading edge.
     public func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval) {
+        // The controller sends the line again on every app activation, with
+        // the switch off too: no progress then and now changes nothing, and
+        // must not restart a scrolling line's display link.
+        guard timing != nil || karaokeTiming != nil else { return }
         if let previousTiming = karaokeTiming, let timing, previousTiming != timing {
             restartLine()
         }
@@ -272,12 +281,12 @@ public final class MenuBarMarqueeLabel: NSControl {
         guard let context = NSGraphicsContext.current?.cgContext, !stringValue.isEmpty else { return }
         let scale = Self.deviceScale(of: context)
         let colorSpace = context.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB)!
-        let key = BitmapKey(
-            appearanceName: NSAppearance.currentDrawing().name,
-            scale: scale,
-            colorSpaceName: (colorSpace.name as String?) ?? "unnamed"
-        )
-        guard let bitmap = textBitmap(for: key, colorSpace: colorSpace, isSung: false) else { return }
+        let appearanceName = NSAppearance.currentDrawing().name
+        let colorSpaceName = (colorSpace.name as String?) ?? "unnamed"
+        func bitmapKey(isSung: Bool) -> BitmapKey {
+            BitmapKey(appearanceName: appearanceName, scale: scale, colorSpaceName: colorSpaceName, isSung: isSung)
+        }
+        guard let bitmap = textBitmap(for: bitmapKey(isSung: false), colorSpace: colorSpace) else { return }
         let frame = textFrame
         // Positions are whole device pixels, so this is a plain copy. A
         // fractional position would make every one of the six draws a frame
@@ -286,7 +295,7 @@ public final class MenuBarMarqueeLabel: NSControl {
         // MarqueeLabel's, which moves in whole points.
         context.saveGState()
         context.interpolationQuality = .none
-        if let sungWidth, sungWidth > 0, let sungBitmap = textBitmap(for: key, colorSpace: colorSpace, isSung: true) {
+        if let sungWidth, sungWidth > 0, let sungBitmap = textBitmap(for: bitmapKey(isSung: true), colorSpace: colorSpace) {
             // The sung width is whole device pixels too, so each part is a
             // copy of its own bitmap cut at a pixel edge: no pixel is blended
             // from both.
@@ -331,13 +340,18 @@ public final class MenuBarMarqueeLabel: NSControl {
         guard let textCell, !stringValue.isEmpty else { return }
         fieldSize = backingAlignedRect(NSRect(origin: .zero, size: textCell.cellSize), options: .alignAllEdgesOutward).size
         cachedBitmaps.removeAll()
-        cachedSungBitmaps.removeAll()
         updateCharacterBoundaries()
     }
 
     /// Lays the line out the way the cell draws it — its attributed string on
     /// one line, inset by the cell's text padding — and records where each
     /// character starts.
+    ///
+    /// The progress fills from the leading edge, so it only fits a line
+    /// whose characters run left to right. Right-to-left text, and a line
+    /// mixing both directions, get no boundaries and show no progress:
+    /// filled from the left, a Hebrew line started out fully sung and
+    /// emptied as it was sung.
     private func updateCharacterBoundaries() {
         guard let textCell, !stringValue.isEmpty else {
             characterBoundaries = []
@@ -348,20 +362,16 @@ public final class MenuBarMarqueeLabel: NSControl {
         let line = CTLineCreateWithAttributedString(attributedText)
         let textOrigin = textCell.titleRect(forBounds: NSRect(origin: .zero, size: fieldSize)).minX
             + MenuBarMarqueeLabelCell.horizontalTextPadding
-        characterBoundaries = (Array(text.indices) + [text.endIndex]).map { characterIndex in
+        let boundaries = (Array(text.indices) + [text.endIndex]).map { characterIndex in
             textOrigin + CTLineGetOffsetForStringIndex(line, characterIndex.utf16Offset(in: text), nil)
         }
+        let runsLeftToRight = zip(boundaries, boundaries.dropFirst()).allSatisfy { $0 <= $1 }
+        characterBoundaries = runsLeftToRight ? boundaries : []
     }
 
-    private func textBitmap(for key: BitmapKey, colorSpace: CGColorSpace, isSung: Bool) -> CGImage? {
-        if isSung {
-            if cachedSungBitmaps[key] == nil {
-                cachedSungBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: Self.sungTextColor)
-            }
-            return cachedSungBitmaps[key]
-        }
+    private func textBitmap(for key: BitmapKey, colorSpace: CGColorSpace) -> CGImage? {
         if cachedBitmaps[key] == nil {
-            cachedBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: nil)
+            cachedBitmaps[key] = renderTextBitmap(scale: key.scale, colorSpace: colorSpace, textColor: key.isSung ? Self.sungTextColor : nil)
         }
         return cachedBitmaps[key]
     }
@@ -474,6 +484,7 @@ public final class MenuBarMarqueeLabel: NSControl {
     /// keeps them moving: the display link while either moves, otherwise a
     /// one-off timer for whichever starts moving first.
     private func updateMotion() {
+        motionUpdateObserver?()
         stopMotionClocks()
         let plan = scrollPlan
         let elapsed = (pausedTime ?? clock()) - lineStartTime
@@ -589,7 +600,7 @@ public final class MenuBarMarqueeLabel: NSControl {
     }
 
     private func systemColorsDidChange() {
-        cachedSungBitmaps.removeAll()
+        cachedBitmaps = cachedBitmaps.filter { !$0.key.isSung }
         if sungWidth != nil {
             needsDisplay = true
         }

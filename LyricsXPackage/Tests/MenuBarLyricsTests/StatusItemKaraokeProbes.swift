@@ -32,5 +32,11 @@ struct StatusItemKaraokeProbes {
         #expect(report.restartedScrollPosition == 0, "a long line sung again kept its scroll position")
         #expect(report.reanchoredScrollPosition == report.expectedReanchoredScrollPosition, "re-anchoring the same line moved its scroll")
         #expect(report.newTextDroppedProgress, "new text kept the previous line's progress")
+        // A right-to-left line laid its characters out against the edge: the
+        // whole line started out sung and emptied from the left.
+        #expect(!report.rightToLeftLineShowsProgress, "a right-to-left line shows progress running the wrong way")
+        // Every app activation re-sends the line; with the switch off that
+        // stopped and restarted a scrolling line's display link each time.
+        #expect(report.motionUpdatesForRepeatedAbsentProgress == 0, "telling a line without progress so again restarted its clocks \(report.motionUpdatesForRepeatedAbsentProgress) times")
     }
 }

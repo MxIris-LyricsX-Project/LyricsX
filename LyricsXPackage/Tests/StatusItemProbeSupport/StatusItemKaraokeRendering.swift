@@ -27,6 +27,13 @@ package struct StatusItemKaraokeReport: Codable, Sendable {
     package var expectedReanchoredScrollPosition: Double
     /// Whether new text dropped the previous line's progress.
     package var newTextDroppedProgress: Bool
+    /// Whether a right-to-left line shows progress. Its characters run
+    /// against the edge's direction, so it must not.
+    package var rightToLeftLineShowsProgress: Bool
+    /// How often telling a line without progress that it has none, again,
+    /// restarted its motion clocks — the controller does it on every app
+    /// activation, with the switch off too.
+    package var motionUpdatesForRepeatedAbsentProgress: Int
 }
 
 /// `MenuBarMarqueeLabel`'s karaoke progress, snapshot by snapshot.
@@ -118,7 +125,9 @@ package enum StatusItemKaraokeRendering {
             restartedScrollPosition: Double(restartProbe.restarted),
             reanchoredScrollPosition: Double(restartProbe.reanchored),
             expectedReanchoredScrollPosition: Double(longLineScrollPosition),
-            newTextDroppedProgress: newTextDropsProgress()
+            newTextDroppedProgress: newTextDropsProgress(),
+            rightToLeftLineShowsProgress: rightToLeftLineShowsProgress(),
+            motionUpdatesForRepeatedAbsentProgress: motionUpdatesForRepeatedAbsentProgress()
         )
     }
 
@@ -260,6 +269,23 @@ package enum StatusItemKaraokeRendering {
         guard marqueeLabel.sungWidth != nil else { return false }
         marqueeLabel.setStringValue(shortLines[1], lineDisplayTime: lineDisplayTime)
         return marqueeLabel.sungWidth == nil
+    }
+
+    private static func rightToLeftLineShowsProgress() -> Bool {
+        let text = "שלום עולם"
+        let marqueeLabel = pausedMarqueeLabel(showing: text, scrolledTo: 0)
+        marqueeLabel.setKaraokeTiming(timing(for: text), lyricsTime: lineStart + 0.9)
+        return marqueeLabel.sungWidth != nil
+    }
+
+    private static func motionUpdatesForRepeatedAbsentProgress() -> Int {
+        let marqueeLabel = pausedMarqueeLabel(showing: shortLines[0], scrolledTo: 0)
+        var motionUpdateCount = 0
+        marqueeLabel.motionUpdateObserver = { motionUpdateCount += 1 }
+        for repetition in 0 ..< 3 {
+            marqueeLabel.setKaraokeTiming(nil, lyricsTime: lineStart + Double(repetition))
+        }
+        return motionUpdateCount
     }
 
     /// How many pixels in `columns` differ between two snapshots of the
