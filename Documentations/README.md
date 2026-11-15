@@ -76,6 +76,8 @@
   - [0026 行内扫光改按 Music 26.6 的逐音节线性推进](Evolutions/0026-apple-music-syllable-sweep.md) —— 每个视觉行
     一层渐变，进入新音节时按字形坐标发线性动画、前沿超出音节末尾 0.12 / 0.25 / 0.5 / 1 个羽化宽；扫光与逐音节
     抬高都提前 0.1 秒；旧的按字符占比扫光留在隐藏开关 `AppleMusicLyricsSweepVariant` 后面。
+  - [Draft 菜单栏歌词的卡拉OK进度](Evolutions/draft-menu-bar-karaoke-progress.md) —— 实验室页默认关的开关：
+    有逐字时间的行，已唱的部分画成系统强调色、随演唱线性推进；macOS 26 及以上，推进期间的开销接近长句滚动。
 
 ## 使用说明
 
