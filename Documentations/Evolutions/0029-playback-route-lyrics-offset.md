@@ -1,8 +1,8 @@
-# Draft - 按播放器与输出设备设置歌词偏移
+# 0029 - 按播放器与输出设备设置歌词偏移
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **创建日期**: 2026-11-15
-- **最后更新**: 2026-11-15
+- **最后更新**: 2026-11-16
 - **实现分支**: LyricsX `feature/playback-route-lyrics-offset`（从 develop 切）；MusicPlayer `feature/system-media-player-bundle-id`（叠在 `feature/system-media-player-name`，即 1.11.0 之上）
 - **配套文档**: [实现说明：按播放器与输出设备的歌词偏移](../Internal/PlaybackRouteLyricsOffset.md)
 
@@ -57,9 +57,14 @@
 5. ✅ App：全局偏移旁的按钮与表单，新文案的本地化。
 6. ✅ 文档：`CLAUDE.md` 的测试覆盖清单、实现说明、术语「播放路由」，提案改成实际做法。
 
-正式收尾时另做：原名恢复先合；MusicPlayer 这条分支合进它的 develop 并打 `v1.12.0`；LyricsX 把 `exact:` 改成 `"1.12.0"`、重新解析并提交 `Package.resolved`，`CLAUDE.md` 里写着 MusicPlayer 钉在哪个版本的那句一并改掉。实现期间 LyricsX 分支仍钉着 develop 的 1.10.1，app 对着本地的 MusicPlayer 分支编译。
+7. ✅ 落地：MusicPlayer 这条分支（连同它底下 1.11.0 的两个提交）快进进 MusicPlayer 的 develop，打 `v1.12.0`；LyricsX 把 `exact:` 改成 `"1.12.0"`、重新解析并提交 `Package.resolved`（只有 MusicPlayer 一项变动），`CLAUDE.md` 里 MusicPlayer 钉的版本一并改掉。实现期间 LyricsX 分支钉着 develop 的 1.10.1，app 对着本地的 MusicPlayer 分支编译。
 
-**落地顺序。** MusicPlayer 改动叠在 1.11.0 上，而 LyricsX develop 还钉着 1.10.1、1.11.0 配套的原名恢复分支（`feature/system-now-playing-name-recovery`）也还没合。所以原名恢复要先收尾合进 develop，这个再合。
+**落地顺序。** 原计划等原名恢复先合。实际是用户要求先把这次的改动合进 develop 测试，测过后直接落地，所以 1.11.0 的 `SystemMedia.name` 随 MusicPlayer 1.12.0 先进了 develop，原名恢复的 LyricsX 部分仍在 `feature/system-now-playing-name-recovery` 上。develop 因此多出两处无害的变化：系统级正在播放下放 Music 时，「写入 iTunes」菜单项可点但什么也不做（没有 ScriptingBridge 曲目）；实验室的原名恢复开着时会对这些歌生效。原名恢复的分支还钉着 `exact: "1.11.0"`，合进来时那一行取 1.12.0。
+
+**后续项。**
+
+- 分清具体是哪一台 AirPlay 接收端：经私有框架（AVFoundation 的 `AVOutputContext`、MediaRemote 的输出设备）取接收端的稳定身份，作为 `persistentIdentifier`。
+- 查 QQ 音乐交给系统「正在播放」的进度是否已扣掉 2.205 秒，据此告诉用户 QQ 音乐 × AirPlay 该填多少。
 
 ## 决策日志
 
@@ -78,3 +83,6 @@
 | 2026-11-15 | 文档：写实现说明、登记术语「播放路由」、补 `CLAUDE.md` 的测试清单；不写使用指南 | AirPlay UID 的查证过程和复查方法要留给维护者；表单顶部自带说明文字，用户不需要另一份指南 |
 | 2026-11-15 | 不在本地合进 develop | develop 钉着 MusicPlayer 1.10.1，总工作区用的 MusicPlayer 检出也没有 `playerBundleID`，合进去 develop 就编不过；MusicPlayer 这条分支又叠在还没收尾的原名恢复上 |
 | 2026-11-15 | 实现完成，待用户看过后收尾 | |
+| 2026-11-16 | 用户要求先合进 develop 测试：本地合并 LyricsX，MusicPlayer 主检出快进到这条分支 | 用户要在自己的总工作区里测；上一行「不在本地合进 develop」因此作废 |
+| 2026-11-16 | 落地：MusicPlayer 发 1.12.0，LyricsX 改钉 1.12.0；不等原名恢复先合 | 用户测过合并后的 develop 后要求收尾；1.11.0 带进 develop 的变化已核对无害，见「落地顺序」 |
+| 2026-11-16 | 状态改 Implemented，取号 0029；文档已在实现时写齐（实现说明、术语「播放路由」、`CLAUDE.md` 测试清单），收尾不需要再补；不写使用指南 | 0028 已被同时落地的网易云高清封面占用 |

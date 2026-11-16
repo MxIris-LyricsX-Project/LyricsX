@@ -1,7 +1,7 @@
 # 按播放器与输出设备的歌词偏移
 
 > 面向维护者。讲的是「为什么这么实现」，不是「实现了什么」——后者读代码更快。
-> 提案：[按播放器与输出设备设置歌词偏移](../Evolutions/draft-playback-route-lyrics-offset.md)。
+> 提案：[0029 按播放器与输出设备设置歌词偏移](../Evolutions/0029-playback-route-lyrics-offset.md)。
 
 ## 一句话
 
