@@ -82,32 +82,51 @@ class KaraokeLabel: NSTextField {
         let attrString = NSMutableAttributedString(attributedString: attributedStringValue)
         let content = attrString.string
         let string = attrString.string as NSString
-        let shouldDrawFurigana = drawFurigana && string.dominantLanguage == "ja"
-        let shouldDrawRomajin = drawRomajin && string.dominantLanguage == "ja"
+        // English-heavy lyrics can be classified as a different language even
+        // when they contain Japanese words. Kana is explicit Japanese evidence.
+        let isJapaneseLine = string.dominantLanguage == "ja"
+        let hasJapaneseText = isJapaneseLine
+            || content.range(of: #"[\p{sc=Hiragana}\p{sc=Katakana}]"#, options: .regularExpression) != nil
+        let shouldDrawFurigana = drawFurigana && hasJapaneseText
+        let shouldDrawRomajin = drawRomajin && hasJapaneseText
         let didApplySourceFurigana = shouldDrawFurigana
             && useSourceFurigana
             && sourceFurigana.map { addSourceFurigana($0, to: attrString, content: content) } == true
-        let tokenizer = CFStringTokenizer.create(string: .from(string))
+        let tokenRanges: [NSRange]
+        if hasJapaneseText && !isJapaneseLine {
+            // A locale alone does not change the whole-line language decision.
+            // Scope tokenization to Japanese runs while retaining UTF-16 offsets.
+            let pattern = #"[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{M}ー]+"#
+            let expression = try? NSRegularExpression(pattern: pattern)
+            tokenRanges = expression?.matches(in: content, range: string.fullRange).map(\.range) ?? []
+        } else {
+            tokenRanges = [string.fullRange]
+        }
+        let locale = hasJapaneseText ? CFLocale.from(NSLocale(localeIdentifier: "ja")) : nil
         romajinAnnotations = []
-        for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
-            if isVertical {
-                let tokenRange = tokenizer.currentTokenRange()
-                let attr: [NSAttributedString.Key: Any] = [
-                    .verticalGlyphForm: true,
-                    .baselineOffset: (font?.pointSize ?? 24) * 0.25,
-                ]
-                attrString.addAttributes(attr, range: tokenRange.asNS)
-            }
-            if shouldDrawFurigana && !didApplySourceFurigana {
-                for (furigana, range) in tokenizer.currentFuriganaAnnotations(in: string) {
-                    var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
-                    attr[.ctForegroundColor] = textColor
-                    let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
-                    attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
+        for range in tokenRanges {
+            let tokenRange = CFRange(location: range.location, length: range.length)
+            let tokenizer = CFStringTokenizer.create(string: .from(string), range: tokenRange, locale: locale)
+            for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
+                if isVertical {
+                    let tokenRange = tokenizer.currentTokenRange()
+                    let attr: [NSAttributedString.Key: Any] = [
+                        .verticalGlyphForm: true,
+                        .baselineOffset: (font?.pointSize ?? 24) * 0.25,
+                    ]
+                    attrString.addAttributes(attr, range: tokenRange.asNS)
                 }
-            }
-            if shouldDrawRomajin, let (romajin, range) = tokenizer.currentRomanjiAnnotation(in: string) {
-                romajinAnnotations.append((romajin as String, range))
+                if shouldDrawFurigana && !didApplySourceFurigana {
+                    for (furigana, range) in tokenizer.currentFuriganaAnnotations(in: string) {
+                        var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
+                        attr[.ctForegroundColor] = textColor
+                        let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
+                        attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
+                    }
+                }
+                if shouldDrawRomajin, let (romajin, range) = tokenizer.currentRomanjiAnnotation(in: string) {
+                    romajinAnnotations.append((romajin as String, range))
+                }
             }
         }
         textColor?.do { attrString.addAttributes([.foregroundColor: $0], range: attrString.fullRange) }
