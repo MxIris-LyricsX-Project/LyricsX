@@ -64,11 +64,19 @@ translation leaves the lyrics' ranking as it was), and the panel's
 high-resolution cover: that a cover and its 100-pixel thumbnail fingerprint
 alike (`ArtworkFingerprint`, red on the old fingerprint that drew covers
 straight into the 9×8 hash grid), and the NetEase catalogue search it asks
-alongside the iTunes Store — and is fast and headless enough to run on every
-change. `AppleMusicLyricsPanelTests` is a real probe suite that
-renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
-its animation geometry and karaoke colour (no clipping, bounded lift, sweep
-actually paints white, no position drift):
+alongside the iTunes Store, plus the lyrics offsets kept per player and output
+device (`PlaybackRouteLyricsOffsets`) and what an output device's offset is
+kept under: its UID, except that every AirPlay output shares one identifier,
+because Core Audio gives an AirPlay receiver a new UID for every connection —
+and is fast and headless enough to run on every change. Its
+`AudioOutputDeviceProbes` read this Mac's real Core Audio devices and print
+them; run them while a HomePod is the output to see what Core Audio makes of
+AirPlay on a new macOS release (why, and how to tell whether the UIDs still
+change, is in `Documentations/Internal/PlaybackRouteLyricsOffset.md`).
+`AppleMusicLyricsPanelTests` is a real probe suite that renders the Apple
+Music lyrics engine offscreen through `CARenderer` and asserts its animation
+geometry and karaoke colour (no clipping, bounded lift, sweep actually paints
+white, no position drift):
 
 ```bash
 # Policy tests — run these on any change under LyricsXFoundation (<1s)

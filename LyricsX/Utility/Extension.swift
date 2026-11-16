@@ -273,8 +273,11 @@ extension Lyrics {
 }
 
 extension Lyrics {
+    /// The lyrics' own offset, plus the global one, plus the one set for the
+    /// player and output device playing now — all in milliseconds, a
+    /// positive offset showing the lyrics earlier.
     var adjustedOffset: Int {
-        return offset + defaults[.globalLyricsOffset]
+        return offset + defaults[.globalLyricsOffset] + PlaybackRouteLyricsOffsetController.shared.currentRouteOffset
     }
 
     var adjustedTimeDelay: TimeInterval {

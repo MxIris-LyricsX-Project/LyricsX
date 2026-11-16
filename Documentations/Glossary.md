@@ -151,3 +151,11 @@ Translation 框架在本机翻译，要求 macOS 26，只用已下载的语言�
 两处用它：实验室「封面相似的歌词加分」给封面和正在播放的歌一致的歌词加分；歌词面板的高清封面在换上之前，
 先用它确认联网找到的大图和播放器给的小图是同一张。判定规则（相差几位算同一张、什么时候还要比颜色）在
 `ArtworkFingerprintComparison`。详见[网易云高清封面的提案](Evolutions/draft-netease-panel-artwork.md)。
+
+## 播放路由（playback route）
+
+正在播放的 App 与系统默认输出设备这一对，`PlaybackRoute`：播放器按 bundle ID 认，设备按
+`AudioOutputDevice.persistentIdentifier` 认，也就是设备的 UID，只有 AirPlay 例外，所有 AirPlay 输出共用 `transport.airplay`
+（AirPlay 设备的 UID 每次连接都换）。「通用」页全局偏移旁的按钮打开的表单，按播放路由各存一个歌词偏移，
+叠加在歌词自带的偏移和全局偏移之上。不是 AVFoundation 的 audio route，那里只有输出端口，不含播放器。
+详见[按播放器与输出设备的歌词偏移](Internal/PlaybackRouteLyricsOffset.md)。

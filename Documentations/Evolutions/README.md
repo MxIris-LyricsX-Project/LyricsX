@@ -38,3 +38,4 @@
 | [0027](0027-menu-bar-karaoke-progress.md) | 菜单栏歌词的卡拉OK进度 | Implemented |
 | [draft](draft-split-lyricsx-foundation.md) | 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头 | Draft |
 | [draft](draft-netease-panel-artwork.md) | 网易云的歌在歌词面板上也换上高清封面 | Draft |
+| [draft](draft-playback-route-lyrics-offset.md) | 按播放器与输出设备设置歌词偏移 | In Progress |

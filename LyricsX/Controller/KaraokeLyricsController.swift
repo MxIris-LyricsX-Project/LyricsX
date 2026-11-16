@@ -47,6 +47,7 @@ class KaraokeLyricsWindowController: NSWindowController {
                 .store(in: &self.cancelBag)
             AppController.shared.publisher(for: \.lyricsOffset)
                 .signal()
+                .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
                 .receive(on: DispatchQueue.lyricsDisplay)
                 .invoke(KaraokeLyricsWindowController.lyricsOffsetChanged, weaklyOn: self)
                 .store(in: &self.cancelBag)

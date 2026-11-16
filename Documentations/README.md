@@ -83,6 +83,8 @@
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
   - [Draft 网易云的歌在歌词面板上也换上高清封面](Evolutions/draft-netease-panel-artwork.md) —— 封面指纹改为
     先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
+  - [Draft 按播放器与输出设备设置歌词偏移](Evolutions/draft-playback-route-lyrics-offset.md) —— 在每首歌的偏移和全局偏移
+    之上，再按「正在播放的 App × 系统默认输出设备」加一层偏移；所有 AirPlay 输出算作一台设备。
 
 ## 使用说明
 
@@ -134,10 +136,14 @@
   其余的每次更新都晚 5 秒），更新之后为什么要结束旧版本留下的扩展进程（否则小组件一直跑旧代码，配置方式一变就全黑），
   以及 app 退出时为什么清空快照。
 
+- [按播放器与输出设备的歌词偏移](Internal/PlaybackRouteLyricsOffset.md) —— 为什么按组合而不是按设备存（QQ 音乐对
+  AirPlay 写死减 2.205 秒、网易云不补偿），播放器为什么按 bundle ID 认，AirPlay 设备为什么不能按 UID 认
+  （每次连接都换一个，CoreAudio 里也没有接收端的名字）以及怎么复查，偏移为什么放在锁里，设置入口为什么不另起一行。
+
 ## 术语
 
 - [项目术语表](Glossary.md) —— 候选池、钉住、补充搜索、覆盖表、优先级窗口、Route B、
-  歌词库缓存、手选标记、分数桶、同分容差等本项目自造词，以及容易混淆的显示语言与目标语言。
+  歌词库缓存、手选标记、分数桶、同分容差、播放路由等本项目自造词，以及容易混淆的显示语言与目标语言。
 
 ## 工程实践
 
