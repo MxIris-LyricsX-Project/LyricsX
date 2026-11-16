@@ -150,7 +150,7 @@ Translation 框架在本机翻译，要求 macOS 26，只用已下载的语言�
 加一个平均色。每格取的是那一块的平均亮度，所以同一张封面不论 1000 像素还是 100 像素的缩略图，指纹都几乎一样。
 两处用它：实验室「封面相似的歌词加分」给封面和正在播放的歌一致的歌词加分；歌词面板的高清封面在换上之前，
 先用它确认联网找到的大图和播放器给的小图是同一张。判定规则（相差几位算同一张、什么时候还要比颜色）在
-`ArtworkFingerprintComparison`。详见[网易云高清封面的提案](Evolutions/draft-netease-panel-artwork.md)。
+`ArtworkFingerprintComparison`。详见[网易云高清封面的提案](Evolutions/0028-netease-panel-artwork.md)。
 
 ## 播放路由（playback route）
 

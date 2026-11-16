@@ -3,7 +3,7 @@
 Apple Music 风格歌词面板的封面，什么时候会被一张联网找来的高清图顶掉，以及为什么这条链路
 长成现在这样。设计与取舍见提案
 [歌词面板封面改用联网取到的高清图](../Evolutions/0015-high-resolution-panel-artwork.md)，网易云曲库与指纹的修正见
-[网易云的歌在歌词面板上也换上高清封面](../Evolutions/draft-netease-panel-artwork.md)。
+[网易云的歌在歌词面板上也换上高清封面](../Evolutions/0028-netease-panel-artwork.md)。
 
 ## 一句话
 

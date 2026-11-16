@@ -78,11 +78,11 @@
     抬高都提前 0.1 秒；旧的按字符占比扫光留在隐藏开关 `AppleMusicLyricsSweepVariant` 后面。
   - [0027 菜单栏歌词的卡拉OK进度](Evolutions/0027-menu-bar-karaoke-progress.md) —— 实验室页默认关的开关：
     有逐字时间的行，已唱的部分画成系统强调色或自选的颜色、随演唱线性推进；macOS 26 及以上，推进期间的开销接近长句滚动。
+  - [0028 网易云的歌在歌词面板上也换上高清封面](Evolutions/0028-netease-panel-artwork.md) —— 封面指纹改为
+    先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 网易云的歌在歌词面板上也换上高清封面](Evolutions/draft-netease-panel-artwork.md) —— 封面指纹改为
-    先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
   - [Draft 按播放器与输出设备设置歌词偏移](Evolutions/draft-playback-route-lyrics-offset.md) —— 在每首歌的偏移和全局偏移
     之上，再按「正在播放的 App × 系统默认输出设备」加一层偏移；所有 AirPlay 输出算作一台设备。
 
