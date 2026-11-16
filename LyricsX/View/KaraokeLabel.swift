@@ -250,6 +250,11 @@ class KaraokeLabel: NSTextField {
     }
 
     func setProgressAnimation(color: NSColor, progress: [(TimeInterval, Int)]) {
+        // Geometry and mask changes must be atomic. Pausing this layer also
+        // freezes implicit bounds/position animations, possibly at zero height.
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        defer { CATransaction.commit() }
         removeProgressAnimation()
         let textFrame = ctFrame()
         guard let line = textFrame.lines.first,
@@ -309,8 +314,13 @@ class KaraokeLabel: NSTextField {
             return (time, offset)
         }
         if index > 0 {
-            let progress = map[index - 1].1 + CGFloat(map[index - 1].0) * (map[index].1 - map[index - 1].1) / CGFloat(map[index].0 - map[index - 1].0)
-            map.replaceSubrange(..<index, with: [(0, progress)])
+            let previous = map[index - 1]
+            let next = map[index]
+            // Previous time is non-positive. Interpolate forward to time zero,
+            // rather than extrapolating backward into a negative layer extent.
+            let fraction = CGFloat(-previous.0 / (next.0 - previous.0))
+            let offset = (previous.1 + fraction * (next.1 - previous.1)).clamped(to: 0 ... fullExtent)
+            map.replaceSubrange(..<index, with: [(0, offset)])
         }
 
         let duration = map.last!.0
@@ -319,16 +329,19 @@ class KaraokeLabel: NSTextField {
         animation.values = map.map { $0.1 }
         animation.keyPath = isVertical ? "bounds.size.height" : "bounds.size.width"
         animation.duration = duration
+        animation.beginTime = progressLayer.convertTime(CACurrentMediaTime(), from: nil)
         progressLayer.add(animation, forKey: "inlineProgress")
     }
 
     func pauseProgressAnimation() {
+        guard progressLayer.speed != 0 else { return }
         let pausedTime = progressLayer.convertTime(CACurrentMediaTime(), from: nil)
         progressLayer.speed = 0
         progressLayer.timeOffset = pausedTime
     }
 
     func resumeProgressAnimation() {
+        guard progressLayer.speed == 0 else { return }
         let pausedTime = progressLayer.timeOffset
         progressLayer.speed = 1
         progressLayer.timeOffset = 0
@@ -342,7 +355,8 @@ class KaraokeLabel: NSTextField {
         CATransaction.setDisableActions(true)
         progressLayer.speed = 1
         progressLayer.timeOffset = 0
-        progressLayer.removeAnimation(forKey: "inlineProgress")
+        progressLayer.beginTime = 0
+        progressLayer.removeAllAnimations()
         progressLayer.frame = .zero
         CATransaction.commit()
     }

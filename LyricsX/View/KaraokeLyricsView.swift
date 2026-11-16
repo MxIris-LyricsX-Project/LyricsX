@@ -110,6 +110,15 @@ class KaraokeLyricsView: NSView {
         firstLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil,
         secondLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil
     ) {
+        // Pause/resume and timing corrections often publish the same pair.
+        // Keep their views instead of fading out and rebuilding the highlight.
+        if let first = displayLine1, first.stringValue == firstLine,
+           (displayLine2?.stringValue ?? "") == secondLine,
+           sameFurigana(first.sourceFurigana, firstLineFurigana),
+           sameFurigana(displayLine2?.sourceFurigana, secondLineFurigana) {
+            mouseTest()
+            return
+        }
         var toBeHide = contentStackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
         var toBeShow: [NSTextField] = []
         var shouldHideAll = false
@@ -160,6 +169,23 @@ class KaraokeLyricsView: NSView {
         }, completionHandler: {
             self.mouseTest()
         })
+    }
+
+    private func sameFurigana(
+        _ lhs: LyricsLine.Attachments.RangeAttribute?,
+        _ rhs: LyricsLine.Attachments.RangeAttribute?
+    ) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (lhs?, rhs?):
+            return lhs.attributes.count == rhs.attributes.count
+                && zip(lhs.attributes, rhs.attributes).allSatisfy {
+                    $0.0.range == $0.1.range && $0.0.content == $0.1.content
+                }
+        default:
+            return false
+        }
     }
 
     // MARK: - Event

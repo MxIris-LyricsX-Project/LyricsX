@@ -246,6 +246,9 @@ class KaraokeLyricsWindowController: NSWindowController {
                 firstLineFurigana: firstLineFurigana,
                 secondLineFurigana: secondLineFurigana
             )
+            // Build the progress mask only after parent/stack constraints have
+            // given a new or reused label its current size.
+            self.window?.layoutIfNeeded()
             if let upperTextField = self.lyricsView.displayLine1,
                let timetag = lrc.attachments.timetag {
                 // Anchor on the PlaybackState that triggered this render so the
