@@ -11,6 +11,9 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
     /// The lyric view moves itself — `MenuBarMarqueeLabel` — given a line
     /// whose moving part starts as the measured window does.
     case ownTiming
+    /// The line stays put and `MenuBarMarqueeLabel`'s karaoke progress
+    /// moves across it, sung evenly over the measured window.
+    case karaoke
 
     package var description: String {
         switch self {
@@ -20,6 +23,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             "marqueeAnimation"
         case .ownTiming:
             "ownTiming"
+        case .karaoke:
+            "karaoke"
         }
     }
 
@@ -31,6 +36,8 @@ package enum ScrollDriving: Hashable, Sendable, CustomStringConvertible {
             self = .marqueeAnimation
         case "ownTiming":
             self = .ownTiming
+        case "karaoke":
+            self = .karaoke
         default:
             return nil
         }
@@ -43,6 +50,8 @@ package enum StatusItemProbeMode: String, Sendable {
     case liveStatusItem
     /// Run `StatusItemSnapshotParity` offscreen and report.
     case snapshotParity
+    /// Run `StatusItemKaraokeRendering` offscreen and report.
+    case karaokeRendering
     /// Open a real menu with a `TitleAlignedMenuItemView` row and report
     /// where its label starts against the menu's titles.
     case menuTitleAlignment
@@ -142,6 +151,18 @@ package struct StatusItemProbeRequest: Sendable {
         )
     }
 
+    /// A karaoke-rendering run, which needs nothing but somewhere to report.
+    package static func karaokeRendering(reportPath: String) -> StatusItemProbeRequest {
+        StatusItemProbeRequest(
+            mode: .karaokeRendering,
+            content: StatusItemContent(lyrics: .menuBarMarqueeLabel, neighbors: .none),
+            text: "",
+            settleSeconds: 0,
+            measuredSeconds: 0,
+            reportPath: reportPath
+        )
+    }
+
     /// A menu-alignment run: opens one menu and reports on it.
     package static func menuTitleAlignment(_ menuCase: MenuTitleAlignmentCase, reportPath: String) -> StatusItemProbeRequest {
         StatusItemProbeRequest(
@@ -223,6 +244,10 @@ package struct StatusItemProbeReport: Codable, Sendable {
     /// bar shows the item from snapshots instead.
     package var statusBarWindowIsOnScreen: Bool
     package var buttonAppearanceName: String
+    /// The error and fault messages CoreGraphics logged in the host over the
+    /// whole run, read back from the host's own log; nil when the host could
+    /// not read its log.
+    package var coreGraphicsErrorMessages: [String]?
 
     package init(
         content: String,
@@ -234,7 +259,8 @@ package struct StatusItemProbeReport: Codable, Sendable {
         settleDrawCount: Int,
         statusBarWindowNumber: Int,
         statusBarWindowIsOnScreen: Bool,
-        buttonAppearanceName: String
+        buttonAppearanceName: String,
+        coreGraphicsErrorMessages: [String]?
     ) {
         self.content = content
         self.bundleIdentifier = bundleIdentifier
@@ -246,6 +272,7 @@ package struct StatusItemProbeReport: Codable, Sendable {
         self.statusBarWindowNumber = statusBarWindowNumber
         self.statusBarWindowIsOnScreen = statusBarWindowIsOnScreen
         self.buttonAppearanceName = buttonAppearanceName
+        self.coreGraphicsErrorMessages = coreGraphicsErrorMessages
     }
 
     /// Share of one core — how Activity Monitor's %CPU column reads.

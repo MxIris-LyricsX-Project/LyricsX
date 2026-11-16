@@ -51,14 +51,21 @@ override table, which track picked results belong to, the search panel's
 selection, how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, what the menu bar's lyric line shows when there is
-no line to show, which standard item the status menu's custom row lines its
-label up with and the per-release insets it falls back to, plus the lyrics
+no line to show, how much of a line its inline time tags say is sung (the menu
+bar's karaoke progress), which standard item the status menu's custom row lines its
+label up with and the per-release insets it falls back to, where a step of
+that row's lyrics offset lands (the next multiple of 100 ms, so an offset
+the lyrics came with, such as Kugou's 51 ms, steps back to 0), plus the lyrics
 translation policies (the engine choice and its migration from the AI switch,
 AI request encoding and batch boundaries, when AI translation stops waiting for
 the automatic search, reusing a saved copy's translations, what either engine
 keeps of an answer: one line, never a line handed back unchanged, and that a
-translation leaves the lyrics' ranking as it was) — and is fast and headless
-enough to run on every change. `AppleMusicLyricsPanelTests` is a real probe suite that
+translation leaves the lyrics' ranking as it was), and the panel's
+high-resolution cover: that a cover and its 100-pixel thumbnail fingerprint
+alike (`ArtworkFingerprint`, red on the old fingerprint that drew covers
+straight into the 9×8 hash grid), and the NetEase catalogue search it asks
+alongside the iTunes Store — and is fast and headless enough to run on every
+change. `AppleMusicLyricsPanelTests` is a real probe suite that
 renders the Apple Music lyrics engine offscreen through `CARenderer` and asserts
 its animation geometry and karaoke colour (no clipping, bounded lift, sweep
 actually paints white, no position drift):
@@ -195,6 +202,25 @@ swift test --filter StatusItemTextParityProbes
 # nothing. Idle: the line must stop drawing once settled. Scroll: it must move
 # as often and in steps as fine as MarqueeLabel's animation, for less CPU.
 swift test --filter "StatusItemIdleRedrawProbes|StatusItemScrollCostProbes"
+
+# The Lab's karaoke progress (MenuBarKaraokeProgressEnabled, macOS 26+), in
+# the probe host offscreen (~1 s): a line with progress is the accent-coloured
+# drawing up to one pixel edge and the plain one after it, an unsung line is
+# the plain line pixel for pixel, the measured characters sit on the drawn ink,
+# the progress stops while paused, right-to-left lines show none, which
+# filled from the left ran backwards, and a custom colour (the Lab's colour
+# well) draws red ink and goes back to the accent drawing pixel for pixel. The cost probe sings a line in a real
+# status item (~15 s): one-device-pixel steps, never above the 60 fps cap; CPU
+# is printed only. KaraokeLineTimingTests in LyricsXFoundationTests cover
+# how much of a line its inline time tags say is sung.
+swift test --filter "StatusItemKaraokeProbes|StatusItemKaraokeCostProbes"
+
+# The line draws in a real status item without CoreGraphics logging an error
+# (~5 s): the host reads its own log back. Red on the old draw, which asked
+# every context for `colorSpace` (CGBitmapContextGetColorSpace) and logged
+# "invalid context" for each display-list draw, hundreds a second while the
+# karaoke progress moved.
+swift test --filter StatusItemDrawingErrorProbes
 ```
 
 The same suite guards the status menu's lyrics offset row, a custom view
@@ -247,12 +273,25 @@ when the old code met rc.1's configuration. Run them on any change to
 cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
 ```
 
+Its `WidgetCoverArtworkTests` and `WidgetCoverEncodingProbes` pin down the
+cover file the app writes for the widget: a 400-pixel JPEG drawn on the CPU,
+prepared once per track rather than on every lyric line. The probe reads the
+process's GPU memory (`ledger_tag_graphics_footprint`) around one cover and is
+red on the old `NSImage.lockFocus` path, whose extended-range bitmap sent
+ImageIO's JPEG encoder through its Metal HDR converter (398 MiB for one
+cover). Run them on any change to `WidgetCoverArtwork` or to how
+`AppController` writes the cover (<1s):
+
+```bash
+cd LyricsXPackage && swift test --filter "WidgetCoverArtworkTests|WidgetCoverEncodingProbes"
+```
+
 The widget is a `StaticConfiguration` on purpose: anything it can show two
 ways follows an app setting passed in its snapshot, because each widget the
 user edits forms a configuration of its own and puts the others five seconds
 behind. Checking a change to what the widget declares — configuration,
 supported families, name — on the desktop needs a temporarily higher
-`CFBundleVersion` in both Info.plists (revert it, never commit it): `chronod`
+`CURRENT_PROJECT_VERSION` in `Config/Version.xcconfig` (revert it, never commit it): `chronod`
 caches widget descriptors by version, and a Debug build's never changes.
 `Documentations/Internal/DesktopWidget.md` has both.
 
@@ -276,9 +315,12 @@ advisory, not as a gate. The build is the gate.
 ## Release Workflow
 
 A LyricsX release is triggered by pushing a `v*` tag (e.g. `v1.9.0-beta.7`),
-which fires `.github/workflows/release.yml`. CI sets
-`LYRICSX_USE_LOCAL_DEPENDENCY=0`, so it resolves the three sibling packages
-from their **published tags**, not from local checkouts.
+which fires `.github/workflows/release.yml`. The workflow runs
+[AppRelease](https://github.com/Mx-Iris/AppRelease), the release engine the
+maintainer's apps share, at the version `Release.zsh` pins; what LyricsX adds
+to it is under "How a release runs" below. `Release.zsh` sets
+`LYRICSX_USE_LOCAL_DEPENDENCY=0`, so a release resolves the three sibling
+packages from their **published tags**, not from local checkouts.
 
 All three are pinned to an **exact version**: `LyricsXPackage/Package.swift`
 carries `exact: "1.12.0"` for LyricsKit and `exact: "1.10.1"` for MusicPlayer,
@@ -327,25 +369,67 @@ Then in **this** repo:
    intend to ship; a release should not carry dependency movement nobody asked
    for.
 6. Commit the updated `Package.resolved` and `Package.swift`.
-7. Bump `CFBundleShortVersionString` (marketing version) in
-   `LyricsX/Supporting Files/Info.plist` and
-   `LyricsXWidget/Supporting Files/Info.plist` if the new version's base
-   (`X.Y.Z` portion, stripping any `-beta.N` / `-rc.N` suffix) differs
-   from what's committed. **`CFBundleVersion` does not need to be
-   touched** — `Scripts/release/validate.sh` derives it from VERSION using
-   the encoded scheme (see `Documentations/BuildNumberScheme.md`) and
-   overwrites both plists at CI time, so the value committed in the repo
-   is informational only.
+7. Set `MARKETING_VERSION` in `Config/Version.xcconfig` to the new
+   version's base (`X.Y.Z`, without any `-beta.N` / `-rc.N` suffix) if it
+   differs from what's committed; every target's Info.plist reads it.
+   **The build number needs no change** — AppRelease encodes it from the
+   tag (see `Documentations/BuildNumberScheme.md`) and passes it to the
+   archive, so `CURRENT_PROJECT_VERSION` there is only what a build made in
+   Xcode carries.
 8. Add `ReleaseNotes/<version>_en.md` and `ReleaseNotes/<version>_zh.md`,
    following the conventions below.
 9. Push the branch, then tag and push `v<version>` to trigger the
-   release workflow.
+   release workflow. Before the first tag of a new version, a build-only
+   run is a cheap check of the signing secrets and the archive: run the
+   workflow by hand on the branch without a tag
+   (`gh workflow run release.yml --ref develop`). It archives, signs and
+   notarizes, keeps the zip as an artifact and publishes nothing. It fails
+   once `v<MARKETING_VERSION>` is tagged on another commit, so do it after
+   step 7.
+
+### How a release runs
+
+`Release.zsh` describes LyricsX to AppRelease, whose README explains every
+setting; its five stages (`target → archive → export → notary → product`)
+each check their own result and stop the release otherwise. What is
+particular to LyricsX:
+
+- The project's version stays numeric and a prerelease adds its suffix to
+  the tag only (`release_version_tag_match=base`); the build number is
+  encoded from the whole tag (`semantic-version-encoding`).
+- Release signs every target by hand against its Developer ID profile
+  (`Config/*/*-Release.xcconfig`), and `ExportOptions.plist` names the same
+  profiles. Do not add signing settings to `release_archive_arguments`:
+  overriding them on the command line leaks into the SwiftPM dependency
+  targets, which fail with "conflicting provisioning settings".
+- The hooks: `release_preflight` stops a release without both notes files
+  before anything is built; `release_verify_export` checks that the app's
+  and the helper's profiles authorize App Groups (1.8.6 shipped without);
+  `release_after_product` uploads the dSYMs as
+  `LyricsX_<version>+<build>.dSYMs.zip`; `release_deploy_appcast` puts the
+  release into both Sparkle feeds — the organization site's `appcast.xml`,
+  which 1.9.0 and later read, and `appcast.xml` on this repository's
+  `master`, which 1.8.x reads.
+- The feeds take only the new item, spliced in by
+  `Scripts/insert-appcast-item.py` from what Sparkle's `generate_appcast`
+  wrote, so their older items stay byte for byte. A Sparkle key that does
+  not match the app's `SUPublicEDKey` leaves the item unsigned and stops the
+  release there, before either feed changes. Run
+  `python3 -m unittest discover -s Scripts/Tests` after any change to that
+  script.
+- Secrets: the Developer ID certificate, the notary key and the Sparkle key
+  are organization secrets shared with the maintainer's other apps; the
+  three `LYRICSX_*_DEVID_PROFILE_BASE64` profiles and `PAGES_MIRROR_TOKEN`,
+  which pushes the organization site, belong to this repository.
+- Running a release again is safe: the tag and the GitHub Release are
+  reused, the zip is replaced, and each feed's item for that version is
+  replaced with the new zip's. A failed run uploads its logs as an
+  artifact.
 
 ### Release notes conventions
 
 - The GitHub Release **title** is the version string with a `v` prefix
-  (e.g. `v1.9.0-beta.7`). The `Scripts/release/create-release.sh`
-  script passes `--title "v${VERSION}"` to `gh release create`.
+  (e.g. `v1.9.0-beta.7`): AppRelease titles every release with its tag.
 - The version is shown **only** in the title — neither the English
   nor the Chinese notes file should repeat the version number or
   the project name "LyricsX" anywhere. Refer to the app implicitly
@@ -380,13 +464,13 @@ Then in **this** repo:
   `1.9.0-beta.11` uncredited until a follow-up commit 20 minutes after
   the tag. Also run `gh pr list --state closed` over the same range and
   credit every unmerged PR whose closing comment says its work landed.
-- The two notes files are concatenated by
-  `Scripts/release/compose-notes.sh` with a `---` separator, so the
-  English file goes first.
+- `release_compose_notes` in `Release.zsh` concatenates the two notes
+  files with a `---` separator, English first, for the GitHub Release.
+  The Sparkle update window shows the English file alone.
 
 If the pinned version of a dependency predates a product LyricsX needs — you
 updated the `exact:` string but never pushed the tag, or pointed it at an
-older release — CI fails fast in `Build` with
+older release — CI fails in the archive with
 `product 'X' required by package 'lyricsxpackage' target 'LyricsXFoundation' not found in package 'Y'`
 — treat that as the signal to go tag the dependency and correct the pin, not
 as a LyricsX-side bug.
@@ -404,6 +488,7 @@ All build settings are split out of `LyricsX.xcodeproj/project.pbxproj` into a l
 ```
 Config/
 ├── Shared.xcconfig                # cross-target, cross-config base (warnings, SDK, SWIFT_VERSION, code signing, hardened runtime, etc.)
+├── Version.xcconfig               # included by Shared: MARKETING_VERSION (raise it per release) and CURRENT_PROJECT_VERSION (2929 outside releases)
 ├── Shared-Debug.xcconfig          # includes Shared; adds Debug optimization, -DDEBUG, LX_BUNDLE_ID_PREFIX = dev.JH, ...
 ├── Shared-Release.xcconfig        # includes Shared; adds Release optimization, -DRELEASE, LX_BUNDLE_ID_PREFIX = com.JH, ...
 ├── Project-Debug.xcconfig         # includes Shared-Debug; project-wide Debug (MACOSX_DEPLOYMENT_TARGET = 12.0, asset symbols)

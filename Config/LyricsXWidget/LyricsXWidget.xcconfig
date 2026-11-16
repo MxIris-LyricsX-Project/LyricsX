@@ -6,12 +6,10 @@
 // which require macOS 14+; the 15.0 target is conservative and matches
 // what Xcode generates by default for new widget extensions.
 
-// CFBundleShortVersionString / CFBundleVersion are written directly into
-// LyricsXWidget/Supporting Files/Info.plist (the latter is overwritten by
-// Scripts/release/validate.sh from the encoded VERSION on every release).
-// MARKETING_VERSION / CURRENT_PROJECT_VERSION are intentionally omitted —
-// the plist hardcodes the values, so xcconfig variables here would never
-// take effect and only mislead.
+// The Info.plist takes CFBundleShortVersionString and CFBundleVersion from
+// MARKETING_VERSION and CURRENT_PROJECT_VERSION in Config/Version.xcconfig,
+// so the widget always carries the app's version and build number. Do not
+// set either here.
 CODE_SIGN_STYLE = Automatic
 GENERATE_INFOPLIST_FILE = NO
 INFOPLIST_FILE = LyricsXWidget/Supporting Files/Info.plist

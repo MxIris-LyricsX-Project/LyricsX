@@ -1,0 +1,13 @@
+// The version every target shows, in one place. Shared.xcconfig includes it.
+//
+// MARKETING_VERSION stays numeric (1.9.1), as Apple wants
+// CFBundleShortVersionString to be; a prerelease adds its suffix to the tag
+// only (v1.9.1-beta.1). Raise it for the next release before tagging.
+//
+// CURRENT_PROJECT_VERSION is what a build made in Xcode carries. A release
+// never uses it: AppRelease encodes the build number from the tag and passes
+// it to the archive (Documentations/BuildNumberScheme.md). Raise it by hand
+// only to make chronod read a changed widget description
+// (Documentations/Internal/DesktopWidget.md), and never commit that.
+MARKETING_VERSION = 1.9.1
+CURRENT_PROJECT_VERSION = 2929

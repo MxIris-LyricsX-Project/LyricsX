@@ -1,59 +1,39 @@
 name: Release
 
+# Pushing a v* tag releases that tag through AppRelease (Release.zsh): archive, Developer ID export,
+# notarization, the GitHub Release and both Sparkle feeds. Running the workflow by hand with a tag
+# releases the chosen branch under it, creating the tag if it does not exist yet. Without a tag it only
+# builds and notarizes the branch, which checks the signing secrets and publishes nothing.
 on:
   push:
     tags:
       - 'v*'
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version (e.g. 1.9.0 or 1.9.0-beta.1)'
-        required: true
-        type: string
-      dry_run:
-        description: 'Stop after build (no notarize, no release, no appcast)'
+      tag:
+        description: 'Tag to release the chosen branch as, e.g. v1.9.1-beta.1 (created if missing). Leave empty to build and notarize without publishing.'
         required: false
-        default: false
-        type: boolean
+        type: string
 
 permissions:
   contents: write
+
+# One run per tag or branch at a time, so a second run cannot overwrite a release the first is making.
+concurrency:
+  group: release-${{ inputs.tag || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: macos-26
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
-      LYRICSX_USE_LOCAL_DEPENDENCY: "0"
-      SPARKLE_VERSION: "2.6.4"
+      RELEASE_TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Resolve version
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
-        run: bash Scripts/release/resolve-version.sh
-
-      - name: Validate
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash Scripts/release/validate.sh
-
-      - name: Setup keychain
-        env:
-          APPLE_DEV_ID_CERT_P12_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
-          APPLE_DEV_ID_CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          LYRICSX_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_DEVID_PROFILE_BASE64 }}
-          LYRICSX_HELPER_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_HELPER_DEVID_PROFILE_BASE64 }}
-          LYRICSX_WIDGET_DEVID_PROFILE_BASE64: ${{ secrets.LYRICSX_WIDGET_DEVID_PROFILE_BASE64 }}
-        run: bash Scripts/release/setup-keychain.sh
-
-      - name: Install Sparkle tools
-        run: bash Scripts/release/install-sparkle-tools.sh
 
       - name: Ensure Metal toolchain
         # AppleMusicLyricsPanel compiles a .metal shader, and from Xcode 26 the
@@ -66,69 +46,46 @@ jobs:
         # so a runner that already has it pays nothing.
         run: xcrun metal --version >/dev/null 2>&1 || xcodebuild -downloadComponent MetalToolchain
 
-      - name: Build
-        run: bash Scripts/release/build.sh
+      # AppRelease checks everything it can before building, including both release notes when it
+      # publishes, and signs in a temporary keychain that it removes when it exits.
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_RELEASE_CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          APP_RELEASE_CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          APP_RELEASE_NOTARY_KEY_BASE64: ${{ secrets.NOTARY_KEY_BASE64 }}
+          APP_RELEASE_NOTARY_KEY_IDENTIFIER: ${{ secrets.NOTARY_KEY_IDENTIFIER }}
+          APP_RELEASE_NOTARY_ISSUER_IDENTIFIER: ${{ secrets.NOTARY_ISSUER_IDENTIFIER }}
+          APP_RELEASE_SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          # The Developer ID profiles Config/*/*-Release.xcconfig and ExportOptions.plist name.
+          APP_RELEASE_PROVISIONING_PROFILE_LYRICSX_BASE64: ${{ secrets.LYRICSX_DEVID_PROFILE_BASE64 }}
+          APP_RELEASE_PROVISIONING_PROFILE_LYRICSX_HELPER_BASE64: ${{ secrets.LYRICSX_HELPER_DEVID_PROFILE_BASE64 }}
+          APP_RELEASE_PROVISIONING_PROFILE_LYRICSX_WIDGET_BASE64: ${{ secrets.LYRICSX_WIDGET_DEVID_PROFILE_BASE64 }}
+          # Pushes the organization site's appcast.xml, the feed 1.9.0 and later read.
+          PAGES_MIRROR_TOKEN: ${{ secrets.PAGES_MIRROR_TOKEN }}
+        run: |
+          engine_version=$(sed -nE 's/^release_engine_version=([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' Release.zsh)
+          git clone --quiet --depth 1 --branch "$engine_version" https://github.com/Mx-Iris/AppRelease "$RUNNER_TEMP/AppRelease"
+          if [ -n "$RELEASE_TAG" ]; then
+            "$RUNNER_TEMP/AppRelease/app-release" all --version-tag "$RELEASE_TAG" --publish
+          else
+            "$RUNNER_TEMP/AppRelease/app-release" all
+          fi
 
-      - name: Upload xcresult on failure
+      - name: Keep the products for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: LyricsX-${{ env.RELEASE_TAG || github.sha }}
+          path: build/AppRelease/LyricsX/[0-9]*/Products/
+          if-no-files-found: error
+          retention-days: 14
+
+      # The terminal only shows a summary of a failed xcodebuild; the full logs are in the run directory.
+      - name: Keep the logs of a failed run
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: xcresult
-          path: |
-            build/LyricsX.xcarchive
-            ~/Library/Developer/Xcode/DerivedData/**/Logs/Build/*.xcresult
+          name: LyricsX-logs-${{ github.run_id }}
+          path: build/AppRelease/LyricsX/[0-9]*/logs/
           if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Notarize
-        if: ${{ !inputs.dry_run }}
-        env:
-          APPLE_API_KEY_P8_BASE64: ${{ secrets.NOTARY_KEY_BASE64 }}
-          APPLE_API_KEY_ID: ${{ secrets.NOTARY_KEY_IDENTIFIER }}
-          APPLE_API_KEY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_IDENTIFIER }}
-        run: bash Scripts/release/notarize.sh
-
-      - name: Package
-        if: ${{ !inputs.dry_run }}
-        run: bash Scripts/release/package.sh
-
-      - name: Sparkle sign
-        if: ${{ !inputs.dry_run }}
-        env:
-          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-        run: bash Scripts/release/sign-sparkle.sh
-
-      - name: Compose release notes
-        if: ${{ !inputs.dry_run }}
-        run: bash Scripts/release/compose-notes.sh
-
-      - name: Create published release
-        if: ${{ !inputs.dry_run }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash Scripts/release/create-release.sh
-
-      - name: Update canonical appcast
-        if: ${{ !inputs.dry_run }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash Scripts/release/publish-appcast.sh canonical
-
-      - name: Mirror to legacy Pages repo
-        if: ${{ !inputs.dry_run }}
-        env:
-          PAGES_MIRROR_TOKEN: ${{ secrets.PAGES_MIRROR_TOKEN }}
-        run: bash Scripts/release/publish-appcast.sh mirror
-
-      - name: Upload body.md artifact
-        if: ${{ !inputs.dry_run && always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-body
-          path: build/body.md
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Cleanup keychain
-        if: always()
-        run: bash Scripts/release/setup-keychain.sh cleanup
+          retention-days: 14

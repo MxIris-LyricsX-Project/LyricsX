@@ -179,6 +179,21 @@ live view 一直在刷新，占着立即刷新的名额，重新添加的四个�
 
 改完后同一种操作：切歌后 15～23 条的 timeline，从 WidgetKit 第一次要 timeline 到换上用 0.7～1.1 秒。
 
+### 封面每首歌只生成一次，而且只用 CPU
+
+app 每换一行歌词就写一次快照（`AppController.updateWidgetSnapshot`），以前每次都把封面重新缩放、编成 JPEG，再算一遍
+背景色。缩放用的是 `NSImage.lockFocus`，它给出的是扩展色域的半精度位图；ImageIO 编 JPEG 前要把它色调映射回标准
+范围，走的是 GPU 上的 `HDRImageConverter_Metal`。2026-11-15 在 Mac Studio（M3 Ultra）上用 1.9.1 测得：每写一次快照，
+进程就有 19 块 16 MiB、共 304 MB 的显存变成占用，要几秒才放掉；歌词换行比这快，所以这些显存大部分时间都占着。
+`footprint` 把它们记在「Owned physical footprint (unmapped) (graphics)」里，和歌词面板 Metal 背景的显存一起，
+让开着面板的 app 显示占用超过 1 GB。
+
+现在由 `LyricsXWidgetShared` 的 `WidgetCoverArtwork` 生成封面：画进 8 位 sRGB 的 `CGContext`，再交给
+`CGImageDestination` 编码，ImageIO 只会拿到标准范围的像素，不碰 GPU。尺寸沿用原来的文件：长边 400 像素（200 pt 的
+2 倍），比它小的封面不放大。`WidgetCoverArtworkCache` 按「曲目 ID + 封面像素尺寸」记住上一次的结果，同一首歌后面
+每一行都直接复用。缓存不认图像对象，因为播放器每次更新都会新建一个 `NSImage`（MediaRemote 从数据重新解码，
+ScriptingBridge 重新取一次）；同一首歌后来换成另一个尺寸的封面，会重新生成一次。
+
 ### 按钮的 intent 返回之前写好新状态
 
 Apple 文档（*Adding interactivity to widgets and Live Activities*）写明：`perform()` 返回后，系统用 timeline provider
@@ -309,6 +324,7 @@ macOS 26 起，桌面不在前台时，小组件改用 accented 渲染模式：�
 | `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetExtensionProcessPolicy.swift` | 纯规则：一个正在运行的小组件扩展进程是不是更新留下的旧进程 |
 | `LyricsX/Component/StaleWidgetExtensionTerminator.swift` | app 启动时枚举进程、读出每个小组件进程运行的文件，按上面的规则结束旧进程 |
 | `LyricsXWidget/Views/CoverScrimView.swift` | 小号封面底部的黑色渐变，画成声明 `fullColor` 的图片，桌面失焦时不被染白 |
+| `LyricsXPackage/Sources/LyricsXWidgetShared/WidgetCoverArtwork.swift` | 在 CPU 上生成封面 JPEG 和背景色；`WidgetCoverArtworkCache` 让同一首歌只生成一次 |
 
 ## 验证
 
@@ -328,6 +344,11 @@ cd LyricsXPackage && swift test --filter LyricsWidgetDataTests
 # 哪些小组件扩展进程算更新留下的旧进程，10 个用例（<1 秒）。三种该结束的情况在原来「从不结束」的行为上是红的；
 # 「更新的副本不动」和「读不出版本号的副本不动」在一开始「版本号不同就结束」的规则上是红的
 cd LyricsXPackage && swift test --filter WidgetExtensionProcessPolicyTests
+
+# 小组件封面，7 个用例（<1 秒）。探针在生成一张封面前后读进程的显存账目（task_vm_info 的
+# ledger_tag_graphics_footprint），在原来 lockFocus 的做法上是红的：一张封面涨了 398 MiB。
+# 「同一首歌复用第一次的封面」在原来每行都重新生成的做法上是红的
+cd LyricsXPackage && swift test --filter "WidgetCoverArtworkTests|WidgetCoverEncodingProbes"
 ```
 
 结束旧进程这一步在 app 里，没有测试宿主，是这样实测的：复制一份 `/bin/sleep`，放到某个
@@ -367,11 +388,11 @@ jq -c '.actions | to_entries[] | select(.key | test("PlayPause|NextTrack|Previou
 jq -c '{actions: (.actions | keys), entities: (.entities // {} | keys)}' "$metadata"
 ```
 
-**改了小组件的描述之后，先临时调高两个 Info.plist 的 `CFBundleVersion` 再构建，测完改回、不提交。** 描述指有没有
+**改了小组件的描述之后，先临时调高 `Config/Version.xcconfig` 的 `CURRENT_PROJECT_VERSION` 再构建，测完改回、不提交。**主 App 和小组件的 Info.plist 都引用它。 描述指有没有
 设置项、支持哪些尺寸、显示名这类内容。`chronod` 按版本号缓存描述，版本号不变就判定 "No updates required -
 descriptors are up to date"，一直用旧描述；重启 `chronod` 也只是从缓存里读。Debug 构建的版本号恒为 2929，所以换成
 静态配置后，编辑菜单还在。改成 2930 后，日志里出现 "Refetching descriptors due to extension version change, from
-2929-2929-… to 2930-2930-…"，菜单才消失。正式发版时 CI 会改版本号，用户不受影响。只改视图或 timeline 的话不用调，
+2929-2929-… to 2930-2930-…"，菜单才消失。正式发版时 AppRelease 会传入按 tag 编码的版本号，用户不受影响。只改视图或 timeline 的话不用调，
 它们每次刷新都会重新问小组件。
 
 下面这些只能在桌面上人工确认：

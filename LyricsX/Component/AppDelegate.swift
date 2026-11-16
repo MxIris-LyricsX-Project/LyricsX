@@ -98,18 +98,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
         MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
 
-        lyricsOffsetStepper.bind(
-            .value,
-            to: controller,
-            withKeyPath: #keyPath(AppController.lyricsOffset),
-            options: [.continuouslyUpdatesValue: true]
-        )
+        // The stepper only says which way to step: it rests at 0, a click moves
+        // it to 1 or -1, and `lyricsOffsetStepperClicked(_:)` takes that step
+        // and puts it back. Bound to the offset, it added its increment, so an
+        // offset the lyrics came with (Kugou's 51 ms) never stepped back to 0.
+        lyricsOffsetStepper.minValue = -1
+        lyricsOffsetStepper.maxValue = 1
+        lyricsOffsetStepper.increment = 1
+        lyricsOffsetStepper.valueWraps = false
+        lyricsOffsetStepper.integerValue = 0
+        lyricsOffsetStepper.target = self
+        lyricsOffsetStepper.action = #selector(lyricsOffsetStepperClicked(_:))
 
+        // The storyboard has the field read-only, as it has been since the row
+        // was added. It takes a typed offset when editing ends, with Return or a
+        // click elsewhere: a half-typed number such as "-" is not one yet.
+        lyricsOffsetTextField.isSelectable = true
+        lyricsOffsetTextField.isEditable = true
         lyricsOffsetTextField.bind(
             .value,
             to: controller,
-            withKeyPath: #keyPath(AppController.lyricsOffset),
-            options: [.continuouslyUpdatesValue: true]
+            withKeyPath: #keyPath(AppController.lyricsOffset)
         )
 
         setupShortcuts()
@@ -288,11 +297,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     }
 
     @IBAction func increaseOffset(_ sender: Any?) {
-        AppController.shared.lyricsOffset += 100
+        stepLyricsOffset(.increase)
     }
 
     @IBAction func decreaseOffset(_ sender: Any?) {
-        AppController.shared.lyricsOffset -= 100
+        stepLyricsOffset(.decrease)
+    }
+
+    @objc private func lyricsOffsetStepperClicked(_ stepper: NSStepper) {
+        let stepperValue = stepper.integerValue
+        stepper.integerValue = 0
+        if stepperValue > 0 {
+            stepLyricsOffset(.increase)
+        } else if stepperValue < 0 {
+            stepLyricsOffset(.decrease)
+        }
+    }
+
+    private func stepLyricsOffset(_ direction: LyricsOffsetStepPolicy.Direction) {
+        let controller = AppController.shared
+        controller.lyricsOffset = LyricsOffsetStepPolicy.offset(steppedFrom: controller.lyricsOffset, direction: direction)
     }
 
     @IBAction func showCurrentLyricsInFinder(_ sender: Any?) {

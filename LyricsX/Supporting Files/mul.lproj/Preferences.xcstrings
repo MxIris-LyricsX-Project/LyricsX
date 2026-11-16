@@ -10303,6 +10303,114 @@
         }
       }
     },
+    "MKP-Cl-001.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Show karaoke progress in menu bar lyrics\"; ObjectID = \"MKP-Cl-001\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إظهار تقدّم الكاريوكي في كلمات الأغاني في شريط القوائم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karaoke-Fortschritt in den Songtexten der Menüleiste anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show karaoke progress in menu bar lyrics"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar el progreso de karaoke en la letra de la barra de menús"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نمایش پیشرفت کارائوکه در ترانهٔ نوار منو"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher la progression karaoké dans les paroles de la barre des menus"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan progres karaoke di lirik bilah menu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra l’avanzamento karaoke nel testo della barra dei menu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メニューバーの歌詞にカラオケの進行を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 막대 가사에 노래방 진행 상황 표시"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karaokevoortgang tonen in songteksten in menubalk"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuj postęp karaoke w tekście na pasku menu"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar o progresso de karaokê na letra da barra de menus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывать караоке-прогресс в тексте песни в строке меню"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показувати караоке-прогрес у тексті пісні в рядку меню"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在菜单栏歌词中显示卡拉OK进度"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在選單列歌詞中顯示卡拉OK進度"
+          }
+        }
+      }
+    },
     "mnU-3V-ZCW.title" : {
       "comment" : "Class = \"NSButtonCell\"; title = \"Use system wide now playing application\"; ObjectID = \"mnU-3V-ZCW\";",
       "extractionState" : "extracted_with_value",
