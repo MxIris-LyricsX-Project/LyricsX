@@ -139,18 +139,52 @@ class KaraokeLabel: NSTextField {
         to attrString: NSMutableAttributedString,
         content: String
     ) -> Bool {
-        var didApply = false
-        for attribute in sourceFurigana.attributes {
-            guard let range = content.nsRange(fromCharacterRange: attribute.range) else {
-                continue
-            }
-            var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
-            attr[.ctForegroundColor] = textColor
-            let annotation = CTRubyAnnotation.create(attribute.content as CFString, attributes: attr)
-            attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
-            didApply = true
+        let annotations = sourceFurigana.attributes.compactMap { attribute -> (range: NSRange, text: CFString)? in
+            guard let range = content.nsRange(fromCharacterRange: attribute.range) else { return nil }
+            return (range, attribute.content as CFString)
         }
-        return didApply
+        let style = sourceRubyStyle(for: annotations.map(\.range), in: attrString)
+        for (index, annotation) in annotations.enumerated() {
+            var attributes: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
+            attributes[.ctForegroundColor] = textColor
+            if let style {
+                attributes[.ctFont] = style.font
+                attributes[.ctBaselineOffset] = style.offsets[index]
+            }
+            let ruby = CTRubyAnnotation.create(annotation.text, attributes: attributes)
+            attrString.addAttribute(.cf(.ctRubyAnnotation), value: ruby, range: annotation.range)
+        }
+        return !annotations.isEmpty
+    }
+
+    private func sourceRubyStyle(
+        for ranges: [NSRange], in text: NSAttributedString
+    ) -> (font: CTFont, offsets: [CGFloat])? {
+        guard !isVertical, ranges.count > 1, let font else { return nil }
+
+        // CoreText anchors each ruby to the ascent of its base run. Digits and
+        // kana/kanji can resolve to different cascade fonts on the same line.
+        let runs = CTLineCreateWithAttributedString(text).glyphRuns.map { run in
+            var ascent: CGFloat = 0
+            CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, nil, nil)
+            return (range: run.stringRange.asNS, ascent: ascent)
+        }
+        let ascents = ranges.map { range in
+            runs.lazy.filter { NSIntersectionRange(range, $0.range).length > 0 }
+                .map(\.ascent).max() ?? font.ascender
+        }
+        guard let tallest = ascents.max(), let shortest = ascents.min(), tallest - shortest > 0.5 else {
+            return nil
+        }
+
+        // Use one kana-capable font for the ruby itself, independent of the
+        // fallback used by each base run. Give the tallest run a small gap,
+        // then add the missing ascent to every shorter run.
+        let sample = "あ" as CFString
+        let baseRubyFont = NSFont.systemFont(ofSize: font.pointSize * 0.5)
+        let rubyFont = CTFontCreateForStringWithLanguage(baseRubyFont as CTFont, sample, CFRangeMake(0, 1), "ja" as CFString)
+        let gap = font.pointSize * 0.1
+        return (rubyFont, ascents.map { gap + tallest - $0 })
     }
 
     private var _ctFrame: CTFrame?

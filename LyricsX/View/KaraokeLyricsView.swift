@@ -3,6 +3,8 @@ import LyricsXFoundation
 import SnapKit
 
 class KaraokeLyricsView: NSView {
+    private static let entryXCorrectionKey = "lyricsEntryXCorrection"
+
     private let backgroundView: NSView
     private let contentStackView: NSStackView
 
@@ -122,13 +124,20 @@ class KaraokeLyricsView: NSView {
         var toBeHide = contentStackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
         var toBeShow: [NSTextField] = []
         var shouldHideAll = false
+        var interruptedEntry: (CALayer, CGFloat)?
 
         let index = isVertical ? 0 : 1
         if firstLine.trimmingCharacters(in: .whitespaces).isEmpty {
             displayLine1 = nil
             shouldHideAll = true
         } else if toBeHide.count == 2, toBeHide[index].stringValue == firstLine {
-            displayLine1 = toBeHide[index]
+            let preview = toBeHide[index]
+            if !isVertical, let layer = preview.layer,
+               layer.animation(forKey: Self.entryXCorrectionKey) != nil,
+               let offset = layer.presentation()?.transform.m41, abs(offset) > 0.01 {
+                interruptedEntry = (layer, offset)
+            }
+            displayLine1 = preview
             displayLine1?.sourceFurigana = firstLineFurigana
             toBeHide.remove(at: index)
         } else {
@@ -153,6 +162,7 @@ class KaraokeLyricsView: NSView {
                 contentStackView.removeArrangedSubview($0)
                 $0.isHidden = true
                 $0.alphaValue = 0
+                $0.layer?.removeAnimation(forKey: Self.entryXCorrectionKey)
                 $0.removeProgressAnimation()
             }
             toBeShow.forEach {
@@ -166,9 +176,79 @@ class KaraokeLyricsView: NSView {
             }
             isHidden = shouldHideAll
             layoutSubtreeIfNeeded()
+            if !isVertical {
+                stabilizeEnteringRows(toBeShow)
+                if let (layer, offset) = interruptedEntry {
+                    continueInterruptedEntry(on: layer, offset: offset)
+                }
+            }
         }, completionHandler: {
             self.mouseTest()
         })
+    }
+
+    private func stabilizeEnteringRows(_ rows: [NSTextField]) {
+        guard !rows.isEmpty, let overlay = layer, let background = backgroundView.layer,
+              let stack = contentStackView.layer else { return }
+
+        for row in rows {
+            guard let textLayer = row.layer else { continue }
+            let layers = [overlay, background, stack, textLayer]
+            // These AppKit backing layers use a top-level translation. With
+            // zero X anchors, an animated width adds no X translation.
+            guard layers.allSatisfy({ $0.anchorPoint.x == 0 && $0.bounds.origin.x == 0
+                && CATransform3DIsIdentity($0.transform) && CATransform3DIsIdentity($0.sublayerTransform) })
+            else { continue }
+
+            // A recycled row can also animate its own X. Sum the moves from
+            // this layout transaction instead of correcting just the parent.
+            let moves = layers.compactMap(horizontalPositionMove)
+            guard let original = moves.first?.1,
+                  moves.allSatisfy({ _, move in
+                      move.beginTime == original.beginTime && move.duration == original.duration
+                          && move.timingFunction == original.timingFunction
+                  })
+            else { continue }
+            let offset = moves.reduce(CGFloat.zero) { $0 + $1.0 }
+            guard abs(offset) > 1 else { continue }
+
+            addEntryXCorrection(to: textLayer, offset: offset, following: original)
+        }
+    }
+
+    private func continueInterruptedEntry(on textLayer: CALayer, offset: CGFloat) {
+        // The preview can be promoted before its old correction finishes.
+        // Rebase its remaining X offset on the new position animation,
+        // rather than letting the old offset decay against a different path.
+        let layers = [layer, backgroundView.layer, contentStackView.layer, textLayer].compactMap { $0 }
+        if let newMove = layers.lazy.compactMap(horizontalPositionMove).first(where: { $0.1.beginTime == 0 }) {
+            addEntryXCorrection(to: textLayer, offset: offset, following: newMove.1)
+        }
+    }
+
+    private func horizontalPositionMove(_ layer: CALayer) -> (CGFloat, CABasicAnimation)? {
+        guard let move = layer.animation(forKey: "position") as? CABasicAnimation,
+              move.keyPath == "position", !move.isAdditive,
+              move.speed == 1, move.timeOffset == 0, move.repeatCount == 0, move.repeatDuration == 0,
+              !move.autoreverses, let from = move.fromValue as? NSValue else { return nil }
+        let targetX = (move.toValue as? NSValue)?.pointValue.x ?? layer.position.x
+        let offset = targetX - from.pointValue.x
+        guard abs(offset) > 0.01, move.beginTime == 0
+            || layer.convertTime(CACurrentMediaTime(), from: nil) < move.beginTime + move.duration
+        else { return nil }
+        return (offset, move)
+    }
+
+    private func addEntryXCorrection(to layer: CALayer, offset: CGFloat, following motion: CABasicAnimation) {
+        // Leave the original position/bounds/opacity animations alone.
+        let correction = CABasicAnimation(keyPath: "transform.translation.x")
+        correction.isAdditive = true
+        correction.fromValue = offset
+        correction.toValue = 0
+        correction.duration = motion.duration
+        correction.beginTime = motion.beginTime
+        correction.timingFunction = motion.timingFunction
+        layer.add(correction, forKey: Self.entryXCorrectionKey)
     }
 
     private func sameFurigana(

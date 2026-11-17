@@ -15,7 +15,17 @@ extension CFStringTokenizer {
         let tokenStr = string.substring(with: range.asNS)
         guard tokenStr.unicodeScalars.contains(where: CharacterSet.kanji.contains),
               let latin = currentTokenAttribute(.latinTranscription)?.asNS(),
+              latin.length > 0,
               let hiragana = latin.applyingTransform(.latinToHiragana, reverse: false) else {
+            // The system tokenizer splits の隨に / の随に and may have no
+            // reading for the middle token. Supply the literary reading only
+            // in this context; the written に is not part of the ruby span.
+            if (tokenStr == "隨" || tokenStr == "随"),
+               range.location > 0, range.location + range.length < string.length,
+               string.character(at: range.location - 1) == 0x306E, // の
+               string.character(at: range.location + range.length) == 0x306B { // に
+                return [("まにま", range.asNS)]
+            }
             return []
         }
         return automaticFuriganaAnnotations(in: tokenStr, reading: hiragana, offset: range.location)
