@@ -107,6 +107,7 @@ class KaraokeLabel: NSTextField {
         for range in tokenRanges {
             let tokenRange = CFRange(location: range.location, length: range.length)
             let tokenizer = CFStringTokenizer.create(string: .from(string), range: tokenRange, locale: locale)
+            var furiganaTokens: [JapaneseFuriganaToken] = []
             for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
                 if isVertical {
                     let tokenRange = tokenizer.currentTokenRange()
@@ -117,16 +118,17 @@ class KaraokeLabel: NSTextField {
                     attrString.addAttributes(attr, range: tokenRange.asNS)
                 }
                 if shouldDrawFurigana && !didApplySourceFurigana {
-                    for (furigana, range) in tokenizer.currentFuriganaAnnotations(in: string) {
-                        var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
-                        attr[.ctForegroundColor] = textColor
-                        let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
-                        attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
-                    }
+                    furiganaTokens.append(tokenizer.currentFuriganaToken(in: string))
                 }
                 if shouldDrawRomajin, let (romajin, range) = tokenizer.currentRomanjiAnnotation(in: string) {
                     romajinAnnotations.append((romajin as String, range))
                 }
+            }
+            for (furigana, range) in JapaneseFuriganaToken.annotations(for: furiganaTokens) {
+                var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
+                attr[.ctForegroundColor] = textColor
+                let annotation = CTRubyAnnotation.create(furigana, attributes: attr)
+                attrString.addAttribute(.cf(.ctRubyAnnotation), value: annotation, range: range)
             }
         }
         textColor?.do { attrString.addAttributes([.foregroundColor: $0], range: attrString.fullRange) }

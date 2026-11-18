@@ -10,25 +10,12 @@ extension NSString {
 }
 
 extension CFStringTokenizer {
-    func currentFuriganaAnnotations(in string: NSString) -> [(NSString, NSRange)] {
-        let range = currentTokenRange()
-        let tokenStr = string.substring(with: range.asNS)
-        guard tokenStr.unicodeScalars.contains(where: CharacterSet.kanji.contains),
-              let latin = currentTokenAttribute(.latinTranscription)?.asNS(),
-              latin.length > 0,
-              let hiragana = latin.applyingTransform(.latinToHiragana, reverse: false) else {
-            // The system tokenizer splits の隨に / の随に and may have no
-            // reading for the middle token. Supply the literary reading only
-            // in this context; the written に is not part of the ruby span.
-            if (tokenStr == "隨" || tokenStr == "随"),
-               range.location > 0, range.location + range.length < string.length,
-               string.character(at: range.location - 1) == 0x306E, // の
-               string.character(at: range.location + range.length) == 0x306B { // に
-                return [("まにま", range.asNS)]
-            }
-            return []
+    func currentFuriganaToken(in string: NSString) -> JapaneseFuriganaToken {
+        let range = currentTokenRange().asNS
+        let text = string.substring(with: range)
+        return JapaneseFuriganaToken(text: text, range: range) {
+            currentTokenAttribute(.latinTranscription)?.asNS().applyingTransform(.latinToHiragana, reverse: false)
         }
-        return automaticFuriganaAnnotations(in: tokenStr, reading: hiragana, offset: range.location)
     }
 
     func currentRomanjiAnnotation(in string: NSString) -> (NSString, NSRange)? {
@@ -49,6 +36,88 @@ extension CFStringTokenizer {
     }
 }
 
+struct JapaneseFuriganaToken {
+    let range: NSRange
+    let text: String
+    private let containsKanji: Bool
+    private let hiragana: String?
+
+    init(text: String, range: NSRange, hiragana: () -> String?) {
+        self.text = text
+        self.range = range
+        containsKanji = text.unicodeScalars.contains(where: { $0.properties.isIdeographic })
+        let reading = containsKanji ? hiragana() : nil
+        self.hiragana = reading?.isEmpty == false ? reading : nil
+    }
+
+    static func annotations(for tokens: [Self]) -> [(NSString, NSRange)] {
+        return tokens.indices.flatMap { index -> [(NSString, NSRange)] in
+            let token = tokens[index]
+            guard token.containsKanji else { return [] }
+            let text = token.text
+            if let reading = token.hiragana {
+                return automaticFuriganaAnnotations(in: text, reading: reading, offset: token.range.location)
+            }
+            guard let first = text.first, let reading = JapaneseOkuriganaReadings.bundled.reading(
+                for: first, suffix: String(text.dropFirst()), tokens: tokens, after: index
+            ) else { return [] }
+            return [(reading as NSString, NSRange(location: token.range.location, length: String(first).utf16.count))]
+        }
+    }
+}
+
+/// KANJIDIC2 kun readings indexed by kanji and the kana written after it.
+struct JapaneseOkuriganaReadings {
+    static let bundled: Self = {
+        let contents = Bundle.main.url(forResource: "JapaneseOkurigana", withExtension: "tsv")
+            .flatMap { try? String(contentsOf: $0, encoding: .utf8) }
+        return Self(contents ?? "")
+    }()
+
+    private let forms: [Character: [String: Set<String>]]
+
+    init(_ contents: String) {
+        var forms: [Character: [String: Set<String>]] = [:]
+        for line in contents.split(separator: "\n") {
+            let columns = line.split(separator: "\t")
+            guard columns.count == 3, columns[0].count == 1, let glyph = columns[0].first else { continue }
+            forms[glyph, default: [:]][String(columns[1]), default: []].insert(String(columns[2]))
+        }
+        self.forms = forms
+    }
+
+    func reading(
+        for glyph: Character, suffix: String, tokens: [JapaneseFuriganaToken], after index: Int
+    ) -> String? {
+        guard let candidates = forms[glyph] else { return nil }
+
+        // Only consider dictionary forms ending at an actual token boundary.
+        // The tokenizer may split the okurigana off; collect adjacent kana
+        // tokens only, and never cross another kanji or a separator.
+        var suffix = normalizedKana(suffix)
+        var cursor = index
+        var readings: Set<String> = []
+        while candidates.keys.contains(where: { $0.hasPrefix(suffix) }) {
+            if let stems = candidates[suffix] {
+                readings.formUnion(stems)
+                if readings.count > 1 { return nil }
+            }
+            guard cursor + 1 < tokens.count else { break }
+            let next = tokens[cursor + 1]
+            guard next.range.location == NSMaxRange(tokens[cursor].range),
+                  next.text.unicodeScalars.allSatisfy(CharacterSet.kana.contains) else { break }
+            suffix += normalizedKana(next.text)
+            cursor += 1
+        }
+        return readings.first
+    }
+}
+
+private func normalizedKana(_ text: String) -> String {
+    let hiragana = text.applyingTransform(.hiraganaToKatakana, reverse: true) ?? text
+    return hiragana.precomposedStringWithCanonicalMapping
+}
+
 private func automaticFuriganaAnnotations(in token: String, reading: String, offset: Int) -> [(NSString, NSRange)] {
     guard !token.isEmpty, !reading.isEmpty, token != reading else { return [] }
 
@@ -61,12 +130,8 @@ private func automaticFuriganaAnnotations(in token: String, reading: String, off
         let segment: Int
         let reading: Int
     }
-    func normalizedKana(_ text: String) -> [Character] {
-        let hiragana = text.applyingTransform(.hiraganaToKatakana, reverse: true) ?? text
-        return Array(hiragana.precomposedStringWithCanonicalMapping)
-    }
     func isKanji(_ character: Character) -> Bool {
-        return character.unicodeScalars.contains(where: CharacterSet.kanji.contains) || character == "々"
+        return character.unicodeScalars.contains(where: { $0.properties.isIdeographic }) || character == "々"
     }
 
     let characters = Array(token)
@@ -78,12 +143,12 @@ private func automaticFuriganaAnnotations(in token: String, reading: String, off
         var end = start + 1
         while end < characters.count, isKanji(characters[end]) == kanji { end += 1 }
         let range = NSRange(indices[start] ..< indices[end], in: token)
-        let literal = kanji ? [] : normalizedKana(String(characters[start ..< end]))
+        let literal = kanji ? [] : Array(normalizedKana(String(characters[start ..< end])))
         segments.append(Segment(range: range, isKanji: kanji, literal: literal))
         start = end
     }
 
-    let kana = normalizedKana(reading)
+    let kana = Array(normalizedKana(reading))
     var minimumRemaining = Array(repeating: 0, count: segments.count + 1)
     for index in segments.indices.reversed() {
         minimumRemaining[index] = minimumRemaining[index + 1] + (segments[index].isKanji ? 1 : segments[index].literal.count)

@@ -77,6 +77,19 @@ LyricsX use custom lyrics file format "LRCX" which support word time tag, multi-
 - [Sparkle](https://github.com/sparkle-project/Sparkle)
 - [Then](https://github.com/devxoul/Then)
 
+#### Dictionary Data
+
+Automatic Japanese furigana uses a reading subset adapted from
+[KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project), © James William Breen and
+the Electronic Dictionary Research and Development Group, under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+LyricsX bundles the [licence statement](LyricsX/Supporting%20Files/KANJIDIC2-LICENSE.html)
+and [source format documentation](LyricsX/Supporting%20Files/KANJIDIC2-Format.html).
+The subset retains explicit kun readings with okurigana and applies reciprocal encoded variants.
+To refresh the snapshot before releases, download the latest
+[`kanjidic2.xml.gz`](https://www.edrdg.org/kanjidic/kanjidic2.xml.gz) and run
+`python3 Scripts/update-japanese-readings.py kanjidic2.xml.gz`.
+
 #### Special Thanks
 
 - [Lyrics Project](https://github.com/MichaelRow/Lyrics)
