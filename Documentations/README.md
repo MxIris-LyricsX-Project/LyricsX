@@ -85,6 +85,9 @@
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
+  - [Draft 实验室页显示 Apple Music token 是否有效](Evolutions/draft-apple-music-token-status.md)
+    —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
+    `authorizationStatus(for:)` 并发布 1.13.0。
 
 ## 使用说明
 
