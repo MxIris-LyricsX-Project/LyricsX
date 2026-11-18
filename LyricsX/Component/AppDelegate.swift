@@ -21,6 +21,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
     @IBOutlet var lyricsOffsetStepper: NSStepper!
     @IBOutlet var statusBarMenu: NSMenu!
 
+    private var localLyricsMenuController: LocalLyricsMenuController?
+
     private lazy var updateController = SPUStandardUpdaterController(updaterDelegate: self, userDriverDelegate: self)
 
     var firstLaunchForShouldHanlderReopen: Bool = true
@@ -97,6 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
         MenuBarLyricsController.shared.statusBarMenu = statusBarMenu
         statusBarMenu.delegate = self
+        localLyricsMenuController = LocalLyricsMenuController(statusBarMenu: statusBarMenu)
 
         // The stepper only says which way to step: it rests at 0, a click moves
         // it to 1 or -1, and `lyricsOffsetStepperClicked(_:)` takes that step
@@ -243,6 +246,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation, NSMenu
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.item(withTag: 202)?.isEnabled = AppController.shared.currentLyrics != nil
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        if menu === statusBarMenu {
+            localLyricsMenuController?.refresh()
+        }
     }
 
     // MARK: - Menubar Action
