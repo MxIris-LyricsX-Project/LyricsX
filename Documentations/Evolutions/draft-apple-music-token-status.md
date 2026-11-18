@@ -131,7 +131,9 @@ LyricsKit 因此发布 1.13.0。
 | `LyricsXPackage/Sources/LyricsXFoundation/AppleMusicTokenCheck.swift` · `AppleMusicTokenCheck` | 新增 | 无 token / 检查中 / 已有结论；`includesAppleMusicLyrics`；`regionName(forStorefront:locale:)` | 状态与「装不装源」的规则放在可无界面测试的地方 | 2 |
 | `LyricsXPackage/Tests/LyricsXFoundationTests/AppleMusicTokenCheckTests.swift` | 新增 | 见步骤 2 行为清单 | | 2 |
 | `LyricsX/Component/AppController.swift` · `AppController` | 修改 | 新增 `appleMusicTokenCheck`、更新序号；`updateLyricsManager()` 先装无凭据源、再检查、过期结果丢弃 | 发布结果；修第一首歌搜不到与并发覆盖 | 3 |
-| `LyricsX/Preferences/AppleMusicTokenStatusView.swift` · `AppleMusicTokenStatusView` | 新增 | 图标、转圈、说明文字、「重新检查」按钮；`show(_:)` | 状态行本身 | 4 |
+| `LyricsXPackage/Sources/LyricsXFoundation/StatusMessageRowView.swift` · `StatusMessageRowView` | 新增 | 通用状态行：符号或转圈、最多两行的说明、可隐藏的按钮；说明用高度跟着宽度走的 `WidthFollowingLabel` | 布局放进包里才能无界面测试（app 没有测试 target） | 4 |
+| `LyricsXPackage/Tests/LyricsXFoundationTests/StatusMessageRowViewTests.swift` | 新增 | 状态行一次布局就稳定、长说明换成两行、再长也只两行 | 回归测试，第一版的布局死循环在这里是红的 | 4 |
+| `LyricsX/Preferences/AppleMusicTokenStatusRow.swift` · `StatusMessageRowView` 扩展 | 新增 | `makeAppleMusicTokenStatusRow()`、`show(_ check:)`：把检查状态映射成符号和本地化文案 | 文案留在 app，Xcode 才能从 app 源码里提取 | 4 |
 | `LyricsX/Preferences/PreferenceLabViewController.swift` · `PreferenceLabViewController` | 修改 | `insertAppleMusicTokenStatusRow()`；订阅 `appleMusicTokenCheck`；`viewWillAppear` 有 token 时重新检查；按钮动作 | 把状态行接进实验室页 | 4 |
 | `LyricsX/Supporting Files/Localizable.xcstrings` | 修改 | 新增 7 条文案（英、简中、繁中），按 `localizedStandardCompare` 手工插入 | 界面文字 | 4 |
 | `LyricsKit` 标签 `v1.13.0` | 新增 | 在 LyricsKit `develop` 合并后的提交上打 | 发布新 API | 5 |
@@ -167,7 +169,7 @@ LyricsX
   +   @Published appleMusicTokenCheck
   ~   updateLyricsManager()                     (base providers first, Apple Music after the check, stale checks dropped)
   LyricsX/Preferences/
-  +   AppleMusicTokenStatusView.swift
+  +   AppleMusicTokenStatusRow.swift          (StatusMessageRowView + AppleMusicTokenCheck)
   ~   PreferenceLabViewController.swift         (status row under the token field, re-check on appear)
 ```
 
@@ -179,7 +181,7 @@ launch / token field edited / Lab pane appears / "Check Again" / player change
        ├─ generation += 1
        ├─ lyricsManager = Group(tokenFreeProviders, plugins)     (installed at once)
        ├─ no token → appleMusicTokenCheck = .noToken, return
-       ├─ appleMusicTokenCheck = .checking ─────────────────────► AppleMusicTokenStatusView: spinner
+       ├─ appleMusicTokenCheck = .checking ─────────────────────► StatusMessageRowView: spinner
        ├─ await Service.appleMusic.authorizationStatus(for: options)
        │    └─ AppleMusicSession.authorizationStatus()
        │         └─ AppleMusicAuthorizationProbe
@@ -394,13 +396,17 @@ func updateLyricsManager() async {
 
 ### 状态视图
 
-- `AppleMusicTokenStatusView: NSView`，内部一个水平 `NSStackView`：
-  - 14 pt 的 `NSImageView`，用 `contentTintColor` 上色。
+- `StatusMessageRowView: NSView`（`LyricsXFoundation`，不带任何文案），内部一个 `distribution = .fill` 的水平 `NSStackView`：
+  - 16 pt 的 `NSImageView`，用 `contentTintColor` 上色。
   - `.small` 的 `NSProgressIndicator`（spinning）。
-  - 说明文字：`NSTextField(wrappingLabelWithString:)`，`.smallSystemFontSize`、`secondaryLabelColor`、最多两行。
-  - `.small` 尺寸的「Check Again」按钮。
-- `func show(_ check: AppleMusicTokenCheck)` 按上表设置图标、文字、tooltip 和按钮显隐；`checkAgainHandler: () -> Void`
-  由设置页传入。
+  - 说明文字：`WidthFollowingLabel`（`NSTextField` 子类，`wrappingLabelWithString:`），`.smallSystemFontSize`、
+    `secondaryLabelColor`、最多两行。它不报告固有宽度（`noIntrinsicMetric`），高度按当前宽度用 cell 算出，宽度变了才
+    `invalidateIntrinsicContentSize()`；所以宽度只由 stack view 决定，换行只影响高度。
+  - `.small` 尺寸的按钮，标题由构造器传入。
+- `show(_ indicator:message:toolTip:showsButton:)` 设置符号或转圈、文字、tooltip（默认就是文字）和按钮显隐；
+  `buttonHandler: () -> Void` 由设置页传入。
+- app 侧 `AppleMusicTokenStatusRow.swift` 给它加 `makeAppleMusicTokenStatusRow()` 和 `show(_ check:)`，按上表把状态映射成
+  符号与本地化文案。
 - 插行：`appleMusicMediaUserTokenField.superview as? NSGridView` 取到内层 grid，找 token 所在行，在其下
   `insertRow(at:with: [NSGridCell.emptyContentView, statusView])`；找不到就 `preconditionFailure`（与插卡拉OK颜色行同一写法）。
 - 订阅：`AppController.shared.$appleMusicTokenCheck.receive(on: DispatchQueue.main).sink { statusView.show($0) }`，
@@ -516,3 +522,5 @@ func updateLyricsManager() async {
 | 2026-11-18 | 不写配套专题文章；术语表无新增 | 403/401 的判定写在 LyricsKit 的类型文档和 README 里，状态行的含义在界面上，没有代码之外才说得清的维护决策；「media-user-token」「开发者令牌」都是已在用的词 |
 | 2026-11-18 | 打 LyricsKit `v1.13.0`、推送 LyricsKit `develop`、把 `exact:` 改成 1.13.0 这三件留给用户确认 | 打标签并推送等于发布 LyricsKit，不在批准开工的授权里。在那之前功能分支钉的仍是 1.12.0，只有用本地依赖（workspace 或 `LYRICSX_USE_LOCAL_DEPENDENCY=1`）才编得过 |
 | 2026-11-18 | 实现完成，待用户看过后收尾 | 状态行没有做界面验证（需要用户另外授权交互式操作）；`AppController` 的三条行为靠代码审查和构建确认 |
+| 2026-11-18 | 修掉状态行的布局死循环：说明文字改用高度跟着宽度走的标签，布局搬进 `LyricsXFoundation` 的 `StatusMessageRowView` | 用户在中文界面打开实验室页时抛出 `NSGenericException`（约束更新的轮数超过窗口里的视图数）。第一版在 `layout()` 里把标签的当前宽度回写成 `preferredMaxLayoutWidth`，而 stack view 按标签的固有宽度给它宽度，两者互相改个不停；只显示「Checking token…」时永远收敛不了，长说明也没有换行。app 没有测试 target，所以把布局原样搬进包里，先写出红的 `StatusMessageRowViewTests` 再修；文案仍留在 app 里 |
+| 2026-11-18 | 横向排查 `preferredMaxLayoutWidth` 的同类写法 | 仓库里另一处（`PlaybackRouteLyricsOffsetsViewController`）设的是固定常量，不在 `layout()` 里回写，没有同样的问题 |

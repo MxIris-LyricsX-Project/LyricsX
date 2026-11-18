@@ -23,7 +23,7 @@ class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet weak var appleMusicLanguageField: NSTextField!
 
     /// Under the token field: whether Apple Music accepted the token.
-    private let appleMusicTokenStatusView = AppleMusicTokenStatusView()
+    private let appleMusicTokenStatusRow = StatusMessageRowView.makeAppleMusicTokenStatusRow()
     private var appleMusicTokenCheckObservation: AnyCancellable?
 
     private let preferredLyricsTranslationLanguageField = NSTextField()
@@ -150,7 +150,7 @@ class PreferenceLabViewController: PreferenceViewController {
         appleMusicTokenCheckObservation = AppController.shared.$appleMusicTokenCheck
             .receive(on: DispatchQueue.main)
             .sink { [weak self] check in
-                self?.appleMusicTokenStatusView.show(check)
+                self?.appleMusicTokenStatusRow.show(check)
             }
     }
 
@@ -243,12 +243,12 @@ class PreferenceLabViewController: PreferenceViewController {
         else {
             preconditionFailure("The Apple Music token field sits in the Apple Music box's grid.")
         }
-        appleMusicTokenStatusView.checkAgainHandler = { [weak self] in
+        appleMusicTokenStatusRow.buttonHandler = { [weak self] in
             self?.checkAppleMusicTokenAgain()
         }
         let row = appleMusicGridView.insertRow(
             at: appleMusicGridView.index(of: tokenRow) + 1,
-            with: [NSGridCell.emptyContentView, appleMusicTokenStatusView]
+            with: [NSGridCell.emptyContentView, appleMusicTokenStatusRow]
         )
         row.cell(at: 1).xPlacement = .fill
     }
