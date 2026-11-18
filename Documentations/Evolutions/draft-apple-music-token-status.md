@@ -477,7 +477,7 @@ func updateLyricsManager() async {
    - 行为：`onlyAnAuthorizedCheckIncludesAppleMusicLyrics`
    - 行为：`storefrontShowsAsTheRegionNameInTheLocale`
    - 行为：`unknownStorefrontShowsItsIdentifier`
-3. **`AppController` 发布检查结果并先装无凭据源** —— 第 10 行
+3. **（已完成）`AppController` 发布检查结果并先装无凭据源** —— 第 10 行
    - 行为：`tokenFreeSourcesAreInstalledBeforeTheTokenCheckReturns`
    - 行为：`aCheckThatReturnsAfterANewerOneChangesNothing`
    - 行为：`onlyAnAuthorizedCheckAddsTheAppleMusicSource`
