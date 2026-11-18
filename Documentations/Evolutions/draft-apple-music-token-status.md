@@ -1,6 +1,6 @@
 # Draft - 实验室页显示 Apple Music token 是否有效
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **作者**: JH
 - **创建日期**: 2026-11-18
 - **最后更新**: 2026-11-18
@@ -461,7 +461,7 @@ func updateLyricsManager() async {
 
 ## 落地步骤
 
-1. **LyricsKit：检查结果类型、分类规则与 session 改造**（功能分支，合进 LyricsKit `develop`）—— 改动地图第 1–7 行
+1. **（已完成）LyricsKit：检查结果类型、分类规则与 session 改造**（功能分支，合进 LyricsKit `develop`）—— 改动地图第 1–7 行
    - 行为：`storefrontAnswerIsAuthorizedWithTheAccountStorefront`
    - 行为：`forbiddenAnswerIsDeniedWithoutRefreshingTheDeveloperToken`
    - 行为：`unauthorizedAnswerRefreshesTheDeveloperTokenAndAsksOnceMore`
@@ -470,10 +470,10 @@ func updateLyricsManager() async {
    - 行为：`transportFailureCouldNotDetermine`
    - 行为：`unavailableDeveloperTokenCouldNotDetermine`
    - 行为：`storefrontAnswerWithoutDataCouldNotDetermine`
-   - 行为：`missingOrEmptyTokenIsDeniedWithoutARequest`
+   - 行为：`missingOrEmptyTokenIsDenied`
    - 行为：`liveFakeTokenIsDeniedByAmpAPI`（需 `LYRICSKIT_LIVE_NETWORK=1`，否则跳过）
    - 验证：LyricsKit `swift test` 全绿。
-2. **LyricsX：`AppleMusicTokenCheck`**（对着本地 LyricsKit 开发：`LYRICSX_USE_LOCAL_DEPENDENCY=1` 或 workspace）—— 第 8–9 行
+2. **（已完成）LyricsX：`AppleMusicTokenCheck`**（对着本地 LyricsKit 开发：`LYRICSX_USE_LOCAL_DEPENDENCY=1` 或 workspace）—— 第 8–9 行
    - 行为：`onlyAnAuthorizedCheckIncludesAppleMusicLyrics`
    - 行为：`storefrontShowsAsTheRegionNameInTheLocale`
    - 行为：`unknownStorefrontShowsItsIdentifier`
@@ -507,3 +507,7 @@ func updateLyricsManager() async {
 | 2026-11-18 | 403 判为被拒，401 先重抓开发者令牌再重试一次 | curl 实测：用户 token 伪造或缺失时 amp-api 返回 403，开发者令牌坏了返回 401 |
 | 2026-11-18 | 顺带让无凭据歌词源先装上，修「启动后第一首歌搜不到歌词」 | 同一个方法要重写；`ReviewDecisions.md` 里当初暂缓的理由是要改初始化顺序，这次正好改了 |
 | 2026-11-18 | 用户批准，开始实现 | LyricsX 与 LyricsKit 各从 `develop` 切功能分支 |
+| 2026-11-18 | 顺带修好 LyricsKit 测试 target 的编译 | 2026-06-30 给 `LyricsProvider` 加 `isAuthorized` 要求时，`GroupProviderTests` 的两个测试替身没跟着实现，整个 `LyricsKitTests` 从那以后就编译不过；不修就跑不了本提案的测试。只给两个替身各补一行，单独一个提交 |
+| 2026-11-18 | LyricsKit 的 `.gitignore` 加上 `.worktrees/` | 这是该仓库第一个 worktree，没有忽略规则时主检出的 `git status` 会一直列出它 |
+| 2026-11-18 | 测试 `missingOrEmptyTokenIsDeniedWithoutARequest` 改名为 `missingOrEmptyTokenIsDenied` | session 自带 `URLSession`、没有注入点，测试只能经公开 API 断言结果是 `denied`，证明不了「没发请求」；为一个名字去开新的注入点不值得 |
+| 2026-11-18 | LyricsKit 功能分支先在本地快进合进 LyricsKit 主检出的 `develop`（未推送） | LyricsX worktree 经 `.worktrees/LyricsKit` 链接到 LyricsKit 主检出，本地开发要对着新 API 编译 |
