@@ -69,7 +69,10 @@ straight into the 9×8 hash grid), and the NetEase catalogue search it asks
 alongside the iTunes Store, plus the lyrics offsets kept per player and output
 device (`PlaybackRouteLyricsOffsets`) and what an output device's offset is
 kept under: its UID, except that every AirPlay output shares one identifier,
-because Core Audio gives an AirPlay receiver a new UID for every connection —
+because Core Audio gives an AirPlay receiver a new UID for every connection,
+and the Apple Music token check (`AppleMusicTokenCheck`): only an authorized
+token lets Apple Music lyrics into the search, and the account's storefront
+shows as a region name in the user's language —
 and is fast and headless enough to run on every change. Its
 `AudioOutputDeviceProbes` read this Mac's real Core Audio devices and print
 them; run them while a HomePod is the output to see what Core Audio makes of

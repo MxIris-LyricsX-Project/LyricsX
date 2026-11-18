@@ -7,7 +7,7 @@
 - **所属愿景**: 无
 - **关联提案**: [0018 实验室页的 Apple Music 设置归入一组并补齐翻译](0018-lab-apple-music-group.md)（token 输入框所在的组框）
 - **实现分支 / PR**: LyricsX `feature/apple-music-token-status`；LyricsKit `feature/apple-music-authorization-status`
-- **配套文档**: 待定 —— 落地时登记实现说明 / 使用指南的链接
+- **配套文档**: 无（见决策日志 2026-11-18「不写配套专题文章」）；LyricsKit README 新增「Apple Music source requires a media-user-token」一节
 - **网页版**: 同目录同名的 `.html`
 
 ## 摘要
@@ -488,7 +488,7 @@ func updateLyricsManager() async {
    - 行为：`checkAgainStartsANewCheck`
    - 行为：`openingTheLabPaneChecksASavedTokenAgain`
    - 验证：workspace 下 Debug 构建通过。界面截图要等用户授权交互式验证，否则在汇报里说明没做。
-5. **发版接线与文档** —— 第 14–18 行
+5. **（文档已完成；打标签与改钉版待用户确认）发版接线与文档** —— 第 14–18 行
    - LyricsKit 打 `v1.13.0` 并推送，改 `exact:`，`-resolvePackageDependencies` 后只保留 LyricsKit 的变化。
    - 更新 `CLAUDE.md` 与 `ReviewDecisions.md`。
    - 行为：`projectResolvesLyricsKit1_13_0FromItsTag`（不设 `LYRICSX_USE_LOCAL_DEPENDENCY` 时 `swift build` 通过）
@@ -511,3 +511,8 @@ func updateLyricsManager() async {
 | 2026-11-18 | LyricsKit 的 `.gitignore` 加上 `.worktrees/` | 这是该仓库第一个 worktree，没有忽略规则时主检出的 `git status` 会一直列出它 |
 | 2026-11-18 | 测试 `missingOrEmptyTokenIsDeniedWithoutARequest` 改名为 `missingOrEmptyTokenIsDenied` | session 自带 `URLSession`、没有注入点，测试只能经公开 API 断言结果是 `denied`，证明不了「没发请求」；为一个名字去开新的注入点不值得 |
 | 2026-11-18 | LyricsKit 功能分支先在本地快进合进 LyricsKit 主检出的 `develop`（未推送） | LyricsX worktree 经 `.worktrees/LyricsKit` 链接到 LyricsKit 主检出，本地开发要对着新 API 编译 |
+| 2026-11-18 | LyricsKit 的 README 补「Apple Music source requires a media-user-token」一节 | README 已为 Musixmatch 的 token 写过同样一节，却没提 Apple Music；新 API 是公开的，调用方要知道先问 `authorizationStatus(for:)`、三种结果各是什么，以及联网探针怎么跑 |
+| 2026-11-18 | `ReviewDecisions.md` 里那条暂缓的发现改为「已修复」并保留 | 清单只收没修的发现，但这条当初写着「暂缓」，直接删掉会让人以为它还没处理；在原条目下补一段修复说明 |
+| 2026-11-18 | 不写配套专题文章；术语表无新增 | 403/401 的判定写在 LyricsKit 的类型文档和 README 里，状态行的含义在界面上，没有代码之外才说得清的维护决策；「media-user-token」「开发者令牌」都是已在用的词 |
+| 2026-11-18 | 打 LyricsKit `v1.13.0`、推送 LyricsKit `develop`、把 `exact:` 改成 1.13.0 这三件留给用户确认 | 打标签并推送等于发布 LyricsKit，不在批准开工的授权里。在那之前功能分支钉的仍是 1.12.0，只有用本地依赖（workspace 或 `LYRICSX_USE_LOCAL_DEPENDENCY=1`）才编得过 |
+| 2026-11-18 | 实现完成，待用户看过后收尾 | 状态行没有做界面验证（需要用户另外授权交互式操作）；`AppController` 的三条行为靠代码审查和构建确认 |

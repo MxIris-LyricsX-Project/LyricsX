@@ -88,13 +88,15 @@
 
 **若理由失效**（这一节每条都一样）：1.9.0 正式版发布之后，不能再以「发版前」为由跳过，要逐条复核再修。
 
-### 设置了 Apple Music token 时，启动后第一首歌搜不到歌词 —— 确认为真，暂缓
+### 设置了 Apple Music token 时，启动后第一首歌搜不到歌词 —— 确认为真，2026-11-18 已修复
 
 **发现内容**：`AppController` 初始化时 `lyricsManager` 是空的 `LyricsProviders.Group()`。设置了 `media-user-token` 时，
 `updateLyricsManager()` 要先联网等 `isAuthorized` 返回，才把真正的歌词源装上，这之前开始的搜索一个歌词源都没有。
 
 **裁决：暂缓。** 只影响设置了 token 的用户，而且只影响启动后的第一首，切一首歌或用「下一条候选歌词」就恢复。要修得改
 搜索的初始化顺序：先同步装上不依赖 token 的歌词源，验证通过后再补上 Apple Music。
+
+**2026-11-18 已修复**：提案《实验室页显示 Apple Music token 是否有效》（`Evolutions/draft-apple-music-token-status.md`）重写了 `updateLyricsManager()`，正是按上面的顺序：不需要 token 的歌词源立即装上，token 检查通过后才换成带 Apple Music 的一组。`AppController` 在 app target 里，app 没有测试 target，所以没有回归测试；这条留在清单里，是为了让当初的暂缓有个去向。
 
 ### `media-user-token` 明文存在偏好设置里 —— 确认为真，暂缓
 
