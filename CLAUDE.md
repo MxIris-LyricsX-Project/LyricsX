@@ -48,7 +48,9 @@ with it (LyricsX's library file, and Music's lyrics only while they are
 still the text LyricsX wrote there), editing eligibility, HUD window configuration and its font fallback,
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
-selection, how a lyrics search ended, and the source-ordering modes (including
+selection, which item the status menu's Local Lyrics submenu checks — the
+track's embedded lyrics or a file, worked out from the lyrics on screen alone
+(`LocalLyricsSource`) — how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, what the menu bar's lyric line shows when there is
 no line to show, how much of a line its inline time tags say is sung (the menu
