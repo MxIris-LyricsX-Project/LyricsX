@@ -25,7 +25,9 @@ extension MusicPlayers {
                 self?.selectPlayer()
             }
             self.manualUpdateObservation = playbackStateWillChange.sink { [weak self] state in
-                if state.isPlaying {
+                // Apple Music can seek while paused without publishing a new
+                // position. Keep the existing poll alive until playback stops.
+                if state != .stopped {
                     self?.scheduleManualUpdate()
                 } else {
                     self?.scheduleCanceller?.cancel()
