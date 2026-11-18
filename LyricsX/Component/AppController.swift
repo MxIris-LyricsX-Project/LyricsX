@@ -99,6 +99,11 @@ final class AppController: NSObject {
 
     private let widgetDataStore = WidgetDataStore(groupIdentifier: lyricsXGroupIdentifier)
 
+    /// The widget's cover for the playing track, so a snapshot written on a
+    /// lyric line does not draw and encode it again. Read and written on
+    /// `DispatchQueue.lyricsDisplay`.
+    private var widgetCoverArtworkCache = WidgetCoverArtworkCache()
+
     private lazy var widgetReloadCoordinator = WidgetReloadCoordinator { [unowned self] playbackState in
         writeWidgetSnapshot(playbackState: playbackState)
     }
@@ -134,11 +139,13 @@ final class AppController: NSObject {
             .receive(on: DispatchQueue.lyricsDisplay)
             .invoke(AppController.playbackStateChanged, weaklyOn: self)
             .store(in: &cancelBag)
-        // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` dynamically, so a
-        // change must reschedule `currentLineIndex`. Per-track offset is handled
-        // by the `lyricsOffset` setter; the global key has no setter path here.
+        // `lyrics.adjustedTimeDelay` reads `globalLyricsOffset` and the
+        // current playback route's offset dynamically, so a change to either
+        // must reschedule `currentLineIndex`. Per-track offset is handled by
+        // the `lyricsOffset` setter; neither of these has a setter path here.
         defaults.publisher(for: [.globalLyricsOffset])
             .signal()
+            .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] in
                 self?.scheduleCurrentLineCheck()
@@ -1826,12 +1833,14 @@ final class AppController: NSObject {
             }
         }
 
-        // Extract artwork color and cover data
+        // The cover and its colour are prepared once per track; this runs on
+        // every lyric line.
         var backgroundColor: CodableColor?
         if let artwork = track.resolvedArtwork {
-            backgroundColor = AlbumColorExtractor.dominantColor(from: artwork)
-            if let coverData = AlbumColorExtractor.compressedCoverData(from: artwork) {
-                try? widgetDataStore.writeCover(coverData)
+            if let artworkImage = artwork.cgImage(forProposedRect: nil, context: nil, hints: nil),
+               let cover = widgetCoverArtworkCache.artwork(for: artworkImage, trackIdentifier: track.id) {
+                backgroundColor = cover.backgroundColor
+                try? widgetDataStore.writeCover(cover.jpegData)
             }
         } else {
             widgetDataStore.clearCover()

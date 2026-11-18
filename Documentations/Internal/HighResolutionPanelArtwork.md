@@ -2,19 +2,21 @@
 
 Apple Music 风格歌词面板的封面，什么时候会被一张联网找来的高清图顶掉，以及为什么这条链路
 长成现在这样。设计与取舍见提案
-[歌词面板封面改用联网取到的高清图](../Evolutions/0015-high-resolution-panel-artwork.md)。
+[歌词面板封面改用联网取到的高清图](../Evolutions/0015-high-resolution-panel-artwork.md)，网易云曲库与指纹的修正见
+[网易云的歌在歌词面板上也换上高清封面](../Evolutions/0028-netease-panel-artwork.md)。
 
 ## 一句话
 
-播放器给的封面（系统 Now Playing 常见 300–600 px）在全屏时会被拉到约 1400 px，所以
-`HighResolutionArtworkService` 去 iTunes Search API 和歌词候选自带的封面 URL 各找一张，
+播放器给的封面（系统 Now Playing 常见 300–600 px，网易云音乐只给 100 px）在全屏时会被拉到约 1400 px，所以
+`HighResolutionArtworkService` 去 iTunes Search API、网易云曲库和歌词候选自带的封面 URL 找，
 确认是**同一张封面**且明显更大之后，换掉面板封面视图里的那一张。
 
 ## 三个参与者
 
 | 谁 | 在哪 | 管什么 |
 |---|---|---|
-| `HighResolutionArtworkPolicy` | `LyricsXPackage/Sources/LyricsXFoundation/` | 纯判断：URL 怎么改写、多大才算值得换、缓存键怎么算、没有指纹时怎么用元数据兜底。没有网络和磁盘，所以能在 `LyricsXFoundationTests` 里全测。 |
+| `HighResolutionArtworkPolicy` | `LyricsXPackage/Sources/LyricsXFoundation/` | 纯判断：URL 怎么改写、多大才算值得换、缓存键怎么算、没有指纹时怎么用元数据兜底、网易云搜索请求怎么构造与解析。没有网络和磁盘，所以能在 `LyricsXFoundationTests` 里全测。 |
+| `ArtworkFingerprint` | 同上 | 封面指纹与「算不算同一张」的判定（`ArtworkFingerprintComparison`），同样在 `LyricsXFoundationTests` 里测。 |
 | `HighResolutionArtworkService` | `LyricsX/Component/` | actor。发请求、读写磁盘缓存、跟 `ArtworkSimilarityScorer` 握手，最后从 `artworkPublisher` 发出结果。 |
 | `AppleMusicLyrics.WindowController` | `LyricsX/AppleMusicLyrics/` | 触发与注入。订阅活在面板窗口的生命周期里——**面板没开，这套东西一次网络请求都不发**。 |
 
@@ -34,12 +36,21 @@ Apple Music 风格歌词面板的封面，什么时候会被一张联网找来�
 
 `resolve` 自己是幂等的：这首歌已经出过图就直接返回。**下载过的候选按曲目留在内存**，第二次不重
 新下载、只重新校验——第二次的判定可能和第一次不同，因为这时本地封面到了，弱的元数据校验升级成了
-真正的指纹比对。iTunes 搜索每首歌只发一次，结果缓存在同一份 per-track 状态里。
+真正的指纹比对。iTunes 和网易云的搜索每首歌各只发一次、同时发出，结果缓存在同一份 per-track 状态里。
+
+## 网易云曲库
+
+网易云的歌是这条链路最需要、也最难办的一群：客户端交给 Now Playing 的是重度压缩的 100 px JPEG，而它曲库里的
+中文歌、日文同人曲 iTunes 常常没有；歌词若是从本地歌词库读回来的，又不带封面链接。所以服务也去搜网易云的曲库
+（`/api/search/pc`，和 LyricsKit 的网易云歌词源同一个接口），取结果的 `album.picUrl` 加 `param=1024y1024`。
+
+这个接口拒绝不带会话 cookie（`NMTID`）的请求，返回 code -462，并在拒绝里下发 cookie。服务关掉请求的自动 cookie、
+自己记着这个值整个运行期复用，被拒时换上新下发的再试一次。被拒不算「没搜到」，不会写成失败记录。
 
 ## 校验：宁可糊，也不能放错
 
 `ArtworkSimilarityScorer` 原本只用来给歌词候选加分，现在多了一个**不下载、只比对**的入口
-`evaluate(image:)`，复用同一套阈值（结构 dHash + 模糊带里的色度校验）。它返回三态，而不是
+`evaluate(image:)`，复用同一套判定（`ArtworkFingerprintComparison`：结构 dHash + 模糊带里的色度校验）。它返回三态，而不是
 `Bool`：
 
 - `.match` —— 换。
@@ -60,7 +71,12 @@ Spotify 是另一种缺封面：它的脚本字典把 `artwork` 标成已废弃�
 异步下载 `artwork url` 指向的图，下载完把同一首曲目再发布一次，面板的 `refreshArtwork()` 和这里的
 指纹比对都能拿到播放器自己的封面，Spotify 用户不再依赖元数据校验。
 
-## 三个具体的坑
+## 四个具体的坑
+
+**同一张封面，大小差十倍。** dHash 比较的是 9×8 个格子的亮度。早先把图直接画进 9×8，比一格更细的图案不会被平均掉，
+而是混进格子里，混进去多少还随原图尺寸而变；网易云的 100 px 缩略图又带着压缩噪声。同一张封面的 1024 px 大图和
+它的缩略图于是常差 9–14 位，超过上限 10，真的高清图被当成别的封面丢掉。现在先画到 72×64、每 8×8 求和成一格再比，
+同一张封面最多差 5 位。`ArtworkFingerprintTests` 用一张带细波纹的合成封面守着这一点，旧算法下它是红的。
 
 **每次等待之后都要确认还是这首歌。** `resolve` 中间要等网络、等 `ArtworkSimilarityScorer`，这期间可能已经换歌，
 下一首的 `resolve` 会插进来：它把 per-track 状态（下载过的候选、iTunes 结果、已发布的尺寸）换成下一首的，打分器的
@@ -90,8 +106,10 @@ JPEG 报出来的 `size` 是 600×600。所有尺寸比较都走 `longestPixelEd
 启动时整个删掉、换新目录从头攒。代价是每首歌的高清封面要重新找一次。
 
 - `.artwork` = 下载到的原始字节，直接存不重新编码。命中时顺手 touch 一下 mtime，剪枝时先扔没人听的。
-- `.miss` = 空文件，表示这首歌哪儿都没找到高清封面，7 天内不再重查。**只有歌词落定之后才允许写**
-  —— 换歌那一刻就写，会把「歌词源」这条路整个封死七天。
+- `.miss-2` = 空文件，表示这首歌哪儿都没找到高清封面，7 天内不再重查。**只有歌词落定、且至少一个曲库正常回应
+  之后才允许写** —— 换歌那一刻就写，会把「歌词源」这条路整个封死七天；网络不通或被拒时写，则是把一次失败的请求
+  当成了「没有」。
+- 旧的 `.miss` 每次启动时删掉：它们是指纹修正之前、也没搜网易云时判的，不能说明这首歌真没有高清封面。
 - 超过 300 个文件时按 mtime 从旧到新剪，每次运行只剪一次。
 
 ## 开关

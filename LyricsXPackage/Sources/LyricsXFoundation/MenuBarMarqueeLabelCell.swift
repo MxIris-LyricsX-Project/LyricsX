@@ -9,6 +9,12 @@ import AppKit
 /// `NSControl` creates the cell from `cellClass`.
 @available(macOS 26, *)
 final class MenuBarMarqueeLabelCell: NSTextFieldCell {
+    /// How far inside its title rect the cell starts its text: the padding
+    /// of the text container it lays text out in, which is also why
+    /// `cellSize` is 4 pt wider than the text. The karaoke progress measures
+    /// its characters from here; the probes compare it with the drawn ink.
+    static let horizontalTextPadding: CGFloat = 2
+
     override init(textCell string: String) {
         super.init(textCell: string)
         // What MLMarqueeLabel sets, property by property.

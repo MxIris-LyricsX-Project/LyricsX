@@ -720,6 +720,7 @@
                     </view>
                     <connections>
                         <outlet property="autoLaunchButton" destination="KCS-6F-vyn" id="021-dz-vmT"/>
+                        <outlet property="globalOffsetTextField" destination="a5h-Km-d1s" id="rLO-gO-001"/>
                         <outlet property="languagePopUp" destination="GuZ-fJ-k5o" id="oI6-FQ-yQ6"/>
                         <outlet property="loadHomonymLrcButton" destination="kmo-rQ-MLa" id="Rbj-Cg-qUq"/>
                         <outlet property="preferAudirvana" destination="Oaz-tx-V8o" id="5nw-qq-XwB"/>
@@ -1597,6 +1598,7 @@
                                     <gridRow yPlacement="fill" topPadding="5" id="lhU-ZY-jGn"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="MBP-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="MHL-Ro-W01"/>
+                                    <gridRow yPlacement="fill" topPadding="5" id="MKP-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="AML-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="ART-Ro-W01"/>
                                     <gridRow yPlacement="fill" topPadding="5" id="HRA-Ro-W01"/>
@@ -1805,6 +1807,19 @@
                                             </connections>
                                         </button>
                                     </gridCell>
+                                    <gridCell row="MKP-Ro-W01" column="8ba-lF-U7s" id="MKP-Ce-L01"/>
+                                    <gridCell row="MKP-Ro-W01" column="4uA-B7-Dvh" id="MKP-Ce-R01">
+                                        <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MKP-Bt-N01">
+                                            <rect key="frame" x="170" y="279" width="270" height="16"/>
+                                            <buttonCell key="cell" type="check" title="Show karaoke progress in menu bar lyrics" bezelStyle="regularSquare" imagePosition="left" inset="2" id="MKP-Cl-001">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="DdU-cn-wN1" name="value" keyPath="values.MenuBarKaraokeProgressEnabled" id="MKP-Bn-D01"/>
+                                            </connections>
+                                        </button>
+                                    </gridCell>
                                     <gridCell row="AML-Ro-W01" column="8ba-lF-U7s" id="AML-Ce-L01"/>
                                     <gridCell row="AML-Ro-W01" column="4uA-B7-Dvh" id="AML-Ce-R01">
                                         <button key="contentView" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AML-Bt-N01">
@@ -1996,6 +2011,7 @@
                         <outlet property="enableTouchBarLyricsButton" destination="D7U-qs-Keb" id="k7p-hg-kzy"/>
                         <outlet property="musixmatchTokenField" destination="PeC-aV-j5M" id="SSi-r8-o1g"/>
                         <outlet property="useAppleMusicLyricsWindowButton" destination="AML-Bt-N01" id="AML-Ot-U01"/>
+                        <outlet property="menuBarKaraokeProgressButton" destination="MKP-Bt-N01" id="MKP-Ot-U01"/>
                     </connections>
                 </viewController>
                 <customObject id="WFr-RK-Q1o" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>

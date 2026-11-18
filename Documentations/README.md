@@ -76,6 +76,15 @@
   - [0026 行内扫光改按 Music 26.6 的逐音节线性推进](Evolutions/0026-apple-music-syllable-sweep.md) —— 每个视觉行
     一层渐变，进入新音节时按字形坐标发线性动画、前沿超出音节末尾 0.12 / 0.25 / 0.5 / 1 个羽化宽；扫光与逐音节
     抬高都提前 0.1 秒；旧的按字符占比扫光留在隐藏开关 `AppleMusicLyricsSweepVariant` 后面。
+  - [0027 菜单栏歌词的卡拉OK进度](Evolutions/0027-menu-bar-karaoke-progress.md) —— 实验室页默认关的开关：
+    有逐字时间的行，已唱的部分画成系统强调色或自选的颜色、随演唱线性推进；macOS 26 及以上，推进期间的开销接近长句滚动。
+  - [0028 网易云的歌在歌词面板上也换上高清封面](Evolutions/0028-netease-panel-artwork.md) —— 封面指纹改为
+    先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
+  - [0029 按播放器与输出设备设置歌词偏移](Evolutions/0029-playback-route-lyrics-offset.md) —— 在每首歌的偏移和全局偏移
+    之上，再按「正在播放的 App × 系统默认输出设备」加一层偏移；所有 AirPlay 输出算作一台设备。
+  - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
+    —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
+    面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
 
 ## 使用说明
 
@@ -119,17 +128,22 @@
   探针为什么必须打包成 App 并经 LaunchServices 启动，以及什么时候显示占位文字、行号暂时为空时为什么保持不变。
 - [状态栏菜单自定义行的对齐](Internal/StatusMenuTitleAlignment.md) —— 「歌词偏移」那一行的标签为什么改成在打开的菜单里
   量出标题位置再对齐（macOS 27 把有勾选列时的标题右移了 6 pt），参照项怎么挑，约束常数为什么要比标题的 frame 多 2 pt，
-  逆向出的 AppKit 标题位置公式，以及量不到时退回的按版本常数表。
+  逆向出的 AppKit 标题位置公式，以及量不到时退回的按版本常数表；还有同一行的偏移为什么按整百步进（歌词自带的
+  偏移如酷狗的 51 ms 原先回不到 0），以及输入框为什么在代码里打开编辑、菜单里打字为什么要实机确认。
 - [桌面小组件](Internal/DesktopWidget.md) —— 播放按钮为什么走 `AudioPlaybackIntent` 而不是 `openAppWhenRun`
   （后者每按一次就弹出设置窗口），歌词区为什么按剩下的高度挑行，以及放不下的行为什么要按顺序排在区外；刷新为什么
   攒着发（系统每 5 秒只执行一次 app 的刷新请求，这个限制写死在 `chronod` 里，私有接口也绕不开），小组件为什么没有自己的设置项（编辑过的小组件自成一套配置，
   其余的每次更新都晚 5 秒），更新之后为什么要结束旧版本留下的扩展进程（否则小组件一直跑旧代码，配置方式一变就全黑），
   以及 app 退出时为什么清空快照。
 
+- [按播放器与输出设备的歌词偏移](Internal/PlaybackRouteLyricsOffset.md) —— 为什么按组合而不是按设备存（QQ 音乐对
+  AirPlay 写死减 2.205 秒、网易云不补偿），播放器为什么按 bundle ID 认，AirPlay 设备为什么不能按 UID 认
+  （每次连接都换一个，CoreAudio 里也没有接收端的名字）以及怎么复查，偏移为什么放在锁里，设置入口为什么不另起一行。
+
 ## 术语
 
 - [项目术语表](Glossary.md) —— 候选池、钉住、补充搜索、覆盖表、优先级窗口、Route B、
-  歌词库缓存、手选标记、分数桶、同分容差等本项目自造词，以及容易混淆的显示语言与目标语言。
+  歌词库缓存、手选标记、分数桶、同分容差、播放路由等本项目自造词，以及容易混淆的显示语言与目标语言。
 
 ## 工程实践
 

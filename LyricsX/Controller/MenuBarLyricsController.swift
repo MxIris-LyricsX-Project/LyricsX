@@ -23,7 +23,6 @@ final class MenuBarLyricsController {
     private var iconStatusItem: NSStatusItem?
     private var lyricStatusItem: NSStatusItem?
     private var buttonImage = #imageLiteral(resourceName: "status_bar_icon")
-    private var buttonlength: CGFloat = 30
 
     /// `MenuBarMarqueeLabel` from macOS 26 on, where the menu bar shows the
     /// item through snapshots and an `NSTextField` in it keeps them coming
@@ -99,13 +98,35 @@ final class MenuBarLyricsController {
 
     private static let defaultLyric = "LyricsX"
 
-    private var screenLyrics: (lyrics: String, duration: TimeInterval) = (MenuBarLyricsController.defaultLyric, 2) {
+    /// A line's karaoke timing, and the offset of the lyrics it came from
+    /// when it was shown.
+    private struct KaraokeProgress: Equatable {
+        let timing: KaraokeLineTiming
+        /// `Lyrics.adjustedTimeDelay`: playback position plus this is the
+        /// lyrics time the timing is in.
+        let timeDelay: TimeInterval
+    }
+
+    private typealias ScreenLyrics = (lyrics: String, duration: TimeInterval, karaokeProgress: KaraokeProgress?)
+
+    private static let placeholderScreenLyrics: ScreenLyrics = (MenuBarLyricsController.defaultLyric, 2, nil)
+
+    /// The line to show. Read and written on `DispatchQueue.lyricsDisplay`.
+    private var screenLyrics: ScreenLyrics = MenuBarLyricsController.placeholderScreenLyrics {
         didSet {
+            let screenLyricsToDisplay = screenLyrics
             DispatchQueue.main.async {
+                self.displayedScreenLyrics = screenLyricsToDisplay
                 self.updateStatusItems()
             }
         }
     }
+
+    /// `screenLyrics` as last handed to the main queue, which shows it. The
+    /// main queue reads only this: reading `screenLyrics` there raced the
+    /// lyrics display queue's writes, and could pair one line's text with
+    /// the next line's karaoke timing.
+    private var displayedScreenLyrics: ScreenLyrics = MenuBarLyricsController.placeholderScreenLyrics
 
     /// The lyrics on screen and the line playback is at, as last published.
     /// Kept to show the line again when playback resumes. Read and written on
@@ -150,11 +171,19 @@ final class MenuBarLyricsController {
             .receive(on: DispatchQueue.main)
             .invoke(MenuBarLyricsController.updateScrollFrameRate, weaklyOn: self)
             .store(in: &cancelBag)
+        defaults.publisher(for: [.menuBarKaraokeProgressColor])
+            .prepend()
+            .receive(on: DispatchQueue.main)
+            .invoke(MenuBarLyricsController.updateKaraokeProgressColor, weaklyOn: self)
+            .store(in: &cancelBag)
         marqueeLabel.setPlaybackPaused(!selectedPlayer.playbackState.isPlaying)
         selectedPlayer.playbackStateWillChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] playbackState in
                 self?.marqueeLabel.setPlaybackPaused(!playbackState.isPlaying)
+                // A pause, a resume or a jump: the progress goes on from
+                // where playback is now.
+                self?.updateKaraokeProgress(playbackState: playbackState)
             }
             .store(in: &cancelBag)
         // "Hide menu bar lyrics when paused" has to act on the pause itself,
@@ -165,9 +194,19 @@ final class MenuBarLyricsController {
                 self?.showLyricsLine(isPlaying: playbackState.isPlaying)
             }
             .store(in: &cancelBag)
-        defaults.publisher(for: [.menuBarHidesLyricsWhenPaused])
+        defaults.publisher(for: [.menuBarHidesLyricsWhenPaused, .menuBarKaraokeProgressEnabled, .globalLyricsOffset])
             .receive(on: DispatchQueue.lyricsDisplay)
             .sink { [weak self] _ in
+                self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
+            }
+            .store(in: &cancelBag)
+        // A new offset moves where the karaoke progress is, not which line
+        // is on screen.
+        AppController.shared.publisher(for: \.lyricsOffset)
+            .signal()
+            .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
+            .receive(on: DispatchQueue.lyricsDisplay)
+            .sink { [weak self] in
                 self?.showLyricsLine(isPlaying: selectedPlayer.playbackState.isPlaying)
             }
             .store(in: &cancelBag)
@@ -282,7 +321,7 @@ final class MenuBarLyricsController {
             return
         case .placeholder:
             if screenLyrics.lyrics != MenuBarLyricsController.defaultLyric {
-                screenLyrics = (MenuBarLyricsController.defaultLyric, 2)
+                screenLyrics = MenuBarLyricsController.placeholderScreenLyrics
             }
         case let .line(lineIndex):
             if let lyrics {
@@ -297,7 +336,12 @@ final class MenuBarLyricsController {
         if let converter = ChineseConverter.shared, lyrics.metadata.language?.hasPrefix("zh") == true {
             newScreenLyrics = converter.convert(newScreenLyrics)
         }
-        if newScreenLyrics == screenLyrics.lyrics {
+        let karaokeProgress = defaults[.menuBarKaraokeProgressEnabled]
+            ? KaraokeLineTiming(line: currentLine).map { KaraokeProgress(timing: $0, timeDelay: lyrics.adjustedTimeDelay) }
+            : nil
+        // The same text again is the same line on screen, unless it is sung
+        // again: then its progress starts over.
+        if newScreenLyrics == screenLyrics.lyrics, karaokeProgress == screenLyrics.karaokeProgress {
             return
         }
         let lineDisplayTime: TimeInterval
@@ -308,7 +352,7 @@ final class MenuBarLyricsController {
         } else {
             lineDisplayTime = 2
         }
-        screenLyrics = (newScreenLyrics, lineDisplayTime)
+        screenLyrics = (newScreenLyrics, lineDisplayTime, karaokeProgress)
     }
 
     @objc private func updateStatusItems() {
@@ -357,12 +401,25 @@ final class MenuBarLyricsController {
         updateMarqueeText()
     }
 
+    private func updateKaraokeProgressColor() {
+        marqueeLabel.sungTextColor = defaults[.menuBarKaraokeProgressColor]
+    }
+
     private func updateScrollFrameRate() {
         marqueeLabel.maximumScrollFramesPerSecond = Double(defaults[.menuBarLyricsScrollFramesPerSecond])
     }
 
     private func updateMarqueeText() {
-        marqueeLabel.setStringValue(screenLyrics.lyrics, lineDisplayTime: screenLyrics.duration)
+        marqueeLabel.setStringValue(displayedScreenLyrics.lyrics, lineDisplayTime: displayedScreenLyrics.duration)
+        updateKaraokeProgress(playbackState: selectedPlayer.playbackState)
+    }
+
+    /// Anchors the line's karaoke progress at where `playbackState` has
+    /// playback now. Runs on the main queue.
+    private func updateKaraokeProgress(playbackState: PlaybackState) {
+        let karaokeProgress = displayedScreenLyrics.karaokeProgress
+        let playbackPosition = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
+        marqueeLabel.setKaraokeTiming(karaokeProgress?.timing, lyricsTime: playbackPosition + (karaokeProgress?.timeDelay ?? 0))
     }
 
     private func setupLyricStatusItem() {
@@ -376,10 +433,12 @@ final class MenuBarLyricsController {
     }
 
     private func setupIconStatusItem() {
-        iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // Square, like every other icon-only item: the menu bar sizes it and
+        // its highlight. A fixed 30 pt around the 16 pt icon left the
+        // highlight about a third wider than its neighbours' (#214).
+        iconStatusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         iconStatusItem?.button?.title = ""
         iconStatusItem?.button?.image = buttonImage
-        iconStatusItem?.length = buttonlength
         setupStatusItemMenu()
     }
 
@@ -402,6 +461,9 @@ final class MenuBarLyricsController {
 /// the two hosts it.
 private protocol MenuBarLyricsMarquee: NSView {
     func setStringValue(_ value: String, lineDisplayTime: TimeInterval)
+    func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval)
+    /// `nil` is the accent colour.
+    var sungTextColor: NSColor? { get set }
     func setPlaybackPaused(_ isPaused: Bool)
     /// Zero or less means the line's own default.
     var maximumScrollFramesPerSecond: Double { get set }
@@ -411,6 +473,16 @@ private protocol MenuBarLyricsMarquee: NSView {
 extension MenuBarMarqueeLabel: MenuBarLyricsMarquee {}
 
 extension MarqueeLabel: MenuBarLyricsMarquee {
+    /// MarqueeLabel shows no karaoke progress: the menu bar's progress needs
+    /// macOS 26, where `MenuBarMarqueeLabel` draws the line.
+    fileprivate func setKaraokeTiming(_ timing: KaraokeLineTiming?, lyricsTime: TimeInterval) {}
+
+    /// Nothing is sung, so there is nothing to colour.
+    fileprivate var sungTextColor: NSColor? {
+        get { nil }
+        set {}
+    }
+
     /// MarqueeLabel keeps scrolling through a pause, as it always has.
     fileprivate func setPlaybackPaused(_ isPaused: Bool) {}
 

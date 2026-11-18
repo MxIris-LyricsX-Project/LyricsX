@@ -1,5 +1,5 @@
 {
-  "originHash" : "ec9b91121ecca3d6b158e14957e5431a39f0206e2458c1327ed3bcf7d0a49dd9",
+  "originHash" : "0bf58e3ab461424ebabd0d3d4d8ab4ffaff36e81924421b987d63efaa56a2aad",
   "pins" : [
     {
       "identity" : "associatedobject",
@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MxIris-LyricsX-Project/MusicPlayer",
       "state" : {
-        "revision" : "fda33b1a5761e94655f4a2f9e2ac631c45df7c6d",
-        "version" : "1.10.1"
+        "revision" : "19736d54fd9d2f47d4f24066a27c3b9e9d5a1094",
+        "version" : "1.12.0"
       }
     },
     {
