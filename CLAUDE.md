@@ -72,7 +72,10 @@ kept under: its UID, except that every AirPlay output shares one identifier,
 because Core Audio gives an AirPlay receiver a new UID for every connection,
 and the Apple Music token check (`AppleMusicTokenCheck`): only an authorized
 token lets Apple Music lyrics into the search, and the account's storefront
-shows as a region name in the user's language —
+shows as a region name in the user's language; and that the status row under
+the token field (`StatusMessageRowView`) settles in one layout pass, red on its
+first version, which fed the message's width back as its wrapping width and
+made AppKit give up on the Lab pane's constraints —
 and is fast and headless enough to run on every change. Its
 `AudioOutputDeviceProbes` read this Mac's real Core Audio devices and print
 them; run them while a HomePod is the output to see what Core Audio makes of
