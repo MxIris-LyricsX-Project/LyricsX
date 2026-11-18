@@ -88,6 +88,15 @@ final class AppController: NSObject {
     /// download. Set on the lyrics display queue.
     @Published private(set) var systemTranslationLanguagePairToDownload: SystemTranslationLanguagePair?
 
+    /// Where the check of the Apple Music `media-user-token` stands, for the
+    /// Lab pane. Set on the main actor by `updateLyricsManager()`, which runs
+    /// the check and adds the Apple Music source only once it passes.
+    @Published private(set) var appleMusicTokenCheck: AppleMusicTokenCheck = .noToken
+
+    /// Counts `updateLyricsManager()` calls, so a token check that returns
+    /// after a newer call started is dropped. Main actor only.
+    private var lyricsManagerUpdateGeneration = 0
+
     /// What a "next candidate" request ended up doing. Published rather than
     /// returned because the replenish path resolves asynchronously, and both
     /// paths should reach the same one piece of UI.
@@ -264,33 +273,17 @@ final class AppController: NSObject {
 
     @MainActor
     func updateLyricsManager() async {
+        lyricsManagerUpdateGeneration += 1
+        let generation = lyricsManagerUpdateGeneration
+
         let musixmatchToken = defaults[.musixmatchToken].flatMap { $0.isEmpty ? nil : $0 }
-        var providers: [LyricsProvider] = [
+        let tokenFreeProviders: [LyricsProvider] = [
             LyricsProviders.Service.netease.create(),
             LyricsProviders.Service.qq.create(),
             LyricsProviders.Service.kugou.create(),
             LyricsProviders.Service.lrclib.create(),
             LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)),
         ]
-        // Route A: official Apple Music syllable-lyrics via amp-api. Only
-        // registered when the user supplied a `media-user-token` AND the
-        // provider can actually reach amp-api with it (`isAuthorized` hits
-        // `/v1/me/storefront` once, cached per-instance) — without that,
-        // every fetch would 401 and pollute the result stream.
-        if #available(macOS 12.0, *),
-           let token = defaults[.appleMusicMediaUserToken],
-           !token.isEmpty {
-            let appleMusicProvider = LyricsProviders.Service.appleMusic.create(
-                .init(
-                    mediaUserToken: token,
-                    storefrontOverride: defaults[.appleMusicStorefront].flatMap { $0.isEmpty ? nil : $0 },
-                    languageOverride: defaults[.appleMusicLanguage].flatMap { $0.isEmpty ? nil : $0 }
-                )
-            )
-            if await appleMusicProvider.isAuthorized {
-                providers.append(appleMusicProvider)
-            }
-        }
         // Route B: for Apple Music tracks, a search plugin recovers the
         // native-script name via the Apple Music catalog so the providers
         // can match it. The plugin runs upstream of the providers — it
@@ -299,7 +292,41 @@ final class AppController: NSObject {
         if #available(macOS 12.0, *), defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name == .appleMusic {
             plugins.append(AppleMusicNameRecoveryPlugin())
         }
-        lyricsManager = LyricsProviders.Group(providers: providers, plugins: plugins)
+        // Installed before the token check below, which waits on the
+        // network: a search that starts meanwhile — the first track after
+        // launch — still has every source that needs no token.
+        lyricsManager = LyricsProviders.Group(providers: tokenFreeProviders, plugins: plugins)
+
+        // Route A: official Apple Music syllable-lyrics via amp-api. Only
+        // added once amp-api has accepted the user's `media-user-token` —
+        // without that, every fetch would fail and pollute the result
+        // stream. The verdict is published for the Lab pane.
+        guard #available(macOS 12.0, *),
+              let token = defaults[.appleMusicMediaUserToken],
+              !token.isEmpty
+        else {
+            appleMusicTokenCheck = .noToken
+            return
+        }
+        appleMusicTokenCheck = .checking
+        let options = LyricsProviders.AppleMusicOptions(
+            mediaUserToken: token,
+            storefrontOverride: defaults[.appleMusicStorefront].flatMap { $0.isEmpty ? nil : $0 },
+            languageOverride: defaults[.appleMusicLanguage].flatMap { $0.isEmpty ? nil : $0 }
+        )
+        let status = await LyricsProviders.Service.appleMusic.authorizationStatus(for: options)
+        // A newer call has installed its own sources and started its own
+        // check while this one waited; this verdict is about settings that
+        // may no longer hold.
+        guard generation == lyricsManagerUpdateGeneration else { return }
+
+        appleMusicTokenCheck = .finished(status)
+        if appleMusicTokenCheck.includesAppleMusicLyrics {
+            lyricsManager = LyricsProviders.Group(
+                providers: tokenFreeProviders + [LyricsProviders.Service.appleMusic.create(options)],
+                plugins: plugins
+            )
+        }
     }
 
     var currentLineCheckSchedule: Cancellable?

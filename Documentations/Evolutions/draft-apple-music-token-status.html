@@ -71,7 +71,7 @@ svg .ok { fill: var(--ok); } svg .bad { fill: var(--bad); } svg .warn { fill: va
 <main>
 <h1>Draft - 实验室页显示 Apple Music token 是否有效</h1>
 <div class="meta">
-  <span>状态 <span class="badge">Accepted</span></span>
+  <span>状态 <span class="badge">In Progress</span></span>
   <span>对应提案最后更新：2026-11-18</span>
   <span>源文件：<code>draft-apple-music-token-status.md</code>（两者不一致时以它为准）</span>
 </div>
@@ -484,6 +484,16 @@ func updateLyricsManager() async {
 <tr><td>2026-11-18</td><td>区分「有效 / 被拒 / 暂时无法检查」，为此改 LyricsKit 并发布 1.13.0</td><td>用户选择。只用现有的布尔结果，网络不通或 Apple 改网页播放器时会把所有人的 token 报成无效</td></tr>
 <tr><td>2026-11-18</td><td>403 判为被拒，401 先重抓开发者令牌再重试一次</td><td>curl 实测：用户 token 伪造或缺失时返回 403，开发者令牌坏了返回 401</td></tr>
 <tr><td>2026-11-18</td><td>顺带让无凭据歌词源先装上，修「启动后第一首歌搜不到歌词」</td><td>同一个方法要重写；当初暂缓的理由是要改初始化顺序，这次正好改了</td></tr>
+<tr><td>2026-11-18</td><td>用户批准，开始实现</td><td>LyricsX 与 LyricsKit 各从 <code>develop</code> 切功能分支</td></tr>
+<tr><td>2026-11-18</td><td>顺带修好 LyricsKit 测试 target 的编译</td><td>2026-06-30 加 <code>isAuthorized</code> 要求时，<code>GroupProviderTests</code> 的两个测试替身没跟着实现，整个测试 target 从那以后编译不过；只补两行，单独提交</td></tr>
+<tr><td>2026-11-18</td><td>LyricsKit 的 <code>.gitignore</code> 加上 <code>.worktrees/</code></td><td>该仓库第一个 worktree</td></tr>
+<tr><td>2026-11-18</td><td>测试改名为 <code>missingOrEmptyTokenIsDenied</code></td><td>session 没有注入点，证明不了「没发请求」</td></tr>
+<tr><td>2026-11-18</td><td>LyricsKit 功能分支先在本地合进 LyricsKit 主检出的 <code>develop</code>（未推送）</td><td>LyricsX worktree 经符号链接对着它编译</td></tr>
+<tr><td>2026-11-18</td><td>LyricsKit README 补 Apple Music 一节</td><td>与 Musixmatch 那一节同样的形式，写明三种结果与联网探针</td></tr>
+<tr><td>2026-11-18</td><td><code>ReviewDecisions.md</code> 那条暂缓的发现改为「已修复」并保留</td><td>直接删掉会让人以为它还没处理</td></tr>
+<tr><td>2026-11-18</td><td>不写配套专题文章；术语表无新增</td><td>判定规则在类型文档与 README 里，没有新术语</td></tr>
+<tr><td>2026-11-18</td><td>打 LyricsKit <code>v1.13.0</code>、推送 LyricsKit <code>develop</code>、改钉版留给用户确认</td><td>等于发布 LyricsKit，不在开工授权里；在那之前只有用本地依赖才编得过</td></tr>
+<tr><td>2026-11-18</td><td>实现完成，待用户看过后收尾</td><td>状态行没做界面验证；<code>AppController</code> 的行为靠代码审查和构建确认</td></tr>
 </table></div>
 </details>
 </main>

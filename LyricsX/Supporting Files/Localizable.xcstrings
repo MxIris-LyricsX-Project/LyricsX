@@ -600,6 +600,40 @@
         }
       }
     },
+    "Apple Music rejected this token. Copy it again from music.apple.com while signed in." : {
+      "comment" : "Under the Apple Music token field in the Lab pane when Apple Music refused the token.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music 拒绝了这个 token。请登录 music.apple.com 后重新复制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music 拒絕了這個 token。請登入 music.apple.com 後重新複製。"
+          }
+        }
+      }
+    },
+    "Apple Music token status" : {
+      "comment" : "Accessibility label of the row under the Apple Music token field in the Lab pane that says whether Apple Music accepted the token.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music token 状态"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Music token 狀態"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "comment" : "Cancel AI lyrics translation settings.",
       "localizations" : {
@@ -613,6 +647,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消"
+          }
+        }
+      }
+    },
+    "Check Again" : {
+      "comment" : "Button under the Apple Music token field in the Lab pane that checks the token with Apple Music again.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新检查"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新檢查"
+          }
+        }
+      }
+    },
+    "Checking token…" : {
+      "comment" : "Under the Apple Music token field in the Lab pane while Apple Music is being asked whether it accepts the token.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在检查 token…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在檢查 token…"
           }
         }
       }
@@ -647,6 +715,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連線成功。"
+          }
+        }
+      }
+    },
+    "Couldn't check the token. Apple Music lyrics stay off until a check succeeds." : {
+      "comment" : "Under the Apple Music token field in the Lab pane when Apple Music could not be asked, for example without a network connection.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法检查 token。检查成功之前不会使用 Apple Music 歌词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法檢查 token。檢查成功之前不會使用 Apple Music 歌詞。"
           }
         }
       }
@@ -2926,6 +3011,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸出裝置"
+          }
+        }
+      }
+    },
+    "Paste a token to turn on Apple Music lyrics." : {
+      "comment" : "Under the Apple Music token field in the Lab pane while it is empty.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴 token 即可启用 Apple Music 歌词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼上 token 即可啟用 Apple Music 歌詞。"
           }
         }
       }
@@ -5488,6 +5590,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用強調色"
+          }
+        }
+      }
+    },
+    "Valid. Apple Music lyrics are on (region: %@)." : {
+      "comment" : "Under the Apple Music token field in the Lab pane when Apple Music accepted the token. The argument is the region of the Apple Music account, such as Japan.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有效，已启用 Apple Music 歌词（地区：%@）。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有效，已啟用 Apple Music 歌詞（地區：%@）。"
           }
         }
       }
