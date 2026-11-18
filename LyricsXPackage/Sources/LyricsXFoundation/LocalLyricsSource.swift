@@ -35,4 +35,18 @@ public enum LocalLyricsSource: Hashable, Sendable {
         }
         return .embedded
     }
+
+    /// Whether both name the same source, with file paths compared the way
+    /// the file system would rather than character for character, so
+    /// `/Music/./Song.lrcx` and `/Music/Song.lrcx` are one file.
+    public func isSameSource(as other: LocalLyricsSource) -> Bool {
+        switch (self, other) {
+        case (.embedded, .embedded):
+            return true
+        case let (.file(fileURL), .file(otherFileURL)):
+            return fileURL.standardizedFileURL == otherFileURL.standardizedFileURL
+        default:
+            return false
+        }
+    }
 }

@@ -513,78 +513,21 @@ final class AppController: NSObject {
             return
         }
 
-        // A candidate the user switched to by hand outranks every automatic
-        // lookup below — including lyrics embedded in the audio file and lyrics
-        // sitting beside it, either of which would otherwise win on order alone
-        // and silently undo the choice.
-        if let overrideURL = userSelectedLyricsURL(forTrackId: track.id),
-           let lyrics = loadLyrics(
-               at: overrideURL,
-               securityScopedURL: defaults.lyricsSecurityScopedDirectory(containing: overrideURL),
-               title: title,
-               artist: artist
-           ) {
-            currentLyrics = lyrics
-            adoptAsSoleLyricsCandidate(lyrics)
+        // A pick the user made by hand outranks every automatic lookup below —
+        // including lyrics embedded in the audio file and lyrics sitting beside
+        // it, either of which would otherwise win on order alone and silently
+        // undo the choice.
+        if let selectedLyrics = loadUserSelectedLyrics(for: track, title: title, artist: artist) {
+            currentLyrics = selectedLyrics
+            adoptAsSoleLyricsCandidate(selectedLyrics)
             return
         }
 
-        var candidateLyricsFiles: [LyricsLookupCandidateFile] = []
-
-        if defaults[.loadLyricsBesideTrack] {
-            if let embeddedLyrics = track.lyrics,
-               let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
-                currentLyrics = lyrics
-                adoptAsSoleLyricsCandidate(lyrics)
+        if let lookupResult = automaticLocalLookup(for: track, title: title, artist: artist) {
+            currentLyrics = lookupResult.lyrics
+            adoptAsSoleLyricsCandidate(lookupResult.lyrics)
+            if lookupResult.endsLookup {
                 return
-            }
-            if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
-                candidateLyricsFiles += [
-                    LyricsLookupCandidateFile(
-                        fileURL: besideTrackBaseURL.appendingPathExtension("lrcx"),
-                        isSecurityScoped: false,
-                        allowsFurtherSearching: false,
-                        isLibraryFile: false
-                    ),
-                    LyricsLookupCandidateFile(
-                        fileURL: besideTrackBaseURL.appendingPathExtension("lrc"),
-                        isSecurityScoped: false,
-                        allowsFurtherSearching: false,
-                        isLibraryFile: false
-                    ),
-                ]
-            }
-        }
-
-        // The library is the only layer the "ignore saved lyrics" switch covers:
-        // everything above is either the user's own file or the user's own
-        // choice, and neither is a cache to be bypassed. It is read even when
-        // the switch is on, because the file itself says whether the switch
-        // applies to it — and that can only be seen after reading it.
-        candidateLyricsFiles += librarySearchFiles(title: title, artist: artist)
-
-        for candidateFile in candidateLyricsFiles {
-            if let lyrics = loadLyrics(
-                at: candidateFile.fileURL,
-                securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
-                title: title,
-                artist: artist
-            ) {
-                // The switch means "do not trust what LyricsX saved for itself".
-                // Lyrics the user applied by hand were never LyricsX's own
-                // decision, so they stay in play.
-                if candidateFile.isLibraryFile,
-                   defaults[.ignoreCachedLyricsLibrary],
-                   !lyrics.isUserPicked {
-                    continue
-                }
-                currentLyrics = lyrics
-                adoptAsSoleLyricsCandidate(lyrics)
-                if candidateFile.allowsFurtherSearching {
-                    break
-                } else {
-                    return
-                }
             }
         }
 
@@ -1451,8 +1394,8 @@ final class AppController: NSObject {
             currentLyrics = lyrics
             return lyrics.persist()
         }
-        if didPersist {
-            recordUserSelectionIfAutomaticLookupWouldOverrideIt(lyrics, for: track)
+        if didPersist, let persistedURL = lyrics.metadata.localURL {
+            rememberLyricsSelection(.file(persistedURL), for: track)
         }
         if defaults[.writeToiTunesAutomatically] {
             writeToiTunes(overwrite: true)
@@ -1467,52 +1410,118 @@ final class AppController: NSObject {
         candidateSelectionIsPinned = true
     }
 
-    private func userSelectedLyricsURL(forTrackId trackId: String) -> URL? {
-        LyricsSelectionOverrideTable
-            .filePath(forTrackId: trackId, in: defaults[.lyricsSelectionOverrides])
-            .map { URL(fileURLWithPath: $0) }
+    /// The lyrics the user picked by hand for `track`, read from wherever the
+    /// pick was: a file, or the lyrics embedded in the track. `nil` when there
+    /// is no pick or it can no longer be read — the file is gone, or the track
+    /// has lost its lyrics — so the automatic lookup takes over.
+    private func loadUserSelectedLyrics(for track: MusicTrack, title: String, artist: String) -> Lyrics? {
+        switch LyricsSelectionOverrideTable.selection(forTrackId: track.id, in: defaults[.lyricsSelectionOverrides]) {
+        case .file(let fileURL):
+            return loadLyrics(
+                at: fileURL,
+                securityScopedURL: defaults.lyricsSecurityScopedDirectory(containing: fileURL),
+                title: title,
+                artist: artist
+            )
+        case .embedded:
+            return track.lyrics.flatMap { loadEmbeddedLyrics($0, title: title, artist: artist) }
+        case nil:
+            return nil
+        }
     }
 
-    /// Records the pick only when the automatic lookup order would otherwise
-    /// beat it — an embedded or beside-track file is consulted first, so
-    /// without this the choice would last exactly one play.
-    private func recordUserSelectionIfAutomaticLookupWouldOverrideIt(_ lyrics: Lyrics, for track: MusicTrack) {
-        guard let persistedURL = lyrics.metadata.localURL else {
-            return
+    /// What the automatic lookup reads before it searches, with the table of
+    /// hand picks left out of it.
+    private struct AutomaticLocalLookupResult {
+        let source: LocalLyricsSource
+        let lyrics: Lyrics
+        /// `false` for a plain `.lrc` in the library: it goes on screen, but
+        /// the search still runs and may replace it.
+        let endsLookup: Bool
+    }
+
+    /// The first local lyrics the automatic lookup puts on screen for
+    /// `track`, in its order: the embedded lyrics, then the `.lrcx` and `.lrc`
+    /// beside the track — both layers only with "load lyrics beside the
+    /// track" on — then the library.
+    private func automaticLocalLookup(for track: MusicTrack, title: String, artist: String) -> AutomaticLocalLookupResult? {
+        var candidateLyricsFiles: [LyricsLookupCandidateFile] = []
+
+        if defaults[.loadLyricsBesideTrack] {
+            if let embeddedLyrics = track.lyrics,
+               let lyrics = loadEmbeddedLyrics(embeddedLyrics, title: title, artist: artist) {
+                return AutomaticLocalLookupResult(source: .embedded, lyrics: lyrics, endsLookup: true)
+            }
+            if let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() {
+                candidateLyricsFiles += [
+                    LyricsLookupCandidateFile(
+                        fileURL: besideTrackBaseURL.appendingPathExtension("lrcx"),
+                        isSecurityScoped: false,
+                        allowsFurtherSearching: false,
+                        isLibraryFile: false
+                    ),
+                    LyricsLookupCandidateFile(
+                        fileURL: besideTrackBaseURL.appendingPathExtension("lrc"),
+                        isSecurityScoped: false,
+                        allowsFurtherSearching: false,
+                        isLibraryFile: false
+                    ),
+                ]
+            }
         }
-        guard defaults[.loadLyricsBesideTrack], automaticLookupPrecedes(persistedURL, for: track) else {
-            // Nothing is consulted ahead of the file just written, so the plain
-            // lookup order already resolves to it.
-            defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.removing(
-                trackId: track.id,
-                from: defaults[.lyricsSelectionOverrides]
+
+        // The library is the only layer the "ignore saved lyrics" switch covers:
+        // everything above is either the user's own file or the user's own
+        // choice, and neither is a cache to be bypassed. It is read even when
+        // the switch is on, because the file itself says whether the switch
+        // applies to it — and that can only be seen after reading it.
+        candidateLyricsFiles += librarySearchFiles(title: title, artist: artist)
+
+        for candidateFile in candidateLyricsFiles {
+            guard let lyrics = loadLyrics(
+                at: candidateFile.fileURL,
+                securityScopedURL: candidateFile.isSecurityScoped ? candidateFile.fileURL : nil,
+                title: title,
+                artist: artist
+            ) else {
+                continue
+            }
+            // The switch means "do not trust what LyricsX saved for itself".
+            // Lyrics the user applied by hand were never LyricsX's own
+            // decision, so they stay in play.
+            if candidateFile.isLibraryFile,
+               defaults[.ignoreCachedLyricsLibrary],
+               !lyrics.isUserPicked {
+                continue
+            }
+            return AutomaticLocalLookupResult(
+                source: .file(candidateFile.fileURL),
+                lyrics: lyrics,
+                endsLookup: !candidateFile.allowsFurtherSearching
             )
-            return
         }
-        defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.recording(
-            filePath: persistedURL.path,
+        return nil
+    }
+
+    /// Writes a hand pick for `track` into the table of hand picks, or drops
+    /// the track's entry when the automatic lookup settles on the pick by
+    /// itself. Every way of picking lyrics by hand calls this once the pick is
+    /// on disk — the next-candidate shortcut, the search panel, an import and
+    /// the Local Lyrics menu — because an entry an earlier pick left behind
+    /// outranks the whole lookup and would bring that pick back on the next
+    /// play.
+    ///
+    /// Reads what the lookup reads: the track's embedded lyrics, over Apple
+    /// Events, and the lyrics files.
+    func rememberLyricsSelection(_ pick: LocalLyricsSource, for track: MusicTrack) {
+        let lookupResult = automaticLocalLookup(for: track, title: track.title ?? "", artist: track.artist ?? "")
+        defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.remembering(
+            pick,
             forTrackId: track.id,
+            automaticLookupResult: lookupResult.flatMap { $0.endsLookup ? $0.source : nil },
             in: defaults[.lyricsSelectionOverrides],
             at: Date()
         )
-    }
-
-    private func automaticLookupPrecedes(_ persistedURL: URL, for track: MusicTrack) -> Bool {
-        if let embeddedLyrics = track.lyrics,
-           !embeddedLyrics.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return true
-        }
-        guard let besideTrackBaseURL = track.localFileURL?.deletingPathExtension() else {
-            return false
-        }
-        let besideTrackURLs = [
-            besideTrackBaseURL.appendingPathExtension("lrcx"),
-            besideTrackBaseURL.appendingPathExtension("lrc"),
-        ]
-        guard !besideTrackURLs.contains(persistedURL) else {
-            return false
-        }
-        return besideTrackURLs.contains { FileManager.default.fileExists(atPath: $0.path) }
     }
 
     private func loadLyrics(at fileURL: URL, securityScopedURL: URL?, title: String, artist: String) -> Lyrics? {
@@ -1672,9 +1681,10 @@ final class AppController: NSObject {
     ///
     /// The choice is not marked as picked by the user and not saved: it is a
     /// file the user already has, or the track's own lyrics. It is remembered
-    /// the way a next-candidate pick is, in the selection override table, so the
-    /// next play of the track shows the same file; choosing the embedded
-    /// lyrics drops that entry, since the lookup reads them first anyway.
+    /// the way every other hand pick is, through `rememberLyricsSelection`, so
+    /// the next play of the track shows it again — the embedded lyrics too,
+    /// which the lookup does not read at all while "load lyrics beside the
+    /// track" is off.
     func applyLocalLyrics(_ choice: LocalLyricsChoice, for track: MusicTrack) {
         guard selectedPlayer.currentTrack?.id == track.id else {
             return
@@ -1696,20 +1706,7 @@ final class AppController: NSObject {
             ? lyricsCandidatePool.candidates.filter { lyricsContentFingerprint($0) != fingerprint }
             : []
         adoptLyricsCandidates(otherCandidates + [choice.lyrics], selecting: choice.lyrics, for: track)
-        switch choice.source {
-        case .file(let fileURL):
-            defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.recording(
-                filePath: fileURL.path,
-                forTrackId: track.id,
-                in: defaults[.lyricsSelectionOverrides],
-                at: Date()
-            )
-        case .embedded:
-            defaults[.lyricsSelectionOverrides] = LyricsSelectionOverrideTable.removing(
-                trackId: track.id,
-                from: defaults[.lyricsSelectionOverrides]
-            )
-        }
+        rememberLyricsSelection(choice.source, for: track)
     }
 
     // MARK: Widget Data Bridge
@@ -1913,7 +1910,13 @@ extension AppController {
         lrc.recognizeLanguage()
         lrc.markAsUserPicked(origin: .import)
         lrc.metadata.needsPersist = true
-        currentLyrics = lrc
+        // Written now rather than at the next track change, like a pick in the
+        // search panel: the table of hand picks can only point the next play
+        // at the import once the import is a file.
+        let didPersist = performOnLyricsDisplayQueue {
+            currentLyrics = lrc
+            return lrc.persist()
+        }
         // An imported file is as deliberate a choice as picking a candidate, so
         // it takes over the pool and is pinned against a search still in flight.
         adoptLyricsCandidates([lrc], selecting: lrc, for: track)
@@ -1922,6 +1925,9 @@ extension AppController {
         }
         if let index = defaults[.noSearchingAlbumNames].firstIndex(of: track.album ?? "") {
             defaults[.noSearchingAlbumNames].remove(at: index)
+        }
+        if didPersist, let persistedURL = lrc.metadata.localURL {
+            rememberLyricsSelection(.file(persistedURL), for: track)
         }
     }
 }

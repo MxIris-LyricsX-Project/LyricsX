@@ -79,3 +79,11 @@ func unsavedSearchResultsCheckNothing() {
 func importedLyricsAreNotTakenForTheEmbeddedLyrics() {
     #expect(LocalLyricsSource.onScreen(localURL: nil, service: nil, isUserPicked: true, among: everySource) == nil)
 }
+
+@Test
+func theEmbeddedLyricsAndAFileAreNeverTheSameSource() {
+    #expect(!LocalLyricsSource.embedded.isSameSource(as: .file(besideTrackLRCX)))
+    #expect(!LocalLyricsSource.file(besideTrackLRCX).isSameSource(as: .embedded))
+    #expect(LocalLyricsSource.embedded.isSameSource(as: .embedded))
+    #expect(!LocalLyricsSource.file(besideTrackLRCX).isSameSource(as: .file(besideTrackLRC)))
+}

@@ -36,12 +36,14 @@
 
 ## 覆盖表（selection override table）
 
-`LyricsSelectionOverrideTable`：记录「用户为某首歌手动选定了哪个歌词文件」的一张
-`track id → 文件路径` 表，存在偏好设置里。
+`LyricsSelectionOverrideTable`：记录「用户为某首歌亲手选定了哪份本地歌词」的一张
+`track id → 文件路径或内嵌歌词` 表，存在偏好设置里。
 
 它解决的是顺序问题而非存储问题：自动加载依次查内嵌歌词、音轨旁边的文件、保存目录，
-而用户选定的那条写在保存目录（最末），下次播放会被前两者压过。表里的条目把那一个文件
-提到查找顺序最前，**且不改写用户自己的任何文件**。
+而用户选定的那条写在保存目录（最末），下次播放会被前两者压过；开关关着时内嵌歌词则根本不会被读到。
+表里的条目把那一份歌词提到查找顺序最前，**且不改写用户自己的任何文件**。每一种亲手选歌词的方式
+都经 `AppController.rememberLyricsSelection` 更新它，细节见
+[歌词候选池](Internal/LyricsCandidatePool.md)。
 
 ## Route B / name recovery
 
