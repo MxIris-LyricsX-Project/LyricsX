@@ -482,7 +482,7 @@ func updateLyricsManager() async {
    - 行为：`aCheckThatReturnsAfterANewerOneChangesNothing`
    - 行为：`onlyAnAuthorizedCheckAddsTheAppleMusicSource`
    - `AppController` 没法无界面测试，这三条靠代码审查和 Debug 构建运行时看日志确认。
-4. **实验室页状态行** —— 第 11–13 行
+4. **（已完成）实验室页状态行** —— 第 11–13 行
    - 行为：`statusRowSitsUnderTheTokenFieldInTheAppleMusicBox`
    - 行为：`eachCheckShowsItsSymbolTextAndButton`
    - 行为：`checkAgainStartsANewCheck`

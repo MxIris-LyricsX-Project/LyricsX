@@ -22,6 +22,10 @@ class PreferenceLabViewController: PreferenceViewController {
     @IBOutlet weak var appleMusicStorefrontField: NSTextField!
     @IBOutlet weak var appleMusicLanguageField: NSTextField!
 
+    /// Under the token field: whether Apple Music accepted the token.
+    private let appleMusicTokenStatusView = AppleMusicTokenStatusView()
+    private var appleMusicTokenCheckObservation: AnyCancellable?
+
     private let preferredLyricsTranslationLanguageField = NSTextField()
     private let lyricsTranslationEnginePopUpButton = NSPopUpButton(frame: .zero, pullsDown: false)
     private let aiLyricsTranslationConfigureButton = NSButton()
@@ -65,6 +69,7 @@ class PreferenceLabViewController: PreferenceViewController {
 
         insertLyricsTranslationBox()
         insertMenuBarKaraokeProgressColorRow()
+        insertAppleMusicTokenStatusRow()
         embedContentInScrollView()
         if #available(macOS 26.0, *) {
             // In the pane from the start, so the system's download prompt has
@@ -142,11 +147,21 @@ class PreferenceLabViewController: PreferenceViewController {
                 self?.systemTranslationLanguagePairToDownload = languagePair
                 self?.refreshSystemTranslationDownloadButton()
             }
+        appleMusicTokenCheckObservation = AppController.shared.$appleMusicTokenCheck
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] check in
+                self?.appleMusicTokenStatusView.show(check)
+            }
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
         updateMaximumPaneHeight()
+        // A token can expire while the app runs; what the row says should be
+        // what Apple Music says now, not what it said at launch.
+        if let token = defaults[.appleMusicMediaUserToken], !token.isEmpty {
+            checkAppleMusicTokenAgain()
+        }
     }
 
     override func viewWillDisappear() {
@@ -217,6 +232,31 @@ class PreferenceLabViewController: PreferenceViewController {
         colorRow.spacing = 8
         let row = gridView.insertRow(at: gridView.index(of: checkboxRow) + 1, with: [NSGridCell.emptyContentView, colorRow])
         row.topPadding = 5
+    }
+
+    /// Adds the token check's row under the token field in the Apple Music
+    /// box, in the box's own grid: nothing in the label column, the status in
+    /// the control column, as wide as the field above it.
+    private func insertAppleMusicTokenStatusRow() {
+        guard let appleMusicGridView = appleMusicMediaUserTokenField.superview as? NSGridView,
+              let tokenRow = appleMusicGridView.cell(for: appleMusicMediaUserTokenField)?.row
+        else {
+            preconditionFailure("The Apple Music token field sits in the Apple Music box's grid.")
+        }
+        appleMusicTokenStatusView.checkAgainHandler = { [weak self] in
+            self?.checkAppleMusicTokenAgain()
+        }
+        let row = appleMusicGridView.insertRow(
+            at: appleMusicGridView.index(of: tokenRow) + 1,
+            with: [NSGridCell.emptyContentView, appleMusicTokenStatusView]
+        )
+        row.cell(at: 1).xPlacement = .fill
+    }
+
+    /// Asks Apple Music about the saved token again. `AppController` runs
+    /// the check, so the Apple Music source follows the same verdict.
+    private func checkAppleMusicTokenAgain() {
+        Task { @MainActor in await AppController.shared.updateLyricsManager() }
     }
 
     /// The colour well shows the stored colour, or the accent colour when
