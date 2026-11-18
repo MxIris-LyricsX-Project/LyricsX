@@ -137,19 +137,31 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     /// lyrics — and the lyrics on screen, another track's, are left alone.
     private func save(_ lrc: Lyrics, forTrackNoLongerPlaying track: MusicTrack) {
         clearRejection(of: track)
-        performOnLyricsDisplayQueue {
+        let didPersist = performOnLyricsDisplayQueue {
             lrc.associateWithTrack(track)
             lrc.markAsUserPicked(origin: .searchPanel)
             lrc.metadata.needsPersist = true
-            lrc.persist()
+            return lrc.persist()
         }
+        rememberSelection(of: lrc, for: track, ifPersisted: didPersist)
+    }
+
+    /// A pick here is one more hand pick, so the table of hand picks hears
+    /// of it like any other — otherwise an entry an earlier pick left there
+    /// (from the next-candidate shortcut or the Local Lyrics menu) would bring
+    /// that pick back on the next play.
+    private func rememberSelection(of lrc: Lyrics, for track: MusicTrack, ifPersisted didPersist: Bool) {
+        guard didPersist, let persistedURL = lrc.metadata.localURL else {
+            return
+        }
+        AppController.shared.rememberLyricsSelection(.file(persistedURL), for: track)
     }
 
     private func apply(_ lrc: Lyrics, to track: MusicTrack) {
         clearRejection(of: track)
         // On the lyrics display queue, like every other change to the lyrics
         // on screen: a write from here would race one from there.
-        performOnLyricsDisplayQueue {
+        let didPersist = performOnLyricsDisplayQueue {
             lrc.associateWithTrack(track)
             // Applying a result from this panel is the clearest statement of intent
             // there is, so the file records that a person chose it — the "ignore
@@ -159,12 +171,13 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             // Written now rather than at the next track change: the mark is only
             // worth anything once it is on disk, and the choice is already made.
             lrc.metadata.needsPersist = true
-            lrc.persist()
+            return lrc.persist()
         }
         // Hand the whole sorted list over, not just the pick: the
         // next-candidate shortcut should carry on from what the user chose
         // here instead of walking a pool built by the automatic search.
         AppController.shared.adoptLyricsCandidates(searchResult, selecting: lrc, for: track)
+        rememberSelection(of: lrc, for: track, ifPersisted: didPersist)
         if defaults[.writeToiTunesAutomatically] {
             AppController.shared.writeToiTunes(overwrite: true)
         }
