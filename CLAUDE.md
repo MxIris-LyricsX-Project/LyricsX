@@ -63,16 +63,15 @@ annotations and how a word's reading spreads over its kanji
 label up with and the per-release insets it falls back to, where a step of
 that row's lyrics offset lands (the next multiple of 100 ms, so an offset
 the lyrics came with, such as Kugou's 51 ms, steps back to 0), the lyrics
-offsets for tracks whose lyrics cannot be saved back to their source
+offsets that survive for read-only sources and migrate on write-back
 (`TrackLyricsOffsets`), plus the lyrics translation policies (the engine choice
 and its migration from the AI switch, AI request encoding and batch boundaries,
 when AI translation stops waiting for the automatic search, reusing a saved
 copy's translations, what either engine keeps of an answer: one line, never a
 line handed back unchanged, and that a translation leaves the lyrics' ranking
-as it was), and the panel's
-high-resolution cover: that a cover and its 100-pixel thumbnail fingerprint
-alike (`ArtworkFingerprint`, red on the old fingerprint that drew covers
-straight into the 9×8 hash grid), and the NetEase catalogue search it asks
+as it was), and the panel's high-resolution cover: that a cover and its
+100-pixel thumbnail fingerprint alike (`ArtworkFingerprint`, red on the old
+fingerprint that drew covers straight into the 9×8 hash grid), and the NetEase catalogue search it asks
 alongside the iTunes Store, plus the lyrics offsets kept per player and output
 device (`PlaybackRouteLyricsOffsets`) and what an output device's offset is
 kept under: its UID, except that every AirPlay output shares one identifier,
