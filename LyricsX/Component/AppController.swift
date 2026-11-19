@@ -1,6 +1,5 @@
 import AppKit
 import Combine
-import CryptoKit
 import Regex
 import OpenCC
 import MusicPlayer
@@ -126,23 +125,15 @@ final class AppController: NSObject {
     /// After publication, its offset changes only on the display queue after write-back.
     fileprivate final class LoadedLocalLyrics {
         let lyrics: Lyrics
-        let fileURL: URL?
-        let contentFingerprint: String
-        var sourceOffset: Int
+        var source: TrackLyricsOffsets.Source
 
-        init(lyrics: Lyrics, contentFingerprint: String) {
+        init(lyrics: Lyrics) {
             self.lyrics = lyrics
-            self.fileURL = lyrics.metadata.localURL
-            self.contentFingerprint = contentFingerprint
-            self.sourceOffset = lyrics.offset
-        }
-
-        var fingerprint: String {
-            "\(contentFingerprint):\(sourceOffset)"
+            source = TrackLyricsOffsets.Source(lyrics: lyrics, fileURL: lyrics.metadata.localURL)
         }
 
         var writesBackInPlace: Bool {
-            fileURL.map { defaults.lyricsPersistRewritesFileInPlace($0) } ?? false
+            source.fileURL.map { defaults.lyricsPersistRewritesFileInPlace($0) } ?? false
         }
     }
 
@@ -168,11 +159,13 @@ final class AppController: NSObject {
                 if let source = localLyricsOffsetSource, source.lyrics === lyrics {
                     var offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
                     let loaded = source.loaded
-                    let sourceIsReadOnly = !loaded.writesBackInPlace
-                    let hasDifferentSaveFile = loaded.fileURL != lyrics.metadata.localURL
-                    let hasPendingWriteBack = offsets.offset(for: source.trackID, fingerprint: loaded.fingerprint) != nil
-                    if sourceIsReadOnly || hasDifferentSaveFile || hasPendingWriteBack {
-                        offsets.setOffset(newValue, for: source.trackID, fingerprint: loaded.fingerprint)
+                    if offsets.recordAdjustment(
+                        newValue,
+                        for: source.trackID,
+                        source: loaded.source,
+                        currentFileURL: lyrics.metadata.localURL,
+                        writesBackInPlace: loaded.writesBackInPlace
+                    ) {
                         defaults[.trackLyricsOffsets] = offsets.storedData
                     }
                 }
@@ -1000,7 +993,7 @@ final class AppController: NSObject {
             return
         }
 
-        let sourceFingerprint = lyricsContentFingerprint(lyrics)
+        let sourceFingerprint = lyrics.timedContentFingerprint
         let translationKey = [track.id, sourceFingerprint, request.settingsKey].joined(separator: "|")
         guard lastLyricsTranslationKey != translationKey else { return }
         lyricsTranslationTask?.cancel()
@@ -1092,7 +1085,7 @@ final class AppController: NSObject {
                           (try? lyricsTranslationRequest()) == request,
                           let displayedLyrics = currentLyrics,
                           displayedLyrics === lyrics,
-                          lyricsContentFingerprint(displayedLyrics) == sourceFingerprint else {
+                          displayedLyrics.timedContentFingerprint == sourceFingerprint else {
                         return
                     }
                     systemTranslationLanguagePairToDownload = outcome.languagePairToDownload
@@ -1325,9 +1318,9 @@ final class AppController: NSObject {
               !lyricsCandidatePool.contains(where: { $0 === onScreenLyrics }) else {
             return
         }
-        let onScreenFingerprint = lyricsContentFingerprint(onScreenLyrics)
+        let onScreenFingerprint = onScreenLyrics.timedContentFingerprint
         guard let original = lyricsCandidatePool.candidates.first(where: {
-            lyricsContentFingerprint($0) == onScreenFingerprint
+            $0.timedContentFingerprint == onScreenFingerprint
         }) else {
             return
         }
@@ -1354,19 +1347,12 @@ final class AppController: NSObject {
         guard candidatePoolTrackId == track.id else {
             return false
         }
-        let fingerprint = lyricsContentFingerprint(lyrics)
-        guard !lyricsCandidatePool.contains(where: { lyricsContentFingerprint($0) == fingerprint }) else {
+        let fingerprint = lyrics.timedContentFingerprint
+        guard !lyricsCandidatePool.contains(where: { $0.timedContentFingerprint == fingerprint }) else {
             return false
         }
         lyricsCandidatePool.insert(lyrics)
         return true
-    }
-
-    /// Timed line content, which is what actually distinguishes one candidate
-    /// from another. Metadata is deliberately left out: the same words fetched
-    /// from two services differ in their tags but not in what the user reads.
-    private func lyricsContentFingerprint(_ lyrics: Lyrics) -> String {
-        lyrics.lines.map { "\($0.position)|\($0.content)" }.joined(separator: "\n")
     }
 
     /// Moves onto the next candidate for the current track, wrapping around at
@@ -1417,7 +1403,7 @@ final class AppController: NSObject {
             lyricsCandidatePool.insert(onScreenLyrics)
             lyricsCandidatePool.selectCandidate(identicalTo: onScreenLyrics)
         }
-        let onScreenFingerprint = onScreenLyrics.map(lyricsContentFingerprint)
+        let onScreenFingerprint = onScreenLyrics?.timedContentFingerprint
         let request = makeLyricsSearchRequest(for: track)
         searchRequest = request
         performOnLyricsDisplayQueue {
@@ -1434,7 +1420,7 @@ final class AppController: NSObject {
                     guard !hasSwitched,
                           selectedPlayer.currentTrack?.id == track.id,
                           let firstDifferentCandidate = lyricsCandidatePool.candidates.first(where: {
-                              lyricsContentFingerprint($0) != onScreenFingerprint
+                              $0.timedContentFingerprint != onScreenFingerprint
                           }) else {
                         return
                     }
@@ -1633,7 +1619,7 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
-        return captureLocalLyrics(lyrics)
+        return LoadedLocalLyrics(lyrics: lyrics)
     }
 
     private func loadEmbeddedLyrics(_ embeddedLyrics: String, title: String, artist: String) -> LoadedLocalLyrics? {
@@ -1650,12 +1636,7 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
-        return captureLocalLyrics(lyrics)
-    }
-
-    private func captureLocalLyrics(_ lyrics: Lyrics) -> LoadedLocalLyrics {
-        let digest = SHA256.hash(data: Data(lyricsContentFingerprint(lyrics).utf8))
-        return LoadedLocalLyrics(lyrics: lyrics, contentFingerprint: Data(digest).base64EncodedString())
+        return LoadedLocalLyrics(lyrics: lyrics)
     }
 
     private func makeLyricsSearchRequest(for track: MusicTrack) -> LyricsSearchRequest {
@@ -1698,7 +1679,7 @@ final class AppController: NSObject {
         // it outrank its own copy and swap the untranslated lyrics back in.
         let scoredLyrics: Lyrics
         if let current = currentLyrics, current !== lyrics,
-           lyricsContentFingerprint(current) == lyricsContentFingerprint(lyrics) {
+           current.timedContentFingerprint == lyrics.timedContentFingerprint {
             scoredLyrics = current
         } else {
             scoredLyrics = lyrics
@@ -1727,16 +1708,21 @@ final class AppController: NSObject {
 
     /// Called after a successful save, on the display queue.
     func lyricsDidPersist(_ lyrics: Lyrics, to fileURL: URL) {
-        guard let source = localLyricsOffsetSource, source.lyrics === lyrics,
-              source.loaded.fileURL == fileURL else { return }
+        guard let source = localLyricsOffsetSource, source.lyrics === lyrics else { return }
         let loaded = source.loaded
         var offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
-        if offsets.removeOffset(for: source.trackID, fingerprint: loaded.fingerprint) {
+        guard let writeBack = offsets.recordWriteBack(
+            for: source.trackID,
+            source: loaded.source,
+            savedFileURL: fileURL,
+            offset: lyrics.offset
+        ) else { return }
+        if writeBack.removedOverride {
             defaults[.trackLyricsOffsets] = offsets.storedData
         }
         // The menu may still hold the parsed lyrics that preceded a translation.
-        loaded.sourceOffset = lyrics.offset
-        loaded.lyrics.offset = lyrics.offset
+        loaded.source = writeBack.source
+        loaded.lyrics.offset = writeBack.source.offset
     }
 
     private func displayLocalLyrics(_ loaded: LoadedLocalLyrics, forTrackID trackID: String) {
@@ -1744,11 +1730,11 @@ final class AppController: NSObject {
             let lyrics = loaded.lyrics
             localLyricsOffsetSource = LocalLyricsOffsetSource(lyrics: lyrics, trackID: trackID, loaded: loaded)
             let offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
-            if let offset = offsets.offset(for: trackID, fingerprint: loaded.fingerprint) {
-                if offset != loaded.sourceOffset, loaded.writesBackInPlace {
+            if let restoration = offsets.restoration(for: trackID, source: loaded.source, writesBackInPlace: loaded.writesBackInPlace) {
+                if restoration.needsPersist {
                     lyrics.metadata.needsPersist = true
                 }
-                lyrics.offset = offset
+                lyrics.offset = restoration.offset
             }
             currentLyrics = lyrics
         }
@@ -1823,9 +1809,9 @@ final class AppController: NSObject {
         displayLocalLyrics(choice.loaded, forTrackID: track.id)
         // Into the pool rather than in place of it, so the next-candidate
         // shortcut carries on from this choice and can come back to it.
-        let fingerprint = lyricsContentFingerprint(choice.loaded.lyrics)
+        let fingerprint = choice.loaded.lyrics.timedContentFingerprint
         let otherCandidates = candidatePoolTrackId == track.id
-            ? lyricsCandidatePool.candidates.filter { lyricsContentFingerprint($0) != fingerprint }
+            ? lyricsCandidatePool.candidates.filter { $0.timedContentFingerprint != fingerprint }
             : []
         adoptLyricsCandidates(otherCandidates + [choice.loaded.lyrics], selecting: choice.loaded.lyrics, for: track)
         rememberLyricsSelection(choice.source, for: track)

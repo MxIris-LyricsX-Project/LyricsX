@@ -191,6 +191,8 @@ extension Lyrics {
         )
     }
 
+    /// Saves the lyrics file and reconciles any pending track offset after
+    /// a successful write to the displayed lyrics' original file.
     @discardableResult
     func persist() -> Bool {
         // Lyrics are written on the lyrics display queue only, where
