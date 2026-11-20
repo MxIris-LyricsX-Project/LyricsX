@@ -183,6 +183,36 @@ struct TrackLyricsOffsetsTests {
     }
 
     @Test
+    func adjustingBackToTheSourceOffsetDropsTheOverride() throws {
+        let embedded = try makeSource(#require(Lyrics("[00:10.000]Example")), isEmbedded: true)
+        let readOnly = try makeSource(#require(Lyrics("[offset:200]\n[00:10.000]Example")), fileURL: originalFile)
+        var offsets = TrackLyricsOffsets()
+
+        let adjusted = offsets.recordAdjustment(
+            300, for: "embedded", source: embedded, currentFileURL: nil, writesBackInPlace: true
+        )
+        #expect(adjusted)
+        let returned = offsets.recordAdjustment(
+            0, for: "embedded", source: embedded, currentFileURL: nil, writesBackInPlace: true
+        )
+        #expect(returned)
+        #expect(offsets.restoration(for: "embedded", source: embedded, writesBackInPlace: true) == nil)
+        let unchanged = offsets.recordAdjustment(
+            0, for: "embedded", source: embedded, currentFileURL: nil, writesBackInPlace: true
+        )
+        #expect(!unchanged)
+
+        _ = offsets.recordAdjustment(
+            500, for: "read-only", source: readOnly, currentFileURL: libraryCopy, writesBackInPlace: false
+        )
+        let returnedToTag = offsets.recordAdjustment(
+            200, for: "read-only", source: readOnly, currentFileURL: libraryCopy, writesBackInPlace: false
+        )
+        #expect(returnedToTag)
+        #expect(offsets.restoration(for: "read-only", source: readOnly, writesBackInPlace: false) == nil)
+    }
+
+    @Test
     func aFileSourceIsNotRetiredByAnEmbeddedWriteBack() throws {
         let source = try makeSource(#require(Lyrics("[00:10.000]Example")), fileURL: originalFile)
         var offsets = TrackLyricsOffsets()

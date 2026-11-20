@@ -53,6 +53,10 @@ public struct TrackLyricsOffsets: Equatable, Sendable {
         currentFileURL: URL?,
         writesBackInPlace: Bool
     ) -> Bool {
+        // Back at the source's own offset, an override has nothing to add.
+        if offset == source.offset {
+            return removeOffset(for: trackID, fingerprint: source.fingerprint)
+        }
         // Embedded lyrics are saved to the player when the track ends, never to
         // the file `persist()` writes, so every adjustment waits on that write.
         let hasDifferentSaveFile = source.isEmbedded || source.fileURL != currentFileURL
