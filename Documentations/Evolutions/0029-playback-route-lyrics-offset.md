@@ -25,7 +25,7 @@
 **怎么叠加。**
 
 - `Lyrics.adjustedOffset` = 本曲偏移 + 全局偏移 + 当前组合的偏移。菜单栏、桌面歌词、HUD、Apple Music 面板、Touch Bar、小组件都经 `adjustedTimeDelay` 取时间，三层相加后它们一起生效。
-- 本曲偏移可随歌词文件的 `[offset:]` 保存。无法原地写回时，存入 [0032 的曲目偏移表](0032-track-lyrics-offsets.md)。匹配的记录保留至原文件成功写回，其他情况沿用来源标签。
+- 本曲偏移写回同目录歌词文件或 Music 时计入每行时间戳，存进 LyricsX 歌词库时保留 `[offset:]`。无法原地写回时，存入 [0032 的曲目偏移表](0032-track-lyrics-offsets.md)。匹配的记录保留至原来源成功写回，其他情况沿用来源标签。
 - 偏移一变就要重排当前行的三处（`AppController`、`KaraokeLyricsController`、`MenuBarLyricsController`）在原有的偏移信号上并入 `PlaybackRouteLyricsOffsetController.currentRouteOffsetDidChange`：改当前组合的值、换播放器、换输出设备，只要当前组合的偏移变了就发一次。
 - 单位与正负号沿用前两层：毫秒，正值让歌词提前。没设过的组合按 0 算，不内置任何预设值。
 - 只按「播放器 × 设备」精确匹配，不做「任意播放器」或「任意设备」的通配。
