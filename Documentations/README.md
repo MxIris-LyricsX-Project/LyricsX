@@ -85,12 +85,12 @@
   - [0030 实验室页显示 Apple Music token 是否有效](Evolutions/0030-apple-music-token-status.md)
     —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
     `authorizationStatus(for:)` 并发布 1.13.0。
+  - [0031 歌词源可以单独关掉](Evolutions/0031-lyrics-source-switches.md)
+    —— 歌词源表的「来源」一列改成复选框，默认全开；关掉的源不再参与自动搜索、搜索面板和「下一条候选」，
+    设置存为 `DisabledLyricsSources`。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 歌词源可以单独关掉](Evolutions/draft-lyrics-source-switches.md)
-    —— 歌词源表的「来源」一列改成复选框，默认全开；关掉的源不再参与自动搜索、搜索面板和「下一条候选」，
-    设置存为 `DisabledLyricsSources`。
 
 ## 使用说明
 

@@ -99,7 +99,7 @@ return a > b
 
 ## 关掉的歌词源
 
-> 对应提案：[歌词源可以单独关掉](../Evolutions/draft-lyrics-source-switches.md)
+> 对应提案：[0031 歌词源可以单独关掉](../Evolutions/0031-lyrics-source-switches.md)
 
 歌词源表的「来源」一列是复选框，取消勾选的源**根本不创建**：`AppController.updateLyricsManager()`
 读 `LyricsSourceSwitches`，只为开着的源调用 `create(_:)`。自动搜索、搜索面板、「下一条候选」的补搜

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Draft - 歌词源可以单独关掉</title>
+<title>0031 - 歌词源可以单独关掉</title>
 <style>
 /* Evolution proposal page, shared style (style A, "Apple documentation").
    Copy this whole <style> block verbatim. Page-specific rules, if any, go only
@@ -160,13 +160,13 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <div class="page">
 
 <header class="doc-header">
-  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
-  <h1><span class="proposal-number">Draft</span> 歌词源可以单独关掉</h1>
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">0031</span></p>
+  <h1><span class="proposal-number">0031</span> 歌词源可以单独关掉</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
+    <div><dt>状态</dt><dd><span class="status status-implemented">Implemented</span></dd></div>
     <div><dt>最后更新</dt><dd>2026-11-20</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
-    <div><dt>原文</dt><dd><code>draft-lyrics-source-switches.md</code></dd></div>
+    <div><dt>原文</dt><dd><code>0031-lyrics-source-switches.md</code></dd></div>
   </dl>
 </header>
 
@@ -441,14 +441,14 @@ next search (track change / search panel / next-candidate refill)
     <li><strong>策略类型与测试</strong>（改动地图第 1、2 行）—— <code>everySourceIsEnabledByDefault</code>、<code>switchingASourceOffRecordsItsIdentifier</code>、<code>switchingASourceBackOnForgetsIt</code>、<code>switchingOffTwiceRecordsOnce</code>、<code>duplicateStoredIdentifiersCollapse</code>、<code>identifiersFromANewerBuildSurviveAnotherSwitch</code></li>
     <li><strong>搜索只装开着的源</strong>（第 3、4 行）—— 没关任何源时 provider 与改动前一致；关掉的源不在 <code>lyricsManager.providers</code> 里；Apple Music 关掉时 token 检查照常</li>
     <li><strong>设置页复选框</strong>（第 5、6、7 行）—— 三种模式下都能点、重开窗口后保持；不看顺序时不能拖、序号淡化；关掉后搜索面板不再有该源</li>
-    <li><strong>文档与收尾</strong>（第 8、9、10 行）—— <code>swift test --filter LyricsXFoundationTests</code> 全绿，App Debug 构建通过</li>
+    <li><strong>文档与收尾</strong>（第 8、9、10 行，已完成）—— <code>swift test --filter LyricsXFoundationTests</code> 全绿，App Debug 构建通过</li>
   </ol>
 </section>
 
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>8 条，最近一条：实现完成，待用户看过后收尾</summary>
+    <summary>9 条，最近一条：Implemented</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -462,6 +462,7 @@ next search (track change / search panel / next-candidate refill)
           <tr><td class="numeric">2026-11-20</td><td>运行时核对未做</td><td>要启动 App 才看得到；Debug 构建与用户自己的 Debug 构建共用偏好域 <code>dev.JH.LyricsX</code>，点击属于交互式 UI 操作，留给用户看效果时确认。已核对构建产物。</td></tr>
           <tr><td class="numeric">2026-11-20</td><td>文档判断</td><td>实现说明补一节，<code>CLAUDE.md</code> 补一句；不引入新术语；发布说明留到下一版。</td></tr>
           <tr><td class="numeric">2026-11-20</td><td>实现完成，待用户看过后收尾</td><td><code>LyricsXFoundationTests</code> 与 App Debug 构建均通过。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>Implemented</td><td>用户确认收尾，合进 develop 并推送，落地编号 0031；没有未完成的后续项，下一版发布说明加一条。</td></tr>
         </tbody>
       </table>
       </div>

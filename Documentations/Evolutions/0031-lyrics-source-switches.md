@@ -1,6 +1,6 @@
-# Draft - 歌词源可以单独关掉
+# 0031 - 歌词源可以单独关掉
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **作者**: JH
 - **创建日期**: 2026-11-20
 - **最后更新**: 2026-11-20
@@ -8,7 +8,7 @@
 - **关联提案**: [0003 歌词源排序模式](0003-source-ordering-modes.md)（同一个设置页、同一张歌词源表）；
   [Draft 拆分 LyricsXFoundation](draft-split-lyricsx-foundation.md)（若它先落地，本提案的新文件改放进 `LyricsPolicies`）
 - **实现分支 / PR**: `feature/lyrics-source-switches`（LyricsX），功能树 `.worktrees/MxIris-LyricsX-Project-LyricsSourceSwitches`（父仓库）
-- **配套文档**: 待定 —— 落地时在 `Documentations/Internal/LyricsSourceOrdering.md` 补一节「关掉的歌词源」
+- **配套文档**: 实现说明 [歌词候选的排序](../Internal/LyricsSourceOrdering.md) 的「关掉的歌词源」一节
 - **网页版**: 同目录同名的 `.html`
 
 ## 摘要
@@ -104,7 +104,7 @@
 | `LyricsX/Supporting Files/Localizable.xcstrings` | 修改 | 新增 tooltip 文案「Search for lyrics from this source」，补简体 / 繁体中文 | 新界面文案 | 3 |
 | `Documentations/Internal/LyricsSourceOrdering.md` | 修改 | 新增一节「关掉的歌词源」：为什么存关掉的 rawValue、为什么表不再整体禁用、为什么管不到已保存的歌词 | 下次维护会踩的决策 | 4 |
 | `CLAUDE.md`（LyricsX） | 修改 | `LyricsXFoundationTests` 覆盖范围里加一句「哪些歌词源被关掉」 | 测试清单与代码同步 | 4 |
-| `Documentations/Evolutions/draft-lyrics-source-switches.md`（及 `.html`）、两份索引 | 修改 | 落地时取号、状态改 Implemented | 提案收尾 | 4 |
+| `Documentations/Evolutions/0031-lyrics-source-switches.md`（及 `.html`）、两份索引 | 修改 | 落地时取号、状态改 Implemented | 提案收尾 | 4 |
 
 ## 架构图
 
@@ -290,7 +290,7 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
    - 行为：三种排序模式下复选框都能点，勾选状态在重开设置窗口后保持
    - 行为：「只按匹配分数」模式下不能拖动、序号淡化；另外两种模式下拖动照旧
    - 行为：取消勾选后手动搜索面板不再出现该源的结果
-4. **文档与收尾**（已完成，取号与改 Implemented 留给收尾）—— 第 8、9、10 行
+4. **文档与收尾**（已完成）—— 第 8、9、10 行
    - 行为：`swift test --filter LyricsXFoundationTests` 全绿；App 的 Debug 构建通过
 
 **收尾时必须判断两件事**（判断结果写进决策日志，不允许沉默跳过）：
@@ -310,3 +310,4 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 | 2026-11-20 | 运行时核对未做 | 第 2、3 步「`lyricsManager.providers` 里没有关掉的源」「三种模式下都能点」要启动 App 才看得到；Debug 构建与用户自己的 Debug 构建共用偏好域 `dev.JH.LyricsX`，写入测试偏好会改动用户的设置，且点击属于交互式 UI 操作，留给用户看效果时确认。已核对构建产物：新偏好键、复选框单元格、去掉原型单元格的 storyboard 和简体中文文案都在。 |
 | 2026-11-20 | 文档判断 | 在 `Internal/LyricsSourceOrdering.md` 补了「关掉的歌词源」一节，不单独成文；`CLAUDE.md` 的 `LyricsXFoundationTests` 覆盖说明加了一句；不引入新术语（「歌词源开关」就是界面上的复选框，不需要术语表条目）；发布说明留到下一版发版时写。 |
 | 2026-11-20 | 实现完成，待用户看过后收尾 | `swift test --filter LyricsXFoundationTests` 与 App Debug 构建均通过。 |
+| 2026-11-20 | Implemented | 用户确认收尾，合进 develop 并推送，落地编号 0031。配套文档与术语的判断见上面「文档判断」一行，没有未完成的后续项；下一版发布说明加一条「歌词源可以单独关掉」。 |
