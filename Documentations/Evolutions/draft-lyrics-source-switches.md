@@ -286,7 +286,7 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
    - 行为：没有关掉任何源时，`lyricsManager` 的 provider 与改动前一致（同样的五个 + 有效 token 时的 Apple Music）
    - 行为：关掉的源不出现在 `lyricsManager.providers` 里（App 没有测试 target，用构建 + 运行时日志或断点核对）
    - 行为：Apple Music 关掉时 token 检查仍然执行、状态行照常更新
-3. **设置页复选框** —— 第 5、6、7 行
+3. **设置页复选框**（已完成）—— 第 5、6、7 行
    - 行为：三种排序模式下复选框都能点，勾选状态在重开设置窗口后保持
    - 行为：「只按匹配分数」模式下不能拖动、序号淡化；另外两种模式下拖动照旧
    - 行为：取消勾选后手动搜索面板不再出现该源的结果
@@ -305,3 +305,5 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 | 2026-11-20 | Created as Draft | 用户希望能单独关掉某个歌词源：默认全开，关掉的源在获取歌词时不再返回结果。 |
 | 2026-11-20 | Accepted | 用户批准，开始实现。 |
 | 2026-11-20 | In Progress | 在功能树 `MxIris-LyricsX-Project-LyricsSourceSwitches` 的 `feature/lyrics-source-switches` 上实现。 |
+| 2026-11-20 | 偏离：`updateUI()` 改用整表 `reloadData()` | 详细设计写的是只刷新序号列；表只有六行，整表重载更简单，且模式切换时序号颜色与可否拖动同步变化。 |
+| 2026-11-20 | 偏离：复选框单元格是私有子类 `LyricsSourceSwitchCellView` | 比在 `NSTableCellView` 上按下标找按钮更直接；参照 `PlaybackRouteLyricsOffsetsViewController` 的程序化单元格写法。 |

@@ -4247,6 +4247,23 @@
         }
       }
     },
+    "Search for lyrics from this source" : {
+      "comment" : "Tooltip of the checkbox before each lyrics source on the Source settings pane.",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从这个歌词源搜索歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從這個歌詞來源搜尋歌詞"
+          }
+        }
+      }
+    },
     "Search Lyrics" : {
       "comment" : "window title",
       "localizations" : {
