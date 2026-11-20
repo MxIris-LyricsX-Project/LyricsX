@@ -82,12 +82,12 @@
     先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
   - [0029 按播放器与输出设备设置歌词偏移](Evolutions/0029-playback-route-lyrics-offset.md) —— 在每首歌的偏移和全局偏移
     之上，再按「正在播放的 App × 系统默认输出设备」加一层偏移；所有 AirPlay 输出算作一台设备。
+  - [0030 实验室页显示 Apple Music token 是否有效](Evolutions/0030-apple-music-token-status.md)
+    —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
+    `authorizationStatus(for:)` 并发布 1.13.0。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 实验室页显示 Apple Music token 是否有效](Evolutions/draft-apple-music-token-status.md)
-    —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
-    `authorizationStatus(for:)` 并发布 1.13.0。
 
 ## 使用说明
 

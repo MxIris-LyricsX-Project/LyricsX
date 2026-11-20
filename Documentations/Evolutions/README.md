@@ -38,5 +38,5 @@
 | [0027](0027-menu-bar-karaoke-progress.md) | 菜单栏歌词的卡拉OK进度 | Implemented |
 | [0028](0028-netease-panel-artwork.md) | 网易云的歌在歌词面板上也换上高清封面 | Implemented |
 | [0029](0029-playback-route-lyrics-offset.md) | 按播放器与输出设备设置歌词偏移 | Implemented |
+| [0030](0030-apple-music-token-status.md) | 实验室页显示 Apple Music token 是否有效 | Implemented |
 | [draft](draft-split-lyricsx-foundation.md) | 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头 | Draft |
-| [draft](draft-apple-music-token-status.md) | 实验室页显示 Apple Music token 是否有效 | Accepted |

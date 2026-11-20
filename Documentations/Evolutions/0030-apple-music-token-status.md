@@ -1,9 +1,9 @@
-# Draft - 实验室页显示 Apple Music token 是否有效
+# 0030 - 实验室页显示 Apple Music token 是否有效
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **作者**: JH
 - **创建日期**: 2026-11-18
-- **最后更新**: 2026-11-18
+- **最后更新**: 2026-11-20
 - **所属愿景**: 无
 - **关联提案**: [0018 实验室页的 Apple Music 设置归入一组并补齐翻译](0018-lab-apple-music-group.md)（token 输入框所在的组框）
 - **实现分支 / PR**: LyricsX `feature/apple-music-token-status`；LyricsKit `feature/apple-music-authorization-status`
@@ -494,7 +494,7 @@ func updateLyricsManager() async {
    - 行为：`checkAgainStartsANewCheck`
    - 行为：`openingTheLabPaneChecksASavedTokenAgain`
    - 验证：workspace 下 Debug 构建通过。界面截图要等用户授权交互式验证，否则在汇报里说明没做。
-5. **（文档已完成；打标签与改钉版待用户确认）发版接线与文档** —— 第 14–18 行
+5. **（已完成）发版接线与文档** —— 第 14–18 行
    - LyricsKit 打 `v1.13.0` 并推送，改 `exact:`，`-resolvePackageDependencies` 后只保留 LyricsKit 的变化。
    - 更新 `CLAUDE.md` 与 `ReviewDecisions.md`。
    - 行为：`projectResolvesLyricsKit1_13_0FromItsTag`（不设 `LYRICSX_USE_LOCAL_DEPENDENCY` 时 `swift build` 通过）
@@ -524,3 +524,6 @@ func updateLyricsManager() async {
 | 2026-11-18 | 实现完成，待用户看过后收尾 | 状态行没有做界面验证（需要用户另外授权交互式操作）；`AppController` 的三条行为靠代码审查和构建确认 |
 | 2026-11-18 | 修掉状态行的布局死循环：说明文字改用高度跟着宽度走的标签，布局搬进 `LyricsXFoundation` 的 `StatusMessageRowView` | 用户在中文界面打开实验室页时抛出 `NSGenericException`（约束更新的轮数超过窗口里的视图数）。第一版在 `layout()` 里把标签的当前宽度回写成 `preferredMaxLayoutWidth`，而 stack view 按标签的固有宽度给它宽度，两者互相改个不停；只显示「Checking token…」时永远收敛不了，长说明也没有换行。app 没有测试 target，所以把布局原样搬进包里，先写出红的 `StatusMessageRowViewTests` 再修；文案仍留在 app 里 |
 | 2026-11-18 | 横向排查 `preferredMaxLayoutWidth` 的同类写法 | 仓库里另一处（`PlaybackRouteLyricsOffsetsViewController`）设的是固定常量，不在 `layout()` 里回写，没有同样的问题 |
+| 2026-11-20 | 用户验收通过 | 在中文界面打开实验室页，状态行正常显示，长说明折成两行。用的是本地依赖的 workspace 构建 |
+| 2026-11-20 | 发布 LyricsKit 1.13.0，LyricsX 改钉 `exact: "1.13.0"` | tag 打在 LyricsKit `develop` 合并本功能的提交上；1.12.0 之后只有这一个功能。`Package.resolved` 重新解析后只有 LyricsKit 一项变化，没有顺带升级别的依赖 |
+| 2026-11-20 | Implemented，落地编号 0030 | 落地时再次确认：不写配套专题文章，术语表无新增，理由同 2026-11-18 那条。`AppController` 那三条行为仍只靠代码审查和验收时的实际使用确认，app 没有测试 target。没做的项：订阅过期账号的表现仍是推测（没有过期账号可测）；`qc=` 首选正则失效是单独的问题，见非目标 |

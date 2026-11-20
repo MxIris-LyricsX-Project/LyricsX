@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Draft - 实验室页显示 Apple Music token 是否有效</title>
+<title>0030 - 实验室页显示 Apple Music token 是否有效</title>
 <style>
 /* Evolution proposal page, shared style (style A, "Apple documentation").
    Copy this whole <style> block verbatim. Page-specific rules, if any, go only
@@ -174,11 +174,11 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <div class="page">
 
 <header class="doc-header">
-  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
-  <h1><span class="proposal-number">Draft</span> 实验室页显示 Apple Music token 是否有效</h1>
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">0030</span></p>
+  <h1><span class="proposal-number">0030</span> 实验室页显示 Apple Music token 是否有效</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
-    <div><dt>最后更新</dt><dd>2026-11-18</dd></div>
+    <div><dt>状态</dt><dd><span class="status status-implemented">Implemented</span></dd></div>
+    <div><dt>最后更新</dt><dd>2026-11-20</dd></div>
     <div><dt>创建日期</dt><dd>2026-11-18</dd></div>
     <div><dt>作者</dt><dd>JH</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
@@ -186,14 +186,14 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <div><dt>关联提案</dt><dd><a href="0018-lab-apple-music-group.md">0018 实验室页的 Apple Music 设置归入一组并补齐翻译</a>（token 输入框所在的组框）</dd></div>
     <div><dt>实现分支</dt><dd>LyricsX <code>feature/apple-music-token-status</code>；LyricsKit <code>feature/apple-music-authorization-status</code></dd></div>
     <div><dt>配套文档</dt><dd>无（见决策日志 2026-11-18「不写配套专题文章」）；LyricsKit README 新增「Apple Music source requires a media-user-token」一节</dd></div>
-    <div><dt>原文</dt><dd><code>draft-apple-music-token-status.md</code></dd></div>
+    <div><dt>原文</dt><dd><code>0030-apple-music-token-status.md</code></dd></div>
   </dl>
 </header>
 
 <nav class="toc" aria-label="目录">
   <ol>
     <li><a href="#summary">摘要</a></li>
-    <li><a href="#decide">要你定</a></li>
+    <li><a href="#decide">落地状态</a></li>
     <li><a href="#motivation">动机</a></li>
     <li><a href="#interface">界面</a></li>
     <li><a href="#proposal">提议方案</a></li>
@@ -218,19 +218,14 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 </section>
 
 <section id="decide">
-  <h2>要你定</h2>
-  <div class="callout">
-    <p class="callout-title">实现已完成；发版接线的三件事留给你确认</p>
-    <ol>
-      <li>给 LyricsKit 打 <code>v1.13.0</code> 标签并推送。</li>
-      <li>推送 LyricsKit 的 <code>develop</code>（功能分支目前只在本地快进合进了主检出的 <code>develop</code>）。</li>
-      <li>把 LyricsX 的 <code>exact:</code> 从 1.12.0 改成 1.13.0，并刷新 <code>Package.resolved</code>。</li>
-    </ol>
-    <p>打标签并推送等于发布 LyricsKit，不在批准开工的授权里。在那之前功能分支钉的仍是 1.12.0，只有用本地依赖（workspace 或 <code>LYRICSX_USE_LOCAL_DEPENDENCY=1</code>）才编得过。</p>
+  <h2>落地状态</h2>
+  <div class="callout callout-note">
+    <p class="callout-title">已落地（2026-11-20）</p>
+    <p>用户在中文界面验收通过：状态行正常显示，长说明折成两行。LyricsKit 已发布 1.13.0，LyricsX 改钉 <code>exact: "1.13.0"</code>，<code>Package.resolved</code> 只有 LyricsKit 一项变化。</p>
   </div>
   <div class="callout callout-warning">
-    <p class="callout-title">没做的验证</p>
-    <p>状态行没有做界面验证（需要用户另外授权交互式操作）；<code>AppController</code> 的三条行为靠代码审查和构建确认。</p>
+    <p class="callout-title">只靠代码审查确认的部分</p>
+    <p><code>AppController</code> 的三条行为没有自动化测试（app 没有测试 target），靠代码审查和验收时的实际使用确认。</p>
   </div>
 </section>
 
@@ -496,7 +491,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
         <li>验证：workspace 下 Debug 构建通过。界面截图要等用户授权交互式验证，否则在汇报里说明没做。</li>
       </ul>
     </li>
-    <li><span class="tag tag-changed">文档已完成；打标签与改钉版待用户确认</span> <strong>发版接线与文档</strong> —— 第 14–18 行
+    <li><span class="tag tag-added">已完成</span> <strong>发版接线与文档</strong> —— 第 14–18 行
       <ul>
         <li>LyricsKit 打 <code>v1.13.0</code> 并推送，改 <code>exact:</code>，<code>-resolvePackageDependencies</code> 后只保留 LyricsKit 的变化。</li>
         <li>更新 <code>CLAUDE.md</code> 与 <code>ReviewDecisions.md</code>。</li>
@@ -858,7 +853,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>16 条，最近一条：横向排查 <code>preferredMaxLayoutWidth</code> 的同类写法</summary>
+    <summary>19 条，最近一条：Implemented，落地编号 0030</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -880,6 +875,9 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-18</td><td>实现完成，待用户看过后收尾</td><td>状态行没有做界面验证（需要用户另外授权交互式操作）；<code>AppController</code> 的三条行为靠代码审查和构建确认</td></tr>
           <tr><td class="numeric">2026-11-18</td><td>修掉状态行的布局死循环：说明文字改用高度跟着宽度走的标签，布局搬进 <code>LyricsXFoundation</code> 的 <code>StatusMessageRowView</code></td><td>用户在中文界面打开实验室页时抛出 <code>NSGenericException</code>（约束更新的轮数超过窗口里的视图数）。第一版在 <code>layout()</code> 里把标签的当前宽度回写成 <code>preferredMaxLayoutWidth</code>，而 stack view 按标签的固有宽度给它宽度，两者互相改个不停；只显示「Checking token…」时永远收敛不了，长说明也没有换行。app 没有测试 target，所以把布局原样搬进包里，先写出红的 <code>StatusMessageRowViewTests</code> 再修；文案仍留在 app 里</td></tr>
           <tr><td class="numeric">2026-11-18</td><td>横向排查 <code>preferredMaxLayoutWidth</code> 的同类写法</td><td>仓库里另一处（<code>PlaybackRouteLyricsOffsetsViewController</code>）设的是固定常量，不在 <code>layout()</code> 里回写，没有同样的问题</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>用户验收通过</td><td>在中文界面打开实验室页，状态行正常显示，长说明折成两行。用的是本地依赖的 workspace 构建</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>发布 LyricsKit 1.13.0，LyricsX 改钉 <code>exact: "1.13.0"</code></td><td>tag 打在 LyricsKit <code>develop</code> 合并本功能的提交上；1.12.0 之后只有这一个功能。<code>Package.resolved</code> 重新解析后只有 LyricsKit 一项变化，没有顺带升级别的依赖</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>Implemented，落地编号 0030</td><td>落地时再次确认：不写配套专题文章，术语表无新增，理由同 2026-11-18 那条。<code>AppController</code> 那三条行为仍只靠代码审查和验收时的实际使用确认，app 没有测试 target。没做的项：订阅过期账号的表现仍是推测（没有过期账号可测）；<code>qc=</code> 首选正则失效是单独的问题，见非目标</td></tr>
         </tbody>
       </table>
       </div>

@@ -96,7 +96,7 @@
 **裁决：暂缓。** 只影响设置了 token 的用户，而且只影响启动后的第一首，切一首歌或用「下一条候选歌词」就恢复。要修得改
 搜索的初始化顺序：先同步装上不依赖 token 的歌词源，验证通过后再补上 Apple Music。
 
-**2026-11-18 已修复**：提案《实验室页显示 Apple Music token 是否有效》（`Evolutions/draft-apple-music-token-status.md`）重写了 `updateLyricsManager()`，正是按上面的顺序：不需要 token 的歌词源立即装上，token 检查通过后才换成带 Apple Music 的一组。`AppController` 在 app target 里，app 没有测试 target，所以没有回归测试；这条留在清单里，是为了让当初的暂缓有个去向。
+**2026-11-18 已修复**：提案《0030 实验室页显示 Apple Music token 是否有效》（`Evolutions/0030-apple-music-token-status.md`）重写了 `updateLyricsManager()`，正是按上面的顺序：不需要 token 的歌词源立即装上，token 检查通过后才换成带 Apple Music 的一组。`AppController` 在 app target 里，app 没有测试 target，所以没有回归测试；这条留在清单里，是为了让当初的暂缓有个去向。
 
 ### `media-user-token` 明文存在偏好设置里 —— 确认为真，暂缓
 
