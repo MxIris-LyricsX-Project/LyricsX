@@ -162,10 +162,40 @@ struct TrackLyricsOffsetsTests {
         #expect(offsets.restoration(for: "track", source: source, writesBackInPlace: false)?.offset == 300)
     }
 
+    @Test
+    func embeddedLyricsKeepEveryAdjustmentUntilThePlayerHoldsIt() throws {
+        let source = try makeSource(#require(Lyrics("[offset:100]\n[00:10.000]Example")), isEmbedded: true)
+        var offsets = TrackLyricsOffsets()
+
+        let recorded = offsets.recordAdjustment(
+            300, for: "track", source: source, currentFileURL: nil, writesBackInPlace: true
+        )
+        #expect(recorded)
+        let restored = try #require(offsets.restoration(for: "track", source: source, writesBackInPlace: true))
+        #expect(restored.offset == 300)
+        #expect(restored.needsPersist)
+
+        let result = offsets.recordEmbeddedWriteBack(for: "track", source: source, offset: 300)
+        let written = try #require(result)
+        #expect(written.removedOverride)
+        #expect(written.source.offset == 300)
+        #expect(offsets.restoration(for: "track", source: source, writesBackInPlace: true) == nil)
+    }
+
+    @Test
+    func aFileSourceIsNotRetiredByAnEmbeddedWriteBack() throws {
+        let source = try makeSource(#require(Lyrics("[00:10.000]Example")), fileURL: originalFile)
+        var offsets = TrackLyricsOffsets()
+        offsets.setOffset(300, for: "track", fingerprint: source.fingerprint)
+
+        #expect(offsets.recordEmbeddedWriteBack(for: "track", source: source, offset: 300) == nil)
+        #expect(offsets.restoration(for: "track", source: source, writesBackInPlace: true)?.offset == 300)
+    }
+
     private let originalFile = URL(fileURLWithPath: "/Music/Example.lrc")
     private let libraryCopy = URL(fileURLWithPath: "/LyricsX/Example.lrcx")
 
-    private func makeSource(_ lyrics: Lyrics, fileURL: URL? = nil) -> TrackLyricsOffsets.Source {
-        TrackLyricsOffsets.Source(lyrics: lyrics, fileURL: fileURL)
+    private func makeSource(_ lyrics: Lyrics, fileURL: URL? = nil, isEmbedded: Bool = false) -> TrackLyricsOffsets.Source {
+        TrackLyricsOffsets.Source(lyrics: lyrics, fileURL: fileURL, isEmbedded: isEmbedded)
     }
 }
