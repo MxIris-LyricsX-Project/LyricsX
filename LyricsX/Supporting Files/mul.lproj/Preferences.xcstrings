@@ -15120,25 +15120,25 @@
       }
     },
     "writeBackBeside-button-cell-inner.title" : {
-      "comment" : "Class = \"NSButtonCell\"; title = \"Allow writing changes back to lyrics beside the track\"; ObjectID = \"writeBackBeside-button-cell-inner\";",
+      "comment" : "Class = \"NSButtonCell\"; title = \"Allow writing changes back to the lyrics source in use\"; ObjectID = \"writeBackBeside-button-cell-inner\";",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow writing changes back to lyrics beside the track"
+            "value" : "Allow writing changes back to the lyrics source in use"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允许将修改写回音轨同目录歌词文件"
+            "value" : "允许将修改写回正在使用的歌词源"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "允許將修改寫回音軌同目錄歌詞檔案"
+            "value" : "允許將修改寫回正在用的歌詞源"
           }
         }
       }

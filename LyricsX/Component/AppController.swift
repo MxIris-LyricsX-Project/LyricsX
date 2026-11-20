@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Regex
 import OpenCC
+import ScriptingBridge
 import MusicPlayer
 import LyricsXFoundation
 import WidgetKit
@@ -127,13 +128,16 @@ final class AppController: NSObject {
         let lyrics: Lyrics
         var source: TrackLyricsOffsets.Source
 
-        init(lyrics: Lyrics) {
+        init(lyrics: Lyrics, isEmbedded: Bool = false) {
             self.lyrics = lyrics
-            source = TrackLyricsOffsets.Source(lyrics: lyrics, fileURL: lyrics.metadata.localURL)
+            source = TrackLyricsOffsets.Source(lyrics: lyrics, fileURL: lyrics.metadata.localURL, isEmbedded: isEmbedded)
         }
 
         var writesBackInPlace: Bool {
-            source.fileURL.map { defaults.lyricsPersistRewritesFileInPlace($0) } ?? false
+            if source.isEmbedded {
+                return AppController.canWriteBackEmbeddedLyrics
+            }
+            return source.fileURL.map { defaults.lyricsPersistRewritesFileInPlace($0) } ?? false
         }
     }
 
@@ -143,6 +147,25 @@ final class AppController: NSObject {
         weak var lyrics: Lyrics?
         let trackID: String
         let loaded: LoadedLocalLyrics
+        /// The track, pinned, for writing the offset back into Music once it
+        /// has moved on to the next one. Only embedded lyrics have one.
+        var musicTrack: MusicTrack?
+    }
+
+    /// Whether adjustments to lyrics embedded in Music go back into Music.
+    /// The write puts the text `musicLyricsContent` makes into the track, so it
+    /// needs timed lines (plain LRC), and a streamed Apple Music track, which
+    /// has no file, keeps nothing written to it.
+    private static var canWriteBackEmbeddedLyrics: Bool {
+        embeddedWriteBackIsEnabled && selectedPlayer.currentTrack?.localFileURL != nil
+    }
+
+    /// The part of `canWriteBackEmbeddedLyrics` that does not depend on the
+    /// playing track, which has already changed when the write goes out.
+    private static var embeddedWriteBackIsEnabled: Bool {
+        defaults[.writeBackToLyricsBesideTrack]
+            && defaults[.writeiTunesConvertToPlainLRC]
+            && selectedPlayer.name == .appleMusic
     }
 
     private var localLyricsOffsetSource: LocalLyricsOffsetSource?
@@ -473,17 +496,50 @@ final class AppController: NSObject {
         return min(1, wrapCheckTime - playbackTime)
     }
 
+    /// Where every Scripting Bridge call that reads or writes a track's lyrics
+    /// runs, one after another. Music answers a lyrics write once it has stored
+    /// the text, which can take long enough to freeze the app when the main
+    /// thread waits for it; one queue keeps a rejection behind the write it
+    /// takes back.
+    private let musicLyricsQueue = DispatchQueue(label: "LyricsX.MusicLyrics", qos: .utility)
+
+    /// `track` with a reference that keeps pointing at it. Music's
+    /// `currentTrack` is a lazy reference, which means whatever is current when
+    /// the call finally goes out, so resolve it now, before the work moves to
+    /// `musicLyricsQueue`.
+    private func pinnedToCurrentTrack(_ track: MusicTrack) -> MusicTrack {
+        var pinned = track
+        if let resolved = track.originalSBTrack?.get() as? SBObject {
+            pinned.originalTrack = resolved
+        }
+        return pinned
+    }
+
     func writeToiTunes(overwrite: Bool) {
         guard selectedPlayer.name == .appleMusic,
               let currentLyrics = currentLyrics,
               let track = selectedPlayer.currentTrack,
-              let scriptingBridgeTrack = track.originalTrack,
-              overwrite || (scriptingBridgeTrack.value(forKey: "lyrics") as! String?)?.isEmpty != false else {
+              track.originalTrack != nil else {
             return
         }
+        let pinnedTrack = pinnedToCurrentTrack(track)
         let content = musicLyricsContent(for: currentLyrics)
-        scriptingBridgeTrack.setValue(content, forKey: "lyrics")
-        lastLyricsWrittenToMusic = (track.id, content)
+        // Recorded before the write goes out, so a rejection that arrives while
+        // it is still queued compares against the text on its way.
+        if overwrite {
+            lastLyricsWrittenToMusic = (track.id, content)
+        }
+        musicLyricsQueue.async { [weak self] in
+            if !overwrite, pinnedTrack.lyrics?.isEmpty == false {
+                return
+            }
+            pinnedTrack.setLyrics(content)
+            if !overwrite {
+                DispatchQueue.main.async {
+                    self?.lastLyricsWrittenToMusic = (track.id, content)
+                }
+            }
+        }
     }
 
     /// Takes rejected lyrics back out of Music, where automatic writing may
@@ -503,13 +559,16 @@ final class AppController: NSObject {
         if let currentLyrics {
             contentsLyricsXWrote.append(musicLyricsContent(for: currentLyrics))
         }
-        guard LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
-            lyricsInMusic: track.lyrics,
-            contentsLyricsXWrote: contentsLyricsXWrote
-        ) else {
-            return
+        let pinnedTrack = pinnedToCurrentTrack(track)
+        musicLyricsQueue.async {
+            guard LyricsStoragePolicy.clearsLyricsInMusicWhenRejected(
+                lyricsInMusic: pinnedTrack.lyrics,
+                contentsLyricsXWrote: contentsLyricsXWrote
+            ) else {
+                return
+            }
+            pinnedTrack.setLyrics("")
         }
-        track.setLyrics("")
     }
 
     /// Stops both searches that may still be running for the current track,
@@ -571,6 +630,7 @@ final class AppController: NSObject {
             if let lyrics = currentLyrics, lyrics.metadata.needsPersist {
                 lyrics.persist()
             }
+            writeEmbeddedOffsetBackToMusic()
             localLyricsOffsetSource = nil
         }
         currentLyrics = nil
@@ -1642,7 +1702,7 @@ final class AppController: NSObject {
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.cacheQualityBeforeDisplay()
-        return LoadedLocalLyrics(lyrics: lyrics)
+        return LoadedLocalLyrics(lyrics: lyrics, isEmbedded: true)
     }
 
     private func makeLyricsSearchRequest(for track: MusicTrack) -> LyricsSearchRequest {
@@ -1735,10 +1795,67 @@ final class AppController: NSObject {
         loaded.lyrics.offset = writeBack.source.offset
     }
 
+    /// Puts an adjusted offset into the lyrics Music holds for the track that is
+    /// ending, and takes its pending override back once Music shows what was
+    /// written. Runs on the display queue when the track changes; the write
+    /// itself goes through `musicLyricsQueue`.
+    private func writeEmbeddedOffsetBackToMusic() {
+        guard let source = localLyricsOffsetSource,
+              let lyrics = source.lyrics,
+              let musicTrack = source.musicTrack,
+              source.loaded.source.isEmbedded,
+              Self.embeddedWriteBackIsEnabled,
+              lyrics.offset != source.loaded.source.offset else {
+            return
+        }
+        let content = musicLyricsContent(for: lyrics)
+        let trackID = source.trackID
+        let loaded = source.loaded
+        let offset = lyrics.offset
+        musicLyricsQueue.async { [weak self] in
+            musicTrack.setLyrics(content)
+            // Scripting Bridge reports no error, so read the lyrics back: only
+            // a write Music shows keeps the override from being needed.
+            guard let storedLyrics = musicTrack.lyrics,
+                  Self.comparableLines(of: storedLyrics) == Self.comparableLines(of: content) else {
+                return
+            }
+            DispatchQueue.main.async {
+                self?.lastLyricsWrittenToMusic = (trackID, content)
+            }
+            DispatchQueue.lyricsDisplay.async {
+                var offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
+                guard let writeBack = offsets.recordEmbeddedWriteBack(
+                    for: trackID,
+                    source: loaded.source,
+                    offset: offset
+                ) else { return }
+                if writeBack.removedOverride {
+                    defaults[.trackLyricsOffsets] = offsets.storedData
+                }
+                loaded.source = writeBack.source
+                loaded.lyrics.offset = writeBack.source.offset
+            }
+        }
+    }
+
+    private static func comparableLines(of text: String) -> [String] {
+        text.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
     private func displayLocalLyrics(_ loaded: LoadedLocalLyrics, forTrackID trackID: String) {
         performOnLyricsDisplayQueue {
             let lyrics = loaded.lyrics
-            localLyricsOffsetSource = LocalLyricsOffsetSource(lyrics: lyrics, trackID: trackID, loaded: loaded)
+            var musicTrack: MusicTrack?
+            if loaded.source.isEmbedded, loaded.writesBackInPlace,
+               let track = selectedPlayer.currentTrack, track.id == trackID {
+                musicTrack = pinnedToCurrentTrack(track)
+            }
+            localLyricsOffsetSource = LocalLyricsOffsetSource(
+                lyrics: lyrics, trackID: trackID, loaded: loaded, musicTrack: musicTrack
+            )
             let offsets = TrackLyricsOffsets(storedData: defaults[.trackLyricsOffsets])
             if let restoration = offsets.restoration(for: trackID, source: loaded.source, writesBackInPlace: loaded.writesBackInPlace) {
                 if restoration.needsPersist {

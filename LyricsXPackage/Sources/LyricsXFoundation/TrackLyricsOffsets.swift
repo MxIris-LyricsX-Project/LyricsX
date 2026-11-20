@@ -2,16 +2,21 @@ import CryptoKit
 import Foundation
 import LyricsKit
 
-/// Per-track overrides for lyric sources that LyricsX does not update in place.
+/// Per-track overrides for lyric offsets that are not in the source yet: a source
+/// LyricsX does not update in place, or an adjustment still waiting for the write
+/// that puts it there.
 public struct TrackLyricsOffsets: Equatable, Sendable {
     /// The source as read, independent of adjustments to the displayed lyrics.
     public struct Source: Equatable, Sendable {
         public let fileURL: URL?
+        /// The lyrics came from the player's own lyrics field, not from a file.
+        public let isEmbedded: Bool
         public private(set) var offset: Int
         private let contentDigest: String
 
-        public init(lyrics: Lyrics, fileURL: URL?) {
+        public init(lyrics: Lyrics, fileURL: URL?, isEmbedded: Bool = false) {
             self.fileURL = fileURL
+            self.isEmbedded = isEmbedded
             offset = lyrics.offset
             let digest = SHA256.hash(data: Data(lyrics.timedContentFingerprint.utf8))
             contentDigest = Data(digest).base64EncodedString()
@@ -48,7 +53,9 @@ public struct TrackLyricsOffsets: Equatable, Sendable {
         currentFileURL: URL?,
         writesBackInPlace: Bool
     ) -> Bool {
-        let hasDifferentSaveFile = source.fileURL != currentFileURL
+        // Embedded lyrics are saved to the player when the track ends, never to
+        // the file `persist()` writes, so every adjustment waits on that write.
+        let hasDifferentSaveFile = source.isEmbedded || source.fileURL != currentFileURL
         let hasPendingWriteBack = self.offset(for: trackID, fingerprint: source.fingerprint) != nil
         guard !writesBackInPlace || hasDifferentSaveFile || hasPendingWriteBack else { return false }
         setOffset(offset, for: trackID, fingerprint: source.fingerprint)
@@ -72,6 +79,17 @@ public struct TrackLyricsOffsets: Equatable, Sendable {
         offset: Int
     ) -> (source: Source, removedOverride: Bool)? {
         guard source.fileURL == savedFileURL else { return nil }
+        let removed = removeOffset(for: trackID, fingerprint: source.fingerprint)
+        return (source.writtenBack(offset: offset), removed)
+    }
+
+    /// Called once the player holds the lyrics with `offset` in them.
+    public mutating func recordEmbeddedWriteBack(
+        for trackID: String,
+        source: Source,
+        offset: Int
+    ) -> (source: Source, removedOverride: Bool)? {
+        guard source.isEmbedded else { return nil }
         let removed = removeOffset(for: trackID, fingerprint: source.fingerprint)
         return (source.writtenBack(offset: offset), removed)
     }
