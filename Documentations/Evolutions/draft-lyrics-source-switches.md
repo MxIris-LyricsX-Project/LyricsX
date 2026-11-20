@@ -1,6 +1,6 @@
 # Draft - 歌词源可以单独关掉
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **作者**: JH
 - **创建日期**: 2026-11-20
 - **最后更新**: 2026-11-20
@@ -275,7 +275,7 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 
 ## 落地步骤
 
-1. **策略类型与测试** —— 改动地图第 1、2 行
+1. **策略类型与测试**（已完成）—— 改动地图第 1、2 行
    - 行为：`everySourceIsEnabledByDefault`
    - 行为：`switchingASourceOffRecordsItsIdentifier`
    - 行为：`switchingASourceBackOnForgetsIt`
@@ -304,3 +304,4 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 |------|------|------|
 | 2026-11-20 | Created as Draft | 用户希望能单独关掉某个歌词源：默认全开，关掉的源在获取歌词时不再返回结果。 |
 | 2026-11-20 | Accepted | 用户批准，开始实现。 |
+| 2026-11-20 | In Progress | 在功能树 `MxIris-LyricsX-Project-LyricsSourceSwitches` 的 `feature/lyrics-source-switches` 上实现。 |
