@@ -262,6 +262,10 @@ extension UserDefaults.DefaultsKeys {
     /// A `LyricsSourceOrderingMode` raw value.
     static let lyricsSourceOrderingMode = Key<Int>("LyricsSourceOrderingMode")
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
+    /// The `LyricsProviders.ServiceID` raw values of the sources switched off
+    /// on the Source pane; read through `LyricsSourceSwitches`. Empty — the
+    /// default — means every source is on.
+    static let disabledLyricsSources = Key<[String]>("DisabledLyricsSources")
     static let lyricsPriorityWindow = Key<Double>("LyricsPriorityWindow")
 
     // Artwork-similarity reranking: when on, candidates whose cover art looks

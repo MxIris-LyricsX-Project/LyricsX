@@ -107,7 +107,8 @@
   判断为什么必须发生在读文件之后，回退为什么也要写在 catch 分支里，以及读文件名为什么改成
   两种拼法都试。
 - [歌词候选的排序](Internal/LyricsSourceOrdering.md) —— 为什么用分数分桶而不是比分差
-  （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前。
+  （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前；关掉的歌词源为什么存 rawValue、
+  为什么管不到已保存的歌词。
 - [把歌词写进「音乐」](Internal/MusicLyricsWriting.md) —— 什么时候写、写什么，否掉歌词时为什么只撤回
   LyricsX 自己写的那份，以及暂缓到 1.9.0 正式版之后的已知问题：自动写入会覆盖用户原有的歌词。
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
