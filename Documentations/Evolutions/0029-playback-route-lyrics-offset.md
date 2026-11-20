@@ -2,13 +2,13 @@
 
 - **状态**: Implemented
 - **创建日期**: 2026-11-15
-- **最后更新**: 2026-11-16
+- **最后更新**: 2026-11-19
 - **实现分支**: LyricsX `feature/playback-route-lyrics-offset`（从 develop 切）；MusicPlayer `feature/system-media-player-bundle-id`（叠在 `feature/system-media-player-name`，即 1.11.0 之上）
 - **配套文档**: [实现说明：按播放器与输出设备的歌词偏移](../Internal/PlaybackRouteLyricsOffset.md)
 
 ## 摘要
 
-歌词时间现在有两层偏移：每首歌自己的偏移（写进歌词文件的 `[offset:]`）和「通用」页的全局偏移。可播放器各自对输出延迟的补偿并不一致：QQ 音乐 11.11.1 在 `-[AudioPlayManager updateProgress:]` 里写死，输出走 AirPlay 时把进度减 2.205 秒、走蓝牙时减 0.1 秒，从不读 CoreAudio 报的真实延迟；网易云音乐不做补偿。HomePod mini 2 当 Mac 扬声器时真实延迟几乎为零（1 代约 2 秒），于是同一台设备在不同播放器下需要不同的修正，一个全局值顾不过来。本提案加第三层偏移，按「播放器 × 输出设备」分别设置，与前两层相加。
+歌词时间原有两层偏移：每首歌自己的偏移和「通用」页的全局偏移。可播放器各自对输出延迟的补偿并不一致：QQ 音乐 11.11.1 在 `-[AudioPlayManager updateProgress:]` 里写死，输出走 AirPlay 时把进度减 2.205 秒、走蓝牙时减 0.1 秒，从不读 CoreAudio 报的真实延迟；网易云音乐不做补偿。HomePod mini 2 当 Mac 扬声器时真实延迟几乎为零（1 代约 2 秒），于是同一台设备在不同播放器下需要不同的修正，一个全局值顾不过来。本提案加第三层偏移，按「播放器 × 输出设备」分别设置，与前两层相加。
 
 ## 方案
 
@@ -24,7 +24,8 @@
 
 **怎么叠加。**
 
-- `Lyrics.adjustedOffset` = 歌词自带偏移 + 全局偏移 + 当前组合的偏移。菜单栏、桌面歌词、HUD、Apple Music 面板、Touch Bar、小组件都经 `adjustedTimeDelay` 取时间，三层相加后它们一起生效。
+- `Lyrics.adjustedOffset` = 本曲偏移 + 全局偏移 + 当前组合的偏移。菜单栏、桌面歌词、HUD、Apple Music 面板、Touch Bar、小组件都经 `adjustedTimeDelay` 取时间，三层相加后它们一起生效。
+- 本曲偏移写回同目录歌词文件或 Music 时计入每行时间戳，存进 LyricsX 歌词库时保留 `[offset:]`。无法原地写回时，存入 [0032 的曲目偏移表](0032-track-lyrics-offsets.md)。匹配的记录保留至原来源成功写回，其他情况沿用来源标签。
 - 偏移一变就要重排当前行的三处（`AppController`、`KaraokeLyricsController`、`MenuBarLyricsController`）在原有的偏移信号上并入 `PlaybackRouteLyricsOffsetController.currentRouteOffsetDidChange`：改当前组合的值、换播放器、换输出设备，只要当前组合的偏移变了就发一次。
 - 单位与正负号沿用前两层：毫秒，正值让歌词提前。没设过的组合按 0 算，不内置任何预设值。
 - 只按「播放器 × 设备」精确匹配，不做「任意播放器」或「任意设备」的通配。

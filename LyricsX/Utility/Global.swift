@@ -235,6 +235,8 @@ extension UserDefaults.DefaultsKeys {
     static let lyricsTranslationStatus = Key<String>("AILyricsTranslationStatus")
 
     static let globalLyricsOffset = Key<Int>("GlobalLyricsOffset")
+    /// `TrackLyricsOffsets.storedData`: offsets keyed by track and matched to the source lyrics.
+    static let trackLyricsOffsets = Key<Data?>("TrackLyricsOffsets")
     /// `PlaybackRouteLyricsOffsets.storedData`: the offsets set per player and
     /// output device, added on top of the global offset.
     static let playbackRouteLyricsOffsets = Key<Data?>("PlaybackRouteLyricsOffsets")

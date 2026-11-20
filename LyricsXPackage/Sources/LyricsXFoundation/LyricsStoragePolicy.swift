@@ -59,6 +59,22 @@ public enum LyricsStoragePolicy {
         return false
     }
 
+    /// Whether saving to `fileURL` moves the offset into the line times
+    /// (`Lyrics.withOffsetInLineTimes`). A file beside a track is read by other
+    /// players, which may ignore `[offset:]`; LyricsX's own library keeps the
+    /// tag, because saved translations are matched to a source's lines by time.
+    public static func putsOffsetInLineTimes(
+        savingTo fileURL: URL,
+        defaultDirectoryURL: URL,
+        customDirectoryURL: URL?
+    ) -> Bool {
+        !isManagedLibraryFile(
+            fileURL,
+            defaultDirectoryURL: defaultDirectoryURL,
+            customDirectoryURL: customDirectoryURL
+        )
+    }
+
     /// The file to delete when the user rejects the lyrics on screen with
     /// "Wrong Lyrics" or "Disable Lyrics for Entire Album": LyricsX's own copy
     /// in the library, and nothing else. A file beside the track is the

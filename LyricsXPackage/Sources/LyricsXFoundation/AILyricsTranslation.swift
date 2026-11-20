@@ -442,10 +442,9 @@ public enum AILyricsTranslationPolicy {
     ) -> [Int: String] {
         guard let targetLanguage = normalizedLanguageIdentifier(targetLanguage),
               saved.lines.count == source.lines.count,
-              zip(saved.lines, source.lines).allSatisfy({ savedLine, sourceLine in
-                  savedLine.content == sourceLine.content
-                      && abs(savedLine.position - sourceLine.position) < 0.000_5
-              }) else {
+              zip(saved.lines, source.lines).allSatisfy({ $0.content == $1.content }),
+              linesStartTogether(saved, source, countingOffsets: false)
+                  || linesStartTogether(saved, source, countingOffsets: true) else {
             return [:]
         }
         let languageCandidates = targetLanguageCandidates(
@@ -462,6 +461,22 @@ public enum AILyricsTranslationPolicy {
             translations[line.index] = translation
         }
         return translations
+    }
+
+    /// Whether every line of `saved` starts with its counterpart in `source`.
+    /// Counting offsets compares when the lines show — the time less the
+    /// lyrics' offset, never before zero — which is what a write-back that put
+    /// the offset into the source's line times keeps
+    /// (`Lyrics.withOffsetInLineTimes`), while the library copy still has the
+    /// old times and the `[offset:]` tag.
+    private static func linesStartTogether(_ saved: Lyrics, _ source: Lyrics, countingOffsets: Bool) -> Bool {
+        let savedShift = TimeInterval(saved.offset) / 1000
+        let sourceShift = TimeInterval(source.offset) / 1000
+        return zip(saved.lines, source.lines).allSatisfy { savedLine, sourceLine in
+            let savedTime = countingOffsets ? max(0, savedLine.position - savedShift) : savedLine.position
+            let sourceTime = countingOffsets ? max(0, sourceLine.position - sourceShift) : sourceLine.position
+            return abs(savedTime - sourceTime) < 0.000_5
+        }
     }
 
     public static func parsedTranslations(

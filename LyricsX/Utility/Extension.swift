@@ -191,6 +191,9 @@ extension Lyrics {
         )
     }
 
+    /// Saves the lyrics file and reconciles any pending track offset after
+    /// a successful write to the displayed lyrics' original file. A file
+    /// beside the track gets the offset in its line times instead of a tag.
     @discardableResult
     func persist() -> Bool {
         // Lyrics are written on the lyrics display queue only, where
@@ -232,9 +235,16 @@ extension Lyrics {
                 try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
             }
 
-            try Data(description.utf8).write(to: fileURL, options: .atomic)
+            let putsOffsetInLineTimes = LyricsStoragePolicy.putsOffsetInLineTimes(
+                savingTo: fileURL,
+                defaultDirectoryURL: defaults.lyricsDefaultSavingDirectory,
+                customDirectoryURL: defaults.lyricsCustomSavingPath
+            )
+            let contents = putsOffsetInLineTimes ? withOffsetInLineTimes.description : description
+            try Data(contents.utf8).write(to: fileURL, options: .atomic)
             metadata.localURL = fileURL
             metadata.needsPersist = false
+            AppController.shared.lyricsDidPersist(self, to: fileURL)
             return true
         } catch {
             log(error.localizedDescription)
