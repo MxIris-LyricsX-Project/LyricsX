@@ -582,9 +582,11 @@ final class AppController: NSObject {
         candidateReplenishTask?.cancel()
     }
 
-    /// The text `writeToiTunes` puts into Music for `lyrics` under the current
-    /// preferences.
-    private func musicLyricsContent(for lyrics: Lyrics) -> String {
+    /// The text `writeToiTunes` puts into Music for `displayedLyrics` under the
+    /// current preferences, with the offset in the line times: other players
+    /// read the lyrics in Music too.
+    private func musicLyricsContent(for displayedLyrics: Lyrics) -> String {
+        let lyrics = displayedLyrics.withOffsetInLineTimes
         let content: String
         if defaults[.writeiTunesConvertToPlainLRC] {
             // For plain LRC export, preserve the legacy LRC formatting but still respect

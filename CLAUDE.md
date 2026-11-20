@@ -64,7 +64,9 @@ label up with and the per-release insets it falls back to, where a step of
 that row's lyrics offset lands (the next multiple of 100 ms, so an offset
 the lyrics came with, such as Kugou's 51 ms, steps back to 0), the lyrics
 offsets that survive for read-only sources and migrate on write-back
-(`TrackLyricsOffsets`), plus the lyrics translation policies (the engine choice
+(`TrackLyricsOffsets`), and a write-back to a file beside the track or to
+Music putting the offset into the line times, since other players ignore
+`[offset:]` (`Lyrics.withOffsetInLineTimes`), plus the lyrics translation policies (the engine choice
 and its migration from the AI switch, AI request encoding and batch boundaries,
 when AI translation stops waiting for the automatic search, reusing a saved
 copy's translations, what either engine keeps of an answer: one line, never a
