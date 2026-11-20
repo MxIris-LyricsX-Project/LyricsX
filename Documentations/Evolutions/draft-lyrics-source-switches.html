@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Draft - 歌词源可以单独关掉</title>
+<style>
+/* Evolution proposal page, shared style (style A, "Apple documentation").
+   Copy this whole <style> block verbatim. Page-specific rules, if any, go only
+   in the marked block at the end. Must render in WebKit (Safari, Xcode preview,
+   Quick Look): no JavaScript, no external resources. */
+:root {
+  --background: #ffffff; --foreground: #1d1d1f; --secondary: #6e6e73; --separator: #d2d2d7;
+  --panel: #f5f5f7; --code-background: #f2f2f4; --accent: #0071e3;
+  --added: #1f8a4c; --added-fill: #e3f5ea;
+  --changed: #b26a00; --changed-fill: #fdf0db;
+  --removed: #c62828; --removed-fill: #fbe4e4;
+  --moved: #0066cc; --moved-fill: #e5f0fc;
+  --kept: #6e6e73; --kept-fill: #ececef;
+  --token-keyword: #ad3da4; --token-type: #3900a0; --token-string: #c41a16; --token-number: #1c00cf;
+  --token-comment: #707f8c; --token-macro: #643820;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1c1e; --foreground: #f2f2f7; --secondary: #a1a1a6; --separator: #3a3a3c;
+    --panel: #2c2c2e; --code-background: #2a2a2d; --accent: #4ea1ff;
+    --added: #4cd281; --added-fill: #183826;
+    --changed: #ffb340; --changed-fill: #3d2c10;
+    --removed: #ff6b6b; --removed-fill: #3d1a1a;
+    --moved: #5aa9ff; --moved-fill: #142b45;
+    --kept: #b0b0b5; --kept-fill: #333336;
+    --token-keyword: #fc5fa3; --token-type: #d0a8ff; --token-string: #fc6a5d; --token-number: #d0bf69;
+    --token-comment: #7f8c98; --token-macro: #fd8f3f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--background); color: var(--foreground);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.page { max-width: 1080px; margin: 0 auto; padding: 28px 24px 72px; }
+.svg-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Header */
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--secondary); }
+.crumb + .crumb::before { content: " / "; }
+h1 { font-size: 28px; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 12px; }
+h1 code { font-size: 0.8em; }
+.proposal-number { color: var(--secondary); margin-right: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; font-size: 13px; color: var(--secondary); }
+.meta div { display: flex; gap: 6px; align-items: baseline; }
+.meta dd { margin: 0; color: var(--foreground); }
+.meta dd code { font-size: 12px; }
+.status { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.status-accepted { color: var(--moved); background: var(--moved-fill); }
+.status-in-progress { color: var(--changed); background: var(--changed-fill); }
+.status-implemented { color: var(--added); background: var(--added-fill); }
+.status-rejected, .status-withdrawn { color: var(--removed); background: var(--removed-fill); }
+
+/* Table of contents */
+.toc { margin: 22px 0 8px; padding: 8px 10px; background: var(--panel); border-radius: 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.toc li { margin: 0; }
+.toc a { display: inline-block; padding: 3px 11px; border-radius: 999px; color: var(--accent); text-decoration: none; font-size: 14px; }
+.toc a:hover { background: var(--background); }
+
+/* Text */
+section { scroll-margin-top: 16px; }
+h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--separator); }
+h3 { font-size: 16px; margin: 22px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p { margin: 10px 0; }
+a { color: var(--accent); }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--separator); color: var(--secondary); }
+hr { border: none; border-top: 1px solid var(--separator); margin: 24px 0; }
+
+/* Code */
+code { font: 0.86em/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--code-background); padding: 1px 5px; border-radius: 5px; }
+pre { background: var(--code-background); border-radius: 10px; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; font: 12.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+pre code { font: inherit; background: none; padding: 0; border-radius: 0; }
+.token-keyword { color: var(--token-keyword); font-weight: 600; }
+.token-type { color: var(--token-type); }
+.token-string { color: var(--token-string); }
+.token-number { color: var(--token-number); }
+.token-comment { color: var(--token-comment); }
+.token-macro { color: var(--token-macro); }
+
+/* Callouts */
+.callout { background: var(--panel); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+.callout-note { border-left-color: var(--secondary); }
+.callout-warning { border-left-color: var(--changed); }
+.callout-title { margin: 0 0 6px; font-weight: 600; }
+.callout > :last-child { margin-bottom: 0; }
+.callout ol, .callout ul { margin: 6px 0 0; }
+
+/* Diagrams */
+.legend { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--secondary); }
+.legend li { margin: 0; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid; vertical-align: -2px; margin-right: 6px; }
+.swatch-added { background: var(--added-fill); border-color: var(--added); }
+.swatch-changed { background: var(--changed-fill); border-color: var(--changed); }
+.swatch-removed { background: var(--removed-fill); border-color: var(--removed); border-style: dashed; }
+.swatch-moved { background: var(--moved-fill); border-color: var(--moved); }
+.swatch-kept { background: var(--kept-fill); border-color: var(--kept); }
+.figure { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--separator); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.figure svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.figure-narrow svg { min-width: 0; max-width: 640px; margin: 0 auto; }
+.figure-caption { font-size: 13px; color: var(--secondary); margin-top: 8px; }
+svg text { font: 12px ui-monospace, "SF Mono", Menlo, monospace; fill: var(--foreground); }
+svg .group-label { font-size: 13px; font-weight: 700; }
+svg .caption { font-size: 10.5px; fill: var(--secondary); }
+svg .strike { text-decoration: line-through; }
+svg .group { fill: none; stroke: var(--separator); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .box-added { fill: var(--added-fill); stroke: var(--added); stroke-width: 1.5; }
+svg .box-changed { fill: var(--changed-fill); stroke: var(--changed); stroke-width: 1.5; }
+svg .box-removed { fill: var(--removed-fill); stroke: var(--removed); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg .box-moved { fill: var(--moved-fill); stroke: var(--moved); stroke-width: 1.5; }
+svg .box-kept { fill: var(--kept-fill); stroke: var(--kept); stroke-width: 1.2; }
+svg .arrow { fill: none; stroke: var(--secondary); stroke-width: 1.4; marker-end: url(#arrowhead); }
+svg .arrow-weak { stroke-dasharray: 4 3; }
+svg .arrow-removed { stroke: var(--removed); stroke-dasharray: 4 3; }
+svg .arrowhead { fill: var(--secondary); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--separator); padding: 7px 9px; text-align: left; vertical-align: top; }
+th { background: var(--panel); font-weight: 600; }
+.numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; white-space: nowrap; padding: 0 7px; border-radius: 5px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.tag-added { color: var(--added); background: var(--added-fill); }
+.tag-changed { color: var(--changed); background: var(--changed-fill); }
+.tag-removed { color: var(--removed); background: var(--removed-fill); }
+.tag-moved { color: var(--moved); background: var(--moved-fill); }
+
+/* Collapsible sections */
+details { border: 1px solid var(--separator); border-radius: 12px; margin: 12px 0; overflow: hidden; }
+summary { cursor: pointer; list-style: none; padding: 11px 16px; font-weight: 600; background: var(--panel); }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "›"; display: inline-block; width: 1em; color: var(--secondary); -webkit-transition: -webkit-transform 0.15s; transition: transform 0.15s; }
+details[open] > summary::before { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+details[open] > summary { border-bottom: 1px solid var(--separator); }
+.details-body { padding: 4px 16px 12px; }
+
+@media (max-width: 640px) {
+  .page { padding: 20px 16px 56px; }
+  h1 { font-size: 23px; }
+}
+
+/* ===== Page-specific styles (only for elements the shared style lacks, e.g. UI mockups) ===== */
+</style>
+</head>
+<body>
+<svg class="svg-definitions" aria-hidden="true" focusable="false">
+  <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+</svg>
+<div class="page">
+
+<header class="doc-header">
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
+  <h1><span class="proposal-number">Draft</span> 歌词源可以单独关掉</h1>
+  <dl class="meta">
+    <div><dt>状态</dt><dd><span class="status status-accepted">Accepted</span></dd></div>
+    <div><dt>最后更新</dt><dd>2026-11-20</dd></div>
+    <div><dt>项目类型</dt><dd>App</dd></div>
+    <div><dt>原文</dt><dd><code>draft-lyrics-source-switches.md</code></dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <ol>
+    <li><a href="#summary">摘要</a></li>
+    <li><a href="#assumptions">自行决定的事</a></li>
+    <li><a href="#architecture">架构图</a></li>
+    <li><a href="#map">改动地图</a></li>
+    <li><a href="#design">详细设计</a></li>
+    <li><a href="#research">动机与调研</a></li>
+    <li><a href="#alternatives">替代方案</a></li>
+    <li><a href="#impact">影响</a></li>
+    <li><a href="#steps">落地步骤</a></li>
+    <li><a href="#log">决策日志</a></li>
+  </ol>
+</nav>
+
+<main class="content">
+
+<section id="summary">
+  <h2>摘要</h2>
+  <p>「设置 → 歌词源」页的歌词源表里，每个歌词源名字前加一个复选框，默认全部勾选。取消勾选的歌词源不再参与任何联网搜索——换歌时的自动搜索、手动搜索面板、「下一条候选」快捷键都不会再向它发请求，也就不会再出现它的歌词。</p>
+  <p>设置存成一个「被关掉的歌词源」列表（<code>DisabledLyricsSources</code>，存 <code>LyricsProviders.ServiceID</code> 的 rawValue），空列表即全开，以后 LyricsKit 新增的歌词源默认也是开的。判断逻辑是 <code>LyricsXFoundation</code> 里的纯值类型 <code>LyricsSourceSwitches</code>，有单元测试；<code>AppController.updateLyricsManager()</code> 只为开着的歌词源创建 provider。</p>
+</section>
+
+<section id="assumptions">
+  <h2>自行决定的事</h2>
+  <div class="callout callout-note">
+    <p class="callout-title">没有待定问题；以下几点按默认做法定了，可以推翻</p>
+    <ul>
+      <li>手动搜索面板和「下一条候选」也排除关掉的源（三条路径共用同一个 <code>lyricsManager</code>）。</li>
+      <li>下一次搜索才生效，不重搜当前歌曲，屏幕上的歌词不动。</li>
+      <li>已保存的歌词不过滤：歌词库文件不记录来源，无从判断。</li>
+      <li>NetEase 高清封面、Apple Music 原名恢复与 token 检查不跟着歌词源开关走。</li>
+      <li>「只按匹配分数」模式下表不再整体变灰：复选框能点，只是不能拖动、序号淡化。</li>
+      <li>一个源都不开是合法设置，不加额外提示。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>架构图</h2>
+  <ul class="legend">
+    <li><i class="swatch swatch-added"></i>新增</li>
+    <li><i class="swatch swatch-changed"></i>修改</li>
+    <li><i class="swatch swatch-removed"></i>删除</li>
+    <li><i class="swatch swatch-kept"></i>不变</li>
+  </ul>
+  <div class="figure">
+  <svg viewBox="0 0 1000 320" role="img" aria-label="What changes">
+    <rect class="group" x="10" y="10" width="980" height="200" rx="10"/>
+    <text class="group-label" x="22" y="30">LyricsX app</text>
+    <rect class="box-changed" x="25" y="42" width="290" height="58" rx="6"/>
+    <text x="35" y="60">PreferenceSourceViewController</text>
+    <text class="caption" x="35" y="77">source column: text field -&gt; checkbox</text>
+    <text class="caption" x="35" y="92">toggleSource(_:) saves, then rebuilds</text>
+    <rect class="box-changed" x="355" y="42" width="290" height="58" rx="6"/>
+    <text x="365" y="60">AppController.updateLyricsManager()</text>
+    <text class="caption" x="365" y="77">creates enabled sources only</text>
+    <text class="caption" x="365" y="92">Apple Music: authorized &amp;&amp; enabled</text>
+    <rect class="box-kept" x="685" y="42" width="290" height="58" rx="6"/>
+    <text x="695" y="64">LyricsProviders.Group</text>
+    <text class="caption" x="695" y="82">AppController.lyricsManager</text>
+    <rect class="box-removed" x="25" y="130" width="290" height="44" rx="6"/>
+    <text class="strike" x="35" y="148">prototype cell VGV-SG-dwt</text>
+    <text class="caption" x="35" y="165">Preferences.storyboard, source column</text>
+    <rect class="box-added" x="355" y="130" width="290" height="44" rx="6"/>
+    <text x="365" y="148">disabledLyricsSources</text>
+    <text class="caption" x="365" y="165">"DisabledLyricsSources": [String]</text>
+    <rect class="box-kept" x="685" y="130" width="290" height="44" rx="6"/>
+    <text x="695" y="148">lyrics searches</text>
+    <text class="caption" x="695" y="165">track change · search panel · next candidate</text>
+    <rect class="group" x="10" y="230" width="980" height="80" rx="10"/>
+    <text class="group-label" x="22" y="250">LyricsXFoundation</text>
+    <rect class="box-added" x="355" y="252" width="290" height="44" rx="6"/>
+    <text x="365" y="270">LyricsSourceSwitches</text>
+    <text class="caption" x="365" y="287">isEnabled(_:) · setEnabled(_:for:)</text>
+    <rect class="box-kept" x="685" y="252" width="290" height="44" rx="6"/>
+    <text x="695" y="270">LyricsSourceOrderingPolicy</text>
+    <text class="caption" x="695" y="287">unchanged</text>
+    <path class="arrow" d="M 315 71 L 355 71"/>
+    <path class="arrow" d="M 645 71 L 685 71"/>
+    <path class="arrow" d="M 830 130 L 830 100"/>
+    <path class="arrow" d="M 290 100 L 380 130"/>
+    <path class="arrow" d="M 500 100 L 500 130"/>
+    <path class="arrow" d="M 315 92 L 335 92 L 335 274 L 355 274"/>
+    <path class="arrow" d="M 645 92 L 665 92 L 665 266 L 645 266"/>
+  </svg>
+  </div>
+  <p class="figure-caption">设置页写开关、触发重建；<code>updateLyricsManager()</code> 读开关、只建开着的源；三条搜索路径都读同一个 <code>lyricsManager</code>，所以一处过滤即全部生效。</p>
+  <h3>数据流</h3>
+<pre><code>checkbox click
+  -&gt; PreferenceSourceViewController.toggleSource(_:)
+       -&gt; LyricsSourceSwitches.setEnabled(_:for:)
+       -&gt; defaults[.disabledLyricsSources] = switches.disabledSourceIdentifiers
+       -&gt; AppController.updateLyricsManager()
+            -&gt; LyricsSourceSwitches(disabledSourceIdentifiers: defaults[...])
+            -&gt; lyricsManager = LyricsProviders.Group(providers: enabled only)
+
+next search (track change / search panel / next-candidate refill)
+  -&gt; lyricsManager.lyrics(for:)        disabled sources were never created</code></pre>
+</section>
+
+<section id="map">
+  <h2>改动地图</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>文件 / 类型</th><th>动作</th><th>改什么</th><th>为什么</th><th>步骤</th></tr></thead>
+    <tbody>
+      <tr><td><code>LyricsXPackage/Sources/LyricsXFoundation/LyricsSourceSwitches.swift</code></td><td><span class="tag tag-added">新增</span></td><td>值类型：由存储的 rawValue 列表构造；<code>isEnabled(_:)</code>、<code>setEnabled(_:for:)</code>；<code>disabledSourceIdentifiers</code> 供写回</td><td>开关的唯一判断处，脱离 <code>UserDefaults</code> 便于测试</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsXPackage/Tests/LyricsXFoundationTests/LyricsSourceSwitchesTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>默认全开、关掉 / 重新打开、重复关闭只记一次、未知值保留</td><td>锁定存储格式与默认值</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsX/Utility/Global.swift</code> · <code>DefaultsKeys</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>disabledLyricsSources = Key&lt;[String]&gt;("DisabledLyricsSources")</code></td><td>新偏好键</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Component/AppController.swift</code> · <code>updateLyricsManager()</code></td><td><span class="tag tag-changed">修改</span></td><td>免凭据的源按开关过滤后再 <code>create</code>；Apple Music 在 token 通过且开着时才加入</td><td>关掉的源不再被请求</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Preferences/PreferenceSourceViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>「来源」列改用代码创建的复选框单元格；<code>toggleSource(_:)</code> 保存并重建；表不再整体禁用，改为序号淡化；不看顺序时拒绝拖动</td><td>默认模式下复选框也要能点</td><td class="numeric">3</td></tr>
+      <tr><td><code>Preferences.storyboard</code> · 原型单元格 <code>VGV-SG-dwt</code></td><td><span class="tag tag-removed">删除</span></td><td>删掉「来源」列不再使用的原型单元格，列本身保留</td><td>单元格改由代码创建，留着是死代码</td><td class="numeric">3</td></tr>
+      <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>新增 tooltip「Search for lyrics from this source」，补简体 / 繁体中文</td><td>新界面文案</td><td class="numeric">3</td></tr>
+      <tr><td><code>Documentations/Internal/LyricsSourceOrdering.md</code></td><td><span class="tag tag-changed">修改</span></td><td>新增一节「关掉的歌词源」</td><td>下次维护会踩的决策</td><td class="numeric">4</td></tr>
+      <tr><td><code>CLAUDE.md</code>（LyricsX）</td><td><span class="tag tag-changed">修改</span></td><td><code>LyricsXFoundationTests</code> 覆盖范围加一句</td><td>测试清单与代码同步</td><td class="numeric">4</td></tr>
+      <tr><td>本提案及两份索引</td><td><span class="tag tag-changed">修改</span></td><td>落地时取号、状态改 Implemented</td><td>提案收尾</td><td class="numeric">4</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="design">
+  <h2>详细设计</h2>
+  <details open>
+    <summary><code>LyricsSourceSwitches</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-comment">/// Which lyrics sources the user has switched off on the Source pane.</span>
+<span class="token-keyword">public struct</span> <span class="token-type">LyricsSourceSwitches</span>: <span class="token-type">Equatable</span>, <span class="token-type">Sendable</span> {
+    <span class="token-comment">/// What the preference stores, in the order the sources were switched off.</span>
+    <span class="token-keyword">public private(set) var</span> disabledSourceIdentifiers: [<span class="token-type">String</span>]
+
+    <span class="token-keyword">public init</span>(disabledSourceIdentifiers: [<span class="token-type">String</span>] = []) {
+        <span class="token-keyword">var</span> seenIdentifiers = <span class="token-type">Set</span>&lt;<span class="token-type">String</span>&gt;()
+        <span class="token-keyword">self</span>.disabledSourceIdentifiers = disabledSourceIdentifiers.filter { seenIdentifiers.insert($0).inserted }
+    }
+
+    <span class="token-keyword">public func</span> isEnabled(_ service: <span class="token-type">LyricsProviders.ServiceID</span>) -&gt; <span class="token-type">Bool</span> {
+        !disabledSourceIdentifiers.contains(service.rawValue)
+    }
+
+    <span class="token-keyword">public mutating func</span> setEnabled(_ isEnabled: <span class="token-type">Bool</span>, for service: <span class="token-type">LyricsProviders.ServiceID</span>) {
+        disabledSourceIdentifiers.removeAll { $0 == service.rawValue }
+        <span class="token-keyword">if</span> !isEnabled {
+            disabledSourceIdentifiers.append(service.rawValue)
+        }
+    }
+}</code></pre>
+      <ul>
+        <li>命名照 <code>NSSegmentedControl</code> 的逐项开关：<code>isEnabled(forSegment:)</code> / <code>setEnabled(_:forSegment:)</code>。</li>
+        <li>存 rawValue 而不是 <code>displayName</code>：显示名是界面文字，改一个字旧设置就对不上。</li>
+        <li>构造时去重，避免重复值造成「打开一次还关着」。</li>
+        <li>读不懂的标识符（更新的版本写入的）原样保留，在这里切换别的源不会把它重新打开。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary><code>AppController.updateLyricsManager()</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">let</span> sourceSwitches = <span class="token-type">LyricsSourceSwitches</span>(disabledSourceIdentifiers: defaults[.disabledLyricsSources])
+<span class="token-keyword">var</span> tokenFreeProviders: [<span class="token-type">LyricsProvider</span>] = [
+    <span class="token-type">LyricsProviders.Service</span>.netease,
+    <span class="token-type">LyricsProviders.Service</span>.qq,
+    <span class="token-type">LyricsProviders.Service</span>.kugou,
+    <span class="token-type">LyricsProviders.Service</span>.lrclib,
+]
+.filter { sourceSwitches.isEnabled($0.id) }
+.map { $0.create() }
+<span class="token-keyword">if</span> sourceSwitches.isEnabled(.musixmatch) {
+    tokenFreeProviders.append(<span class="token-type">LyricsProviders.Service</span>.musixmatch.create(.init(usertoken: musixmatchToken)))
+}
+<span class="token-comment">// ... token check unchanged ...</span>
+<span class="token-keyword">if</span> appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appleMusic) {
+    lyricsManager = <span class="token-type">LyricsProviders.Group</span>(
+        providers: tokenFreeProviders + [<span class="token-type">LyricsProviders.Service</span>.appleMusic.create(options)],
+        plugins: plugins
+    )
+}</code></pre>
+      <ul>
+        <li>原来的顺序（NetEase、QQMusic、Kugou、LRCLIB、Musixmatch）不变。</li>
+        <li>token 检查无论 Apple Music 开没开都照做：结果给实验室页的状态行看。</li>
+        <li>不新增 <code>defaults</code> 订阅：开关只在歌词源页改，那里直接调用 <code>updateLyricsManager()</code>，与实验室页一致；原订阅链的 <code>removeDuplicates</code> 只比较原名恢复开关与播放器名，加新键反而会被吞掉。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>设置页</summary>
+    <div class="details-body">
+      <ul>
+        <li>行模型 <code>sourcePriorityOrder: [String]</code>（<code>displayName</code>）不变，私有辅助把 <code>displayName</code> 映射回 <code>ServiceID</code>。</li>
+        <li>「来源」列：<code>makeView(withIdentifier: "sourceSwitch")</code> 复用，取不到就新建 <code>NSTableCellView</code> 并放入 <code>NSButton(checkboxWithTitle:target:action:)</code>，左对齐、垂直居中、前缘 2 pt；<code>state</code> 取 <code>isEnabled</code>，<code>toolTip</code> 取本地化文案。</li>
+        <li><code>toggleSource(_:)</code>：<code>row(for: sender)</code> 取行 → 改开关 → 写回 <code>defaults[.disabledLyricsSources]</code> → <code>updateLyricsManager()</code>。</li>
+        <li><code>updateUI()</code>：删掉 <code>isEnabled</code> / <code>alphaValue</code> 两行，改为刷新序号列；不看顺序时序号用 <code>.disabledControlTextColor</code>。</li>
+        <li><code>tableView(_:writeRowsWith:to:)</code>：不看顺序时返回 <code>false</code>，保持「这个模式下不能拖」。</li>
+        <li>删 storyboard 原型单元格前，先确认 Xcode 没打开 <code>Preferences.storyboard</code>，否则保存会被覆盖。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="research">
+  <h2>动机与调研</h2>
+  <details>
+    <summary>动机：现在只能排序，不能排除</summary>
+    <div class="details-body">
+      <ul>
+        <li><code>updateLyricsManager()</code>（<code>AppController.swift:274</code>）每次都把五个免凭据的歌词源全部装进 <code>LyricsProviders.Group</code>，token 有效时再加 Apple Music。0003 的三种排序模式只决定「谁排前面」，不决定「谁参与」。</li>
+        <li>默认的「只按匹配分数」模式下，不信任的源只要分数高就会上屏；即使拖到最后，别的源没结果时它仍会上屏，并照样出现在搜索面板与候选池里。</li>
+        <li>连不上的源每次搜索都白等到超时；质量系统性地差的源只能一首首手动换掉。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>调研：LyricsKit 已具备按 ID 挑选的能力，三条搜索路径共用一个入口</summary>
+    <div class="details-body">
+      <ul>
+        <li><code>LyricsProviders.ServiceID</code> 是 <code>String</code> rawValue 的 <code>CaseIterable</code> 枚举：<code>netease</code>、<code>qq</code>、<code>kugou</code>、<code>musixmatch</code>、<code>lrclib</code>、<code>appleMusic</code>；每个 <code>Service</code> 都带 <code>id</code>。不需要发 LyricsKit 新版本。</li>
+        <li>自动搜索（<code>AppController.swift:583</code>）、「下一条候选」补搜（<code>:1369</code>）、搜索面板（<code>SearchLyricsViewController.swift:17</code>）都读同一个 <code>lyricsManager</code>。</li>
+        <li><code>Group.lyrics(for:)</code> 在 <code>providers</code> 为空时立即结束，自动搜索随即走「没结果就读歌词库」的现有分支，不会卡住。</li>
+        <li>歌词库 <code>.lrcx</code> 不记录来源：本机 2891 个文件的元数据标签里没有任何一个记录歌词源，<code>[by:]</code> 是歌词作者字段，不可靠。</li>
+        <li>「只按匹配分数」模式（默认值）下整张表 <code>isEnabled = false</code>、半透明（<code>PreferenceSourceViewController.swift:63-64</code>），放进复选框后必须改。</li>
+        <li><code>GenericID</code> 的 <code>Key&lt;[String]&gt;</code> 未注册时读出空数组，新键不需要改 <code>UserDefaults.plist</code>。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="alternatives">
+  <h2>替代方案</h2>
+  <details>
+    <summary>六条，全部否决</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>存「开着的」列表</strong>：以后新增的源会默认关闭，与「默认全开」相反。</li>
+        <li><strong>复用 <code>displayName</code> 当标识符</strong>：显示名是界面文字，改名即失配。</li>
+        <li><strong>照常搜索、再丢掉关掉的源的结果</strong>：请求照发，连不上的源照样拖慢搜索。</li>
+        <li><strong>在 LyricsKit 里加「启用的源」参数</strong>：挑选在 App 里做就够，改 LyricsKit 要发版、改版本号，收益为零。</li>
+        <li><strong>在 storyboard 新增一列复选框</strong>：表格更挤；画新列要算 frame、改约束，风险更大。</li>
+        <li><strong>切换后立即重搜当前歌曲</strong>：会换掉屏幕上的歌词，用户只是在调设置。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="impact">
+  <h2>影响</h2>
+  <h3>用户可见变化</h3>
+  <ul>
+    <li>「设置 → 歌词源」表的「来源」一列变成复选框，默认全部勾选。</li>
+    <li>「只按匹配分数」模式下表不再整体变灰：复选框可以点，只是不能拖动、序号淡化。</li>
+    <li>关掉的歌词源不再出现在自动搜索、手动搜索面板和「下一条候选」里。</li>
+  </ul>
+  <h3>数据与配置兼容</h3>
+  <ul>
+    <li>新键 <code>DisabledLyricsSources</code>，未写入时为空数组即全开，不需要迁移。</li>
+    <li>降级到旧版本时所有源恢复开启；再升级回来开关设置仍在。</li>
+    <li>已保存的歌词不受影响。</li>
+  </ul>
+  <h3>平台与发布</h3>
+  <ul>
+    <li>最低版本不变（macOS 12）；不需要新权限，不影响公证与 Sparkle。</li>
+    <li>下一版发布说明加一条「歌词源可以单独关掉」。</li>
+  </ul>
+</section>
+
+<section id="steps">
+  <h2>落地步骤</h2>
+  <ol>
+    <li><strong>策略类型与测试</strong>（改动地图第 1、2 行）—— <code>everySourceIsEnabledByDefault</code>、<code>switchingASourceOffRecordsItsIdentifier</code>、<code>switchingASourceBackOnForgetsIt</code>、<code>switchingOffTwiceRecordsOnce</code>、<code>duplicateStoredIdentifiersCollapse</code>、<code>identifiersFromANewerBuildSurviveAnotherSwitch</code></li>
+    <li><strong>搜索只装开着的源</strong>（第 3、4 行）—— 没关任何源时 provider 与改动前一致；关掉的源不在 <code>lyricsManager.providers</code> 里；Apple Music 关掉时 token 检查照常</li>
+    <li><strong>设置页复选框</strong>（第 5、6、7 行）—— 三种模式下都能点、重开窗口后保持；不看顺序时不能拖、序号淡化；关掉后搜索面板不再有该源</li>
+    <li><strong>文档与收尾</strong>（第 8、9、10 行）—— <code>swift test --filter LyricsXFoundationTests</code> 全绿，App Debug 构建通过</li>
+  </ol>
+</section>
+
+<section id="log">
+  <h2>决策日志</h2>
+  <details>
+    <summary>2 条，最近一条：Accepted</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>日期</th><th>变更</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="numeric">2026-11-20</td><td>Created as Draft</td><td>用户希望能单独关掉某个歌词源：默认全开，关掉的源在获取歌词时不再返回结果。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>Accepted</td><td>用户批准，开始实现。</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+</main>
+</div>
+</body>
+</html>
