@@ -276,14 +276,22 @@ final class AppController: NSObject {
         lyricsManagerUpdateGeneration += 1
         let generation = lyricsManagerUpdateGeneration
 
+        // A source the user switched off on the Source pane is never created,
+        // so no search — automatic, the search panel's or the next-candidate
+        // refill — sends it a request.
+        let sourceSwitches = LyricsSourceSwitches(disabledSourceIdentifiers: defaults[.disabledLyricsSources])
         let musixmatchToken = defaults[.musixmatchToken].flatMap { $0.isEmpty ? nil : $0 }
-        let tokenFreeProviders: [LyricsProvider] = [
-            LyricsProviders.Service.netease.create(),
-            LyricsProviders.Service.qq.create(),
-            LyricsProviders.Service.kugou.create(),
-            LyricsProviders.Service.lrclib.create(),
-            LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)),
+        var tokenFreeProviders: [LyricsProvider] = [
+            LyricsProviders.Service.netease,
+            LyricsProviders.Service.qq,
+            LyricsProviders.Service.kugou,
+            LyricsProviders.Service.lrclib,
         ]
+        .filter { sourceSwitches.isEnabled($0.id) }
+        .map { $0.create() }
+        if sourceSwitches.isEnabled(.musixmatch) {
+            tokenFreeProviders.append(LyricsProviders.Service.musixmatch.create(.init(usertoken: musixmatchToken)))
+        }
         // Route B: for Apple Music tracks, a search plugin recovers the
         // native-script name via the Apple Music catalog so the providers
         // can match it. The plugin runs upstream of the providers — it
@@ -321,7 +329,9 @@ final class AppController: NSObject {
         guard generation == lyricsManagerUpdateGeneration else { return }
 
         appleMusicTokenCheck = .finished(status)
-        if appleMusicTokenCheck.includesAppleMusicLyrics {
+        // The check above runs even with Apple Music switched off: its verdict
+        // is what the Lab pane shows under the token field.
+        if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appleMusic) {
             lyricsManager = LyricsProviders.Group(
                 providers: tokenFreeProviders + [LyricsProviders.Service.appleMusic.create(options)],
                 plugins: plugins

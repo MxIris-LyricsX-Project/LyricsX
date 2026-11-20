@@ -282,7 +282,7 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
    - 行为：`switchingOffTwiceRecordsOnce`
    - 行为：`duplicateStoredIdentifiersCollapse`
    - 行为：`identifiersFromANewerBuildSurviveAnotherSwitch`
-2. **搜索只装开着的源** —— 第 3、4 行
+2. **搜索只装开着的源**（已完成）—— 第 3、4 行
    - 行为：没有关掉任何源时，`lyricsManager` 的 provider 与改动前一致（同样的五个 + 有效 token 时的 Apple Music）
    - 行为：关掉的源不出现在 `lyricsManager.providers` 里（App 没有测试 target，用构建 + 运行时日志或断点核对）
    - 行为：Apple Music 关掉时 token 检查仍然执行、状态行照常更新
