@@ -148,7 +148,8 @@ final class AppController: NSObject {
         let trackID: String
         let loaded: LoadedLocalLyrics
         /// The track, pinned, for writing the offset back into Music once it
-        /// has moved on to the next one. Only embedded lyrics have one.
+        /// has moved on to the next one. Every embedded source in Music has
+        /// one, so write-back turned on mid-track still reaches it.
         var musicTrack: MusicTrack?
     }
 
@@ -1797,6 +1798,7 @@ final class AppController: NSObject {
               let musicTrack = source.musicTrack,
               source.loaded.source.isEmbedded,
               Self.embeddedWriteBackIsEnabled,
+              musicTrack.localFileURL != nil,
               lyrics.offset != source.loaded.source.offset else {
             return
         }
@@ -1841,7 +1843,7 @@ final class AppController: NSObject {
         performOnLyricsDisplayQueue {
             let lyrics = loaded.lyrics
             var musicTrack: MusicTrack?
-            if loaded.source.isEmbedded, loaded.writesBackInPlace,
+            if loaded.source.isEmbedded, selectedPlayer.name == .appleMusic,
                let track = selectedPlayer.currentTrack, track.id == trackID {
                 musicTrack = pinnedToCurrentTrack(track)
             }
