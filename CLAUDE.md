@@ -66,7 +66,8 @@ Music putting the offset into the line times, since other players ignore
 `[offset:]` (`Lyrics.withOffsetInLineTimes`), plus the lyrics translation policies (the engine choice
 and its migration from the AI switch, AI request encoding and batch boundaries,
 when AI translation stops waiting for the automatic search, reusing a saved
-copy's translations, what either engine keeps of an answer: one line, never a
+copy's translations (also after a write-back moved the source's offset into
+its line times), what either engine keeps of an answer: one line, never a
 line handed back unchanged, and that a translation leaves the lyrics' ranking
 as it was), and the panel's high-resolution cover: that a cover and its
 100-pixel thumbnail fingerprint alike (`ArtworkFingerprint`, red on the old
