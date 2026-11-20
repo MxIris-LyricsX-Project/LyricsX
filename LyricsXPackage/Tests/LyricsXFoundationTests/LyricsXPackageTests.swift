@@ -401,6 +401,44 @@ func aiLyricsTranslationReusesNothingFromACopyOfOtherLyrics() throws {
 }
 
 @Test
+func aiLyricsTranslationReusesASavedCopyAfterTheSourceTookTheOffsetIntoItsLineTimes() throws {
+    // Writing back to Music or a file beside the track moves the offset into
+    // the source's line times; the library copy keeps the old times and its
+    // `[offset:]` tag. The lines still show at the same moments, opening lines
+    // held at zero included, so the copy's translations still belong to them.
+    let adjusted = try #require(Lyrics("[offset:500]\n[00:00.300]intro\n[00:01.000]first\n[00:02.000]second"))
+    let translated = try AILyricsTranslationPolicy.applying([1: "第一"], to: adjusted, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+    let writtenBack = try #require(Lyrics(adjusted.withOffsetInLineTimes.description))
+    #expect(saved.offset == 500)
+    #expect(writtenBack.offset == 0)
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: writtenBack,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations == [1: "第一"])
+}
+
+@Test
+func aiLyricsTranslationReusesNothingWhenOffsetsDoNotLineTheCopyUp() throws {
+    let source = try #require(Lyrics("[00:01.500]first\n[00:02.000]second"))
+    let other = try #require(Lyrics("[offset:-500]\n[00:01.000]first\n[00:02.000]second"))
+    let translated = try AILyricsTranslationPolicy.applying([0: "第一"], to: other, targetLanguage: "zh-Hans")
+    let saved = try #require(Lyrics(translated.description))
+
+    let savedTranslations = AILyricsTranslationPolicy.savedTranslations(
+        in: saved,
+        for: source,
+        targetLanguage: "zh-Hans"
+    )
+
+    #expect(savedTranslations.isEmpty)
+}
+
+@Test
 func aiLyricsTranslationReusesOnlyTranslationsInTheTargetLanguage() throws {
     let source = try #require(Lyrics("[00:01.000]first"))
     let translated = try AILyricsTranslationPolicy.applying([0: "最初"], to: source, targetLanguage: "ja")
