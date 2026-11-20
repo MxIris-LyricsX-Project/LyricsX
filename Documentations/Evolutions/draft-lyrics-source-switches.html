@@ -360,9 +360,9 @@ next search (track change / search panel / next-candidate refill)
     <div class="details-body">
       <ul>
         <li>行模型 <code>sourcePriorityOrder: [String]</code>（<code>displayName</code>）不变，私有辅助把 <code>displayName</code> 映射回 <code>ServiceID</code>。</li>
-        <li>「来源」列：<code>makeView(withIdentifier: "sourceSwitch")</code> 复用，取不到就新建 <code>NSTableCellView</code> 并放入 <code>NSButton(checkboxWithTitle:target:action:)</code>，左对齐、垂直居中、前缘 2 pt；<code>state</code> 取 <code>isEnabled</code>，<code>toolTip</code> 取本地化文案。</li>
+        <li>「来源」列：<code>makeView(withIdentifier: "sourceSwitch")</code> 复用，取不到就新建私有子类 <code>LyricsSourceSwitchCellView</code>（<code>NSTableCellView</code>），它持有一个 <code>NSButton(checkboxWithTitle:target:action:)</code>，左对齐、垂直居中、前缘 2 pt；<code>state</code> 取 <code>isEnabled</code>，<code>toolTip</code> 取本地化文案。</li>
         <li><code>toggleSource(_:)</code>：<code>row(for: sender)</code> 取行 → 改开关 → 写回 <code>defaults[.disabledLyricsSources]</code> → <code>updateLyricsManager()</code>。</li>
-        <li><code>updateUI()</code>：删掉 <code>isEnabled</code> / <code>alphaValue</code> 两行，改为刷新序号列；不看顺序时序号用 <code>.disabledControlTextColor</code>。</li>
+        <li><code>updateUI()</code>：删掉 <code>isEnabled</code> / <code>alphaValue</code> 两行，改为整表 <code>reloadData()</code>；不看顺序时序号用 <code>.disabledControlTextColor</code>，否则 <code>.controlTextColor</code>。</li>
         <li><code>tableView(_:writeRowsWith:to:)</code>：不看顺序时返回 <code>false</code>，保持「这个模式下不能拖」。</li>
         <li>删 storyboard 原型单元格前，先确认 Xcode 没打开 <code>Preferences.storyboard</code>，否则保存会被覆盖。</li>
       </ul>
@@ -448,7 +448,7 @@ next search (track change / search panel / next-candidate refill)
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>2 条，最近一条：Accepted</summary>
+    <summary>8 条，最近一条：实现完成，待用户看过后收尾</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -456,6 +456,12 @@ next search (track change / search panel / next-candidate refill)
         <tbody>
           <tr><td class="numeric">2026-11-20</td><td>Created as Draft</td><td>用户希望能单独关掉某个歌词源：默认全开，关掉的源在获取歌词时不再返回结果。</td></tr>
           <tr><td class="numeric">2026-11-20</td><td>Accepted</td><td>用户批准，开始实现。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>In Progress</td><td>在功能树 <code>MxIris-LyricsX-Project-LyricsSourceSwitches</code> 的 <code>feature/lyrics-source-switches</code> 上实现。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>偏离：<code>updateUI()</code> 改用整表 <code>reloadData()</code></td><td>表只有六行，整表重载更简单，且模式切换时序号颜色与可否拖动同步变化。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>偏离：复选框单元格是私有子类 <code>LyricsSourceSwitchCellView</code></td><td>比在 <code>NSTableCellView</code> 上按下标找按钮更直接；参照 <code>PlaybackRouteLyricsOffsetsViewController</code> 的程序化单元格写法。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>运行时核对未做</td><td>要启动 App 才看得到；Debug 构建与用户自己的 Debug 构建共用偏好域 <code>dev.JH.LyricsX</code>，点击属于交互式 UI 操作，留给用户看效果时确认。已核对构建产物。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>文档判断</td><td>实现说明补一节，<code>CLAUDE.md</code> 补一句；不引入新术语；发布说明留到下一版。</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>实现完成，待用户看过后收尾</td><td><code>LyricsXFoundationTests</code> 与 App Debug 构建均通过。</td></tr>
         </tbody>
       </table>
       </div>

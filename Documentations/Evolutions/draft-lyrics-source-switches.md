@@ -222,13 +222,13 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 
 - 行模型：`sourcePriorityOrder: [String]`（`displayName`）保持不变，另用私有辅助把 `displayName` 映射回 `ServiceID`
   （`LyricsProviders.ServiceID.allCases.first { $0.displayName == name }`）。
-- 「来源」列：`makeView(withIdentifier: "sourceSwitch")` 复用，取不到就新建一个 `NSTableCellView`，里面放
-  `NSButton(checkboxWithTitle:target:action:)`，左对齐、垂直居中、前缘 2 pt（与原文本框一致）。`state` 取
-  `sourceSwitches.isEnabled(serviceID)`，`toolTip` 取本地化文案。
+- 「来源」列：`makeView(withIdentifier: "sourceSwitch")` 复用，取不到就新建一个私有子类 `LyricsSourceSwitchCellView`
+  （`NSTableCellView`），它持有一个 `NSButton(checkboxWithTitle:target:action:)`，左对齐、垂直居中、前缘 2 pt
+  （与原文本框一致）。`state` 取 `sourceSwitches.isEnabled(serviceID)`，`toolTip` 取本地化文案。
 - `toggleSource(_ sender: NSButton)`：`sourceTableView.row(for: sender)` 取行，改 `sourceSwitches`，写回
   `defaults[.disabledLyricsSources]`，再 `Task { @MainActor in await AppController.shared.updateLyricsManager() }`。
-- `updateUI()`：删掉 `isEnabled` / `alphaValue` 两行；改为 `reloadData(forRowIndexes:columnIndexes:)` 刷新序号列，
-  序号文字在 `!mode.usesSourcePriorityOrder` 时用 `.disabledControlTextColor`，否则 `.labelColor`。
+- `updateUI()`：删掉 `isEnabled` / `alphaValue` 两行，改为整表 `reloadData()`；序号文字在
+  `!mode.usesSourcePriorityOrder` 时用 `.disabledControlTextColor`，否则 `.controlTextColor`（storyboard 原来的颜色）。
 - `tableView(_:writeRowsWith:to:)`：`!lyricsSourceOrderingMode.usesSourcePriorityOrder` 时返回 `false`，
   保持原来「这个模式下不能拖」的行为。
 - 删除 storyboard 里「来源」列的原型单元格之前，先确认 Xcode 没打开 `Preferences.storyboard`，否则保存会被覆盖。
@@ -290,7 +290,7 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
    - 行为：三种排序模式下复选框都能点，勾选状态在重开设置窗口后保持
    - 行为：「只按匹配分数」模式下不能拖动、序号淡化；另外两种模式下拖动照旧
    - 行为：取消勾选后手动搜索面板不再出现该源的结果
-4. **文档与收尾** —— 第 8、9、10 行
+4. **文档与收尾**（已完成，取号与改 Implemented 留给收尾）—— 第 8、9、10 行
    - 行为：`swift test --filter LyricsXFoundationTests` 全绿；App 的 Debug 构建通过
 
 **收尾时必须判断两件事**（判断结果写进决策日志，不允许沉默跳过）：
@@ -307,3 +307,6 @@ if appleMusicTokenCheck.includesAppleMusicLyrics, sourceSwitches.isEnabled(.appl
 | 2026-11-20 | In Progress | 在功能树 `MxIris-LyricsX-Project-LyricsSourceSwitches` 的 `feature/lyrics-source-switches` 上实现。 |
 | 2026-11-20 | 偏离：`updateUI()` 改用整表 `reloadData()` | 详细设计写的是只刷新序号列；表只有六行，整表重载更简单，且模式切换时序号颜色与可否拖动同步变化。 |
 | 2026-11-20 | 偏离：复选框单元格是私有子类 `LyricsSourceSwitchCellView` | 比在 `NSTableCellView` 上按下标找按钮更直接；参照 `PlaybackRouteLyricsOffsetsViewController` 的程序化单元格写法。 |
+| 2026-11-20 | 运行时核对未做 | 第 2、3 步「`lyricsManager.providers` 里没有关掉的源」「三种模式下都能点」要启动 App 才看得到；Debug 构建与用户自己的 Debug 构建共用偏好域 `dev.JH.LyricsX`，写入测试偏好会改动用户的设置，且点击属于交互式 UI 操作，留给用户看效果时确认。已核对构建产物：新偏好键、复选框单元格、去掉原型单元格的 storyboard 和简体中文文案都在。 |
+| 2026-11-20 | 文档判断 | 在 `Internal/LyricsSourceOrdering.md` 补了「关掉的歌词源」一节，不单独成文；`CLAUDE.md` 的 `LyricsXFoundationTests` 覆盖说明加了一句；不引入新术语（「歌词源开关」就是界面上的复选框，不需要术语表条目）；发布说明留到下一版发版时写。 |
+| 2026-11-20 | 实现完成，待用户看过后收尾 | `swift test --filter LyricsXFoundationTests` 与 App Debug 构建均通过。 |
