@@ -24,7 +24,10 @@ class KaraokeLyricsView: NSView {
                 isDragging = false
                 NSCursor.arrow.set()
             }
-            window?.invalidateCursorRects(for: self)
+            // The hand cursor comes from the tracking area, not from cursor
+            // rects: rebuilding cursor rects lays the window out outside the
+            // line-change animation, so the box jumped to its new origin.
+            updateTrackingAreas()
         }
     }
 
@@ -201,13 +204,6 @@ class KaraokeLyricsView: NSView {
         return isDraggable || super.acceptsFirstMouse(for: event)
     }
 
-    override func resetCursorRects() {
-        super.resetCursorRects()
-        if isDraggable {
-            addCursorRect(bounds, cursor: isDragging ? .closedHand : .openHand)
-        }
-    }
-
     override func mouseDown(with event: NSEvent) {
         if isDraggable {
             isDragging = true
@@ -223,7 +219,6 @@ class KaraokeLyricsView: NSView {
 
     override func mouseUp(with event: NSEvent) {
         isDragging = false
-        window?.invalidateCursorRects(for: self)
         if isDraggable {
             let location = convert(event.locationInWindow, from: nil)
             (bounds.contains(location) ? NSCursor.openHand : NSCursor.arrow).set()
@@ -236,7 +231,8 @@ class KaraokeLyricsView: NSView {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingArea.map(removeTrackingArea)
-        if shouldHideWithMouse {
+        trackingArea = nil
+        if shouldHideWithMouse || isDraggable {
             let trackingOptions: NSTrackingArea.Options = [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .assumeInside]
             trackingArea = NSTrackingArea(rect: bounds, options: trackingOptions, owner: self)
             trackingArea.map(addTrackingArea)
@@ -255,17 +251,27 @@ class KaraokeLyricsView: NSView {
     }
 
     override func mouseMoved(with event: NSEvent) {
-        if alphaValue != 0 {
+        if isDraggable {
+            (isDragging ? NSCursor.closedHand : NSCursor.openHand).set()
+        } else if shouldHideWithMouse, alphaValue != 0 {
             animator().alphaValue = 0
         }
     }
 
     override func mouseEntered(with event: NSEvent) {
-        animator().alphaValue = 0
+        if isDraggable {
+            (isDragging ? NSCursor.closedHand : NSCursor.openHand).set()
+        } else if shouldHideWithMouse {
+            animator().alphaValue = 0
+        }
     }
 
     override func mouseExited(with event: NSEvent) {
-        animator().alphaValue = 1
+        if isDraggable {
+            if !isDragging { NSCursor.arrow.set() }
+        } else {
+            animator().alphaValue = 1
+        }
     }
 }
 
