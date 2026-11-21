@@ -188,6 +188,14 @@ swift test --filter "LyricsDisplayLinkPolicyTests|PanelLyricsRemovalProbes"
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
 
+The desktop lyrics view (`KaraokeLyricsView`) lives in the app target, out of
+reach of the package tests. After changing its layout or mouse handling, check
+by hand that its box stays centred while lines change with dragging on: a
+recording of the box, counted by `Scripts/count-desktop-lyrics-box-jumps.py`.
+The steps, and why the view must never use cursor rects (with dragging on, they
+made the box jump at every line change), are in
+`Documentations/Internal/DesktopLyricsDragging.md`.
+
 Lyrics translation — the engine choice, System Translation's downloaded
 languages, and AI translation's setup, privacy behavior, request limits, and
 retry semantics — is documented in
