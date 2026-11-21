@@ -266,6 +266,12 @@ class KaraokeLyricsWindowController: NSWindowController {
                 if !isPlaying {
                     upperTextField.pauseProgressAnimation()
                 }
+            } else {
+                // `displayLrc` keeps the label when the same text is published
+                // again, highlight included. Lyrics switched to a version of
+                // this line without inline time tags must not keep the old
+                // version's highlight running.
+                self.lyricsView.displayLine1?.removeProgressAnimation()
             }
         }
     }

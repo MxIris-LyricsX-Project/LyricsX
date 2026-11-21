@@ -82,40 +82,33 @@ class KaraokeLabel: NSTextField {
         let attrString = NSMutableAttributedString(attributedString: attributedStringValue)
         let content = attrString.string
         let string = attrString.string as NSString
-        // English-heavy lyrics can be classified as a different language even
-        // when they contain Japanese words. Kana is explicit Japanese evidence.
-        let isJapaneseLine = string.dominantLanguage == "ja"
-        let hasJapaneseText = isJapaneseLine
-            || content.range(of: #"[\p{sc=Hiragana}\p{sc=Katakana}]"#, options: .regularExpression) != nil
+        // Which parts of the line are Japanese: the whole line, or, in an
+        // English-heavy line, its Japanese runs only (JapaneseAnnotationScope).
+        let annotationScope = JapaneseAnnotationScope(line: content)
+        let hasJapaneseText = annotationScope != .noJapanese
         let shouldDrawFurigana = drawFurigana && hasJapaneseText
         let shouldDrawRomajin = drawRomajin && hasJapaneseText
         let didApplySourceFurigana = shouldDrawFurigana
             && useSourceFurigana
             && sourceFurigana.map { addSourceFurigana($0, to: attrString, content: content) } == true
-        let tokenRanges: [NSRange]
-        if hasJapaneseText && !isJapaneseLine {
-            // A locale alone does not change the whole-line language decision.
-            // Scope tokenization to Japanese runs while retaining UTF-16 offsets.
-            let pattern = #"[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{M}ー]+"#
-            let expression = try? NSRegularExpression(pattern: pattern)
-            tokenRanges = expression?.matches(in: content, range: string.fullRange).map(\.range) ?? []
-        } else {
-            tokenRanges = [string.fullRange]
-        }
-        let locale = hasJapaneseText ? CFLocale.from(NSLocale(localeIdentifier: "ja")) : nil
-        romajinAnnotations = []
-        for range in tokenRanges {
-            let tokenRange = CFRange(location: range.location, length: range.length)
-            let tokenizer = CFStringTokenizer.create(string: .from(string), range: tokenRange, locale: locale)
+        let japaneseLocale = CFLocale.from(NSLocale(localeIdentifier: "ja"))
+        if isVertical {
+            // Every CJK word stands upright in vertical mode, whatever its language.
+            let locale = annotationScope == .wholeLine ? japaneseLocale : nil
+            let tokenizer = CFStringTokenizer.create(string: .from(string), range: CFRange(location: 0, length: string.length), locale: locale)
             for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
-                if isVertical {
-                    let tokenRange = tokenizer.currentTokenRange()
-                    let attr: [NSAttributedString.Key: Any] = [
-                        .verticalGlyphForm: true,
-                        .baselineOffset: (font?.pointSize ?? 24) * 0.25,
-                    ]
-                    attrString.addAttributes(attr, range: tokenRange.asNS)
-                }
+                let attr: [NSAttributedString.Key: Any] = [
+                    .verticalGlyphForm: true,
+                    .baselineOffset: (font?.pointSize ?? 24) * 0.25,
+                ]
+                attrString.addAttributes(attr, range: tokenizer.currentTokenRange().asNS)
+            }
+        }
+        romajinAnnotations = []
+        for range in annotationScope.ranges(in: content) where shouldDrawFurigana || shouldDrawRomajin {
+            let tokenRange = CFRange(location: range.location, length: range.length)
+            let tokenizer = CFStringTokenizer.create(string: .from(string), range: tokenRange, locale: japaneseLocale)
+            for tokenType in IteratorSequence(tokenizer) where tokenType.contains(.isCJWordMask) {
                 if shouldDrawFurigana && !didApplySourceFurigana {
                     for (furigana, range) in tokenizer.currentFuriganaAnnotations(in: string) {
                         var attr: [CFAttributedString.Key: Any] = [.ctRubySizeFactor: 0.5]
@@ -311,7 +304,11 @@ class KaraokeLabel: NSTextField {
         }
 
         let originalLineBounds = lineBounds
-        let romajiBounds = drawRomajiAnnotations(in: nil, frame: textFrame)
+        // The progress follows the first line only, so only that line's romaji
+        // joins the mask: a wrapped line's second row would otherwise light up
+        // with the first. Romaji is placed for horizontal text alone, so in
+        // vertical mode its bounds would skew the progress offsets.
+        let romajiBounds = isVertical ? CGRect.null : drawRomajiAnnotations(in: nil, frame: textFrame, firstLineBoundsOnly: true)
         if !romajiBounds.isNull {
             // Romaji is drawn separately below the CoreText frame. Include its
             // actual ink in the mask without changing the label's layout size.
@@ -395,8 +392,11 @@ class KaraokeLabel: NSTextField {
         CATransaction.commit()
     }
 
+    /// Draws the romaji into `context`, when there is one, and returns the
+    /// ink bounds of what it drew — of the first line's romaji only when
+    /// `firstLineBoundsOnly` is set.
     @discardableResult
-    private func drawRomajiAnnotations(in context: CGContext?, frame: CTFrame) -> CGRect {
+    private func drawRomajiAnnotations(in context: CGContext?, frame: CTFrame, firstLineBoundsOnly: Bool = false) -> CGRect {
         guard drawRomajin, !romajinAnnotations.isEmpty else { return .null }
 
         var annotationBounds = CGRect.null
@@ -406,7 +406,7 @@ class KaraokeLabel: NSTextField {
         var annotationIndex = 0
 
         // 处理每行和每个 glyph run
-        for (line, origin) in zip(lines, origins) {
+        for (lineIndex, (line, origin)) in zip(lines, origins).enumerated() {
             let runs = line.glyphRuns
             for run in runs {
                 let range = run.stringRange
@@ -419,9 +419,9 @@ class KaraokeLabel: NSTextField {
                         var descent: CGFloat = 0
                         var leading: CGFloat = 0
                         let width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, &leading)
-                        // Query the line's character offset instead of reading
-                        // run positions: the latter disturbs cached ruby layout
-                        // on subsequent draws of the same CoreText frame.
+                        // The run's start, as the line's offset of its first
+                        // character (the same as the run's first glyph position
+                        // for left-to-right Japanese).
                         let glyphX = origin.x + line.offset(charIndex: range.location).primary
 
                         let relativeOffset = CGFloat(annotationRange.location - range.location) / CGFloat(range.length) * width
@@ -463,7 +463,9 @@ class KaraokeLabel: NSTextField {
                         let rubyLine = CTLineCreateWithAttributedString(rubyString)
                         let inkBounds = CTLineGetBoundsWithOptions(rubyLine, [.useGlyphPathBounds])
                             .applying(.translate(x: rubyPoint.x, y: rubyPoint.y))
-                        annotationBounds = annotationBounds.union(inkBounds)
+                        if !firstLineBoundsOnly || lineIndex == 0 {
+                            annotationBounds = annotationBounds.union(inkBounds)
+                        }
                         if let context = context {
                             context.textPosition = rubyPoint
                             CTLineDraw(rubyLine, context)
@@ -523,7 +525,9 @@ class KaraokeLabel: NSTextField {
                 let rubyLine = CTLineCreateWithAttributedString(rubyString)
                 let inkBounds = CTLineGetBoundsWithOptions(rubyLine, [.useGlyphPathBounds])
                     .applying(.translate(x: rubyPoint.x, y: rubyPoint.y))
-                annotationBounds = annotationBounds.union(inkBounds)
+                if !firstLineBoundsOnly || lines.count == 1 {
+                    annotationBounds = annotationBounds.union(inkBounds)
+                }
                 if let context = context {
                     context.textPosition = rubyPoint
                     CTLineDraw(rubyLine, context)
