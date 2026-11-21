@@ -5,6 +5,42 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
         <item>
+            <title>1.9.2</title>
+            <pubDate>Sat, 21 Nov 2026 16:04:06 +0000</pubDate>
+            <sparkle:version>10902999</sparkle:version>
+            <sparkle:shortVersionString>1.9.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[<h2>What's New</h2>
+<h3>New</h3>
+<ul>
+<li>Menu bar lyrics can show karaoke progress in a colour of your choice: Preferences → Lab (macOS 26 or later).</li>
+<li>The lyrics offset can be set for each player and output device: Preferences → General → Per Player &amp; Output….</li>
+<li>The status menu's Local Lyrics submenu switches between the track's embedded lyrics and lyrics files.</li>
+<li>Single lyrics sources can be switched off in Preferences → Source.</li>
+<li>Preferences → Lab shows whether Apple Music accepts your User Token.</li>
+</ul>
+<h3>Improvements</h3>
+<ul>
+<li>The higher-resolution cover in the Apple Music-style window now also works for NetEase Cloud Music tracks.</li>
+<li>A widget on the desktop no longer keeps hundreds of megabytes of memory busy.</li>
+</ul>
+<h3>Fixes</h3>
+<ul>
+<li>Fixed no lyrics being found for the first song after launch when an Apple Music token is set.</li>
+<li>Lyrics now follow when you seek while playback is paused.</li>
+<li>The karaoke highlight in desktop lyrics no longer shrinks or flickers when you pause and resume.</li>
+<li>Dragging desktop lyrics is no longer interrupted by a line change, and works across displays.</li>
+<li>Japanese words in lines that mix English and Japanese now get furigana and romaji.</li>
+<li>Automatic furigana is back for words such as ヶ月, 関ヶ原 and 〆切.</li>
+</ul>
+<h3>Acknowledgements</h3>
+<ul>
+<li>@NickJi2019 (#222, #224, #226, #227) fixed seeking while paused, the karaoke highlight, dragging and furigana in desktop lyrics.</li>
+<li>@garyyeap (#217) added the Local Lyrics submenu.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/MxIris-LyricsX-Project/LyricsX/releases/download/v1.9.2/LyricsX_1.9.2+10902999.zip" length="11570739" type="application/octet-stream" sparkle:edSignature="rTf0HJ7t0a65ONKR4fLrDQKjkLLxRTyy2Owham4nMrjdh/JSiwRZDzHpr4ICUZ1t+/fpLP3ii1kobdJoG0XxAg==" />
+        </item>
+        <item>
             <title>1.9.1</title>
             <pubDate>Sat, 14 Nov 2026 03:02:57 +0000</pubDate>
             <sparkle:version>10901999</sparkle:version>
