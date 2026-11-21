@@ -15,7 +15,7 @@ pixel is one point. Exit code 1 when any jump is found, 0 otherwise. The
 first frames after the box appears (fading and sliding in) count as jumps;
 start recording while lyrics are already showing.
 
-Why this exists: Documentations/Internal/DesktopLyricsDragging.md.
+Why this exists: Documentations/Internal/DesktopLyrics.md.
 """
 import statistics
 import subprocess
