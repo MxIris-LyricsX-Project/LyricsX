@@ -163,6 +163,9 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         // on screen: a write from here would race one from there.
         let didPersist = performOnLyricsDisplayQueue {
             lrc.associateWithTrack(track)
+            // The panel's Score column has usually scored it already; if not,
+            // ranking the pool below would score it after it went on screen.
+            lrc.cacheQualityBeforeDisplay()
             // Applying a result from this panel is the clearest statement of intent
             // there is, so the file records that a person chose it — the "ignore
             // saved lyrics" switch skips what LyricsX saved on its own, not this.
@@ -227,7 +230,12 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         // The lyrics object may belong to a previous search whose results
         // have already been cleared; identity-check before mutating.
         guard searchResult.contains(where: { $0 === lyrics }) else { return }
-        lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        // On the lyrics display queue: a result already applied is the lyrics
+        // on screen, and the bonus is kept in its metadata, which that queue
+        // reads.
+        performOnLyricsDisplayQueue {
+            lyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        }
         panelResults.rerank(outranks: { lyricsHasHigherPriority($0, over: $1) })
         reloadResultsKeepingSelection()
     }

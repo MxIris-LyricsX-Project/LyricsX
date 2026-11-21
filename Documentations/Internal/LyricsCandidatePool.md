@@ -188,3 +188,33 @@
 
 真正的防线不是隔离而是**身份校验**：`candidatePoolTrackId` 保证跨曲目的结果不会串池，
 `searchRequest.id` 保证跨搜索的结果不会串。改并发模型是另一件事，不要顺手在这里做半套。
+
+### 排序会写歌词：先算分再上屏
+
+LyricsKit 的 `Lyrics.quality` 第一次被读时，把算出的分数写进 `metadata` 缓存起来（2019 年 `942af63` 加的缓存）。
+所以给候选排序（`lyricsHasHigherPriority` → `effectiveQuality` → `quality`）不是纯读：对一份没算过分的歌词，
+第一次比较就是一次写。屏幕上的歌词又一直在 `DispatchQueue.lyricsDisplay` 上被读（桌面歌词、小组件快照都会读
+`metadata` 里的翻译标记），候选却在主线程上排序。一份歌词先上屏、后被第一次排序，`metadata` 就在读的同时被改写，
+字典的存储被换掉，读的一方拿着已释放的内存崩溃（`Lyrics.Metadata.attachmentTags.getter` 里的 `EXC_BAD_ACCESS`）。
+
+2026-11-21 在「本地歌词」子菜单里撞到：`applyLocalLyrics` 先在歌词队列上换上新歌词，再在主线程上把它和旧候选一起
+排序，大约换十次崩一次。在线搜索也有同样的空子：第一条结果进的是空池子，不和任何人比较就可能上屏，第二条结果
+到来时才给它算分。
+
+现在的约定：歌词从任何入口进来——从文件读出（`loadLyrics`、`loadEmbeddedLyrics`）、拖进来导入、搜索结果到达、
+在搜索面板里选中——都在最后一次会影响分数的修改之后、上屏或入池之前调用 `cacheQualityBeforeDisplay()`。
+翻译生成的副本连 `metadata` 一起复制，分数随之带过去。封面相似度的加分同样存在 `metadata` 里，所以加分的那次
+写入放进 `performOnLyricsDisplayQueue`。新加一个歌词入口时，照这个约定做。
+
+这只堵住「读分数时写」这一处。`currentLyrics` 与候选池在主线程和歌词队列上都有人改，这个大问题仍在（见上文与
+PR #183 的讨论）。
+
+**怎么复现**：没有单元测试够得着 `AppController`，用 Thread Sanitizer（TSan，运行时检测线程数据竞争）跑 App：
+
+1. `xcodebuild … -enableThreadSanitizer YES build`，用单独的 DerivedData。
+2. `open --env TSAN_OPTIONS="log_path=/tmp/tsan/report halt_on_error=0" <App>` 启动，报告写到 `/tmp/tsan/report.<pid>`。
+   首选播放器设成「音乐」（会弹一次控制「音乐」的授权；授权前启动的那次连不上播放器，授权后要重启 App），
+   TSan 版启动后要等十几秒状态栏图标才出来。
+3. 在曲目文件旁放 `.lrcx` 和 `.lrc` 两份歌词，从状态菜单「本地歌词」交替选六次。
+4. 报告里出现 `Swift access race … in Lyrics.quality.getter` 就是这个问题。修复前切换六次就报出来，修复后切换十次没有。
+   启动时 `cancelLyricsTranslation()` 的几条竞争与此无关，修复前后都有。

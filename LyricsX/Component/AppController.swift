@@ -1226,6 +1226,10 @@ final class AppController: NSObject {
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
+        // The first result goes into an empty pool and may go on screen
+        // without being compared with anything; the next result's comparison
+        // would then score it for the first time while it is on screen.
+        lyrics.cacheQualityBeforeDisplay()
 
         // Entering the pool is unconditional: losing the display contest says
         // nothing about whether the user might want this candidate. Only the
@@ -1580,6 +1584,7 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
+        lyrics.cacheQualityBeforeDisplay()
         return lyrics
     }
 
@@ -1597,6 +1602,7 @@ final class AppController: NSObject {
         lyrics.applyQQMusicKanaFurigana()
         lyrics.filtrate()
         lyrics.recognizeLanguage()
+        lyrics.cacheQualityBeforeDisplay()
         return lyrics
     }
 
@@ -1645,7 +1651,11 @@ final class AppController: NSObject {
         } else {
             scoredLyrics = lyrics
         }
-        scoredLyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        // On the lyrics display queue: these lyrics may be on screen, and the
+        // bonus is kept in their metadata, which that queue reads.
+        performOnLyricsDisplayQueue {
+            scoredLyrics.artworkMatchBonus = ArtworkSimilarityScorer.matchBonus
+        }
         // The bonus changed this candidate's rank, so the pool has to be
         // re-sorted; the selection stays on whatever object it was pointing at.
         lyricsCandidatePool.resort()
@@ -1947,6 +1957,7 @@ extension AppController {
         lrc.recognizeLanguage()
         lrc.markAsUserPicked(origin: .import)
         lrc.metadata.needsPersist = true
+        lrc.cacheQualityBeforeDisplay()
         // Written now rather than at the next track change, like a pick in the
         // search panel: the table of hand picks can only point the next play
         // at the import once the import is a file.

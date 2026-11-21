@@ -581,6 +581,14 @@ From the main thread, wrap the change and the write in
 `performOnLyricsDisplayQueue { … }`. Why it is an assertion and not a test is in
 `Documentations/ReviewDecisions.md`.
 
+Ranking lyrics writes them: `Lyrics.quality` caches its score in `metadata`
+the first time it is read, and the lyrics on screen are read on
+`DispatchQueue.lyricsDisplay` while candidates are ranked on the main thread
+(a Local Lyrics pick crashed this way). Wherever lyrics come in, call
+`cacheQualityBeforeDisplay()` before they go on screen or into the candidate
+pool. Why, and how to catch a miss with Thread Sanitizer, is in
+`Documentations/Internal/LyricsCandidatePool.md`.
+
 ### Localization
 
 - Managed via `.xcstrings` (Xcode String Catalogs) and legacy `.strings` files

@@ -324,6 +324,21 @@ extension Lyrics {
         get { (metadata.data[arrivedAfterPriorityWindowKey] as? Bool) ?? false }
         set { metadata.data[arrivedAfterPriorityWindowKey] = newValue }
     }
+
+    /// Works out `quality` now, before anything can show these lyrics.
+    ///
+    /// LyricsKit caches the score in `metadata` the first time `quality` is
+    /// read, so that first read is a write. The lyrics on screen are read on
+    /// `DispatchQueue.lyricsDisplay` (the desktop lyrics, the widget's
+    /// snapshot) while candidates are ranked on the main thread, so lyrics
+    /// first scored once they were on screen had their metadata rewritten
+    /// under a reader: picking a file from the Local Lyrics submenu crashed
+    /// about one time in ten. Call this wherever lyrics come in — read from a
+    /// file, imported, found by a search — after the last change that feeds
+    /// the score and before they go on screen or into the candidate pool.
+    func cacheQualityBeforeDisplay() {
+        _ = quality
+    }
 }
 
 var lyricsSourceOrderingMode: LyricsSourceOrderingMode {

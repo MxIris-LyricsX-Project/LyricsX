@@ -447,3 +447,33 @@ PR 重新审了一遍。#222 在 2026-11-18 已审过（见上一节），这次
 
 **若理由失效**：真有歌词源给出带 U+2028 的行，或以后让长句在横排里折行，就要改遮罩的位置（看第一行在 CoreText 坐标与
 视图坐标之间怎么换算）。
+
+## 2026-11-21 · 「本地歌词」换歌词时的崩溃（`fix/lyrics-quality-cache-race`）
+
+起因：手工复查桌面歌词时，从状态菜单「本地歌词」换歌词，大约十次崩一次（`LyricsDisplay` 队列给小组件写快照、读
+`metadata.attachmentTags` 时 `EXC_BAD_ACCESS`）。用 Thread Sanitizer 版复现，拿到了写的一方：主线程在
+`applyLocalLyrics` 里给候选排序，第一次读这份歌词的 `quality`，LyricsKit 把分数写进 `metadata` 缓存。
+
+**已修**：歌词从各个入口进来时，在上屏或入池之前先算分（`cacheQualityBeforeDisplay()`：本地文件、内嵌歌词、导入、
+搜索结果、搜索面板选中）；封面相似度加分改在歌词队列上写。「本地歌词」这条路是 #217 带来的，还没发布；在线搜索的
+同类空子（第一条结果进空池、未算分就上屏）1.9.x 就有，是读代码推断的，没有跑出来。没有单元测试够得着 `AppController`，
+回归检查是 TSan 回路，步骤在[候选池实现说明](Internal/LyricsCandidatePool.md)的「并发」一节。
+
+### `currentLyrics` 与候选池在两个线程上都被改 —— 不在这次修
+
+**发现内容**：搜索结果在主线程上处理，直接给 `currentLyrics` 赋值、改候选池；换曲目在歌词队列上做同样的事。
+`metadata` 之外的读写也可能撞上。
+
+**裁决：不在这次修。** 这是既有设计，候选池实现说明的「并发」一节写明了不在局部改；PR #183 提过统一到一个
+actor 的方案，还在等回复。这次只堵已确认会崩的「读分数时写」。
+
+**若理由失效**：再出现 `metadata` 或候选池相关的崩溃，先用 TSan 回路看写的一方，再考虑 #183 的方案。
+
+### 歌词偏移步进器在主线程上改屏幕上的歌词 —— 疑似误报
+
+**发现内容**：`lyricsOffset` 的 setter 在主线程上写 `currentLyrics.offset` 和 `metadata.needsPersist`，与上面是同一类写法。
+
+**裁决：疑似误报。** 在 TSan 版上用状态菜单的步进器加减偏移，TSan 没有报竞争（推测菜单与歌词队列之间别的同步
+已给这两次访问排了先后）。没有证据就不改。
+
+**若理由失效**：TSan 或崩溃报告指到 `lyricsOffset` 的 setter，就把它的写入放进 `performOnLyricsDisplayQueue`。
