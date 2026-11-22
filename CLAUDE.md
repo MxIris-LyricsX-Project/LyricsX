@@ -52,9 +52,14 @@ selection, which item the status menu's Local Lyrics submenu checks — the
 track's embedded lyrics or a file, worked out from the lyrics on screen alone
 (`LocalLyricsSource`) — how a lyrics search ended, and the source-ordering modes (including
 the property tests that keep the ordering transitive) and dragging a source to
-another place in the list, what the menu bar's lyric line shows when there is
+another place in the list, which lyrics sources the user switched off
+(`LyricsSourceSwitches`: every source on unless listed, a newer build's
+unknown identifiers kept), what the menu bar's lyric line shows when there is
 no line to show, how much of a line its inline time tags say is sung (the menu
-bar's karaoke progress), which standard item the status menu's custom row lines its
+bar's karaoke progress), which parts of a desktop lyrics line get Japanese
+annotations and how a word's reading spreads over its kanji
+(`JapaneseAnnotationScope`, `FuriganaAlignment`: a Chinese line that borrows
+の stays unannotated, ヶ月 keeps its furigana), which standard item the status menu's custom row lines its
 label up with and the per-release insets it falls back to, where a step of
 that row's lyrics offset lands (the next multiple of 100 ms, so an offset
 the lyrics came with, such as Kugou's 51 ms, steps back to 0), plus the lyrics
@@ -69,7 +74,13 @@ straight into the 9×8 hash grid), and the NetEase catalogue search it asks
 alongside the iTunes Store, plus the lyrics offsets kept per player and output
 device (`PlaybackRouteLyricsOffsets`) and what an output device's offset is
 kept under: its UID, except that every AirPlay output shares one identifier,
-because Core Audio gives an AirPlay receiver a new UID for every connection —
+because Core Audio gives an AirPlay receiver a new UID for every connection,
+and the Apple Music token check (`AppleMusicTokenCheck`): only an authorized
+token lets Apple Music lyrics into the search, and the account's storefront
+shows as a region name in the user's language; and that the status row under
+the token field (`StatusMessageRowView`) settles in one layout pass, red on its
+first version, which fed the message's width back as its wrapping width and
+made AppKit give up on the Lab pane's constraints —
 and is fast and headless enough to run on every change. Its
 `AudioOutputDeviceProbes` read this Mac's real Core Audio devices and print
 them; run them while a HomePod is the output to see what Core Audio makes of
@@ -179,6 +190,16 @@ swift test --filter "LyricsDisplayLinkPolicyTests|PanelLyricsRemovalProbes"
 # dumps the full-frame test's PNGs.
 swift test --filter "NowPlayingBackdrop|ArtworkBackdrop|ArtworkGradient|ArtworkRendering"
 ```
+
+The desktop lyrics (`KaraokeLyricsView`, `KaraokeLabel`, their controller) live
+in the app target, out of reach of the package tests; only which parts of a
+line get Japanese annotations and how furigana spreads over kanji are pure
+functions in `LyricsXFoundation` (`JapaneseAnnotationTests`). After changing
+their layout, mouse handling or karaoke highlight, check by hand: among others,
+that the box stays centred while lines change with dragging on — a recording of
+the box, counted by `Scripts/count-desktop-lyrics-box-jumps.py`. The steps, and
+why the view must never use cursor rects (with dragging on, they made the box
+jump at every line change), are in `Documentations/Internal/DesktopLyrics.md`.
 
 Lyrics translation — the engine choice, System Translation's downloaded
 languages, and AI translation's setup, privacy behavior, request limits, and
@@ -333,7 +354,7 @@ to it is under "How a release runs" below. `Release.zsh` sets
 packages from their **published tags**, not from local checkouts.
 
 All three are pinned to an **exact version**: `LyricsXPackage/Package.swift`
-carries `exact: "1.12.0"` for LyricsKit and `exact: "1.12.0"` for MusicPlayer,
+carries `exact: "1.13.0"` for LyricsKit and `exact: "1.12.0"` for MusicPlayer,
 and MusicPlayer's own `Package.swift` carries `exact: "0.1.7"` for
 mediaremote-adapter. So nothing moves underneath a release — a dependency
 changes only when someone edits one of those strings, which puts every
@@ -559,6 +580,14 @@ a write from any other queue races one from there, so Debug builds trap on it.
 From the main thread, wrap the change and the write in
 `performOnLyricsDisplayQueue { … }`. Why it is an assertion and not a test is in
 `Documentations/ReviewDecisions.md`.
+
+Ranking lyrics writes them: `Lyrics.quality` caches its score in `metadata`
+the first time it is read, and the lyrics on screen are read on
+`DispatchQueue.lyricsDisplay` while candidates are ranked on the main thread
+(a Local Lyrics pick crashed this way). Wherever lyrics come in, call
+`cacheQualityBeforeDisplay()` before they go on screen or into the candidate
+pool. Why, and how to catch a miss with Thread Sanitizer, is in
+`Documentations/Internal/LyricsCandidatePool.md`.
 
 ### Localization
 

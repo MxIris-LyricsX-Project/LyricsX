@@ -9,5 +9,5 @@
 // it to the archive (Documentations/BuildNumberScheme.md). Raise it by hand
 // only to make chronod read a changed widget description
 // (Documentations/Internal/DesktopWidget.md), and never commit that.
-MARKETING_VERSION = 1.9.1
+MARKETING_VERSION = 1.9.2
 CURRENT_PROJECT_VERSION = 2929

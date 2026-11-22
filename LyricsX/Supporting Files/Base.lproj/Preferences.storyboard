@@ -2125,30 +2125,6 @@
                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     </textFieldCell>
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                    <prototypeCellViews>
-                                                        <tableCellView id="VGV-SG-dwt">
-                                                            <rect key="frame" x="73" y="0.0" width="376" height="24"/>
-                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                            <subviews>
-                                                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="KUU-qx-NSS">
-                                                                    <rect key="frame" x="0.0" y="4" width="376" height="16"/>
-                                                                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" id="ow1-De-Qmh">
-                                                                        <font key="font" usesAppearanceFont="YES"/>
-                                                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                    </textFieldCell>
-                                                                </textField>
-                                                            </subviews>
-                                                            <constraints>
-                                                                <constraint firstItem="KUU-qx-NSS" firstAttribute="centerX" secondItem="VGV-SG-dwt" secondAttribute="centerX" id="NMs-Q3-xPA"/>
-                                                                <constraint firstItem="KUU-qx-NSS" firstAttribute="centerY" secondItem="VGV-SG-dwt" secondAttribute="centerY" id="Sks-8o-ygB"/>
-                                                                <constraint firstItem="KUU-qx-NSS" firstAttribute="leading" secondItem="VGV-SG-dwt" secondAttribute="leading" constant="2" id="jR1-vK-IqN"/>
-                                                            </constraints>
-                                                            <connections>
-                                                                <outlet property="textField" destination="KUU-qx-NSS" id="hjI-d9-h8D"/>
-                                                            </connections>
-                                                        </tableCellView>
-                                                    </prototypeCellViews>
                                                 </tableColumn>
                                             </tableColumns>
                                             <connections>

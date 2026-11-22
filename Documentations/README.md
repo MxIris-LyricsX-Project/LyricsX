@@ -82,12 +82,15 @@
     先按块平均再算 dHash，作废旧的「找不到」记录，并把网易云曲库加为高清封面的第三个来源。
   - [0029 按播放器与输出设备设置歌词偏移](Evolutions/0029-playback-route-lyrics-offset.md) —— 在每首歌的偏移和全局偏移
     之上，再按「正在播放的 App × 系统默认输出设备」加一层偏移；所有 AirPlay 输出算作一台设备。
+  - [0030 实验室页显示 Apple Music token 是否有效](Evolutions/0030-apple-music-token-status.md)
+    —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
+    `authorizationStatus(for:)` 并发布 1.13.0。
+  - [0031 歌词源可以单独关掉](Evolutions/0031-lyrics-source-switches.md)
+    —— 歌词源表的「来源」一列改成复选框，默认全开；关掉的源不再参与自动搜索、搜索面板和「下一条候选」，
+    设置存为 `DisabledLyricsSources`。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 实验室页显示 Apple Music token 是否有效](Evolutions/draft-apple-music-token-status.md)
-    —— token 输入框下显示检查中 / 有效（附地区）/ 被拒 / 暂时无法检查；LyricsKit 新增三态的
-    `authorizationStatus(for:)` 并发布 1.13.0。
 
 ## 使用说明
 
@@ -104,7 +107,8 @@
   判断为什么必须发生在读文件之后，回退为什么也要写在 catch 分支里，以及读文件名为什么改成
   两种拼法都试。
 - [歌词候选的排序](Internal/LyricsSourceOrdering.md) —— 为什么用分数分桶而不是比分差
-  （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前。
+  （传递性），偏好迁移为什么必须跑在 `register(defaults:)` 之前；关掉的歌词源为什么存 rawValue、
+  为什么管不到已保存的歌词。
 - [把歌词写进「音乐」](Internal/MusicLyricsWriting.md) —— 什么时候写、写什么，否掉歌词时为什么只撤回
   LyricsX 自己写的那份，以及暂缓到 1.9.0 正式版之后的已知问题：自动写入会覆盖用户原有的歌词。
 - [设置窗口的尺寸](Internal/PreferenceWindowSizing.md) —— 切 tab 时窗口为什么会沿用上一页的
@@ -138,6 +142,9 @@
   攒着发（系统每 5 秒只执行一次 app 的刷新请求，这个限制写死在 `chronod` 里，私有接口也绕不开），小组件为什么没有自己的设置项（编辑过的小组件自成一套配置，
   其余的每次更新都晚 5 秒），更新之后为什么要结束旧版本留下的扩展进程（否则小组件一直跑旧代码，配置方式一变就全黑），
   以及 app 退出时为什么清空快照。
+- [桌面歌词](Internal/DesktopLyrics.md) —— 手形光标为什么不能用 cursor rect（开着允许拖放时，换行会让歌词框先横跳
+  再单边收缩），为什么只还原自己设过的光标；日文注音为什么按段判断语言、一个假名为什么不算证据，「ヶ」「〆」和扩展区汉字
+  为什么必须算汉字；同样的两行再次发布时为什么要主动清掉高亮、遮罩为什么只并入第一行的罗马音；以及没有自动化测试时怎么复查。
 
 - [按播放器与输出设备的歌词偏移](Internal/PlaybackRouteLyricsOffset.md) —— 为什么按组合而不是按设备存（QQ 音乐对
   AirPlay 写死减 2.205 秒、网易云不补偿），播放器为什么按 bundle ID 认，AirPlay 设备为什么不能按 UID 认

@@ -20,6 +20,28 @@ class KaraokeLyricsView: NSView {
     @objc dynamic var useSourceFurigana = true
     @objc dynamic var drawRomajin = false
 
+    @objc dynamic var isDraggable = false {
+        didSet {
+            if !isDraggable, isDragging || isShowingHandCursor {
+                isDragging = false
+                isShowingHandCursor = false
+                NSCursor.arrow.set()
+            }
+            // The hand cursor comes from the tracking area, not from cursor
+            // rects: rebuilding cursor rects lays the window out outside the
+            // line-change animation, so the box jumped to its new origin.
+            updateTrackingAreas()
+        }
+    }
+
+    private var isDragging = false
+
+    /// Whether this view set the open or closed hand. The tracking area is
+    /// rebuilt at every line change and assumes the pointer inside, so the
+    /// next move with the pointer elsewhere brings an exit this view never
+    /// entered; only a hand this view set is put back to the arrow.
+    private var isShowingHandCursor = false
+
     @objc dynamic var font = NSFont.labelFont(ofSize: 24) { didSet { updateFontSize() } }
     @objc dynamic var textColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
     @objc dynamic var shadowColor = #colorLiteral(red: 0, green: 1, blue: 0.8333333333, alpha: 1)
@@ -100,6 +122,15 @@ class KaraokeLyricsView: NSView {
         firstLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil,
         secondLineFurigana: LyricsLine.Attachments.RangeAttribute? = nil
     ) {
+        // Pause/resume and timing corrections often publish the same pair.
+        // Keep their views instead of fading out and rebuilding the highlight.
+        if let first = displayLine1, first.stringValue == firstLine,
+           (displayLine2?.stringValue ?? "") == secondLine,
+           sameFurigana(first.sourceFurigana, firstLineFurigana),
+           sameFurigana(displayLine2?.sourceFurigana, secondLineFurigana) {
+            mouseTest()
+            return
+        }
         var toBeHide = contentStackView.arrangedSubviews.compactMap { $0 as? KaraokeLabel }
         var toBeShow: [NSTextField] = []
         var shouldHideAll = false
@@ -230,14 +261,67 @@ class KaraokeLyricsView: NSView {
         layer.add(correction, forKey: Self.entryXCorrectionKey)
     }
 
+    private func sameFurigana(
+        _ lhs: LyricsLine.Attachments.RangeAttribute?,
+        _ rhs: LyricsLine.Attachments.RangeAttribute?
+    ) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (lhs?, rhs?):
+            return lhs.attributes.count == rhs.attributes.count
+                && zip(lhs.attributes, rhs.attributes).allSatisfy {
+                    $0.0.range == $0.1.range && $0.0.content == $0.1.content
+                }
+        default:
+            return false
+        }
+    }
+
     // MARK: - Event
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard let hit = super.hitTest(point) else { return nil }
+        // Keep the mouse-down target on this persistent container, not on a
+        // text field which can consume the press or be recycled mid-drag.
+        return isDraggable ? self : hit
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        return isDraggable || super.acceptsFirstMouse(for: event)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if isDraggable {
+            isDragging = true
+            isShowingHandCursor = true
+            NSCursor.closedHand.set()
+        }
+        super.mouseDown(with: event)
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        if isDragging { NSCursor.closedHand.set() }
+        super.mouseDragged(with: event)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        isDragging = false
+        if isDraggable {
+            let location = convert(event.locationInWindow, from: nil)
+            isShowingHandCursor = bounds.contains(location)
+            (isShowingHandCursor ? NSCursor.openHand : NSCursor.arrow).set()
+        }
+        super.mouseUp(with: event)
+    }
 
     private var trackingArea: NSTrackingArea?
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingArea.map(removeTrackingArea)
-        if shouldHideWithMouse {
+        trackingArea = nil
+        if shouldHideWithMouse || isDraggable {
             let trackingOptions: NSTrackingArea.Options = [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .assumeInside]
             trackingArea = NSTrackingArea(rect: bounds, options: trackingOptions, owner: self)
             trackingArea.map(addTrackingArea)
@@ -256,17 +340,39 @@ class KaraokeLyricsView: NSView {
     }
 
     override func mouseMoved(with event: NSEvent) {
-        if alphaValue != 0 {
+        if isDraggable {
+            showHandCursor(for: event)
+        } else if shouldHideWithMouse, alphaValue != 0 {
             animator().alphaValue = 0
         }
     }
 
     override func mouseEntered(with event: NSEvent) {
-        animator().alphaValue = 0
+        if isDraggable {
+            showHandCursor(for: event)
+        } else if shouldHideWithMouse {
+            animator().alphaValue = 0
+        }
     }
 
     override func mouseExited(with event: NSEvent) {
-        animator().alphaValue = 1
+        if isDraggable {
+            if isShowingHandCursor, !isDragging {
+                isShowingHandCursor = false
+                NSCursor.arrow.set()
+            }
+        } else {
+            animator().alphaValue = 1
+        }
+    }
+
+    /// The open hand over the lyrics, the closed one while dragging; nothing
+    /// for an event that arrives with the pointer outside, as the assumed-inside
+    /// tracking area can send.
+    private func showHandCursor(for event: NSEvent) {
+        guard isDragging || bounds.contains(convert(event.locationInWindow, from: nil)) else { return }
+        isShowingHandCursor = true
+        (isDragging ? NSCursor.closedHand : NSCursor.openHand).set()
     }
 }
 

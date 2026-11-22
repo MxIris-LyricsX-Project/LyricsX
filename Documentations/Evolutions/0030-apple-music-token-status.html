@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>0030 - 实验室页显示 Apple Music token 是否有效</title>
+<style>
+/* Evolution proposal page, shared style (style A, "Apple documentation").
+   Copy this whole <style> block verbatim. Page-specific rules, if any, go only
+   in the marked block at the end. Must render in WebKit (Safari, Xcode preview,
+   Quick Look): no JavaScript, no external resources. */
+:root {
+  --background: #ffffff; --foreground: #1d1d1f; --secondary: #6e6e73; --separator: #d2d2d7;
+  --panel: #f5f5f7; --code-background: #f2f2f4; --accent: #0071e3;
+  --added: #1f8a4c; --added-fill: #e3f5ea;
+  --changed: #b26a00; --changed-fill: #fdf0db;
+  --removed: #c62828; --removed-fill: #fbe4e4;
+  --moved: #0066cc; --moved-fill: #e5f0fc;
+  --kept: #6e6e73; --kept-fill: #ececef;
+  --token-keyword: #ad3da4; --token-type: #3900a0; --token-string: #c41a16; --token-number: #1c00cf;
+  --token-comment: #707f8c; --token-macro: #643820;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1c1e; --foreground: #f2f2f7; --secondary: #a1a1a6; --separator: #3a3a3c;
+    --panel: #2c2c2e; --code-background: #2a2a2d; --accent: #4ea1ff;
+    --added: #4cd281; --added-fill: #183826;
+    --changed: #ffb340; --changed-fill: #3d2c10;
+    --removed: #ff6b6b; --removed-fill: #3d1a1a;
+    --moved: #5aa9ff; --moved-fill: #142b45;
+    --kept: #b0b0b5; --kept-fill: #333336;
+    --token-keyword: #fc5fa3; --token-type: #d0a8ff; --token-string: #fc6a5d; --token-number: #d0bf69;
+    --token-comment: #7f8c98; --token-macro: #fd8f3f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--background); color: var(--foreground);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.page { max-width: 1080px; margin: 0 auto; padding: 28px 24px 72px; }
+.svg-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Header */
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--secondary); }
+.crumb + .crumb::before { content: " / "; }
+h1 { font-size: 28px; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 12px; }
+h1 code { font-size: 0.8em; }
+.proposal-number { color: var(--secondary); margin-right: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; font-size: 13px; color: var(--secondary); }
+.meta div { display: flex; gap: 6px; align-items: baseline; }
+.meta dd { margin: 0; color: var(--foreground); }
+.meta dd code { font-size: 12px; }
+.status { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.status-accepted { color: var(--moved); background: var(--moved-fill); }
+.status-in-progress { color: var(--changed); background: var(--changed-fill); }
+.status-implemented { color: var(--added); background: var(--added-fill); }
+.status-rejected, .status-withdrawn { color: var(--removed); background: var(--removed-fill); }
+
+/* Table of contents */
+.toc { margin: 22px 0 8px; padding: 8px 10px; background: var(--panel); border-radius: 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.toc li { margin: 0; }
+.toc a { display: inline-block; padding: 3px 11px; border-radius: 999px; color: var(--accent); text-decoration: none; font-size: 14px; }
+.toc a:hover { background: var(--background); }
+
+/* Text */
+section { scroll-margin-top: 16px; }
+h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--separator); }
+h3 { font-size: 16px; margin: 22px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p { margin: 10px 0; }
+a { color: var(--accent); }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--separator); color: var(--secondary); }
+hr { border: none; border-top: 1px solid var(--separator); margin: 24px 0; }
+
+/* Code */
+code { font: 0.86em/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--code-background); padding: 1px 5px; border-radius: 5px; }
+pre { background: var(--code-background); border-radius: 10px; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; font: 12.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+pre code { font: inherit; background: none; padding: 0; border-radius: 0; }
+.token-keyword { color: var(--token-keyword); font-weight: 600; }
+.token-type { color: var(--token-type); }
+.token-string { color: var(--token-string); }
+.token-number { color: var(--token-number); }
+.token-comment { color: var(--token-comment); }
+.token-macro { color: var(--token-macro); }
+
+/* Callouts */
+.callout { background: var(--panel); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+.callout-note { border-left-color: var(--secondary); }
+.callout-warning { border-left-color: var(--changed); }
+.callout-title { margin: 0 0 6px; font-weight: 600; }
+.callout > :last-child { margin-bottom: 0; }
+.callout ol, .callout ul { margin: 6px 0 0; }
+
+/* Diagrams */
+.legend { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--secondary); }
+.legend li { margin: 0; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid; vertical-align: -2px; margin-right: 6px; }
+.swatch-added { background: var(--added-fill); border-color: var(--added); }
+.swatch-changed { background: var(--changed-fill); border-color: var(--changed); }
+.swatch-removed { background: var(--removed-fill); border-color: var(--removed); border-style: dashed; }
+.swatch-moved { background: var(--moved-fill); border-color: var(--moved); }
+.swatch-kept { background: var(--kept-fill); border-color: var(--kept); }
+.figure { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--separator); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.figure svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.figure-narrow svg { min-width: 0; max-width: 640px; margin: 0 auto; }
+.figure-caption { font-size: 13px; color: var(--secondary); margin-top: 8px; }
+svg text { font: 12px ui-monospace, "SF Mono", Menlo, monospace; fill: var(--foreground); }
+svg .group-label { font-size: 13px; font-weight: 700; }
+svg .caption { font-size: 10.5px; fill: var(--secondary); }
+svg .strike { text-decoration: line-through; }
+svg .group { fill: none; stroke: var(--separator); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .box-added { fill: var(--added-fill); stroke: var(--added); stroke-width: 1.5; }
+svg .box-changed { fill: var(--changed-fill); stroke: var(--changed); stroke-width: 1.5; }
+svg .box-removed { fill: var(--removed-fill); stroke: var(--removed); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg .box-moved { fill: var(--moved-fill); stroke: var(--moved); stroke-width: 1.5; }
+svg .box-kept { fill: var(--kept-fill); stroke: var(--kept); stroke-width: 1.2; }
+svg .arrow { fill: none; stroke: var(--secondary); stroke-width: 1.4; marker-end: url(#arrowhead); }
+svg .arrow-weak { stroke-dasharray: 4 3; }
+svg .arrow-removed { stroke: var(--removed); stroke-dasharray: 4 3; }
+svg .arrowhead { fill: var(--secondary); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--separator); padding: 7px 9px; text-align: left; vertical-align: top; }
+th { background: var(--panel); font-weight: 600; }
+.numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; white-space: nowrap; padding: 0 7px; border-radius: 5px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.tag-added { color: var(--added); background: var(--added-fill); }
+.tag-changed { color: var(--changed); background: var(--changed-fill); }
+.tag-removed { color: var(--removed); background: var(--removed-fill); }
+.tag-moved { color: var(--moved); background: var(--moved-fill); }
+
+/* Collapsible sections */
+details { border: 1px solid var(--separator); border-radius: 12px; margin: 12px 0; overflow: hidden; }
+summary { cursor: pointer; list-style: none; padding: 11px 16px; font-weight: 600; background: var(--panel); }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "›"; display: inline-block; width: 1em; color: var(--secondary); -webkit-transition: -webkit-transform 0.15s; transition: transform 0.15s; }
+details[open] > summary::before { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+details[open] > summary { border-bottom: 1px solid var(--separator); }
+.details-body { padding: 4px 16px 12px; }
+
+@media (max-width: 640px) {
+  .page { padding: 20px 16px 56px; }
+  h1 { font-size: 23px; }
+}
+
+/* ===== Page-specific styles (only for elements the shared style lacks, e.g. UI mockups) ===== */
+/* Mockup of the Lab pane's Apple Music box: token field plus the status row in each state. */
+.mockup { border: 1px solid var(--separator); border-radius: 12px; padding: 14px 16px; background: var(--panel); margin: 12px 0; }
+.mockup-row { display: -webkit-box; display: flex; align-items: center; gap: 12px; margin: 7px 0; }
+.mockup-label { flex: none; width: 138px; text-align: right; font-size: 13px; }
+.mockup-state { flex: none; width: 138px; text-align: right; font: 12px ui-monospace, "SF Mono", Menlo, monospace; color: var(--secondary); }
+.mockup-field { flex: 1; border: 1px solid var(--separator); border-radius: 6px; padding: 3px 8px; background: var(--background); min-height: 26px; }
+.mockup-status { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--secondary); }
+.mockup-status-text { flex: 1; }
+.mockup-symbol { flex: none; width: 16px; height: 16px; border-radius: 50%; color: var(--background); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.mockup-symbol-valid { background: var(--added); }
+.mockup-symbol-rejected { background: var(--removed); }
+.mockup-symbol-unknown { background: var(--changed); border-radius: 3px; }
+.mockup-spinner { flex: none; width: 14px; height: 14px; border: 2px solid var(--separator); border-top-color: var(--secondary); border-radius: 50%; }
+.mockup-button { flex: none; font-size: 11px; border: 1px solid var(--separator); background: var(--background); color: var(--foreground); border-radius: 5px; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<svg class="svg-definitions" aria-hidden="true" focusable="false">
+  <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+</svg>
+<div class="page">
+
+<header class="doc-header">
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">0030</span></p>
+  <h1><span class="proposal-number">0030</span> 实验室页显示 Apple Music token 是否有效</h1>
+  <dl class="meta">
+    <div><dt>状态</dt><dd><span class="status status-implemented">Implemented</span></dd></div>
+    <div><dt>最后更新</dt><dd>2026-11-20</dd></div>
+    <div><dt>创建日期</dt><dd>2026-11-18</dd></div>
+    <div><dt>作者</dt><dd>JH</dd></div>
+    <div><dt>项目类型</dt><dd>App</dd></div>
+    <div><dt>所属愿景</dt><dd>无</dd></div>
+    <div><dt>关联提案</dt><dd><a href="0018-lab-apple-music-group.md">0018 实验室页的 Apple Music 设置归入一组并补齐翻译</a>（token 输入框所在的组框）</dd></div>
+    <div><dt>实现分支</dt><dd>LyricsX <code>feature/apple-music-token-status</code>；LyricsKit <code>feature/apple-music-authorization-status</code></dd></div>
+    <div><dt>配套文档</dt><dd>无（见决策日志 2026-11-18「不写配套专题文章」）；LyricsKit README 新增「Apple Music source requires a media-user-token」一节</dd></div>
+    <div><dt>原文</dt><dd><code>0030-apple-music-token-status.md</code></dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <ol>
+    <li><a href="#summary">摘要</a></li>
+    <li><a href="#decide">落地状态</a></li>
+    <li><a href="#motivation">动机</a></li>
+    <li><a href="#interface">界面</a></li>
+    <li><a href="#proposal">提议方案</a></li>
+    <li><a href="#architecture">架构图</a></li>
+    <li><a href="#map">改动地图</a></li>
+    <li><a href="#steps">落地步骤</a></li>
+    <li><a href="#non-goals">非目标</a></li>
+    <li><a href="#design">详细设计</a></li>
+    <li><a href="#research">前期调研</a></li>
+    <li><a href="#alternatives">替代方案</a></li>
+    <li><a href="#impact">影响</a></li>
+    <li><a href="#log">决策日志</a></li>
+  </ol>
+</nav>
+
+<main class="content">
+
+<section id="summary">
+  <h2>摘要</h2>
+  <p>设置窗口「实验室」页 Apple Music 组框里的 User Token 输入框下面加一行状态：检查中、有效（附账号所在地区）、被 Apple Music 拒绝、暂时无法检查，旁边一个「重新检查」按钮。检查结果来自 LyricsKit 新增的公开 API <code>LyricsProviders.Service.appleMusic.authorizationStatus(for:)</code>，它把 amp-api 的回答分成三种（<code>authorized</code> / <code>denied</code> / <code>couldNotDetermine</code>），取代原来只给 true / false 的 <code>isAuthorized</code>。</p>
+  <p><code>AppController</code> 用同一次检查决定要不要启用 Apple Music 歌词源并把结果发布给设置页，不额外发请求；顺带让不依赖 token 的歌词源在检查期间就先装上，修掉「设置了 token 时启动后第一首歌搜不到歌词」。LyricsKit 因此发布 1.13.0。</p>
+</section>
+
+<section id="decide">
+  <h2>落地状态</h2>
+  <div class="callout callout-note">
+    <p class="callout-title">已落地（2026-11-20）</p>
+    <p>用户在中文界面验收通过：状态行正常显示，长说明折成两行。LyricsKit 已发布 1.13.0，LyricsX 改钉 <code>exact: "1.13.0"</code>，<code>Package.resolved</code> 只有 LyricsKit 一项变化。</p>
+  </div>
+  <div class="callout callout-warning">
+    <p class="callout-title">只靠代码审查确认的部分</p>
+    <p><code>AppController</code> 的三条行为没有自动化测试（app 没有测试 target），靠代码审查和验收时的实际使用确认。</p>
+  </div>
+</section>
+
+<section id="motivation">
+  <h2>动机</h2>
+  <ul>
+    <li><strong>用户反馈</strong>：issue #223（「无法知道 musickit 令牌是否有效」，macOS 26.2.1、LyricsX 1.9.1）——用户从 Safari 的 cookie 里复制了 <code>media-user-token</code> 贴进设置，「没有任何办法知道是否生效」，希望「输入好之后旁边显示一个 ✅」，以分清是解析成功了还是自己复制错了。</li>
+    <li><strong>其实检查一直在做，只是结果没给用户看</strong>：<code>AppController.updateLyricsManager()</code>（<code>LyricsX/Component/AppController.swift:266</code>）在启动、改 token、改地区或语言、切换播放器时都会请求一次 <code>/v1/me/storefront</code>，不通过就不装 Apple Music 歌词源。结果只决定装不装，界面上没有任何反馈。</li>
+    <li><strong>只有布尔值不够用</strong>：LyricsKit 的 <code>AppleMusicSession.isAuthorized()</code>（<code>LyricsKit/Sources/LyricsService/Provider/Services/AppleMusic/AppleMusicSession.swift:81</code>）把所有失败——token 错了、没网、取不到网页播放器的开发者令牌、amp-api 返回 5xx——一律变成 <code>false</code>。直接把它显示出来，Apple 一改网页播放器，所有用户都会看到「token 无效」，引来更多误会。</li>
+    <li><strong>报告者的 token 很可能本来就有效</strong>：他说歌词列表里出现了 Apple Music 的歌词，而这个源只有检查通过才会装上。他真正的不满（标题仍是英文）归 MusicKit 原名恢复开关管，和 token 无关（见非目标）。有了状态行，这类混淆能当场排除。</li>
+  </ul>
+</section>
+
+<section id="interface">
+  <h2>界面：token 输入框下的状态行</h2>
+  <p>token 输入框下面插一行（左列空、右列放状态视图）：图标 + 一到两行说明 + 「重新检查」按钮。下图把五种状态叠在一起示意，左侧灰字是状态名，不是界面的一部分。</p>
+  <div class="mockup" role="img" aria-label="Status row mockup">
+    <div class="mockup-row"><div class="mockup-label">User Token:</div><div class="mockup-field"></div></div>
+    <div class="mockup-row"><div class="mockup-state">noToken</div><div class="mockup-status"><span class="mockup-status-text">Paste a token to turn on Apple Music lyrics.</span></div></div>
+    <div class="mockup-row"><div class="mockup-state">checking</div><div class="mockup-status"><span class="mockup-spinner"></span><span class="mockup-status-text">Checking token…</span></div></div>
+    <div class="mockup-row"><div class="mockup-state">authorized</div><div class="mockup-status"><span class="mockup-symbol mockup-symbol-valid">✓</span><span class="mockup-status-text">Valid. Apple Music lyrics are on (region: Japan).</span><span class="mockup-button">Check Again</span></div></div>
+    <div class="mockup-row"><div class="mockup-state">denied</div><div class="mockup-status"><span class="mockup-symbol mockup-symbol-rejected">✕</span><span class="mockup-status-text">Apple Music rejected this token. Copy it again from music.apple.com while signed in.</span><span class="mockup-button">Check Again</span></div></div>
+    <div class="mockup-row"><div class="mockup-state">couldNotDetermine</div><div class="mockup-status"><span class="mockup-symbol mockup-symbol-unknown">!</span><span class="mockup-status-text">Couldn't check the token. Apple Music lyrics stay off until a check succeeds.</span><span class="mockup-button">Check Again</span></div></div>
+  </div>
+  <p class="figure-caption">示意图，不是截图。真实界面用下表的 SF Symbols。</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>状态</th><th>图标</th><th>文字（英文原文）</th><th>按钮</th></tr></thead>
+    <tbody>
+      <tr><td>无 token</td><td>无</td><td>Paste a token to turn on Apple Music lyrics.</td><td>隐藏</td></tr>
+      <tr><td>检查中</td><td>小号转圈</td><td>Checking token…</td><td>隐藏</td></tr>
+      <tr><td><code>authorized</code></td><td><code>checkmark.circle.fill</code>，绿色</td><td>Valid. Apple Music lyrics are on (region: %@).</td><td>显示</td></tr>
+      <tr><td><code>denied</code></td><td><code>xmark.circle.fill</code>，红色</td><td>Apple Music rejected this token. Copy it again from music.apple.com while signed in.</td><td>显示</td></tr>
+      <tr><td><code>couldNotDetermine</code></td><td><code>exclamationmark.triangle.fill</code>，橙色</td><td>Couldn't check the token. Apple Music lyrics stay off until a check succeeds.</td><td>显示</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul>
+    <li>状态视图订阅 <code>appleMusicTokenCheck</code>。</li>
+    <li>打开实验室页时若已填 token 就重新检查一次，按钮也触发重新检查，两者都走 <code>updateLyricsManager()</code>。</li>
+    <li>地区按当前语言显示成地区名（<code>jp</code> → 「日本」），系统没有这个名字时显示原始代码。</li>
+    <li><code>couldNotDetermine</code> 的技术原因放在 tooltip 里，所有状态的 tooltip 都带完整文字（防止两行放不下）。</li>
+    <li>新文案补英文、简体中文、繁体中文。</li>
+  </ul>
+</section>
+
+<section id="proposal">
+  <h2>提议方案</h2>
+  <ol>
+    <li><strong>LyricsKit 新增公开的检查结果类型和检查入口</strong>（发布 1.13.0，纯新增 API，不破坏已有调用）：
+      <ul>
+        <li><code>LyricsProviders.AppleMusicAuthorizationStatus</code>：<code>authorized(storefront:)</code>、<code>denied</code>、<code>couldNotDetermine(reason:)</code>。</li>
+        <li><code>LyricsProviders.Service&lt;AppleMusicOptions&gt;.authorizationStatus(for:)</code>：与 <code>create(_:)</code> 并列，拿同一份 options 问 amp-api。</li>
+        <li>判定：2xx 取地区 → <code>authorized</code>；403 → <code>denied</code>；401 → 重新抓开发者令牌后重试一次，再 401 → <code>couldNotDetermine</code>；其他状态码、网络错误、取不到开发者令牌、响应体不对 → <code>couldNotDetermine</code>。没有 token 或为空 → 直接 <code>denied</code>，不发请求。</li>
+        <li><code>AppleMusicSession.isAuthorized()</code> 改为由同一套判定得出，因此也获得「开发者令牌刚过期时自动重抓重试」，不再把这种情况当成 token 无效。只缓存 <code>authorized</code> 和 <code>denied</code>，<code>couldNotDetermine</code> 不缓存。</li>
+      </ul>
+    </li>
+    <li><strong><code>AppController</code> 用这次检查装源并发布结果</strong>：
+      <ul>
+        <li>新增 <code>@Published private(set) var appleMusicTokenCheck: AppleMusicTokenCheck</code>，状态为无 token / 检查中 / 已有结论。</li>
+        <li><code>updateLyricsManager()</code> 先立即装上不需要凭据的歌词源，再检查 token，检查通过才换成带 Apple Music 的一组。每次调用取一个递增的序号，检查回来时序号已过期就丢弃结果，不改状态也不换歌词源。</li>
+      </ul>
+    </li>
+    <li><strong>实验室页显示状态</strong>：见上方<a href="#interface">界面</a>一节。</li>
+  </ol>
+</section>
+
+<section id="architecture">
+  <h2>架构图</h2>
+  <ul class="legend">
+    <li><i class="swatch swatch-added"></i>新增</li>
+    <li><i class="swatch swatch-changed"></i>修改</li>
+    <li><i class="swatch swatch-kept"></i>不变</li>
+  </ul>
+
+  <h3>改了什么</h3>
+  <div class="figure">
+  <svg viewBox="0 0 1000 470" role="img" aria-label="What changes">
+    <!-- LyricsKit -->
+    <rect class="group" x="10" y="10" width="480" height="450" rx="10"/>
+    <text class="group-label" x="22" y="32">LyricsKit · LyricsService/Provider/Services/AppleMusic/</text>
+
+    <rect class="box-added" x="25" y="48" width="450" height="104" rx="6"/>
+    <text x="37" y="68">AppleMusicAuthorizationStatus.swift</text>
+    <text x="37" y="88">public enum LyricsProviders.AppleMusicAuthorizationStatus</text>
+    <text class="caption" x="37" y="104">authorized(storefront:) | denied | couldNotDetermine(reason:)</text>
+    <text x="37" y="126">extension Service where Options == AppleMusicOptions</text>
+    <text class="caption" x="37" y="142">public func authorizationStatus(for:) async</text>
+
+    <rect class="box-changed" x="25" y="172" width="450" height="204" rx="6"/>
+    <text x="37" y="192">AppleMusicSession.swift  (actor)</text>
+    <text x="45" y="216">+ send(_:) -&gt; AppleMusicAPIResponse</text>
+    <text class="caption" x="61" y="231">status + body, no throw on non-2xx</text>
+    <text x="45" y="251">~ musicAPI(_:) -&gt; Data</text>
+    <text class="caption" x="61" y="266">built on send(_:), behavior unchanged</text>
+    <text x="45" y="286">+ authorizationStatus() -&gt; AppleMusicAuthorizationStatus</text>
+    <text x="45" y="306">~ isAuthorized() -&gt; Bool</text>
+    <text class="caption" x="61" y="321">derived from authorizationStatus()</text>
+    <text class="strike" x="45" y="341">- authorizedCache: Bool?</text>
+    <text x="45" y="361">+ authorizationStatusCache: AppleMusicAuthorizationStatus?</text>
+
+    <rect class="box-added" x="25" y="396" width="450" height="46" rx="6"/>
+    <text x="37" y="416">AppleMusicAuthorizationProbe.swift</text>
+    <text class="caption" x="37" y="433">internal, pure classification</text>
+
+    <path class="arrow" d="M 250 152 L 250 170"/>
+    <path class="arrow" d="M 250 376 L 250 394"/>
+
+    <!-- LyricsX -->
+    <rect class="group" x="510" y="10" width="480" height="450" rx="10"/>
+    <text class="group-label" x="522" y="32">LyricsX</text>
+
+    <text class="caption" x="525" y="56">LyricsXPackage/Sources/LyricsXFoundation/</text>
+    <rect class="box-added" x="525" y="64" width="440" height="46" rx="6"/>
+    <text x="537" y="84">AppleMusicTokenCheck.swift</text>
+    <text class="caption" x="537" y="101">noToken | checking | finished(status)</text>
+    <rect class="box-added" x="525" y="118" width="440" height="46" rx="6"/>
+    <text x="537" y="138">StatusMessageRowView.swift</text>
+    <text class="caption" x="537" y="155">symbol or spinner, up to two lines of text, optional button</text>
+
+    <text class="caption" x="525" y="186">LyricsX/Component/</text>
+    <rect class="box-changed" x="525" y="194" width="440" height="80" rx="6"/>
+    <text x="537" y="214">AppController.swift</text>
+    <text x="545" y="234">+ @Published appleMusicTokenCheck</text>
+    <text x="545" y="252">~ updateLyricsManager()</text>
+    <text class="caption" x="561" y="267">base providers first, Apple Music after check, stale dropped</text>
+
+    <text class="caption" x="525" y="300">LyricsX/Preferences/</text>
+    <rect class="box-added" x="525" y="308" width="440" height="46" rx="6"/>
+    <text x="537" y="328">AppleMusicTokenStatusRow.swift</text>
+    <text class="caption" x="537" y="345">StatusMessageRowView + AppleMusicTokenCheck</text>
+    <rect class="box-changed" x="525" y="362" width="440" height="46" rx="6"/>
+    <text x="537" y="382">PreferenceLabViewController.swift</text>
+    <text class="caption" x="537" y="399">status row under the token field, re-check on appear</text>
+
+    <rect class="box-changed" x="525" y="416" width="440" height="32" rx="6"/>
+    <text x="537" y="436">Localizable.xcstrings  (en, zh-Hans, zh-Hant)</text>
+
+    <path class="arrow" d="M 475 130 C 500 130, 500 234, 523 234"/>
+    <path class="arrow" d="M 525 385 C 505 385, 505 252, 523 252"/>
+    <path class="arrow" d="M 965 331 C 985 331, 985 141, 967 141"/>
+  </svg>
+  </div>
+  <p class="figure-caption">箭头表示调用或依赖：<code>AppController</code> 调用 LyricsKit 的公开检查入口；实验室页触发 <code>updateLyricsManager()</code>；app 侧的 <code>AppleMusicTokenStatusRow.swift</code> 扩展包里的 <code>StatusMessageRowView</code>。</p>
+
+  <h3>检查的数据流</h3>
+  <div class="figure">
+  <svg viewBox="0 0 1000 580" role="img" aria-label="Check data flow">
+    <rect class="box-kept" x="20" y="14" width="960" height="36" rx="6"/>
+    <text x="34" y="37">launch / token field edited / Lab pane appears / "Check Again" / player change</text>
+    <path class="arrow" d="M 320 50 L 320 68"/>
+
+    <rect class="box-changed" x="20" y="70" width="600" height="248" rx="6"/>
+    <text class="group-label" x="34" y="94">AppController.updateLyricsManager()   @MainActor</text>
+    <text x="40" y="120">generation += 1</text>
+    <text x="40" y="146">lyricsManager = Group(tokenFreeProviders, plugins)</text>
+    <text class="caption" x="430" y="146">installed at once</text>
+    <text x="40" y="172">no token → appleMusicTokenCheck = .noToken, return</text>
+    <text x="40" y="198">appleMusicTokenCheck = .checking</text>
+    <text x="40" y="224">await Service.appleMusic.authorizationStatus(for: options)</text>
+    <text x="40" y="250">generation changed meanwhile → return (drop this result)</text>
+    <text x="40" y="276">appleMusicTokenCheck = .finished(status)</text>
+    <text x="40" y="302">.authorized → lyricsManager = Group(tokenFreeProviders + appleMusic, plugins)</text>
+
+    <rect class="box-added" x="660" y="70" width="320" height="248" rx="6"/>
+    <text class="group-label" x="674" y="94">StatusMessageRowView</text>
+    <text x="674" y="146">.noToken</text><text x="768" y="146">→ hint, no button</text>
+    <text x="674" y="172">.checking</text><text x="768" y="172">→ spinner</text>
+    <text x="674" y="198">.authorized</text><text x="768" y="198">→ ✓ + region</text>
+    <text x="674" y="224">.denied</text><text x="768" y="224">→ ✗ + text</text>
+    <text x="674" y="250">.couldNotDetermine</text>
+    <text x="768" y="266">→ ⚠ + text</text>
+    <text class="caption" x="674" y="300">observes $appleMusicTokenCheck on main</text>
+
+    <path class="arrow" d="M 300 194 C 450 194, 560 172, 658 172"/>
+    <path class="arrow" d="M 330 272 C 480 272, 560 224, 658 224"/>
+
+    <path class="arrow" d="M 320 318 L 320 344"/>
+    <rect class="box-added" x="20" y="346" width="600" height="220" rx="6"/>
+    <text class="group-label" x="34" y="370">AppleMusicSession.authorizationStatus() → AppleMusicAuthorizationProbe</text>
+    <text x="40" y="396">GET amp-api /v1/me/storefront</text>
+    <rect class="box-added" x="44" y="412" width="12" height="12" rx="3"/><text x="66" y="422">2xx</text><text x="200" y="422">→ .authorized(storefront)</text>
+    <rect class="box-removed" x="44" y="436" width="12" height="12" rx="3"/><text x="66" y="446">403</text><text x="200" y="446">→ .denied</text>
+    <rect class="box-changed" x="44" y="460" width="12" height="12" rx="3"/><text x="66" y="470">401</text><text x="200" y="470">→ refresh developer token, retry once</text>
+    <rect class="box-changed" x="44" y="484" width="12" height="12" rx="3"/><text x="66" y="494">401 again</text><text x="200" y="494">→ .couldNotDetermine</text>
+    <rect class="box-changed" x="44" y="508" width="12" height="12" rx="3"/><text x="66" y="518">other / throws</text><text x="200" y="518">→ .couldNotDetermine(reason)</text>
+    <text class="caption" x="40" y="548">no or empty token → .denied without a request; only .authorized and .denied are cached</text>
+  </svg>
+  </div>
+  <p class="figure-caption">触发点包括启动、改 token 输入框、打开实验室页、点「重新检查」与切换播放器；它们都走同一个 <code>updateLyricsManager()</code>。</p>
+</section>
+
+<section id="map">
+  <h2>改动地图</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>文件 / 类型</th><th>动作</th><th>改什么</th><th>为什么</th><th>步骤</th></tr></thead>
+    <tbody>
+      <tr><td><code>LyricsKit/Sources/LyricsService/Provider/Services/AppleMusic/AppleMusicAuthorizationStatus.swift</code> · <code>LyricsProviders.AppleMusicAuthorizationStatus</code></td><td><span class="tag tag-added">新增</span></td><td>公开枚举，三种结果</td><td>让调用方分清「被拒」和「查不了」</td><td class="numeric">1</td></tr>
+      <tr><td>同上文件 · <code>LyricsProviders.Service where Options == AppleMusicOptions</code></td><td><span class="tag tag-added">新增扩展</span></td><td><code>public func authorizationStatus(for:) async -&gt; AppleMusicAuthorizationStatus</code></td><td>公开检查入口，与 <code>create(_:)</code> 并列</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsKit/…/AppleMusic/AppleMusicAuthorizationProbe.swift</code> · <code>AppleMusicAuthorizationProbe</code></td><td><span class="tag tag-added">新增（internal）</span></td><td>按状态码与抛出的错误分类，401 时重抓开发者令牌重试一次</td><td>分类规则纯函数化，可用闭包替身测</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsKit/…/AppleMusic/AppleMusicSession.swift</code> · <code>AppleMusicSession</code></td><td><span class="tag tag-changed">修改</span></td><td>新增 <code>send(_:)</code>（返回状态码与响应体，非 2xx 不抛错）和 <code>authorizationStatus()</code>；<code>musicAPI(_:)</code> 改为建在 <code>send(_:)</code> 上，行为不变；<code>authorizedCache: Bool?</code> 改为 <code>authorizationStatusCache</code>；<code>isAuthorized()</code> 由 <code>authorizationStatus()</code> 得出</td><td>状态码不能再丢在字符串里</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsKit/…/AppleMusic/AppleMusicSession.swift</code> · <code>AppleMusicAPIErrorParser</code>、<code>AppleMusicStorefrontResponse</code> 解码</td><td><span class="tag tag-changed">修改</span></td><td>probe 复用错误描述；地区解码从 <code>AppleMusicProvider.resolveStorefront()</code> 抽成 session 与 provider 共用的一处</td><td>两处解析同一个响应，不复制</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsKit/Tests/LyricsKitTests/Providers/AppleMusicAuthorizationProbeTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>分类规则的单元测试</td><td>见步骤 1 行为清单</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsKit/Tests/LyricsKitTests/Providers/AppleMusicAuthorizationLiveProbes.swift</code></td><td><span class="tag tag-added">新增</span></td><td>设了 <code>LYRICSKIT_LIVE_NETWORK=1</code> 才跑：伪造 token 对真实 amp-api 应得 <code>denied</code></td><td>403/401 的含义是 Apple 的行为，要能复查</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsXPackage/Sources/LyricsXFoundation/AppleMusicTokenCheck.swift</code> · <code>AppleMusicTokenCheck</code></td><td><span class="tag tag-added">新增</span></td><td>无 token / 检查中 / 已有结论；<code>includesAppleMusicLyrics</code>；<code>regionName(forStorefront:locale:)</code></td><td>状态与「装不装源」的规则放在可无界面测试的地方</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsXPackage/Tests/LyricsXFoundationTests/AppleMusicTokenCheckTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>见步骤 2 行为清单</td><td></td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Component/AppController.swift</code> · <code>AppController</code></td><td><span class="tag tag-changed">修改</span></td><td>新增 <code>appleMusicTokenCheck</code>、更新序号；<code>updateLyricsManager()</code> 先装无凭据源、再检查、过期结果丢弃</td><td>发布结果；修第一首歌搜不到与并发覆盖</td><td class="numeric">3</td></tr>
+      <tr><td><code>LyricsXPackage/Sources/LyricsXFoundation/StatusMessageRowView.swift</code> · <code>StatusMessageRowView</code></td><td><span class="tag tag-added">新增</span></td><td>通用状态行：符号或转圈、最多两行的说明、可隐藏的按钮；说明用高度跟着宽度走的 <code>WidthFollowingLabel</code></td><td>布局放进包里才能无界面测试（app 没有测试 target）</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsXPackage/Tests/LyricsXFoundationTests/StatusMessageRowViewTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>状态行一次布局就稳定、长说明换成两行、再长也只两行</td><td>回归测试，第一版的布局死循环在这里是红的</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsX/Preferences/AppleMusicTokenStatusRow.swift</code> · <code>StatusMessageRowView</code> 扩展</td><td><span class="tag tag-added">新增</span></td><td><code>makeAppleMusicTokenStatusRow()</code>、<code>show(_ check:)</code>：把检查状态映射成符号和本地化文案</td><td>文案留在 app，Xcode 才能从 app 源码里提取</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsX/Preferences/PreferenceLabViewController.swift</code> · <code>PreferenceLabViewController</code></td><td><span class="tag tag-changed">修改</span></td><td><code>insertAppleMusicTokenStatusRow()</code>；订阅 <code>appleMusicTokenCheck</code>；<code>viewWillAppear</code> 有 token 时重新检查；按钮动作</td><td>把状态行接进实验室页</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>新增 7 条文案（英、简中、繁中），按 <code>localizedStandardCompare</code> 手工插入</td><td>界面文字</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsKit</code> 标签 <code>v1.13.0</code></td><td><span class="tag tag-added">新增</span></td><td>在 LyricsKit <code>develop</code> 合并后的提交上打</td><td>发布新 API</td><td class="numeric">5</td></tr>
+      <tr><td><code>LyricsXPackage/Package.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>LyricsKit <code>exact: "1.12.0"</code> → <code>"1.13.0"</code></td><td>钉住新版本</td><td class="numeric">5</td></tr>
+      <tr><td><code>LyricsX.xcodeproj/…/Package.resolved</code></td><td><span class="tag tag-changed">修改</span></td><td><code>-resolvePackageDependencies</code> 刷新，核对 diff 只动了 LyricsKit</td><td>发版用这里的钉版</td><td class="numeric">5</td></tr>
+      <tr><td><code>CLAUDE.md</code></td><td><span class="tag tag-changed">修改</span></td><td><code>LyricsXFoundationTests</code> 覆盖清单加上 Apple Music token 检查</td><td>文档与代码同批</td><td class="numeric">5</td></tr>
+      <tr><td><code>Documentations/ReviewDecisions.md</code></td><td><span class="tag tag-changed">修改</span></td><td>「设置了 Apple Music token 时，启动后第一首歌搜不到歌词」由暂缓改为已修复，指向本提案</td><td>裁决清单要跟上</td><td class="numeric">5</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="steps">
+  <h2>落地步骤</h2>
+  <ol>
+    <li><span class="tag tag-added">已完成</span> <strong>LyricsKit：检查结果类型、分类规则与 session 改造</strong>（功能分支，合进 LyricsKit <code>develop</code>）—— 改动地图第 1–7 行
+      <ul>
+        <li>行为：<code>storefrontAnswerIsAuthorizedWithTheAccountStorefront</code></li>
+        <li>行为：<code>forbiddenAnswerIsDeniedWithoutRefreshingTheDeveloperToken</code></li>
+        <li>行为：<code>unauthorizedAnswerRefreshesTheDeveloperTokenAndAsksOnceMore</code></li>
+        <li>行为：<code>secondUnauthorizedAnswerCouldNotDetermine</code></li>
+        <li>行为：<code>unexpectedStatusCouldNotDetermineWithTheAPIErrorText</code></li>
+        <li>行为：<code>transportFailureCouldNotDetermine</code></li>
+        <li>行为：<code>unavailableDeveloperTokenCouldNotDetermine</code></li>
+        <li>行为：<code>storefrontAnswerWithoutDataCouldNotDetermine</code></li>
+        <li>行为：<code>missingOrEmptyTokenIsDenied</code></li>
+        <li>行为：<code>liveFakeTokenIsDeniedByAmpAPI</code>（需 <code>LYRICSKIT_LIVE_NETWORK=1</code>，否则跳过）</li>
+        <li>验证：LyricsKit <code>swift test</code> 全绿。</li>
+      </ul>
+    </li>
+    <li><span class="tag tag-added">已完成</span> <strong>LyricsX：<code>AppleMusicTokenCheck</code></strong>（对着本地 LyricsKit 开发：<code>LYRICSX_USE_LOCAL_DEPENDENCY=1</code> 或 workspace）—— 第 8–9 行
+      <ul>
+        <li>行为：<code>onlyAnAuthorizedCheckIncludesAppleMusicLyrics</code></li>
+        <li>行为：<code>storefrontShowsAsTheRegionNameInTheLocale</code></li>
+        <li>行为：<code>unknownStorefrontShowsItsIdentifier</code></li>
+      </ul>
+    </li>
+    <li><span class="tag tag-added">已完成</span> <strong><code>AppController</code> 发布检查结果并先装无凭据源</strong> —— 第 10 行
+      <ul>
+        <li>行为：<code>tokenFreeSourcesAreInstalledBeforeTheTokenCheckReturns</code></li>
+        <li>行为：<code>aCheckThatReturnsAfterANewerOneChangesNothing</code></li>
+        <li>行为：<code>onlyAnAuthorizedCheckAddsTheAppleMusicSource</code></li>
+        <li><code>AppController</code> 没法无界面测试，这三条靠代码审查和 Debug 构建运行时看日志确认。</li>
+      </ul>
+    </li>
+    <li><span class="tag tag-added">已完成</span> <strong>实验室页状态行</strong> —— 第 11–13 行
+      <ul>
+        <li>行为：<code>statusRowSitsUnderTheTokenFieldInTheAppleMusicBox</code></li>
+        <li>行为：<code>eachCheckShowsItsSymbolTextAndButton</code></li>
+        <li>行为：<code>checkAgainStartsANewCheck</code></li>
+        <li>行为：<code>openingTheLabPaneChecksASavedTokenAgain</code></li>
+        <li>验证：workspace 下 Debug 构建通过。界面截图要等用户授权交互式验证，否则在汇报里说明没做。</li>
+      </ul>
+    </li>
+    <li><span class="tag tag-added">已完成</span> <strong>发版接线与文档</strong> —— 第 14–18 行
+      <ul>
+        <li>LyricsKit 打 <code>v1.13.0</code> 并推送，改 <code>exact:</code>，<code>-resolvePackageDependencies</code> 后只保留 LyricsKit 的变化。</li>
+        <li>更新 <code>CLAUDE.md</code> 与 <code>ReviewDecisions.md</code>。</li>
+        <li>行为：<code>projectResolvesLyricsKit1_13_0FromItsTag</code>（不设 <code>LYRICSX_USE_LOCAL_DEPENDENCY</code> 时 <code>swift build</code> 通过）</li>
+      </ul>
+    </li>
+  </ol>
+  <div class="callout callout-note">
+    <p class="callout-title">收尾时必须判断两件事（判断结果写进决策日志，不允许沉默跳过）</p>
+    <ul>
+      <li><strong>要不要配套专题文章</strong> —— 预计不需要：状态的含义在界面上，403/401 的判定写在提案和代码注释里。落地时再确认。</li>
+      <li><strong>有没有引入新术语</strong> —— 预计没有：「media-user-token」「开发者令牌」已在用。落地时再确认。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="non-goals">
+  <h2>非目标</h2>
+  <ul>
+    <li><strong>原名恢复</strong>：issue #223 的另一半（Apple Music 的日文标题仍显示成英文）归 MusicKit 原名恢复开关，不用 token。1.9.1 在「系统级正在播放」模式下这个开关不生效；develop 已经钉了能报出播放器的 MusicPlayer 1.12.0，但还没实机验证。本提案不碰它。</li>
+    <li><strong>token 搬进钥匙串</strong>：<code>ReviewDecisions.md</code> 已裁决暂缓，本次不动存储位置。</li>
+    <li><strong>订阅状态</strong>：不判断账号订阅是否有效，只判断 amp-api 接不接受 token。</li>
+    <li><strong>修首选正则</strong>：<code>qc=</code> 规则失效、后备规则在扛流量，是单独的问题，另行处理。</li>
+    <li><strong>取歌词失败时自动更新状态</strong>：会话中途 token 过期，状态行要到下次打开实验室页或点按钮才更新，不从 provider 往上推。</li>
+    <li><strong>自动修正用户输入</strong>：不去掉 <code>media-user-token=</code> 前缀、引号之类，校验结果会告诉用户复制错了。</li>
+  </ul>
+</section>
+
+<section id="design">
+  <h2>详细设计</h2>
+
+  <details>
+    <summary>LyricsKit 公开 API</summary>
+    <div class="details-body">
+<pre><code><span class="token-comment">// AppleMusicAuthorizationStatus.swift</span>
+<span class="token-keyword">extension</span> <span class="token-type">LyricsProviders</span> {
+    <span class="token-comment">/// What Apple Music's amp-api made of a `media-user-token`.</span>
+    <span class="token-keyword">public enum</span> <span class="token-type">AppleMusicAuthorizationStatus</span>: <span class="token-type">Hashable</span>, <span class="token-type">Sendable</span> {
+        <span class="token-comment">/// amp-api accepted the token. `storefront` is the account's
+        /// storefront identifier, such as `"jp"`.</span>
+        <span class="token-keyword">case</span> authorized(storefront: <span class="token-type">String</span>)
+        <span class="token-comment">/// amp-api refused the token (HTTP 403): it is mistyped, expired,
+        /// or belongs to a session that signed out. A missing or empty
+        /// token is also `denied`, without a request.</span>
+        <span class="token-keyword">case</span> denied
+        <span class="token-comment">/// The check reached no verdict: no network, the web player's
+        /// developer token could not be fetched or was refused twice, or
+        /// amp-api answered something unexpected. `reason` is for logs and
+        /// tooltips, not for matching.</span>
+        <span class="token-keyword">case</span> couldNotDetermine(reason: <span class="token-type">String</span>)
+    }
+}
+
+<span class="token-macro">@available</span>(macOS <span class="token-number">12.0</span>, *)
+<span class="token-keyword">extension</span> <span class="token-type">LyricsProviders</span>.<span class="token-type">Service</span> <span class="token-keyword">where</span> <span class="token-type">Options</span> == <span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicOptions</span> {
+    <span class="token-comment">/// Asks amp-api whether it accepts `options.mediaUserToken`, the way
+    /// the provider made by `create(_:)` will use it.</span>
+    <span class="token-keyword">public func</span> authorizationStatus(for options: <span class="token-type">Options</span>) <span class="token-keyword">async</span> -&gt; <span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicAuthorizationStatus</span> {
+        <span class="token-keyword">await</span> <span class="token-type">AppleMusicSession</span>(mediaUserToken: options.mediaUserToken).authorizationStatus()
+    }
+}</code></pre>
+      <ul>
+        <li>枚举本身不加 <code>@available</code>：它是纯值类型，LyricsKit 的最低版本是 macOS 10.15，<code>LyricsXFoundation</code> 不必为它包 <code>#available</code>。</li>
+        <li>用 enum 而不是 struct 加静态成员：调用方要穷举三种结果来决定显示，和 <code>MusicAuthorization.Status</code> 一样。LyricsKit 只有 LyricsX 一个使用方、按源码编译，将来加 case 是一次有意的源码破坏，届时随大版本号走。</li>
+        <li>不抛错：<code>couldNotDetermine</code> 是正常结果之一（<code>CKAccountStatus.couldNotDetermine</code> 的先例），调用方总要显示它，抛错只会逼调用方把 catch 再映射回一个状态。</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>分类规则</summary>
+    <div class="details-body">
+<pre><code><span class="token-comment">// AppleMusicAuthorizationProbe.swift (internal)</span>
+<span class="token-keyword">struct</span> <span class="token-type">AppleMusicAPIResponse</span>: <span class="token-type">Sendable</span> {
+    <span class="token-keyword">let</span> statusCode: <span class="token-type">Int</span>
+    <span class="token-keyword">let</span> body: <span class="token-type">Data</span>
+}
+
+<span class="token-keyword">enum</span> <span class="token-type">AppleMusicAuthorizationProbe</span> {
+    <span class="token-keyword">static func</span> status(
+        requestingStorefront requestStorefront: () <span class="token-keyword">async throws</span> -&gt; <span class="token-type">AppleMusicAPIResponse</span>,
+        refreshingDeveloperToken refreshDeveloperToken: () <span class="token-keyword">async</span> -&gt; <span class="token-type">Void</span>
+    ) <span class="token-keyword">async</span> -&gt; <span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicAuthorizationStatus</span> {
+        <span class="token-keyword">for</span> attempt <span class="token-keyword">in</span> <span class="token-number">1</span>...<span class="token-number">2</span> {
+            <span class="token-keyword">let</span> response: <span class="token-type">AppleMusicAPIResponse</span>
+            <span class="token-keyword">do</span> {
+                response = <span class="token-keyword">try await</span> requestStorefront()
+            } <span class="token-keyword">catch</span> {
+                <span class="token-keyword">return</span> .couldNotDetermine(reason: describe(error))
+            }
+            <span class="token-keyword">switch</span> response.statusCode {
+            <span class="token-keyword">case</span> <span class="token-number">200</span>..&lt;<span class="token-number">300</span>:
+                <span class="token-keyword">guard let</span> storefront = <span class="token-type">AppleMusicStorefrontResponse</span>.storefrontIdentifier(in: response.body) <span class="token-keyword">else</span> {
+                    <span class="token-keyword">return</span> .couldNotDetermine(reason: <span class="token-string">"amp-api's storefront response has no storefront"</span>)
+                }
+                <span class="token-keyword">return</span> .authorized(storefront: storefront)
+            <span class="token-keyword">case</span> <span class="token-number">403</span>:
+                <span class="token-keyword">return</span> .denied
+            <span class="token-keyword">case</span> <span class="token-number">401</span> <span class="token-keyword">where</span> attempt == <span class="token-number">1</span>:
+                <span class="token-keyword">await</span> refreshDeveloperToken()
+            <span class="token-keyword">case</span> <span class="token-number">401</span>:
+                <span class="token-keyword">return</span> .couldNotDetermine(reason: <span class="token-string">"amp-api refused the web player's developer token"</span>)
+            <span class="token-keyword">default</span>:
+                <span class="token-keyword">return</span> .couldNotDetermine(
+                    reason: <span class="token-type">AppleMusicAPIErrorParser</span>.describe(data: response.body, status: response.statusCode)
+                )
+            }
+        }
+        preconditionFailure(<span class="token-string">"The second attempt always returns."</span>)
+    }
+}</code></pre>
+      <ul>
+        <li><code>describe(_:)</code>：<code>AppleMusicError.developerTokenUnavailable(hint)</code> → 「couldn't fetch the web player's developer token: hint」；其他错误用 <code>localizedDescription</code>。</li>
+        <li>取消：<code>CancellationError</code> 与 <code>URLError.cancelled</code> 归入 <code>couldNotDetermine</code>。调用方用序号丢弃过期结果，不靠取消。</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><code>AppleMusicSession</code> 的改动</summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">func</span> send(<span class="token-keyword">_</span> path: <span class="token-type">String</span>) <span class="token-keyword">async throws</span> -&gt; <span class="token-type">AppleMusicAPIResponse</span>   <span class="token-comment">// 请求构造照旧，只是不对非 2xx 抛错</span>
+
+<span class="token-keyword">func</span> musicAPI(<span class="token-keyword">_</span> path: <span class="token-type">String</span>) <span class="token-keyword">async throws</span> -&gt; <span class="token-type">Data</span> {
+    <span class="token-keyword">let</span> response = <span class="token-keyword">try await</span> send(path)
+    <span class="token-keyword">if</span> (<span class="token-number">200</span>..&lt;<span class="token-number">300</span>).contains(response.statusCode) { <span class="token-keyword">return</span> response.body }
+    <span class="token-keyword">if</span> response.statusCode == <span class="token-number">401</span> || response.statusCode == <span class="token-number">403</span> {
+        <span class="token-keyword">await</span> <span class="token-type">AppleMusicDeveloperTokenCache</span>.shared.invalidate()
+        authorizationStatusCache = <span class="token-keyword">nil</span>
+    }
+    <span class="token-keyword">throw</span> <span class="token-type">AppleMusicError</span>.api(<span class="token-type">AppleMusicAPIErrorParser</span>.describe(data: response.body, status: response.statusCode))
+}
+
+<span class="token-keyword">func</span> authorizationStatus() <span class="token-keyword">async</span> -&gt; <span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicAuthorizationStatus</span> {
+    <span class="token-keyword">if let</span> authorizationStatusCache { <span class="token-keyword">return</span> authorizationStatusCache }
+    <span class="token-keyword">guard let</span> mediaUserToken, !mediaUserToken.isEmpty <span class="token-keyword">else</span> { <span class="token-keyword">return</span> .denied }
+    <span class="token-keyword">let</span> status = <span class="token-keyword">await</span> <span class="token-type">AppleMusicAuthorizationProbe</span>.status(
+        requestingStorefront: { <span class="token-keyword">try await self</span>.send(<span class="token-string">"/v1/me/storefront"</span>) },
+        refreshingDeveloperToken: { <span class="token-keyword">await</span> <span class="token-type">AppleMusicDeveloperTokenCache</span>.shared.invalidate() }
+    )
+    <span class="token-keyword">switch</span> status {
+    <span class="token-keyword">case</span> .authorized, .denied: authorizationStatusCache = status
+    <span class="token-keyword">case</span> .couldNotDetermine: <span class="token-keyword">break</span>                    <span class="token-comment">// transient: ask again next time</span>
+    }
+    <span class="token-keyword">return</span> status
+}
+
+<span class="token-keyword">func</span> isAuthorized() <span class="token-keyword">async</span> -&gt; <span class="token-type">Bool</span> {
+    <span class="token-keyword">if case</span> .authorized = <span class="token-keyword">await</span> authorizationStatus() { <span class="token-keyword">return true</span> }
+    <span class="token-keyword">return false</span>
+}</code></pre>
+      <p><code>musicAPI(_:)</code> 对外行为不变（包括 401/403 清缓存），只是建在 <code>send(_:)</code> 上。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><code>AppleMusicTokenCheck</code>（LyricsXFoundation）</summary>
+    <div class="details-body">
+<pre><code><span class="token-comment">/// Where the check of the Apple Music `media-user-token` stands.</span>
+<span class="token-keyword">public enum</span> <span class="token-type">AppleMusicTokenCheck</span>: <span class="token-type">Hashable</span>, <span class="token-type">Sendable</span> {
+    <span class="token-comment">/// No token is entered; Apple Music lyrics are off.</span>
+    <span class="token-keyword">case</span> noToken
+    <span class="token-comment">/// A check is on its way to amp-api.</span>
+    <span class="token-keyword">case</span> checking
+    <span class="token-comment">/// amp-api answered, or the check gave up.</span>
+    <span class="token-keyword">case</span> finished(<span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicAuthorizationStatus</span>)
+
+    <span class="token-comment">/// Whether the Apple Music lyrics source goes into the search.</span>
+    <span class="token-keyword">public var</span> includesAppleMusicLyrics: <span class="token-type">Bool</span> {
+        <span class="token-keyword">if case</span> .finished(.authorized) = <span class="token-keyword">self</span> { <span class="token-keyword">return true</span> }
+        <span class="token-keyword">return false</span>
+    }
+
+    <span class="token-comment">/// The storefront's region in `locale`'s language — "日本" for `"jp"`
+    /// in Simplified Chinese — or the identifier itself when `locale` has
+    /// no name for it.</span>
+    <span class="token-keyword">public static func</span> regionName(forStorefront storefront: <span class="token-type">String</span>, locale: <span class="token-type">Locale</span> = .current) -&gt; <span class="token-type">String</span> {
+        locale.localizedString(forRegionCode: storefront.uppercased()) ?? storefront
+    }
+}</code></pre>
+    </div>
+  </details>
+
+  <details>
+    <summary><code>AppController.updateLyricsManager()</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-macro">@Published</span> <span class="token-keyword">private(set) var</span> appleMusicTokenCheck: <span class="token-type">AppleMusicTokenCheck</span> = .noToken
+<span class="token-keyword">private var</span> lyricsManagerUpdateGeneration = <span class="token-number">0</span>
+
+<span class="token-macro">@MainActor</span>
+<span class="token-keyword">func</span> updateLyricsManager() <span class="token-keyword">async</span> {
+    lyricsManagerUpdateGeneration += <span class="token-number">1</span>
+    <span class="token-keyword">let</span> generation = lyricsManagerUpdateGeneration
+
+    <span class="token-keyword">let</span> tokenFreeProviders: [<span class="token-type">LyricsProvider</span>] = [<span class="token-comment">/* netease, qq, kugou, lrclib, musixmatch — as today */</span>]
+    <span class="token-keyword">var</span> plugins: [<span class="token-type">LyricsSearchRequestPlugin</span>] = []
+    <span class="token-keyword">if</span> <span class="token-keyword">#available</span>(macOS <span class="token-number">12.0</span>, *), defaults[.appleMusicNameRecoveryEnabled], selectedPlayer.name == .appleMusic {
+        plugins.append(<span class="token-type">AppleMusicNameRecoveryPlugin</span>())
+    }
+    lyricsManager = <span class="token-type">LyricsProviders</span>.<span class="token-type">Group</span>(providers: tokenFreeProviders, plugins: plugins)
+
+    <span class="token-keyword">guard</span> <span class="token-keyword">#available</span>(macOS <span class="token-number">12.0</span>, *),
+          <span class="token-keyword">let</span> token = defaults[.appleMusicMediaUserToken], !token.isEmpty <span class="token-keyword">else</span> {
+        appleMusicTokenCheck = .noToken
+        <span class="token-keyword">return</span>
+    }
+    appleMusicTokenCheck = .checking
+    <span class="token-keyword">let</span> options = <span class="token-type">LyricsProviders</span>.<span class="token-type">AppleMusicOptions</span>(
+        mediaUserToken: token,
+        storefrontOverride: defaults[.appleMusicStorefront].flatMap { $0.isEmpty ? <span class="token-keyword">nil</span> : $0 },
+        languageOverride: defaults[.appleMusicLanguage].flatMap { $0.isEmpty ? <span class="token-keyword">nil</span> : $0 }
+    )
+    <span class="token-keyword">let</span> status = <span class="token-keyword">await</span> <span class="token-type">LyricsProviders</span>.<span class="token-type">Service</span>.appleMusic.authorizationStatus(for: options)
+    <span class="token-keyword">guard</span> generation == lyricsManagerUpdateGeneration <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
+
+    appleMusicTokenCheck = .finished(status)
+    <span class="token-keyword">if</span> appleMusicTokenCheck.includesAppleMusicLyrics {
+        lyricsManager = <span class="token-type">LyricsProviders</span>.<span class="token-type">Group</span>(
+            providers: tokenFreeProviders + [<span class="token-type">LyricsProviders</span>.<span class="token-type">Service</span>.appleMusic.create(options)],
+            plugins: plugins
+        )
+    }
+}</code></pre>
+      <ul>
+        <li>检查用的 session 与 provider 内部的 session 是两个实例，provider 第一次搜索时自己还会再问一次 <code>/v1/me/storefront</code>（开发者令牌是进程级缓存，不重抓）。多一次轻量请求，换来 provider 不必对外暴露 session。</li>
+        <li>代价：每次重新检查（包括打开实验室页）的那不到一秒里，歌词源暂时没有 Apple Music。那段时间开始的搜索只是少一个源。</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>状态视图</summary>
+    <div class="details-body">
+      <ul>
+        <li><code>StatusMessageRowView: NSView</code>（<code>LyricsXFoundation</code>，不带任何文案），内部一个 <code>distribution = .fill</code> 的水平 <code>NSStackView</code>：
+          <ul>
+            <li>16 pt 的 <code>NSImageView</code>，用 <code>contentTintColor</code> 上色。</li>
+            <li><code>.small</code> 的 <code>NSProgressIndicator</code>（spinning）。</li>
+            <li>说明文字：<code>WidthFollowingLabel</code>（<code>NSTextField</code> 子类，<code>wrappingLabelWithString:</code>），<code>.smallSystemFontSize</code>、<code>secondaryLabelColor</code>、最多两行。它不报告固有宽度（<code>noIntrinsicMetric</code>），高度按当前宽度用 cell 算出，宽度变了才 <code>invalidateIntrinsicContentSize()</code>；所以宽度只由 stack view 决定，换行只影响高度。</li>
+            <li><code>.small</code> 尺寸的按钮，标题由构造器传入。</li>
+          </ul>
+        </li>
+        <li><code>show(_ indicator:message:toolTip:showsButton:)</code> 设置符号或转圈、文字、tooltip（默认就是文字）和按钮显隐；<code>buttonHandler: () -&gt; Void</code> 由设置页传入。</li>
+        <li>app 侧 <code>AppleMusicTokenStatusRow.swift</code> 给它加 <code>makeAppleMusicTokenStatusRow()</code> 和 <code>show(_ check:)</code>，按<a href="#interface">界面</a>一节的表把状态映射成符号与本地化文案。</li>
+        <li>插行：<code>appleMusicMediaUserTokenField.superview as? NSGridView</code> 取到内层 grid，找 token 所在行，在其下 <code>insertRow(at:with: [NSGridCell.emptyContentView, statusView])</code>；找不到就 <code>preconditionFailure</code>（与插卡拉OK颜色行同一写法）。</li>
+        <li>订阅：<code>AppController.shared.$appleMusicTokenCheck.receive(on: DispatchQueue.main).sink { statusView.show($0) }</code>，存进新的 <code>appleMusicTokenCheckObservation</code>。</li>
+        <li><code>viewWillAppear()</code> 里：已填 token 就 <code>Task { @MainActor in await AppController.shared.updateLyricsManager() }</code>。</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>新增文案（7 条）</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>键（英文原文）</th><th>简体中文</th><th>繁体中文</th></tr></thead>
+        <tbody>
+          <tr><td>Paste a token to turn on Apple Music lyrics.</td><td>粘贴 token 即可启用 Apple Music 歌词。</td><td>貼上 token 即可啟用 Apple Music 歌詞。</td></tr>
+          <tr><td>Checking token…</td><td>正在检查 token…</td><td>正在檢查 token…</td></tr>
+          <tr><td>Valid. Apple Music lyrics are on (region: %@).</td><td>有效，已启用 Apple Music 歌词（地区：%@）。</td><td>有效，已啟用 Apple Music 歌詞（地區：%@）。</td></tr>
+          <tr><td>Apple Music rejected this token. Copy it again from music.apple.com while signed in.</td><td>Apple Music 拒绝了这个 token。请登录 music.apple.com 后重新复制。</td><td>Apple Music 拒絕了這個 token。請登入 music.apple.com 後重新複製。</td></tr>
+          <tr><td>Couldn't check the token. Apple Music lyrics stay off until a check succeeds.</td><td>无法检查 token。检查成功之前不会使用 Apple Music 歌词。</td><td>無法檢查 token。檢查成功之前不會使用 Apple Music 歌詞。</td></tr>
+          <tr><td>Check Again</td><td>重新检查</td><td>重新檢查</td></tr>
+          <tr><td>Apple Music token status（无障碍标签）</td><td>Apple Music token 状态</td><td>Apple Music token 狀態</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+<section id="research">
+  <h2>前期调研</h2>
+  <details>
+    <summary>现状代码</summary>
+    <div class="details-body">
+      <ul>
+        <li><code>AppController.updateLyricsManager()</code>（<code>AppController.swift:266-302</code>）：先建五个不需要凭据的歌词源；有 token 时构造 Apple Music provider，<code>await appleMusicProvider.isAuthorized</code> 为真才加入；最后整组替换 <code>lyricsManager</code>。调用方：初始化（<code>:262</code>）、原名恢复开关或播放器变化（<code>:174</code>）、设置页四个输入框的 action（<code>PreferenceLabViewController.swift:698/713/723/733</code>）。</li>
+        <li>这个方法是 <code>@MainActor async</code>，几次调用可以在 <code>await</code> 处交错，后发起、先结束的那次会被先发起、后结束的覆盖——现有代码就有这个竞态，只是以前只影响装不装 Apple Music。</li>
+        <li><code>AppleMusicSession</code>（LyricsKit，<code>actor</code>）：<code>isAuthorized()</code> 按实例缓存结果；<code>musicAPI(_:)</code>（<code>:110</code>）对非 2xx 一律抛 <code>AppleMusicError.api(String)</code>，状态码只留在描述字符串里；遇到 401 或 403 时清掉开发者令牌缓存和授权缓存（<code>:139</code>）。</li>
+        <li><code>LyricsProviders.Group.isAuthorized</code>（<code>Group.swift:24</code>）只是把各 provider 的结果取或，搜索时不逐个检查。</li>
+        <li>token 输入框在 storyboard 的 Apple Music 组框里：内层 grid <code>AMB-Gd-001</code>，token 一行是 <code>AMT-Ro-W01</code>（行高 28），左列标签宽 138，右列宽 338。实验室页已整体嵌进滚动视图（<code>embedContentInScrollView()</code>，<code>PreferenceLabViewController.swift:433</code>），多一行不会把窗口撑出屏幕。</li>
+        <li>这一页已有两处在代码里插行的先例：<code>insertLyricsTranslationBox()</code>（<code>:259</code>）和 <code>insertMenuBarKaraokeProgressColorRow()</code>（<code>:173</code>）。</li>
+        <li><code>LyricsX/</code> 是 Xcode 的文件系统同步组（<code>PBXFileSystemSynchronizedRootGroup</code>），新建的 Swift 文件自动进 target，不用改 pbxproj。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>amp-api 的实际回答（2026-11-18 用 curl 实测 <code>/v1/me/storefront</code>）</summary>
+    <div class="details-body">
+      <p>开发者令牌取自网页播放器。</p>
+      <ul>
+        <li>开发者令牌有效、<code>media-user-token</code> 是伪造的：<strong>HTTP 403</strong>，<code>{"errors":[{"title":"Forbidden","detail":"Invalid authentication","code":"40300"}]}</code>。</li>
+        <li>开发者令牌有效、不带 <code>media-user-token</code>：<strong>HTTP 403</strong>，<code>detail</code> 为 <code>"Authentication required for request"</code>。</li>
+        <li>开发者令牌本身是坏的：<strong>HTTP 401</strong>，空响应体。</li>
+        <li>结论：403 表示「用户 token 被拒」，401 表示「开发者令牌被拒」，两者可以分开。有效 token 的 200 响应形如 <code>{"data":[{"id":"jp","type":"storefronts",…}]}</code>，取法与现有 <code>resolveStorefront()</code>（<code>AppleMusicProvider.swift:179</code>）相同。没有用真实 token 实测。</li>
+        <li>顺带发现：<code>findDeveloperToken</code> 的首选正则 <code>qc="eyJ…"</code> 在当前网页播放器里已经匹配不到，靠的是后备的「第一个 JWT 形状的字符串」才取到令牌（实测这个令牌被 amp-api 接受）。功能目前正常，但后备规则已经在扛全部流量。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>先例</summary>
+    <div class="details-body">
+      <ul>
+        <li><code>MusicAuthorization.Status</code>（MusicKit）：<code>.authorized</code> / <code>.denied</code> / <code>.notDetermined</code> / <code>.restricted</code>。</li>
+        <li><code>CKContainer.accountStatus()</code> → <code>CKAccountStatus</code>：<code>.available</code> / <code>.noAccount</code> / <code>.couldNotDetermine</code> / <code>.temporarilyUnavailable</code>——「暂时下不了结论」作为状态之一返回，而不是抛错。</li>
+        <li>LyricsKit 里同一个概念一直叫 authorization（协议要求 <code>isAuthorized</code>），新 API 沿用这个词。</li>
+      </ul>
+    </div>
+  </details>
+  <div class="callout callout-warning">
+    <p class="callout-title">推测，未验证</p>
+    <p>订阅已过期但仍登录的账号，<code>/v1/me/storefront</code> 大概率仍返回 200（地区是账号属性），之后取逐字歌词时才失败。状态行会显示「有效」。没有过期账号可测。</p>
+  </div>
+</section>
+
+<section id="alternatives">
+  <h2>替代方案</h2>
+  <details>
+    <summary>7 个方案，均未采用</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>只改 app，沿用 <code>isAuthorized</code> 的布尔值</strong>：不用发 LyricsKit。否决：网络不通、Apple 改网页播放器导致取不到开发者令牌时，所有人都会看到「token 无效」，和 issue 想解决的问题方向相反。用户在两者之间选了区分三种结果。</li>
+        <li><strong>app 自己请求 amp-api 做检查</strong>：等于在 app 里再写一遍开发者令牌抓取，两处会分头失效。否决。</li>
+        <li><strong>本地检查 token 格式</strong>：<code>media-user-token</code> 是不透明字符串，格式对不代表没过期。否决。</li>
+        <li><strong>检查与装源分开各做一次</strong>：设置页单独检查、<code>AppController</code> 照旧用 <code>isAuthorized</code>。否决：两个结果可能不一致（一个成功一个超时），界面说有效、歌词源却没装。</li>
+        <li><strong>在输入框里放一个 ✅ 图标</strong>（issue 里的建议）：<code>NSTextField</code> 没有现成的附件位，也放不下原因和重试按钮。改用输入框下的一行。</li>
+        <li><strong>只在按按钮时检查</strong>：状态会停在几小时前的结论上。改为打开实验室页时也查一次。</li>
+        <li><strong><code>authorizationStatus</code> 抛错表示「查不了」</strong>：见详细设计，查不了是要显示的正常结果，不是异常。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="impact">
+  <h2>影响</h2>
+  <h3>用户可见变化</h3>
+  <ul>
+    <li>实验室页 Apple Music 组框的 User Token 下面多一行状态和一个「重新检查」按钮。</li>
+    <li>打开实验室页、改完 token 后，状态在一两秒内更新。</li>
+    <li>设置了 token 时，启动后的第一首歌不再等 token 检查完才开始搜；Apple Music 的结果在检查通过后的下一次搜索里出现。</li>
+    <li>开发者令牌过期那一刻，不再被当成 token 无效而整段会话不用 Apple Music。</li>
+  </ul>
+  <h3>可发现性</h3>
+  <p>状态行常驻显示，不需要开关。没填 token 时那一行提示「粘贴 token 即可启用 Apple Music 歌词」，顺带说明了这个输入框是干什么的。</p>
+  <h3>数据与配置兼容</h3>
+  <p>不新增偏好键，token 仍存在 <code>AppleMusicMediaUserToken</code>。没有迁移。</p>
+  <h3>平台与最低版本</h3>
+  <p>不变：app 最低 macOS 12，Apple Music 歌词源本来就要求 macOS 12。</p>
+  <h3>发布</h3>
+  <ul>
+    <li>无新权限、entitlement 或隐私清单条目；amp-api 本来就在请求。</li>
+    <li>发版顺序：LyricsKit 先合进 <code>develop</code> 并打 <code>v1.13.0</code>，再改 LyricsX 的 <code>exact:</code> 和 <code>Package.resolved</code>。顺序反了 CI 会在 archive 阶段报找不到新 API。</li>
+    <li>下一版发布说明在「新增」里加一条；发布后可以回复 #223。</li>
+  </ul>
+</section>
+
+<section id="log">
+  <h2>决策日志</h2>
+  <details>
+    <summary>19 条，最近一条：Implemented，落地编号 0030</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>日期</th><th>变更</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="numeric">2026-11-18</td><td>Created as Draft</td><td>issue #223 反馈：设置里填了 Apple Music token 之后，看不出它是否有效</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>区分「有效 / 被拒 / 暂时无法检查」，为此改 LyricsKit 并发布 1.13.0</td><td>用户选择。只用现有的布尔结果，网络不通或 Apple 改网页播放器时会把所有人的 token 报成无效</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>403 判为被拒，401 先重抓开发者令牌再重试一次</td><td>curl 实测：用户 token 伪造或缺失时 amp-api 返回 403，开发者令牌坏了返回 401</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>顺带让无凭据歌词源先装上，修「启动后第一首歌搜不到歌词」</td><td>同一个方法要重写；<code>ReviewDecisions.md</code> 里当初暂缓的理由是要改初始化顺序，这次正好改了</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>用户批准，开始实现</td><td>LyricsX 与 LyricsKit 各从 <code>develop</code> 切功能分支</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>顺带修好 LyricsKit 测试 target 的编译</td><td>2026-06-30 给 <code>LyricsProvider</code> 加 <code>isAuthorized</code> 要求时，<code>GroupProviderTests</code> 的两个测试替身没跟着实现，整个 <code>LyricsKitTests</code> 从那以后就编译不过；不修就跑不了本提案的测试。只给两个替身各补一行，单独一个提交</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>LyricsKit 的 <code>.gitignore</code> 加上 <code>.worktrees/</code></td><td>这是该仓库第一个 worktree，没有忽略规则时主检出的 <code>git status</code> 会一直列出它</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>测试 <code>missingOrEmptyTokenIsDeniedWithoutARequest</code> 改名为 <code>missingOrEmptyTokenIsDenied</code></td><td>session 自带 <code>URLSession</code>、没有注入点，测试只能经公开 API 断言结果是 <code>denied</code>，证明不了「没发请求」；为一个名字去开新的注入点不值得</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>LyricsKit 功能分支先在本地快进合进 LyricsKit 主检出的 <code>develop</code>（未推送）</td><td>LyricsX worktree 经 <code>.worktrees/LyricsKit</code> 链接到 LyricsKit 主检出，本地开发要对着新 API 编译</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>LyricsKit 的 README 补「Apple Music source requires a media-user-token」一节</td><td>README 已为 Musixmatch 的 token 写过同样一节，却没提 Apple Music；新 API 是公开的，调用方要知道先问 <code>authorizationStatus(for:)</code>、三种结果各是什么，以及联网探针怎么跑</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td><code>ReviewDecisions.md</code> 里那条暂缓的发现改为「已修复」并保留</td><td>清单只收没修的发现，但这条当初写着「暂缓」，直接删掉会让人以为它还没处理；在原条目下补一段修复说明</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>不写配套专题文章；术语表无新增</td><td>403/401 的判定写在 LyricsKit 的类型文档和 README 里，状态行的含义在界面上，没有代码之外才说得清的维护决策；「media-user-token」「开发者令牌」都是已在用的词</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>打 LyricsKit <code>v1.13.0</code>、推送 LyricsKit <code>develop</code>、把 <code>exact:</code> 改成 1.13.0 这三件留给用户确认</td><td>打标签并推送等于发布 LyricsKit，不在批准开工的授权里。在那之前功能分支钉的仍是 1.12.0，只有用本地依赖（workspace 或 <code>LYRICSX_USE_LOCAL_DEPENDENCY=1</code>）才编得过</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>实现完成，待用户看过后收尾</td><td>状态行没有做界面验证（需要用户另外授权交互式操作）；<code>AppController</code> 的三条行为靠代码审查和构建确认</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>修掉状态行的布局死循环：说明文字改用高度跟着宽度走的标签，布局搬进 <code>LyricsXFoundation</code> 的 <code>StatusMessageRowView</code></td><td>用户在中文界面打开实验室页时抛出 <code>NSGenericException</code>（约束更新的轮数超过窗口里的视图数）。第一版在 <code>layout()</code> 里把标签的当前宽度回写成 <code>preferredMaxLayoutWidth</code>，而 stack view 按标签的固有宽度给它宽度，两者互相改个不停；只显示「Checking token…」时永远收敛不了，长说明也没有换行。app 没有测试 target，所以把布局原样搬进包里，先写出红的 <code>StatusMessageRowViewTests</code> 再修；文案仍留在 app 里</td></tr>
+          <tr><td class="numeric">2026-11-18</td><td>横向排查 <code>preferredMaxLayoutWidth</code> 的同类写法</td><td>仓库里另一处（<code>PlaybackRouteLyricsOffsetsViewController</code>）设的是固定常量，不在 <code>layout()</code> 里回写，没有同样的问题</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>用户验收通过</td><td>在中文界面打开实验室页，状态行正常显示，长说明折成两行。用的是本地依赖的 workspace 构建</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>发布 LyricsKit 1.13.0，LyricsX 改钉 <code>exact: "1.13.0"</code></td><td>tag 打在 LyricsKit <code>develop</code> 合并本功能的提交上；1.12.0 之后只有这一个功能。<code>Package.resolved</code> 重新解析后只有 LyricsKit 一项变化，没有顺带升级别的依赖</td></tr>
+          <tr><td class="numeric">2026-11-20</td><td>Implemented，落地编号 0030</td><td>落地时再次确认：不写配套专题文章，术语表无新增，理由同 2026-11-18 那条。<code>AppController</code> 那三条行为仍只靠代码审查和验收时的实际使用确认，app 没有测试 target。没做的项：订阅过期账号的表现仍是推测（没有过期账号可测）；<code>qc=</code> 首选正则失效是单独的问题，见非目标</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+</main>
+</div>
+</body>
+</html>

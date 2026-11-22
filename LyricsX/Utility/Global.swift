@@ -262,6 +262,10 @@ extension UserDefaults.DefaultsKeys {
     /// A `LyricsSourceOrderingMode` raw value.
     static let lyricsSourceOrderingMode = Key<Int>("LyricsSourceOrderingMode")
     static let lyricsSourcePriorityOrder = Key<[String]>("LyricsSourcePriorityOrder")
+    /// The `LyricsProviders.ServiceID` raw values of the sources switched off
+    /// on the Source pane; read through `LyricsSourceSwitches`. Empty — the
+    /// default — means every source is on.
+    static let disabledLyricsSources = Key<[String]>("DisabledLyricsSources")
     static let lyricsPriorityWindow = Key<Double>("LyricsPriorityWindow")
 
     // Artwork-similarity reranking: when on, candidates whose cover art looks
@@ -319,6 +323,21 @@ extension Lyrics {
     var arrivedAfterPriorityWindow: Bool {
         get { (metadata.data[arrivedAfterPriorityWindowKey] as? Bool) ?? false }
         set { metadata.data[arrivedAfterPriorityWindowKey] = newValue }
+    }
+
+    /// Works out `quality` now, before anything can show these lyrics.
+    ///
+    /// LyricsKit caches the score in `metadata` the first time `quality` is
+    /// read, so that first read is a write. The lyrics on screen are read on
+    /// `DispatchQueue.lyricsDisplay` (the desktop lyrics, the widget's
+    /// snapshot) while candidates are ranked on the main thread, so lyrics
+    /// first scored once they were on screen had their metadata rewritten
+    /// under a reader: picking a file from the Local Lyrics submenu crashed
+    /// about one time in ten. Call this wherever lyrics come in — read from a
+    /// file, imported, found by a search — after the last change that feeds
+    /// the score and before they go on screen or into the candidate pool.
+    func cacheQualityBeforeDisplay() {
+        _ = quality
     }
 }
 

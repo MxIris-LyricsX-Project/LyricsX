@@ -78,7 +78,7 @@ let package = Package(
             ),
             remote: .package(
                 url: "https://github.com/MxIris-LyricsX-Project/LyricsKit",
-                exact: "1.12.0"
+                exact: "1.13.0"
             )
         ),
         .package(
