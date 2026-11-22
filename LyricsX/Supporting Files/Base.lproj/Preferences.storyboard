@@ -472,7 +472,7 @@
                                     <gridCell row="writeBackBeside-row" column="IfN-lq-biT" id="writeBackBeside-button-cell">
                                         <button key="contentView" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="writeBackBeside-button">
                                             <rect key="frame" x="217" y="428" width="340" height="16"/>
-                                            <buttonCell key="cell" type="check" title="Allow writing changes back to lyrics beside the track" bezelStyle="regularSquare" imagePosition="left" inset="2" id="writeBackBeside-button-cell-inner">
+                                            <buttonCell key="cell" type="check" title="Allow writing changes back to the lyrics source in use" bezelStyle="regularSquare" imagePosition="left" inset="2" id="writeBackBeside-button-cell-inner">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
