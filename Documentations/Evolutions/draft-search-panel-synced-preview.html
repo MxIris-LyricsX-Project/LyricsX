@@ -498,7 +498,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>10 条，最近一条：按字点亮显得卡，改为平滑扫过</summary>
+    <summary>11 条，最近一条：平滑扫过已实现，待用户再看</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -514,6 +514,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-26</td><td>用户看过第一版：滚动条有问题，要支持逐字歌词</td><td>滚动条被渐隐遮罩遮得只剩一截，照浮动窗口关掉。用户用这个面板主要是逐字核对时间标签，改为按字点亮：字在标签开始时亮、不插值；新增 <code>KaraokeCharacterOnsets</code> 与测试；仍不嵌 Apple Music 引擎</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>第 5 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 272 个测试通过；界面待用户实机检查</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>用户看过按字点亮：一个字一个字地跳显得卡，要照状态栏歌词做</td><td>改为平滑扫过（第 6 步）：已唱多少用 <code>KaraokeLineTiming</code> 的插值，<code>LyricsTextView</code> 把已唱区域单独画一层强调色，只在进度移动时开 60 fps 的 display link。「插值会误导核对」的理由不再成立：一字一标签的中文每个字仍在自己的标签时刻被扫到。<code>KaraokeCharacterOnsets</code> 与它的十个测试没发布过，删掉</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>第 6 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 262 个测试通过；分界改按光标插入点定位，连字不会让分界往回跳。平滑扫过的观感、折行、暂停与双语待用户实机检查</td></tr>
         </tbody>
       </table>
       </div>
