@@ -56,7 +56,10 @@ track's embedded lyrics or a file, worked out from the lyrics on screen alone
 the property tests that keep the ordering transitive) and dragging a source to
 another place in the list, which lyrics sources the user switched off
 (`LyricsSourceSwitches`: every source on unless listed, a newer build's
-unknown identifiers kept), what the menu bar's lyric line shows when there is
+unknown identifiers kept), which lyrics source the playing app runs and what
+its bonus does to the ranking (`PlayerLyricsSourcePolicy`: QQ Music's Mac and
+iPad builds both map to QQMusic, WeChat to nothing; QQ Music's own copy of a
+song moves ahead of Kugou's, another song stays behind), what the menu bar's lyric line shows when there is
 no line to show, how much of a line its inline time tags say is sung (the menu
 bar's karaoke progress, and the search panel preview's), which parts of a desktop lyrics line get Japanese
 annotations and how a word's reading spreads over its kanji

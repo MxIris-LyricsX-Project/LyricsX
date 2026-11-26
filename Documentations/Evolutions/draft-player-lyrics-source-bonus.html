@@ -297,7 +297,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <tr><td><code>PreferenceSourceViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>新 outlet；绑定偏好键；<code>.sourceFirst</code> 时不可用</td><td>开关接线</td><td class="numeric">3</td></tr>
       <tr><td><code>mul.lproj/Preferences.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>两条新文案，补简体 / 繁体中文</td><td>新界面文案</td><td class="numeric">3</td></tr>
       <tr><td><code>Documentations/Internal/LyricsSourceOrdering.md</code></td><td><span class="tag tag-changed">修改</span></td><td>新增一节「播放器自家的歌词源」；评分列与 NaN 两处改为两项加分</td><td>下次维护会踩的决策</td><td class="numeric">4</td></tr>
-      <tr><td><code>Documentations/Internal/PreferenceWindowSizing.md</code></td><td><span class="tag tag-changed">修改</span></td><td>Source 页的实测尺寸</td><td>页面变高了</td><td class="numeric">4</td></tr>
+      <tr><td><code>Documentations/Internal/PreferenceWindowSizing.md</code></td><td><span class="tag tag-changed">修改</span></td><td>Source 页按约束推算的新尺寸（600×496，未实测）</td><td>页面变高了</td><td class="numeric">4</td></tr>
       <tr><td><code>CLAUDE.md</code>（LyricsX）</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖范围加一句「哪个歌词源是播放器自家的」</td><td>测试清单与代码同步</td><td class="numeric">4</td></tr>
       <tr><td>本提案（及网页版）、两份索引</td><td><span class="tag tag-changed">修改</span></td><td>落地时取号、状态改 Implemented</td><td>提案收尾</td><td class="numeric">4</td></tr>
     </tbody>
@@ -332,7 +332,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <div class="details-body">
 <pre><code><span class="token-keyword">extension</span> <span class="token-type">LyricsProviders.ServiceID</span> {
     <span class="token-keyword">public init?</span>(playerBundleIdentifier bundleIdentifier: <span class="token-type">String</span>) {
-        <span class="token-keyword">let</span> components = bundleIdentifier.lowercased().split(separator: <span class="token-string">"."</span>)
+        <span class="token-keyword">let</span> components = bundleIdentifier.lowercased().split(separator: <span class="token-string">"."</span>, omittingEmptySubsequences: <span class="token-keyword">false</span>)
         <span class="token-keyword">guard</span> components.count &gt;= <span class="token-number">3</span>, components[<span class="token-number">0</span>] == <span class="token-string">"com"</span> <span class="token-keyword">else</span> { <span class="token-keyword">return nil</span> }
         <span class="token-keyword">switch</span> (components[<span class="token-number">1</span>], components[<span class="token-number">2</span>]) {
         <span class="token-keyword">case</span> (<span class="token-string">"tencent"</span>, <span class="token-keyword">let</span> product) <span class="token-keyword">where</span> product.hasPrefix(<span class="token-string">"qqmusic"</span>):
@@ -442,7 +442,9 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <ul>
         <li>复选框标题：<code>Prefer lyrics from the playing app's own service</code>（简体「优先使用正在播放的 App 自家的歌词」，繁体「優先使用正在播放的 App 自家的歌詞」）。</li>
         <li>说明（与表格上方提示同样的小号字）：<code>While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher.</code>（简体「在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，来自同一家的歌词加 0.1 分。」，繁体「在 QQ 音樂、網易雲音樂、酷狗音樂或「音樂」裡播放時，來自同一家的歌詞加 0.1 分。」）</li>
-        <li>位置：歌词源表下方。表格底边 + 16 → 复选框，复选框底边 + 4 → 说明（前缘对齐复选框标题），说明底边 + 24 → 视图底边；原来的 <code>Q5D-XX-2sF</code> 改接到说明上。frame 用 <code>ibtool --update-frames</code> 算到临时文件，只搬回这一页。</li>
+        <li>位置：歌词源表下方。表格底边 + 16 → 复选框，复选框底边 + 4 → 说明（前缘 = 复选框前缘 + 18，对齐复选框标题），说明底边 + 24 → 视图底边；原来的 <code>Q5D-XX-2sF</code> 改接到说明上。新元素的 id 以 <code>plb-</code> 开头。</li>
+        <li>设计期 frame 按约束手算（根视图 600×408，表格 560×216）：<code>ibtool --update-frames</code> 在这一页上总把根视图钉成 500×308，算出的单选按钮互相重叠。运行时尺寸只由约束决定。</li>
+        <li>说明不折行。CoreText 实测（HelveticaNeue 11）：英文 522.2 pt，简繁中文 429.2 pt，可用 542 pt，页面宽度仍是 600；英文再加长就会把窗口撑宽。</li>
         <li><code>updateUI()</code>：<code>playerLyricsSourceBoostButton.isEnabled = mode != .sourceFirst</code>。</li>
         <li>改 storyboard 之前确认 Xcode 没打开 <code>Preferences.storyboard</code>。</li>
       </ul>
@@ -527,17 +529,17 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="steps">
   <h2>落地步骤</h2>
   <ol>
-    <li><strong>策略与测试</strong>（改动地图第 1、2 行）：<code>qqMusicForMacAndForIPadMapToQQMusic</code>、<code>neteaseCloudMusicMapsToNetEase</code>、<code>kugouAppsMapToKugou</code>、<code>musicMapsToAppleMusic</code>、<code>bundleIdentifiersMatchIgnoringCase</code>、<code>otherAppsFromTheSameCompaniesMapToNoSource</code>、<code>unknownPlayersMapToNoSource</code>、<code>lyricsFromThePlayersOwnServiceBelongToIt</code>、<code>lyricsFromAnotherServiceDoNotBelongToThePlayer</code>、<code>lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer</code>、<code>playerSourceOutranksAnotherSourceAheadByOneFeatureBonus</code>、<code>playerSourceDoesNotLiftAnotherSongAboveTheRightOne</code>。</li>
-    <li><strong>加分进排序</strong>（第 3 至 9 行）：换播放器时歌词偏移照旧切换；在 QQ 音乐里播放时自动挑选选中 QQMusic 的歌词；面板里 QQMusic 排到前面、评分列带 <code>(+0.10)</code>，与封面加分同时生效时显示两项之和；关掉开关后下一次搜索不再加分。</li>
-    <li><strong>设置页开关</strong>（第 10、11、12 行）：默认勾选且重开设置窗口后保持；「按歌词源顺序优先」时不可用；简繁中文文案正确，页面高度按内容算。</li>
-    <li><strong>文档与收尾</strong>（第 13 至 16 行）：<code>swift test --filter LyricsXFoundationTests</code> 全绿，App 的 Debug 构建通过；判断配套文档与术语表。</li>
+    <li><strong>策略与测试</strong>（已完成；改动地图第 1、2 行）：<code>qqMusicForMacAndForIPadMapToQQMusic</code>、<code>neteaseCloudMusicMapsToNetEase</code>、<code>kugouAppsMapToKugou</code>、<code>musicMapsToAppleMusic</code>、<code>bundleIdentifiersMatchIgnoringCase</code>、<code>otherAppsFromTheSameCompaniesMapToNoSource</code>、<code>unknownPlayersMapToNoSource</code>、<code>lyricsFromThePlayersOwnServiceBelongToIt</code>、<code>lyricsFromAnotherServiceDoNotBelongToThePlayer</code>、<code>lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer</code>、<code>playerSourceOutranksAnotherSourceAheadByOneFeatureBonus</code>、<code>playerSourceDoesNotLiftAnotherSongAboveTheRightOne</code>。</li>
+    <li><strong>加分进排序</strong>（已完成；第 3 至 9 行）：换播放器时歌词偏移照旧切换。<em>留给实机核对</em>：在 QQ 音乐里播放时自动挑选选中 QQMusic 的歌词；面板里 QQMusic 排到前面、评分列带 <code>(+0.10)</code>，与封面加分同时生效时显示两项之和；关掉开关后下一次搜索不再加分。</li>
+    <li><strong>设置页开关</strong>（已完成；第 10、11、12 行）。<em>留给实机核对</em>：默认勾选且重开设置窗口后保持；「按歌词源顺序优先」时不可用；简繁中文文案正确，页面高度按内容算。</li>
+    <li><strong>文档与收尾</strong>（已完成；第 13 至 16 行）：<code>swift test --filter LyricsXFoundationTests</code> 全绿，App 的 Debug 构建通过；判断配套文档与术语表。</li>
   </ol>
 </section>
 
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>3 条，最近一条：加开关，默认开启，放在歌词源页</summary>
+    <summary>10 条，最近一条：实现完成，待用户看过后收尾</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -546,6 +548,13 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-26</td><td>Created as Draft</td><td>用户在搜索面板里看到 QQ 音乐播放的歌排第一的是 Kugou 的歌词，要求歌词来源与正在播放的 App 一致时加分</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>加分同时用于自动挑选与搜索面板</td><td>用户选择；面板显示的分数必须就是排序比较的分数</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>加开关，默认开启，放在歌词源页</td><td>用户选择加开关；位置由 agent 定，理由见替代方案</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>Accepted</td><td>用户批准，开始实现</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>In Progress</td><td>功能树建好，开始第 1 步</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>测试里的歌词源下标改用 <code>UserDefaults.plist</code> 注册的默认顺序</td><td>默认顺序里 Kugou 排第一、QQMusic 排第五，同分时 Kugou 在前；按真实顺序测，加分要在不靠来源顺序的情况下胜出</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>storyboard 的设计期 frame 按约束手算</td><td><code>ibtool --update-frames</code> 在这一页上总把根视图钉成 500×308、算出的单选按钮互相重叠；改为按约束手算 600×408，只影响 Interface Builder 里的显示</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>说明标签不折行，按实测宽度定</td><td>CoreText 量得英文 522.2 pt、中文 429.2 pt，可用 542 pt，页面宽度不变</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>文档判断</td><td>实现说明《歌词候选的排序》加一节，《设置窗口的尺寸》记下推算的新尺寸；术语表不加</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>实现完成，待用户看过后收尾</td><td>包测试与 App 的 Debug 构建在 Ultra 上通过；带「实机」的行为与设置页的实际显示留给用户核对</td></tr>
         </tbody>
       </table>
       </div>

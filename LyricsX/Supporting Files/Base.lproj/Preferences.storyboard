@@ -2160,7 +2160,7 @@
                                 </buttonCell>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="plb-Tf-n01">
-                                <rect key="frame" x="36" y="24" width="490" height="12"/>
+                                <rect key="frame" x="36" y="24" width="527" height="12"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher." id="plb-Tc-n02">
                                     <font key="font" size="11" name="HelveticaNeue"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
