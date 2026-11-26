@@ -886,18 +886,18 @@ IA
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ree-tV-PZB">
                                 <rect key="frame" x="0.0" y="-3" width="600" height="5"/>
                             </box>
-                            <scrollView wantsLayer="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO" customClass="ScrollLyricsView" customModule="LyricsX" customModuleProvider="target">
+                            <scrollView wantsLayer="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO" customClass="ScrollLyricsView" customModule="LyricsX" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="-201" width="600" height="200"/>
                                 <clipView key="contentView" drawsBackground="NO" id="YmL-P6-FDf">
-                                    <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <textView editable="NO" selectable="NO" drawsBackground="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" smartInsertDelete="YES" id="PEz-rD-ja1" customClass="LyricsTextView" customModule="LyricsX" customModuleProvider="target">
-                                            <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="200"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <size key="minSize" width="583" height="200"/>
+                                            <size key="minSize" width="600" height="200"/>
                                             <size key="maxSize" width="640" height="10000000"/>
                                             <attributedString key="textStorage">
                                                 <fragment content="Lyrics Preview">

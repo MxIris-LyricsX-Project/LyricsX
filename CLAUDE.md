@@ -49,7 +49,9 @@ still the text LyricsX wrote there), editing eligibility, HUD window configurati
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
 selection, when it searches again for a newly playing track and when its
-preview marks the playing line (`LyricsSearchPanelResults`), which item the
+preview marks the playing line (`LyricsSearchPanelResults`), when each
+character of the playing line lights up in that preview — at its inline time
+tag, nothing interpolated (`KaraokeCharacterOnsets`), which item the
 status menu's Local Lyrics submenu checks — the
 track's embedded lyrics or a file, worked out from the lyrics on screen alone
 (`LocalLyricsSource`) — how a lyrics search ended, and the source-ordering modes (including
