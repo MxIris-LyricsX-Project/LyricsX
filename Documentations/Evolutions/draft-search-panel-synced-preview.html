@@ -402,7 +402,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 }</code></pre>
       <ul>
         <li><strong>已唱多少</strong>：<code>KaraokeLineTiming.sungCharacterCount(atLyricsTime:)</code> 在两个关键帧之间线性插值，返回带小数的已唱字数；整数部分是分界所在的字，小数部分是这个字唱过的比例。字的单位是 Swift <code>Character</code>。</li>
-        <li><strong>分界在哪</strong>：取分界那个字的字形矩形，<code>minX + width × 比例</code>；这一行（只是原文，不含双语的翻译）分界之前的行片段整块算已唱，分界所在的行片段从左边到分界。分界取整到设备像素，没跨过一个像素就不重画。</li>
+        <li><strong>分界在哪</strong>：分界那个字的两端取自 <code>getLineFragmentInsertionPoints</code> 的光标位置（它把连字 <code>fi</code> 拆到各个字上，字形矩形会让分界往回跳），<code>起点 + 宽度 × 比例</code>；这一行（只是原文，不含双语的翻译）分界之前的行片段整块算已唱，分界所在的行片段从左边到分界。分界取整到设备像素，没跨过一个像素就不重画。</li>
         <li><strong>怎么画</strong>：文本属性里当前行整行 <code>labelColor</code>；先用 even-odd 裁剪挖掉已唱区域照常画文字，再在已唱区域里开透明图层，<code>drawGlyphs(forGlyphRange:at:)</code> 画这一行的字形，用 <code>sourceIn</code> 铺一层强调色。每个像素只来自一种颜色；移动分界不改文本属性、不重新排版。</li>
         <li><strong>何时刷新</strong>：<code>karaokeProgressMoves(at:)</code> 在当前行第一个与最后一个关键帧之间为真，这时 display link 每帧刷新；其余时间是一次性定时器。帧率 60，同状态栏；窗口被完全挡住时不开。</li>
         <li><strong>右到左的行</strong>不显示进度、整行强调色，同状态栏。</li>

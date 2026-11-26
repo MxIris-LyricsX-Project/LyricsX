@@ -314,7 +314,9 @@ private func refreshPreviewProgress(animated: Bool) {
 - **已唱多少**：`KaraokeLineTiming(line:)` 给出排好序、只增不减的关键帧；`sungCharacterCount(atLyricsTime:)` 在两个
   关键帧之间线性插值，返回带小数的已唱字数。整数部分是分界所在的字，小数部分是这个字唱过的比例。字的单位是 Swift
   `Character`，`KaraokeLineLayout` 记下每个字在文本里的 UTF-16 起点，用来查字形。
-- **分界在哪**：`NSLayoutManager.boundingRect(forGlyphRange:in:)` 取分界那个字的矩形，`minX + width × 比例` 就是分界；
+- **分界在哪**：分界那个字的左右两端取自 `getLineFragmentInsertionPoints(forCharacterAt:…)` 的光标位置——它把连字
+  （`fi`）拆到各个字上，用字形矩形的话两个字都拿到整个连字，分界会往回跳；状态栏用 `CTLineGetOffsetForStringIndex`
+  也是同一个道理。取不到时退回字形矩形。`起点 + 宽度 × 比例` 就是分界；
   逐个枚举这一行（只是原文，不含双语的翻译那半行）的行片段：分界之前的行片段整块算已唱，分界所在的行片段从左边到分界，
   后面的不算。分界取整到设备像素，没跨过一个像素就不重画。
 - **怎么画**（`LyricsTextView.draw(_:)`）：`NSTextStorage` 里当前行整行是 `labelColor`；画的时候先用 even-odd 裁剪把

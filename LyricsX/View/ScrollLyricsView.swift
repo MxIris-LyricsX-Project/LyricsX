@@ -427,15 +427,13 @@ class ScrollLyricsView: NSScrollView {
         let edgeCharacterIndex = Int(sungCharacterCount.rounded(.down))
         if edgeCharacterIndex < characterCount {
             let characterShare = CGFloat(sungCharacterCount - Double(edgeCharacterIndex))
-            let characterGlyphRange = layoutManager.glyphRange(
-                forCharacterRange: NSRange(
-                    location: lineLocation + characterBoundaries[edgeCharacterIndex],
-                    length: characterBoundaries[edgeCharacterIndex + 1] - characterBoundaries[edgeCharacterIndex]
-                ),
-                actualCharacterRange: nil
+            let characterRange = NSRange(
+                location: lineLocation + characterBoundaries[edgeCharacterIndex],
+                length: characterBoundaries[edgeCharacterIndex + 1] - characterBoundaries[edgeCharacterIndex]
             )
-            let characterRect = layoutManager.boundingRect(forGlyphRange: characterGlyphRange, in: textContainer)
-            sungEdge = (characterGlyphRange.location, characterRect.minX + characterRect.width * characterShare)
+            let characterGlyphRange = layoutManager.glyphRange(forCharacterRange: characterRange, actualCharacterRange: nil)
+            let characterExtent = horizontalExtent(of: characterRange, glyphRange: characterGlyphRange, layoutManager: layoutManager, textContainer: textContainer)
+            sungEdge = (characterGlyphRange.location, characterExtent.start + (characterExtent.end - characterExtent.start) * characterShare)
         }
         var sungRects: [NSRect] = []
         layoutManager.enumerateLineFragments(forGlyphRange: contentGlyphRange) { fragmentRect, _, _, fragmentGlyphRange, stop in
@@ -463,6 +461,48 @@ class ScrollLyricsView: NSScrollView {
             return nil
         }
         return LyricsTextView.SungPart(glyphRange: contentGlyphRange, rects: viewRects, color: highlightColor)
+    }
+
+    /// Where the characters in `characterRange` start and end along their
+    /// line, in the text container's coordinates. Read from the caret
+    /// positions, which split a ligature — "fi" — between the characters it
+    /// joins, where their glyphs' bounds would give both the whole ligature
+    /// and send the sung edge back to its start.
+    private func horizontalExtent(
+        of characterRange: NSRange,
+        glyphRange: NSRange,
+        layoutManager: NSLayoutManager,
+        textContainer: NSTextContainer
+    ) -> (start: CGFloat, end: CGFloat) {
+        let glyphBounds = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+        guard glyphRange.length > 0 else {
+            return (glyphBounds.minX, glyphBounds.maxX)
+        }
+        let fragmentRect = layoutManager.lineFragmentRect(forGlyphAt: glyphRange.location, effectiveRange: nil)
+        let insertionPointCount = layoutManager.getLineFragmentInsertionPoints(
+            forCharacterAt: characterRange.location,
+            alternatePositions: false,
+            inDisplayOrder: false,
+            positions: nil,
+            characterIndexes: nil
+        )
+        var positions = [CGFloat](repeating: 0, count: insertionPointCount)
+        var characterIndexes = [Int](repeating: 0, count: insertionPointCount)
+        _ = layoutManager.getLineFragmentInsertionPoints(
+            forCharacterAt: characterRange.location,
+            alternatePositions: false,
+            inDisplayOrder: false,
+            positions: &positions,
+            characterIndexes: &characterIndexes
+        )
+        func caretPosition(before characterIndex: Int) -> CGFloat? {
+            characterIndexes.firstIndex(of: characterIndex).map { fragmentRect.minX + positions[$0] }
+        }
+        // The caret after the character is on the next line when the line
+        // wraps right after it; the glyphs' bounds end it there instead.
+        let start = caretPosition(before: characterRange.location) ?? glyphBounds.minX
+        let end = caretPosition(before: NSMaxRange(characterRange)) ?? glyphBounds.maxX
+        return end > start ? (start, end) : (glyphBounds.minX, glyphBounds.maxX)
     }
 
     func updateFont() {
