@@ -91,6 +91,9 @@
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
+  - [Draft 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](Evolutions/draft-search-panel-synced-preview.md)
+    —— 底部的 LRC 原文换成浮动窗口那种逐行滚动的预览，按应用后的偏移标出正在唱的行；面板开着时换了歌，
+    输入框换成新歌的名字并重新搜索。
 
 ## 使用说明
 

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Draft - 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</title>
+<style>
+/* Evolution proposal page, shared style (style A, "Apple documentation").
+   Copy this whole <style> block verbatim. Page-specific rules, if any, go only
+   in the marked block at the end. Must render in WebKit (Safari, Xcode preview,
+   Quick Look): no JavaScript, no external resources. */
+:root {
+  --background: #ffffff; --foreground: #1d1d1f; --secondary: #6e6e73; --separator: #d2d2d7;
+  --panel: #f5f5f7; --code-background: #f2f2f4; --accent: #0071e3;
+  --added: #1f8a4c; --added-fill: #e3f5ea;
+  --changed: #b26a00; --changed-fill: #fdf0db;
+  --removed: #c62828; --removed-fill: #fbe4e4;
+  --moved: #0066cc; --moved-fill: #e5f0fc;
+  --kept: #6e6e73; --kept-fill: #ececef;
+  --token-keyword: #ad3da4; --token-type: #3900a0; --token-string: #c41a16; --token-number: #1c00cf;
+  --token-comment: #707f8c; --token-macro: #643820;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1c1e; --foreground: #f2f2f7; --secondary: #a1a1a6; --separator: #3a3a3c;
+    --panel: #2c2c2e; --code-background: #2a2a2d; --accent: #4ea1ff;
+    --added: #4cd281; --added-fill: #183826;
+    --changed: #ffb340; --changed-fill: #3d2c10;
+    --removed: #ff6b6b; --removed-fill: #3d1a1a;
+    --moved: #5aa9ff; --moved-fill: #142b45;
+    --kept: #b0b0b5; --kept-fill: #333336;
+    --token-keyword: #fc5fa3; --token-type: #d0a8ff; --token-string: #fc6a5d; --token-number: #d0bf69;
+    --token-comment: #7f8c98; --token-macro: #fd8f3f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--background); color: var(--foreground);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.page { max-width: 1080px; margin: 0 auto; padding: 28px 24px 72px; }
+.svg-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Header */
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--secondary); }
+.crumb + .crumb::before { content: " / "; }
+h1 { font-size: 28px; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 12px; }
+h1 code { font-size: 0.8em; }
+.proposal-number { color: var(--secondary); margin-right: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; font-size: 13px; color: var(--secondary); }
+.meta div { display: flex; gap: 6px; align-items: baseline; }
+.meta dd { margin: 0; color: var(--foreground); }
+.meta dd code { font-size: 12px; }
+.status { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.status-accepted { color: var(--moved); background: var(--moved-fill); }
+.status-in-progress { color: var(--changed); background: var(--changed-fill); }
+.status-implemented { color: var(--added); background: var(--added-fill); }
+.status-rejected, .status-withdrawn { color: var(--removed); background: var(--removed-fill); }
+
+/* Table of contents */
+.toc { margin: 22px 0 8px; padding: 8px 10px; background: var(--panel); border-radius: 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.toc li { margin: 0; }
+.toc a { display: inline-block; padding: 3px 11px; border-radius: 999px; color: var(--accent); text-decoration: none; font-size: 14px; }
+.toc a:hover { background: var(--background); }
+
+/* Text */
+section { scroll-margin-top: 16px; }
+h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--separator); }
+h3 { font-size: 16px; margin: 22px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p { margin: 10px 0; }
+a { color: var(--accent); }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--separator); color: var(--secondary); }
+hr { border: none; border-top: 1px solid var(--separator); margin: 24px 0; }
+
+/* Code */
+code { font: 0.86em/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--code-background); padding: 1px 5px; border-radius: 5px; }
+pre { background: var(--code-background); border-radius: 10px; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; font: 12.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+pre code { font: inherit; background: none; padding: 0; border-radius: 0; }
+.token-keyword { color: var(--token-keyword); font-weight: 600; }
+.token-type { color: var(--token-type); }
+.token-string { color: var(--token-string); }
+.token-number { color: var(--token-number); }
+.token-comment { color: var(--token-comment); }
+.token-macro { color: var(--token-macro); }
+
+/* Callouts */
+.callout { background: var(--panel); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+.callout-note { border-left-color: var(--secondary); }
+.callout-warning { border-left-color: var(--changed); }
+.callout-title { margin: 0 0 6px; font-weight: 600; }
+.callout > :last-child { margin-bottom: 0; }
+.callout ol, .callout ul { margin: 6px 0 0; }
+
+/* Diagrams */
+.legend { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--secondary); }
+.legend li { margin: 0; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid; vertical-align: -2px; margin-right: 6px; }
+.swatch-added { background: var(--added-fill); border-color: var(--added); }
+.swatch-changed { background: var(--changed-fill); border-color: var(--changed); }
+.swatch-removed { background: var(--removed-fill); border-color: var(--removed); border-style: dashed; }
+.swatch-moved { background: var(--moved-fill); border-color: var(--moved); }
+.swatch-kept { background: var(--kept-fill); border-color: var(--kept); }
+.figure { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--separator); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.figure svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.figure-narrow svg { min-width: 0; max-width: 640px; margin: 0 auto; }
+.figure-caption { font-size: 13px; color: var(--secondary); margin-top: 8px; }
+svg text { font: 12px ui-monospace, "SF Mono", Menlo, monospace; fill: var(--foreground); }
+svg .group-label { font-size: 13px; font-weight: 700; }
+svg .caption { font-size: 10.5px; fill: var(--secondary); }
+svg .strike { text-decoration: line-through; }
+svg .group { fill: none; stroke: var(--separator); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .box-added { fill: var(--added-fill); stroke: var(--added); stroke-width: 1.5; }
+svg .box-changed { fill: var(--changed-fill); stroke: var(--changed); stroke-width: 1.5; }
+svg .box-removed { fill: var(--removed-fill); stroke: var(--removed); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg .box-moved { fill: var(--moved-fill); stroke: var(--moved); stroke-width: 1.5; }
+svg .box-kept { fill: var(--kept-fill); stroke: var(--kept); stroke-width: 1.2; }
+svg .arrow { fill: none; stroke: var(--secondary); stroke-width: 1.4; marker-end: url(#arrowhead); }
+svg .arrow-weak { stroke-dasharray: 4 3; }
+svg .arrow-removed { stroke: var(--removed); stroke-dasharray: 4 3; }
+svg .arrowhead { fill: var(--secondary); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--separator); padding: 7px 9px; text-align: left; vertical-align: top; }
+th { background: var(--panel); font-weight: 600; }
+.numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; white-space: nowrap; padding: 0 7px; border-radius: 5px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.tag-added { color: var(--added); background: var(--added-fill); }
+.tag-changed { color: var(--changed); background: var(--changed-fill); }
+.tag-removed { color: var(--removed); background: var(--removed-fill); }
+.tag-moved { color: var(--moved); background: var(--moved-fill); }
+
+/* Collapsible sections */
+details { border: 1px solid var(--separator); border-radius: 12px; margin: 12px 0; overflow: hidden; }
+summary { cursor: pointer; list-style: none; padding: 11px 16px; font-weight: 600; background: var(--panel); }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "›"; display: inline-block; width: 1em; color: var(--secondary); -webkit-transition: -webkit-transform 0.15s; transition: transform 0.15s; }
+details[open] > summary::before { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+details[open] > summary { border-bottom: 1px solid var(--separator); }
+.details-body { padding: 4px 16px 12px; }
+
+@media (max-width: 640px) {
+  .page { padding: 20px 16px 56px; }
+  h1 { font-size: 23px; }
+}
+
+/* ===== Page-specific styles (only for elements the shared style lacks, e.g. UI mockups) ===== */
+</style>
+</head>
+<body>
+<svg class="svg-definitions" aria-hidden="true" focusable="false">
+  <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+</svg>
+<div class="page">
+
+<header class="doc-header">
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
+  <h1><span class="proposal-number">Draft</span> 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</h1>
+  <dl class="meta">
+    <div><dt>状态</dt><dd><span class="status status-accepted">Accepted</span></dd></div>
+    <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
+    <div><dt>项目类型</dt><dd>App</dd></div>
+    <div><dt>原文</dt><dd><code>draft-search-panel-synced-preview.md</code></dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <ol>
+    <li><a href="#summary">摘要</a></li>
+    <li><a href="#architecture">架构图</a></li>
+    <li><a href="#map">改动地图</a></li>
+    <li><a href="#proposal">提议方案</a></li>
+    <li><a href="#design">详细设计</a></li>
+    <li><a href="#research">调研</a></li>
+    <li><a href="#alternatives">替代方案</a></li>
+    <li><a href="#impact">影响</a></li>
+    <li><a href="#steps">落地步骤</a></li>
+    <li><a href="#log">决策日志</a></li>
+  </ol>
+</nav>
+
+<main class="content">
+
+<section id="summary">
+  <h2>摘要</h2>
+  <p>「搜索歌词」面板底部不再显示选中结果的 LRC 原文，而是换成浮动歌词窗口用的那种滚动歌词视图（<code>ScrollLyricsView</code>）：选中一条结果，就按它的时间轴显示歌词，正在唱的那一行高亮并保持在中间，跟着播放器的进度往下走。时间按「播放器位置 + 这条歌词应用之后会用的总偏移」计算，所以预览里看到的进度就是点「应用」之后屏幕上会看到的进度；双击某一行跳到那里播放，方便对一下时间轴。结果不属于正在播放的歌时，预览只显示歌词、不标进度。</p>
+  <p>面板开着的时候，播放器换了歌，标题和歌手两个输入框就换成新歌的名字并重新搜索；面板关着时不做任何事，下次打开时照旧按正在播放的歌刷新。判断「要不要重搜」和「预览要不要跟进度」是 <code>LyricsSearchPanelResults</code> 上的两个纯方法，有单元测试。</p>
+  <div class="callout callout-note">
+    <p class="callout-title">没问就定下的</p>
+    <ul>
+      <li>预览复用浮动窗口的逐行滚动视图，不嵌 Apple Music 引擎的逐字扫光（理由见替代方案）。</li>
+      <li>切歌时直接换掉输入框与结果，用户改过的搜索词也换；播放器退出时保留结果。</li>
+      <li>不自动选中结果；没选中时显示一行占位文字。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>架构图</h2>
+  <ul class="legend">
+    <li><i class="swatch swatch-added"></i>新增</li>
+    <li><i class="swatch swatch-changed"></i>修改</li>
+    <li><i class="swatch swatch-removed"></i>删除</li>
+    <li><i class="swatch swatch-kept"></i>不变</li>
+  </ul>
+  <div class="figure">
+  <svg viewBox="0 0 1000 330" role="img" aria-label="What changes in the Search Lyrics panel">
+    <rect class="group" x="10" y="10" width="560" height="312" rx="10"/>
+    <text class="group-label" x="22" y="30">SearchLyricsViewController (app target)</text>
+    <rect class="box-changed" x="25" y="42" width="300" height="44" rx="6"/><text x="35" y="60">Search Bar: title / artist</text><text class="caption" x="35" y="77">refilled when the playing track changes</text>
+    <rect class="box-kept" x="25" y="94" width="300" height="34" rx="6"/><text x="35" y="116">results table + artwork</text>
+    <rect class="box-removed" x="25" y="136" width="300" height="44" rx="6"/><text class="strike" x="35" y="154">NSScrollView + NSTextView</text><text class="caption" x="35" y="171">raw LRC text (Lyrics.description)</text>
+    <rect class="box-added" x="25" y="188" width="300" height="44" rx="6"/><text x="35" y="206">ScrollLyricsView + LyricsTextView</text><text class="caption" x="35" y="223">current line follows playback</text>
+    <rect class="box-added" x="25" y="240" width="300" height="34" rx="6"/><text x="35" y="262">placeholder label</text>
+    <rect class="box-kept" x="25" y="282" width="300" height="30" rx="6"/><text x="35" y="302">Apply bar</text>
+
+    <rect class="group" x="600" y="10" width="390" height="195" rx="10"/>
+    <text class="group-label" x="612" y="30">LyricsXFoundation</text>
+    <rect class="box-changed" x="615" y="42" width="360" height="34" rx="6"/><text x="625" y="64">LyricsSearchPanelResults</text>
+    <rect class="box-kept" x="635" y="86" width="330" height="30" rx="6"/><text x="645" y="106">application(whilePlaying:)</text>
+    <rect class="box-added" x="635" y="124" width="330" height="30" rx="6"/><text x="645" y="144">needsNewSearch(whilePlaying:)</text>
+    <rect class="box-added" x="635" y="162" width="330" height="30" rx="6"/><text x="645" y="182">previewFollowsPlayback(whilePlaying:)</text>
+
+    <rect class="group" x="600" y="225" width="390" height="97" rx="10"/>
+    <text class="group-label" x="612" y="245">LyricsX/View (reused, unchanged)</text>
+    <rect class="box-kept" x="615" y="257" width="360" height="44" rx="6"/><text x="625" y="275">ScrollLyricsView</text><text class="caption" x="625" y="292">also drives the lyrics HUD</text>
+
+    <path class="arrow" d="M 325 64 L 635 139"/>
+    <path class="arrow" d="M 325 206 L 635 177"/>
+    <path class="arrow arrow-weak" d="M 325 220 L 615 279"/>
+  </svg>
+  </div>
+  <p class="figure-caption">底部的原文视图换成复用的 <code>ScrollLyricsView</code>；两条新判断放在已有的纯值类型上，包测试能测到。</p>
+
+  <h3>数据流</h3>
+  <div class="figure">
+  <svg viewBox="0 0 1000 300" role="img" aria-label="Track following and preview progress flow">
+    <rect class="box-kept" x="10" y="20" width="250" height="34" rx="6"/><text x="20" y="42">currentTrackWillChange</text>
+    <rect class="box-kept" x="10" y="90" width="250" height="34" rx="6"/><text x="20" y="112">table selection</text>
+    <rect class="box-kept" x="10" y="134" width="250" height="34" rx="6"/><text x="20" y="156">playbackStateWillChange</text>
+    <rect class="box-kept" x="10" y="178" width="250" height="34" rx="6"/><text x="20" y="200">global / route offset</text>
+    <rect class="box-added" x="10" y="222" width="250" height="34" rx="6"/><text x="20" y="244">line-boundary timer</text>
+
+    <rect class="box-added" x="340" y="14" width="300" height="46" rx="6"/><text x="350" y="33">playingTrackChanged(to:)</text><text class="caption" x="350" y="50">needsNewSearch(whilePlaying:)</text>
+    <rect class="box-added" x="340" y="150" width="300" height="46" rx="6"/><text x="350" y="169">refreshPreviewProgress(animated:)</text><text class="caption" x="350" y="186">previewFollowsPlayback(whilePlaying:)</text>
+
+    <rect class="box-changed" x="720" y="14" width="270" height="46" rx="6"/><text x="730" y="33">search(for: track)</text><text class="caption" x="730" y="50">fields refilled, results reset</text>
+    <rect class="group" x="710" y="96" width="290" height="114" rx="10"/>
+    <text class="group-label" x="722" y="114">lyricsPreviewView</text>
+    <rect class="box-kept" x="720" y="124" width="270" height="34" rx="6"/><text x="730" y="146">highlight(position:)</text>
+    <rect class="box-kept" x="720" y="166" width="270" height="34" rx="6"/><text x="730" y="188">scroll(position:)</text>
+    <rect class="box-added" x="720" y="222" width="270" height="34" rx="6"/><text x="730" y="244">schedule next check</text>
+
+    <path class="arrow" d="M 260 37 L 340 37"/>
+    <path class="arrow" d="M 640 37 L 720 37"/>
+    <path class="arrow" d="M 260 107 L 340 162"/>
+    <path class="arrow" d="M 260 151 L 340 168"/>
+    <path class="arrow" d="M 260 195 L 340 176"/>
+    <path class="arrow" d="M 260 239 L 340 186"/>
+    <path class="arrow" d="M 640 165 L 720 141"/>
+    <path class="arrow" d="M 640 173 L 720 183"/>
+    <path class="arrow" d="M 640 185 L 720 239"/>
+    <path class="arrow arrow-weak" d="M 855 256 L 855 285 L 135 285 L 135 256"/>
+  </svg>
+  </div>
+  <p class="figure-caption">切歌订阅只在窗口可见期间存在；进度刷新只在结果属于正在播放的歌时标行，正在播放才排下一次。</p>
+</section>
+
+<section id="map">
+  <h2>改动地图</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>文件 / 类型</th><th>动作</th><th>改什么</th><th>为什么</th><th>步骤</th></tr></thead>
+    <tbody>
+      <tr><td><code>LyricsXPackage/Sources/LyricsXFoundation/LyricsSearchPanelResults.swift</code> · <code>LyricsSearchPanelResults</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>needsNewSearch(whilePlaying:)</code> 与 <code>previewFollowsPlayback(whilePlaying:)</code></td><td>两条判断做成纯函数，包测试能测</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsXPackage/Tests/LyricsXFoundationTests/LyricsSearchPanelResultsTests.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>补七个用例</td><td>钉住「何时重搜」「何时跟进度」</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsX/Supporting Files/Base.lproj/Main.storyboard</code> · 场景 <code>hFt-BA-jFS</code></td><td><span class="tag tag-changed">修改</span></td><td><code>rkQ-Bz-mQO</code> → <code>ScrollLyricsView</code>，<code>PEz-rD-ja1</code> → <code>LyricsTextView</code>（不可编辑、不可选、不画背景、清空内容）；outlet <code>lyricsPreviewTextView</code> → <code>lyricsPreviewView</code></td><td>复用浮动窗口的滚动歌词视图</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>预览装配与外观、占位文字、<code>refreshPreviewProgress(animated:)</code> 与定时器、遵循 <code>ScrollLyricsViewDelegate</code></td><td>底部预览跟着播放走</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>可见期间订阅切歌；<code>search(for:)</code>；<code>reloadKeyword()</code> 补曲目 id 判断</td><td>输入框跟着切歌</td><td class="numeric">3</td></tr>
+      <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>占位文字一条，补简繁中文</td><td>新文案</td><td class="numeric">2</td></tr>
+      <tr><td><code>Documentations/Internal/LyricsCandidatePool.md</code> · 第五节</td><td><span class="tag tag-changed">修改</span></td><td>面板开着时跟着切歌；「存给原来那首」只剩曲目变 nil 与切歌瞬间</td><td>实现说明与代码一致</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsX/CLAUDE.md</code> · Build Commands</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖清单补上两条新判断</td><td>项目指令里列着每个策略测试</td><td class="numeric">4</td></tr>
+      <tr><td><code>Documentations/Evolutions/README.md</code>、<code>Documentations/README.md</code></td><td><span class="tag tag-changed">修改</span></td><td>登记本提案；落地时取号</td><td>索引</td><td class="numeric">4</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><code>ScrollLyricsView</code> 本身不改：外观属性都是公开的，「不跟随时清掉高亮」用重新 <code>setupTextContents</code> 做到。</p>
+</section>
+
+<section id="proposal">
+  <h2>提议方案</h2>
+  <h3>一、底部换成跟着播放走的预览</h3>
+  <ol>
+    <li>storyboard 里把原文视图换成 <code>ScrollLyricsView</code> + <code>LyricsTextView</code>；约束、最小高度和「收起 → 首次选中时展开」不变。</li>
+    <li>外观：系统字体 13 pt，普通行 <code>secondaryLabelColor</code>，当前行 <code>controlAccentColor</code>。</li>
+    <li>选中一条结果就装入它、恢复自动滚动、立即刷新一次进度；没选中时清空并显示占位文字。</li>
+    <li>刷新进度：只在结果属于正在播放的歌时标行；位置 = <code>lyricsDisplayTime(trackDuration:)</code> + <code>adjustedTimeDelay</code>；正在播放就在下一行开始时再刷新，过了最后一行每秒复查。触发：选中变化、播放状态变化、全局偏移与设备偏移变化、定时器。</li>
+    <li>交互：手动滚动停止自动滚动；双击某行（跟随时）跳播并恢复自动滚动；没有右键菜单。</li>
+  </ol>
+  <h3>二、搜索框跟着正在播放的歌切换</h3>
+  <ol>
+    <li>窗口出现时订阅 <code>currentTrackWillChange.removeDuplicates().receive(on: main)</code>，消失时取消、停掉预览定时器。</li>
+    <li>换了一首歌时结束输入框编辑、填入新歌的标题和歌手（不读恢复名）、为它搜索；曲目变成 nil 时保留结果。</li>
+    <li><code>searchAction(_:)</code> 转调新的 <code>search(for:)</code>，切歌那条路传入发布出来的曲目。</li>
+    <li>打开面板照旧刷新，另补「曲目 id 变了也重搜」。</li>
+  </ol>
+  <h3>非目标</h3>
+  <ul>
+    <li>不在预览里调偏移；不做逐字卡拉OK进度，不嵌 Apple Music 引擎。</li>
+    <li>不自动选中第一条结果；面板关着时不跟着切歌。</li>
+    <li>恢复名晚到时不改输入框、不重搜；不改「应用」的语义。</li>
+    <li>不再在面板里显示 LRC 原文；要原文的把结果行拖出去即可（已有功能）。</li>
+  </ul>
+</section>
+
+<section id="design">
+  <h2>详细设计</h2>
+  <details open>
+    <summary>LyricsSearchPanelResults 的两个新方法</summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">extension</span> <span class="token-type">LyricsSearchPanelResults</span> {
+    <span class="token-comment">/// Whether a new search should replace these results now that
+    /// `currentTrackIdentifier` plays: another track has started. With
+    /// nothing playing the results stay.</span>
+    <span class="token-keyword">public func</span> needsNewSearch(whilePlaying currentTrackIdentifier: <span class="token-type">String</span>?) -&gt; <span class="token-type">Bool</span> {
+        <span class="token-keyword">guard let</span> currentTrackIdentifier <span class="token-keyword">else</span> { <span class="token-keyword">return false</span> }
+        <span class="token-keyword">return</span> currentTrackIdentifier != trackIdentifier
+    }
+
+    <span class="token-comment">/// Whether the preview of the selected result marks the line at the
+    /// playback position: only while the track the results were found for plays.</span>
+    <span class="token-keyword">public func</span> previewFollowsPlayback(whilePlaying currentTrackIdentifier: <span class="token-type">String</span>?) -&gt; <span class="token-type">Bool</span> {
+        <span class="token-keyword">guard let</span> trackIdentifier <span class="token-keyword">else</span> { <span class="token-keyword">return false</span> }
+        <span class="token-keyword">return</span> trackIdentifier == currentTrackIdentifier
+    }
+}</code></pre>
+      <p>两者故意不对称：没在播放时手动搜的结果（<code>trackIdentifier == nil</code>）遇到新歌开始播放要重搜，但它的预览永远不跟进度。命名与已有的 <code>application(whilePlaying:)</code> 同形。</p>
+    </div>
+  </details>
+  <details>
+    <summary>进度刷新 refreshPreviewProgress(animated:)</summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">private func</span> refreshPreviewProgress(animated: <span class="token-type">Bool</span>) {
+    previewLineCheck?.cancel()
+    previewLineCheck = <span class="token-keyword">nil</span>
+    <span class="token-keyword">guard let</span> lyrics = panelResults.selectedResult,
+          panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
+    <span class="token-keyword">let</span> playbackState = selectedPlayer.playbackState
+    <span class="token-keyword">let</span> playbackTime = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
+    <span class="token-keyword">let</span> position = playbackTime + lyrics.adjustedTimeDelay
+    lyricsPreviewView.highlight(position: position)
+    <span class="token-keyword">if</span> isPreviewTracking { scrollPreview(to: position, animated: animated) }
+    <span class="token-keyword">guard</span> playbackState.isPlaying <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
+    <span class="token-keyword">let</span> delay: <span class="token-type">TimeInterval</span>
+    <span class="token-keyword">if let</span> nextLineIndex = lyrics[position].nextLineIndex {
+        delay = max(<span class="token-number">0</span>, lyrics.lines[nextLineIndex].position - position)
+    } <span class="token-keyword">else</span> {
+        delay = <span class="token-number">1</span>
+    }
+    <span class="token-keyword">let</span> queue = <span class="token-type">DispatchQueue</span>.main
+    previewLineCheck = queue.schedule(after: queue.now.advanced(by: .seconds(delay)),
+                                      interval: .seconds(<span class="token-number">42</span>), tolerance: .milliseconds(<span class="token-number">20</span>)) { [<span class="token-keyword">weak self</span>] <span class="token-keyword">in</span>
+        <span class="token-keyword">self</span>?.refreshPreviewProgress(animated: <span class="token-keyword">true</span>)
+    }
+}</code></pre>
+      <p>定时器写法照 <code>AppController.scheduleCurrentLineCheck</code>：可取消的重复调度当一次性定时器用，每次刷新先取消上一个。</p>
+    </div>
+  </details>
+  <details>
+    <summary>切歌订阅与窗口可见性</summary>
+    <div class="details-body">
+      <p><code>viewWillAppear</code> 里订阅 <code>currentTrackWillChange</code>（去重、切主线程）、<code>playbackStateWillChange</code>、全局偏移与设备偏移；<code>viewDidDisappear</code> 清空订阅集合并取消预览定时器。<code>playbackStateWillChange</code> 同样在 <code>willSet</code> 里发出，<code>receive(on: main)</code> 是异步投递，读到时属性应已更新；实现时以实际行为为准，读到旧值就改用发布出来的 <code>PlaybackState</code>。</p>
+    </div>
+  </details>
+  <details>
+    <summary>文案</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>key</th><th>zh-Hans</th><th>zh-Hant</th></tr></thead>
+        <tbody><tr><td><code>Select a result to preview it with the song.</code></td><td>选中一条结果，在这里跟着播放预览。</td><td>選取一條結果，在這裡跟著播放預覽。</td></tr></tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+<section id="research">
+  <h2>调研</h2>
+  <details>
+    <summary>现状与依据</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>原文看不出时间轴</strong>：底部显示 <code>Lyrics.description</code>（<code>SearchLyricsViewController.swift:289</code>），要自己拿时间标签加上三层偏移心算。</li>
+        <li><strong>「先应用再看」会留痕</strong>：<code>apply(_:to:)</code> 会标亲选、写库、记覆盖表、交候选池、可能写进 Music。</li>
+        <li><strong>输入框只在打开时更新</strong>：<code>viewWillAppear</code> 与 <code>showWindow</code> 才调 <code>reloadKeyword()</code>；面板控制器由 <code>AppDelegate.searchLyricsWC</code> 常驻，订阅必须跟着窗口可见性。</li>
+        <li><strong>现成的视图</strong>：<code>ScrollLyricsView</code> 已有按时间高亮、滚到中间、双击回调、滚轮回调、边缘渐隐；默认颜色是浮动窗口深色背景用的，要换成系统颜色。</li>
+        <li><strong>进度算法</strong>：照 <code>AppController.scheduleCurrentLineCheck</code>——<code>lyricsDisplayTime</code> + <code>adjustedTimeDelay</code>，<code>lyrics[position]</code> 找当前行与下一行，在下一行开始时再算。</li>
+        <li><strong>偏移与应用后一致</strong>：<code>adjustedTimeDelay</code> = 歌词 offset + 全局偏移 + 设备偏移，只依赖歌词本身和全局状态。</li>
+        <li><strong>切歌发布者先于属性更新</strong>：Scriptable 的 <code>currentTrackWillChange</code> 就是 <code>$currentTrack</code>，在 <code>willSet</code> 里发出；现在的 <code>searchAction</code> 读 <code>selectedPlayer.currentTrack</code>，同步调用会搜成上一首。</li>
+        <li><strong>恢复名的竞争</strong>：<code>currentLyrics</code> 在歌词队列上清空，面板在主线程处理切歌时它可能还是上一首的，读它的 <code>searchPluginTerm</code> 会填错名字。</li>
+        <li><strong>「存给原来那首歌」仍然需要</strong>：曲目变 nil 时与切歌瞬间仍靠它（b2262cd1 引入）。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="alternatives">
+  <h2>替代方案</h2>
+  <details>
+    <summary>7 条，均已否决</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>嵌 Apple Music 引擎看逐字扫光</strong>：为深色大窗口设计，有 display link 与 Metal 背景，<code>HostEnvironment</code> 是全局单例；逐行高亮已能回答「对不对得上」。</li>
+        <li><strong>只显示一行卡拉OK</strong>：看不出前后整体是否偏了一段。</li>
+        <li><strong>保留原文并加切换</strong>：需求是不再显示原文；原文能靠拖出结果行拿到。</li>
+        <li><strong>固定频率刷新</strong>：面板开着时一直唤醒主线程；按行边界排定时器是现成做法。</li>
+        <li><strong>面板关着也跟着切歌</strong>：没人看，后台搜索只浪费请求。</li>
+        <li><strong>改过输入框就不跟</strong>：为上一首改的搜索词对新歌没有意义。</li>
+        <li><strong>恢复名晚到时重搜</strong>：会把用户正在看的列表整个换掉；面板自己的搜索也走恢复名插件。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="impact">
+  <h2>影响</h2>
+  <ul>
+    <li><strong>用户可见</strong>：底部原文换成跟着播放滚动的歌词；双击一行跳播；面板开着时换歌，输入框和结果跟着换（还没应用的上一首结果会被换掉）；原文仍可拖出结果行拿到。</li>
+    <li><strong>可发现性</strong>：无新设置；预览在首次选中结果时随窗口展开出现，占位文字说明用途。</li>
+    <li><strong>数据与配置</strong>：不新增、不改动任何偏好、歌词文件或缓存。</li>
+    <li><strong>平台</strong>：不变（macOS 12+）。</li>
+    <li><strong>发布</strong>：不涉及权限、公证或 Sparkle；下次发布说明写这两处变化。</li>
+  </ul>
+</section>
+
+<section id="steps">
+  <h2>落地步骤</h2>
+  <ol>
+    <li><strong>两条判断与测试</strong>：<code>aNewTrackStartingNeedsANewSearch</code>、<code>theSameTrackPlayingOnNeedsNoNewSearch</code>、<code>nothingPlayingKeepsTheResults</code>、<code>aTrackStartingAfterASearchTypedWithNothingPlayingNeedsANewSearch</code>、<code>thePreviewFollowsPlaybackWhileTheSearchedTrackPlays</code>、<code>thePreviewStopsFollowingOnceAnotherTrackPlays</code>、<code>thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback</code>。</li>
+    <li><strong>底部换成跟着播放走的预览</strong>：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
+    <li><strong>输入框跟着切歌</strong>：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
+    <li><strong>文档与收尾</strong>：候选池实现说明第五节、项目 <code>CLAUDE.md</code> 测试清单。</li>
+  </ol>
+  <div class="callout callout-note">
+    <p>步骤 1 跑 <code>swift test --filter LyricsSearchPanelResultsTests</code>；步骤 2、3 构建整个 app，界面行为由用户手工检查，agent 不自行操作界面。预计不需要单独的实现说明，也没有新术语，落地时再确认。</p>
+  </div>
+</section>
+
+<section id="log">
+  <h2>决策日志</h2>
+  <details>
+    <summary>1 条，最近一条：Created as Draft</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>日期</th><th>变更</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="numeric">2026-11-26</td><td>Created as Draft</td><td>用户要求重构搜索歌词面板：底部改为可检查进度的选中歌词预览，输入框跟着正在播放的歌切换。预览样式（复用浮动窗口的逐行滚动视图，而非 Apple Music 引擎的逐字扫光）由 agent 按调研选定，写进替代方案供用户推翻</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+</main>
+</div>
+</body>
+</html>
