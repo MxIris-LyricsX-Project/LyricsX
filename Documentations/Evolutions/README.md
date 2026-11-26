@@ -42,3 +42,4 @@
 | [0031](0031-lyrics-source-switches.md) | 歌词源可以单独关掉 | Implemented |
 | [0032](0032-search-panel-synced-preview.md) | 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌 | Implemented |
 | [draft](draft-split-lyricsx-foundation.md) | 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头 | Draft |
+| [draft](draft-player-lyrics-source-bonus.md) | 歌词来源和正在播放的 App 是同一家时加分 | Accepted |

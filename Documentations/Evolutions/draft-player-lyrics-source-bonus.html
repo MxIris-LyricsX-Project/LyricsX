@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Draft - 歌词来源和正在播放的 App 是同一家时加分</title>
+<style>
+/* Evolution proposal page, shared style (style A, "Apple documentation").
+   Copy this whole <style> block verbatim. Page-specific rules, if any, go only
+   in the marked block at the end. Must render in WebKit (Safari, Xcode preview,
+   Quick Look): no JavaScript, no external resources. */
+:root {
+  --background: #ffffff; --foreground: #1d1d1f; --secondary: #6e6e73; --separator: #d2d2d7;
+  --panel: #f5f5f7; --code-background: #f2f2f4; --accent: #0071e3;
+  --added: #1f8a4c; --added-fill: #e3f5ea;
+  --changed: #b26a00; --changed-fill: #fdf0db;
+  --removed: #c62828; --removed-fill: #fbe4e4;
+  --moved: #0066cc; --moved-fill: #e5f0fc;
+  --kept: #6e6e73; --kept-fill: #ececef;
+  --token-keyword: #ad3da4; --token-type: #3900a0; --token-string: #c41a16; --token-number: #1c00cf;
+  --token-comment: #707f8c; --token-macro: #643820;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1c1c1e; --foreground: #f2f2f7; --secondary: #a1a1a6; --separator: #3a3a3c;
+    --panel: #2c2c2e; --code-background: #2a2a2d; --accent: #4ea1ff;
+    --added: #4cd281; --added-fill: #183826;
+    --changed: #ffb340; --changed-fill: #3d2c10;
+    --removed: #ff6b6b; --removed-fill: #3d1a1a;
+    --moved: #5aa9ff; --moved-fill: #142b45;
+    --kept: #b0b0b5; --kept-fill: #333336;
+    --token-keyword: #fc5fa3; --token-type: #d0a8ff; --token-string: #fc6a5d; --token-number: #d0bf69;
+    --token-comment: #7f8c98; --token-macro: #fd8f3f;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--background); color: var(--foreground);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.page { max-width: 1080px; margin: 0 auto; padding: 28px 24px 72px; }
+.svg-definitions { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Header */
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--secondary); }
+.crumb + .crumb::before { content: " / "; }
+h1 { font-size: 28px; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 12px; }
+h1 code { font-size: 0.8em; }
+.proposal-number { color: var(--secondary); margin-right: 4px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; font-size: 13px; color: var(--secondary); }
+.meta div { display: flex; gap: 6px; align-items: baseline; }
+.meta dd { margin: 0; color: var(--foreground); }
+.meta dd code { font-size: 12px; }
+.status { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.status-accepted { color: var(--moved); background: var(--moved-fill); }
+.status-in-progress { color: var(--changed); background: var(--changed-fill); }
+.status-implemented { color: var(--added); background: var(--added-fill); }
+.status-rejected, .status-withdrawn { color: var(--removed); background: var(--removed-fill); }
+
+/* Table of contents */
+.toc { margin: 22px 0 8px; padding: 8px 10px; background: var(--panel); border-radius: 12px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.toc li { margin: 0; }
+.toc a { display: inline-block; padding: 3px 11px; border-radius: 999px; color: var(--accent); text-decoration: none; font-size: 14px; }
+.toc a:hover { background: var(--background); }
+
+/* Text */
+section { scroll-margin-top: 16px; }
+h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--separator); }
+h3 { font-size: 16px; margin: 22px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p { margin: 10px 0; }
+a { color: var(--accent); }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--separator); color: var(--secondary); }
+hr { border: none; border-top: 1px solid var(--separator); margin: 24px 0; }
+
+/* Code */
+code { font: 0.86em/1.4 ui-monospace, "SF Mono", Menlo, monospace; background: var(--code-background); padding: 1px 5px; border-radius: 5px; }
+pre { background: var(--code-background); border-radius: 10px; padding: 14px 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; font: 12.5px/1.6 ui-monospace, "SF Mono", Menlo, monospace; }
+pre code { font: inherit; background: none; padding: 0; border-radius: 0; }
+.token-keyword { color: var(--token-keyword); font-weight: 600; }
+.token-type { color: var(--token-type); }
+.token-string { color: var(--token-string); }
+.token-number { color: var(--token-number); }
+.token-comment { color: var(--token-comment); }
+.token-macro { color: var(--token-macro); }
+
+/* Callouts */
+.callout { background: var(--panel); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+.callout-note { border-left-color: var(--secondary); }
+.callout-warning { border-left-color: var(--changed); }
+.callout-title { margin: 0 0 6px; font-weight: 600; }
+.callout > :last-child { margin-bottom: 0; }
+.callout ol, .callout ul { margin: 6px 0 0; }
+
+/* Diagrams */
+.legend { list-style: none; padding: 0; margin: 8px 0 12px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--secondary); }
+.legend li { margin: 0; }
+.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid; vertical-align: -2px; margin-right: 6px; }
+.swatch-added { background: var(--added-fill); border-color: var(--added); }
+.swatch-changed { background: var(--changed-fill); border-color: var(--changed); }
+.swatch-removed { background: var(--removed-fill); border-color: var(--removed); border-style: dashed; }
+.swatch-moved { background: var(--moved-fill); border-color: var(--moved); }
+.swatch-kept { background: var(--kept-fill); border-color: var(--kept); }
+.figure { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--separator); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.figure svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.figure-narrow svg { min-width: 0; max-width: 640px; margin: 0 auto; }
+.figure-caption { font-size: 13px; color: var(--secondary); margin-top: 8px; }
+svg text { font: 12px ui-monospace, "SF Mono", Menlo, monospace; fill: var(--foreground); }
+svg .group-label { font-size: 13px; font-weight: 700; }
+svg .caption { font-size: 10.5px; fill: var(--secondary); }
+svg .strike { text-decoration: line-through; }
+svg .group { fill: none; stroke: var(--separator); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .box-added { fill: var(--added-fill); stroke: var(--added); stroke-width: 1.5; }
+svg .box-changed { fill: var(--changed-fill); stroke: var(--changed); stroke-width: 1.5; }
+svg .box-removed { fill: var(--removed-fill); stroke: var(--removed); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg .box-moved { fill: var(--moved-fill); stroke: var(--moved); stroke-width: 1.5; }
+svg .box-kept { fill: var(--kept-fill); stroke: var(--kept); stroke-width: 1.2; }
+svg .arrow { fill: none; stroke: var(--secondary); stroke-width: 1.4; marker-end: url(#arrowhead); }
+svg .arrow-weak { stroke-dasharray: 4 3; }
+svg .arrow-removed { stroke: var(--removed); stroke-dasharray: 4 3; }
+svg .arrowhead { fill: var(--secondary); }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--separator); padding: 7px 9px; text-align: left; vertical-align: top; }
+th { background: var(--panel); font-weight: 600; }
+.numeric { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; white-space: nowrap; padding: 0 7px; border-radius: 5px; font-size: 12px; font-weight: 600; color: var(--kept); background: var(--kept-fill); }
+.tag-added { color: var(--added); background: var(--added-fill); }
+.tag-changed { color: var(--changed); background: var(--changed-fill); }
+.tag-removed { color: var(--removed); background: var(--removed-fill); }
+.tag-moved { color: var(--moved); background: var(--moved-fill); }
+
+/* Collapsible sections */
+details { border: 1px solid var(--separator); border-radius: 12px; margin: 12px 0; overflow: hidden; }
+summary { cursor: pointer; list-style: none; padding: 11px 16px; font-weight: 600; background: var(--panel); }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "›"; display: inline-block; width: 1em; color: var(--secondary); -webkit-transition: -webkit-transform 0.15s; transition: transform 0.15s; }
+details[open] > summary::before { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+details[open] > summary { border-bottom: 1px solid var(--separator); }
+.details-body { padding: 4px 16px 12px; }
+
+@media (max-width: 640px) {
+  .page { padding: 20px 16px 56px; }
+  h1 { font-size: 23px; }
+}
+
+/* ===== Page-specific styles (only for elements the shared style lacks, e.g. UI mockups) ===== */
+</style>
+</head>
+<body>
+<svg class="svg-definitions" aria-hidden="true" focusable="false">
+  <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>
+</svg>
+<div class="page">
+
+<header class="doc-header">
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
+  <h1><span class="proposal-number">Draft</span> 歌词来源和正在播放的 App 是同一家时加分</h1>
+  <dl class="meta">
+    <div><dt>状态</dt><dd><span class="status status-accepted">Accepted</span></dd></div>
+    <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
+    <div><dt>项目类型</dt><dd>App</dd></div>
+    <div><dt>原文</dt><dd><code>draft-player-lyrics-source-bonus.md</code></dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="目录">
+  <ol>
+    <li><a href="#summary">摘要</a></li>
+    <li><a href="#decide">要你定</a></li>
+    <li><a href="#architecture">架构图</a></li>
+    <li><a href="#map">改动地图</a></li>
+    <li><a href="#design">详细设计</a></li>
+    <li><a href="#research">动机与调研</a></li>
+    <li><a href="#alternatives">替代方案</a></li>
+    <li><a href="#impact">影响</a></li>
+    <li><a href="#steps">落地步骤</a></li>
+    <li><a href="#log">决策日志</a></li>
+  </ol>
+</nav>
+
+<main class="content">
+
+<section id="summary">
+  <h2>摘要</h2>
+  <p>歌曲在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」App 里播放时，来自同一家歌词源（QQMusic、NetEase、Kugou、Apple Music）的搜索结果在匹配分数上加 0.10。加分进入 <code>effectiveQuality</code>，所以自动挑选屏幕上的歌词和搜索面板的排序同时生效，搜索面板的「评分」列照封面加分的写法把加分摊开（<code>1.09 (+0.10)</code>）。</p>
+  <p>判断「这条歌词是不是播放器自家的」在歌词到达时做一次，结果记进歌词的 metadata；从 bundle ID 认出歌词源的规则是 <code>LyricsXFoundation</code> 里的纯函数，带单元测试。「设置 → 歌词源」页加一个默认勾选的开关，「按歌词源顺序优先」模式下这个开关不起作用，显示为不可用。</p>
+</section>
+
+<section id="decide">
+  <h2>要你定</h2>
+  <div class="callout">
+    <p class="callout-title">待批准</p>
+    <ol>
+      <li>这份提案可以开工吗？</li>
+    </ol>
+  </div>
+  <div class="callout callout-note">
+    <p class="callout-title">没问就定下的几点，可以推翻</p>
+    <ul>
+      <li>加分取 0.10：截图里 QQMusic 0.99 → 1.09，超过 Kugou 1.05；对方翻译与逐字两项都有时打平；歌手不对的结果翻不了盘。</li>
+      <li>对应关系：QQ 音乐（含 iPad 版）→ QQMusic，网易云 → NetEase，<code>com.kugou.*</code> → Kugou，「音乐」→ Apple Music；Spotify 不对应 Musixmatch。</li>
+      <li>开关放在歌词源页、表格下方，不放实验室页。</li>
+      <li>评分列把封面加分和这一项合成一个数显示。</li>
+      <li>切换开关不重排已有候选，下一次搜索生效。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>架构图</h2>
+  <ul class="legend">
+    <li><i class="swatch swatch-added"></i>新增</li>
+    <li><i class="swatch swatch-changed"></i>修改</li>
+    <li><i class="swatch swatch-kept"></i>不变</li>
+  </ul>
+  <div class="figure">
+  <svg viewBox="0 0 1000 420" role="img" aria-label="What changes">
+    <rect class="group" x="10" y="10" width="980" height="270" rx="10"/>
+    <text class="group-label" x="22" y="30">LyricsX app</text>
+
+    <rect class="box-changed" x="25" y="42" width="290" height="50" rx="6"/>
+    <text x="35" y="62">AppController.lyricsReceived</text>
+    <text class="caption" x="35" y="80">marks lyrics before the candidate pool</text>
+    <rect class="box-changed" x="355" y="42" width="290" height="50" rx="6"/>
+    <text x="365" y="62">SearchLyricsViewController</text>
+    <text class="caption" x="365" y="80">marks on arrival · Score: both bonuses</text>
+    <rect class="box-changed" x="685" y="42" width="290" height="50" rx="6"/>
+    <text x="695" y="62">PreferenceSourceViewController</text>
+    <text class="caption" x="695" y="80">checkbox · disabled in .sourceFirst</text>
+
+    <rect class="box-added" x="25" y="122" width="290" height="50" rx="6"/>
+    <text x="35" y="142">Lyrics.markPlayerLyricsSource</text>
+    <text class="caption" x="35" y="160">metadata IsFromPlayerLyricsSource</text>
+    <rect class="box-changed" x="355" y="122" width="290" height="50" rx="6"/>
+    <text x="365" y="142">effectiveQuality</text>
+    <text class="caption" x="365" y="160">+ effectivePlayerLyricsSourceBonus</text>
+    <rect class="box-added" x="685" y="122" width="290" height="50" rx="6"/>
+    <text x="695" y="142">playerLyricsSourceBoostEnabled</text>
+    <text class="caption" x="695" y="160">UserDefaults.plist default: true</text>
+
+    <rect class="box-added" x="25" y="202" width="290" height="50" rx="6"/>
+    <text x="35" y="222">Agent.currentPlayerBundleIdentifier</text>
+    <text class="caption" x="35" y="240">moved out of the offset controller</text>
+    <rect class="box-changed" x="355" y="202" width="290" height="50" rx="6"/>
+    <text x="365" y="222">PlaybackRouteLyricsOffsetController</text>
+    <text class="caption" x="365" y="240">- playerBundleIdentifier(of:)</text>
+
+    <rect class="group" x="10" y="300" width="980" height="100" rx="10"/>
+    <text class="group-label" x="22" y="320">LyricsXFoundation</text>
+    <rect class="box-added" x="25" y="330" width="290" height="50" rx="6"/>
+    <text x="35" y="350">PlayerLyricsSourcePolicy</text>
+    <text class="caption" x="35" y="368">matchBonus 0.1 · lyricsService(…)</text>
+    <rect class="box-added" x="355" y="330" width="290" height="50" rx="6"/>
+    <text x="365" y="350">ServiceID(playerBundleIdentifier:)</text>
+    <text class="caption" x="365" y="368">com.tencent.qqmusic* -&gt; .qq …</text>
+    <rect class="box-kept" x="685" y="330" width="290" height="50" rx="6"/>
+    <text x="695" y="350">LyricsSourceOrderingPolicy</text>
+    <text class="caption" x="695" y="368">unchanged</text>
+
+    <path class="arrow" d="M 170 92 L 170 122"/>
+    <path class="arrow" d="M 420 92 L 300 122"/>
+    <path class="arrow" d="M 830 92 L 830 122"/>
+    <path class="arrow arrow-weak" d="M 645 147 L 685 147"/>
+    <path class="arrow" d="M 170 172 L 170 202"/>
+    <path class="arrow" d="M 355 227 L 315 227"/>
+    <path class="arrow" d="M 25 147 L 17 147 L 17 355 L 25 355"/>
+    <path class="arrow" d="M 315 355 L 355 355"/>
+    <path class="arrow" d="M 645 160 L 665 160 L 665 355 L 685 355"/>
+  </svg>
+  </div>
+  <p class="figure-caption">两处 <code>lyricsReceived</code> 在歌词进候选池或面板列表之前打标记：读当前播放器的 bundle ID，交给 <code>PlayerLyricsSourcePolicy</code> 判断。<code>effectiveQuality</code> 在开关开着时加上 0.10，再交给不变的 <code>LyricsSourceOrderingPolicy</code> 比较。</p>
+</section>
+
+<section id="map">
+  <h2>改动地图</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>文件 / 类型</th><th>动作</th><th>改什么</th><th>为什么</th><th>步骤</th></tr></thead>
+    <tbody>
+      <tr><td><code>LyricsXFoundation/PlayerLyricsSourcePolicy.swift</code> · <code>ServiceID.init?(playerBundleIdentifier:)</code>、<code>PlayerLyricsSourcePolicy</code></td><td><span class="tag tag-added">新增</span></td><td>bundle ID → 歌词源的对应规则；<code>matchBonus = 0.1</code>；<code>lyricsService(_:belongsToPlayerWithBundleIdentifier:)</code></td><td>判断的唯一出处，脱离 App 便于测试</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsXFoundationTests/PlayerLyricsSourcePolicyTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>各播放器的对应、同公司别的 App、大小写、未知与空值、歌词源名字、截图场景在两种按分数模式下的排序</td><td>锁定规则与 0.10 的取值理由</td><td class="numeric">1</td></tr>
+      <tr><td><code>LyricsX/Component/SelectedPlayer.swift</code> · <code>MusicPlayers.Agent.currentPlayerBundleIdentifier</code></td><td><span class="tag tag-added">新增</span></td><td>从 <code>PlaybackRouteLyricsOffsetController</code> 搬来的「穿过 Agent 取 bundle ID」</td><td>两处共用一份</td><td class="numeric">2</td></tr>
+      <tr><td><code>PlaybackRouteLyricsOffsetController.swift</code> · <code>playerBundleIdentifier(of:)</code></td><td><span class="tag tag-removed">删除</span></td><td>两处调用改读 <code>selectedPlayer.currentPlayerBundleIdentifier</code></td><td>逻辑已搬走，行为不变</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Utility/Global.swift</code> · <code>DefaultsKeys</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>playerLyricsSourceBoostEnabled</code>（<code>"PlayerLyricsSourceBoostEnabled"</code>）</td><td>新偏好键</td><td class="numeric">2</td></tr>
+      <tr><td><code>LyricsX/Supporting Files/UserDefaults.plist</code></td><td><span class="tag tag-changed">修改</span></td><td><code>PlayerLyricsSourceBoostEnabled</code> = <code>true</code></td><td>默认开</td><td class="numeric">2</td></tr>
+      <tr><td><code>Global.swift</code> · <code>isFromPlayerLyricsSource</code>、<code>markPlayerLyricsSource(playerBundleIdentifier:)</code>、<code>effectivePlayerLyricsSourceBonus(_:)</code>、<code>effectiveQuality(_:)</code></td><td><span class="tag tag-changed">修改</span></td><td>metadata 标记、到达时打标记的方法、加分读取；<code>effectiveQuality</code> 加上这一项</td><td>加分进入排序</td><td class="numeric">2</td></tr>
+      <tr><td><code>AppController.swift</code> · <code>lyricsReceived(lyrics:)</code></td><td><span class="tag tag-changed">修改</span></td><td><code>cacheQualityBeforeDisplay()</code> 之前打标记</td><td>自动挑选生效</td><td class="numeric">2</td></tr>
+      <tr><td><code>SearchLyricsViewController.swift</code> · <code>lyricsReceived(lyrics:)</code>、<code>qualityDisplayText(for:)</code></td><td><span class="tag tag-changed">修改</span></td><td>插入列表前打标记；评分后缀显示两项加分之和</td><td>面板排序与显示</td><td class="numeric">2</td></tr>
+      <tr><td><code>Base.lproj/Preferences.storyboard</code> · Source 场景 <code>KTZ-mJ-lpY</code></td><td><span class="tag tag-changed">修改</span></td><td>表格下方加复选框和说明标签，约束改为表格 → 复选框 → 说明 → 底边</td><td>开关的界面</td><td class="numeric">3</td></tr>
+      <tr><td><code>PreferenceSourceViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>新 outlet；绑定偏好键；<code>.sourceFirst</code> 时不可用</td><td>开关接线</td><td class="numeric">3</td></tr>
+      <tr><td><code>mul.lproj/Preferences.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>两条新文案，补简体 / 繁体中文</td><td>新界面文案</td><td class="numeric">3</td></tr>
+      <tr><td><code>Documentations/Internal/LyricsSourceOrdering.md</code></td><td><span class="tag tag-changed">修改</span></td><td>新增一节「播放器自家的歌词源」；评分列与 NaN 两处改为两项加分</td><td>下次维护会踩的决策</td><td class="numeric">4</td></tr>
+      <tr><td><code>Documentations/Internal/PreferenceWindowSizing.md</code></td><td><span class="tag tag-changed">修改</span></td><td>Source 页的实测尺寸</td><td>页面变高了</td><td class="numeric">4</td></tr>
+      <tr><td><code>CLAUDE.md</code>（LyricsX）</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖范围加一句「哪个歌词源是播放器自家的」</td><td>测试清单与代码同步</td><td class="numeric">4</td></tr>
+      <tr><td>本提案（及网页版）、两份索引</td><td><span class="tag tag-changed">修改</span></td><td>落地时取号、状态改 Implemented</td><td>提案收尾</td><td class="numeric">4</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="design">
+  <h2>详细设计</h2>
+  <details open>
+    <summary>数据流</summary>
+    <div class="details-body">
+<pre><code>search result arrives (main actor)
+  -&gt; AppController.lyricsReceived / SearchLyricsViewController.lyricsReceived
+       -&gt; lyrics.markPlayerLyricsSource(
+              playerBundleIdentifier: selectedPlayer.currentPlayerBundleIdentifier)
+            -&gt; PlayerLyricsSourcePolicy.lyricsService(lyrics.metadata.service,
+                   belongsToPlayerWithBundleIdentifier:)
+                 -&gt; ServiceID(playerBundleIdentifier:)?.displayName == service
+            -&gt; metadata.data["LyricsX.IsFromPlayerLyricsSource"] = true / false
+       -&gt; candidate pool insert / panel insert
+            -&gt; lyricsHasHigherPriority
+                 -&gt; effectiveQuality
+                      = quality
+                      + effectiveArtworkBonus            (Lab switch)
+                      + effectivePlayerLyricsSourceBonus (Source pane switch)
+                 -&gt; LyricsSourceOrderingPolicy.hasHigherPriority</code></pre>
+    </div>
+  </details>
+  <details>
+    <summary><code>PlayerLyricsSourcePolicy.swift</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">extension</span> <span class="token-type">LyricsProviders.ServiceID</span> {
+    <span class="token-keyword">public init?</span>(playerBundleIdentifier bundleIdentifier: <span class="token-type">String</span>) {
+        <span class="token-keyword">let</span> components = bundleIdentifier.lowercased().split(separator: <span class="token-string">"."</span>)
+        <span class="token-keyword">guard</span> components.count &gt;= <span class="token-number">3</span>, components[<span class="token-number">0</span>] == <span class="token-string">"com"</span> <span class="token-keyword">else</span> { <span class="token-keyword">return nil</span> }
+        <span class="token-keyword">switch</span> (components[<span class="token-number">1</span>], components[<span class="token-number">2</span>]) {
+        <span class="token-keyword">case</span> (<span class="token-string">"tencent"</span>, <span class="token-keyword">let</span> product) <span class="token-keyword">where</span> product.hasPrefix(<span class="token-string">"qqmusic"</span>):
+            <span class="token-keyword">self</span> = .qq
+        <span class="token-keyword">case</span> (<span class="token-string">"netease"</span>, <span class="token-string">"163music"</span>), (<span class="token-string">"netease"</span>, <span class="token-string">"cloudmusic"</span>):
+            <span class="token-keyword">self</span> = .netease
+        <span class="token-keyword">case</span> (<span class="token-string">"kugou"</span>, _):
+            <span class="token-keyword">self</span> = .kugou
+        <span class="token-keyword">case</span> (<span class="token-string">"apple"</span>, <span class="token-string">"music"</span>) <span class="token-keyword">where</span> components.count == <span class="token-number">3</span>:
+            <span class="token-keyword">self</span> = .appleMusic
+        <span class="token-keyword">default</span>:
+            <span class="token-keyword">return nil</span>
+        }
+    }
+}
+
+<span class="token-keyword">public enum</span> <span class="token-type">PlayerLyricsSourcePolicy</span> {
+    <span class="token-keyword">public static let</span> matchBonus = <span class="token-number">0.1</span>
+
+    <span class="token-keyword">public static func</span> lyricsService(
+        _ service: <span class="token-type">String</span>?,
+        belongsToPlayerWithBundleIdentifier playerBundleIdentifier: <span class="token-type">String</span>?
+    ) -&gt; <span class="token-type">Bool</span> {
+        <span class="token-keyword">guard let</span> service, <span class="token-keyword">let</span> playerBundleIdentifier,
+              <span class="token-keyword">let</span> playerSource = <span class="token-type">LyricsProviders.ServiceID</span>(playerBundleIdentifier: playerBundleIdentifier) <span class="token-keyword">else</span> {
+            <span class="token-keyword">return false</span>
+        }
+        <span class="token-keyword">return</span> playerSource.displayName == service
+    }
+}</code></pre>
+      <ul>
+        <li>按点分段匹配而不是子串：子串会把名字里碰巧带这几个字母的别家 App 也算进来。</li>
+        <li><code>com.apple.music</code> 要求正好三段，扩展、插件不算。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>App 侧：<code>Global.swift</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">static let</span> playerLyricsSourceBoostEnabled = <span class="token-type">Key</span>&lt;<span class="token-type">Bool</span>&gt;(<span class="token-string">"PlayerLyricsSourceBoostEnabled"</span>)
+
+<span class="token-keyword">private let</span> isFromPlayerLyricsSourceKey = <span class="token-type">Lyrics.Metadata.Key</span>(<span class="token-string">"LyricsX.IsFromPlayerLyricsSource"</span>)
+
+<span class="token-keyword">extension</span> <span class="token-type">Lyrics</span> {
+    <span class="token-keyword">var</span> isFromPlayerLyricsSource: <span class="token-type">Bool</span> {
+        (metadata.data[isFromPlayerLyricsSourceKey] <span class="token-keyword">as?</span> <span class="token-type">Bool</span>) ?? <span class="token-keyword">false</span>
+    }
+
+    <span class="token-keyword">func</span> markPlayerLyricsSource(playerBundleIdentifier: <span class="token-type">String</span>?) {
+        metadata.data[isFromPlayerLyricsSourceKey] = <span class="token-type">PlayerLyricsSourcePolicy</span>.lyricsService(
+            metadata.service,
+            belongsToPlayerWithBundleIdentifier: playerBundleIdentifier
+        )
+    }
+}
+
+<span class="token-keyword">func</span> effectiveQuality(_ lyrics: <span class="token-type">Lyrics</span>) -&gt; <span class="token-type">Double</span> {
+    <span class="token-keyword">let</span> quality = lyrics.quality.isFinite ? lyrics.quality : <span class="token-number">0</span>
+    <span class="token-keyword">return</span> quality + effectiveArtworkBonus(lyrics) + effectivePlayerLyricsSourceBonus(lyrics)
+}
+
+<span class="token-keyword">func</span> effectivePlayerLyricsSourceBonus(_ lyrics: <span class="token-type">Lyrics</span>) -&gt; <span class="token-type">Double</span> {
+    <span class="token-keyword">guard</span> defaults[.playerLyricsSourceBoostEnabled], lyrics.isFromPlayerLyricsSource <span class="token-keyword">else</span> { <span class="token-keyword">return</span> <span class="token-number">0</span> }
+    <span class="token-keyword">return</span> <span class="token-type">PlayerLyricsSourcePolicy</span>.matchBonus
+}</code></pre>
+      <ul>
+        <li><strong>存「是不是」，不存加分值</strong>：值由策略给出，以后调整 0.10 不必考虑已经打过标记的歌词。</li>
+        <li><strong>到达时打标记、不在比较时现算</strong>：比较函数在候选池的有序插入里反复调用，播放器中途换了的话，现算会让同一个池子前后用两套比较规则，插入位置就不可信了。到达时的过滤（请求 id、<code>currentTrack</code>）保证读到的是这首歌所在的播放器。</li>
+        <li><strong>写 metadata 不切到 <code>lyricsDisplay</code> 队列</strong>：两处都在歌词进候选池或面板列表之前写，这时还没有读者，与 <code>cacheQualityBeforeDisplay()</code> 同一个时机。</li>
+        <li><strong>面板手动搜别的歌时</strong>也按当前播放器打标记：同一来源统一加分，不会把错歌顶上来。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary><code>MusicPlayers.Agent.currentPlayerBundleIdentifier</code></summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">extension</span> <span class="token-type">MusicPlayers.Agent</span> {
+    <span class="token-keyword">var</span> currentPlayerBundleIdentifier: <span class="token-type">String</span>? {
+        playerBundleIdentifier(of: designatedPlayer)
+    }
+}
+
+<span class="token-keyword">private func</span> playerBundleIdentifier(of player: <span class="token-type">MusicPlayerProtocol</span>?) -&gt; <span class="token-type">String</span>? {
+    <span class="token-keyword">switch</span> player {
+    <span class="token-keyword">case let</span> agent <span class="token-keyword">as</span> <span class="token-type">MusicPlayers.Agent</span>:
+        <span class="token-keyword">return</span> playerBundleIdentifier(of: agent.designatedPlayer)
+    <span class="token-keyword">case let</span> scriptable <span class="token-keyword">as</span> <span class="token-type">MusicPlayers.Scriptable</span>:
+        <span class="token-keyword">return</span> scriptable.playerBundleID
+    <span class="token-keyword">case let</span> systemMedia <span class="token-keyword">as</span> <span class="token-type">MusicPlayers.SystemMedia</span>:
+        <span class="token-keyword">return</span> systemMedia.playerBundleID
+    <span class="token-keyword">default</span>:
+        <span class="token-keyword">return nil</span>
+    }
+}</code></pre>
+      <p><code>PlaybackRouteLyricsOffsetController</code> 原来调 <code>Self.playerBundleIdentifier(of: selectedPlayer)</code>，改成 <code>selectedPlayer.currentPlayerBundleIdentifier</code>，结果相同。</p>
+    </div>
+  </details>
+  <details>
+    <summary>搜索面板评分列与设置页</summary>
+    <div class="details-body">
+<pre><code><span class="token-keyword">private func</span> qualityDisplayText(for lyrics: <span class="token-type">Lyrics</span>) -&gt; <span class="token-type">String</span> {
+    <span class="token-keyword">let</span> total = <span class="token-type">String</span>(format: <span class="token-string">"%.2f"</span>, effectiveQuality(lyrics))
+    <span class="token-keyword">let</span> bonus = effectiveArtworkBonus(lyrics) + effectivePlayerLyricsSourceBonus(lyrics)
+    <span class="token-keyword">guard</span> bonus != <span class="token-number">0</span> <span class="token-keyword">else</span> { <span class="token-keyword">return</span> total }
+    <span class="token-keyword">return</span> total + <span class="token-type">String</span>(format: <span class="token-string">" (%+.2f)"</span>, bonus)
+}</code></pre>
+      <ul>
+        <li>复选框标题：<code>Prefer lyrics from the playing app's own service</code>（简体「优先使用正在播放的 App 自家的歌词」，繁体「優先使用正在播放的 App 自家的歌詞」）。</li>
+        <li>说明（与表格上方提示同样的小号字）：<code>While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher.</code>（简体「在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，来自同一家的歌词加 0.1 分。」，繁体「在 QQ 音樂、網易雲音樂、酷狗音樂或「音樂」裡播放時，來自同一家的歌詞加 0.1 分。」）</li>
+        <li>位置：歌词源表下方。表格底边 + 16 → 复选框，复选框底边 + 4 → 说明（前缘对齐复选框标题），说明底边 + 24 → 视图底边；原来的 <code>Q5D-XX-2sF</code> 改接到说明上。frame 用 <code>ibtool --update-frames</code> 算到临时文件，只搬回这一页。</li>
+        <li><code>updateUI()</code>：<code>playerLyricsSourceBoostButton.isEnabled = mode != .sourceFirst</code>。</li>
+        <li>改 storyboard 之前确认 Xcode 没打开 <code>Preferences.storyboard</code>。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="research">
+  <h2>动机与调研</h2>
+  <details>
+    <summary>动机</summary>
+    <div class="details-body">
+      <ul>
+        <li>在 QQ 音乐里播放薛之谦的《一半》，搜索面板排第一的是 Kugou 的 1.05，QQMusic 的同一首歌只有 0.99。两条都是对的歌，差的 0.06 来自 LyricsKit 给翻译和逐字时间各加的 0.05，而不是匹配程度。QQ 音乐自家的歌词按它曲库里这一版录音做时间轴，别家的同名歌词可能来自另一个版本。</li>
+        <li>0003 的排序模式和拖动排序是一张固定的全局列表，用户在 QQ 音乐和网易云之间切换播放器时只能每次去设置里拖。</li>
+        <li><code>Lyrics.quality</code> 只看歌手、歌名、时长和两项特性；App 侧唯一的附加项是封面相似度加分。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>前期调研</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>分数</strong>：<code>Lyrics.quality</code>（<code>Lyrics+Quality.swift:43</code>）= 歌手 0.45 + 歌名 0.40 + 时长 0.15，夹到 [0, 1]，再加翻译 +0.05、行内时间标签 +0.05，伴奏版 −0.3。App 侧 <code>effectiveQuality(_:)</code>（<code>Global.swift:380</code>）= <code>quality</code> + 封面加分，候选池和搜索面板都经 <code>lyricsHasHigherPriority</code> 用它比较；面板评分列（<code>SearchLyricsViewController.swift:533</code>）显示同一个数。</li>
+        <li><strong>封面加分是先例</strong>：值存在 <code>metadata.data</code>（<code>LyricsX.ArtworkMatchBonus</code>），开关在 <code>effectiveArtworkBonus</code> 里判断。它异步算出，要在 <code>lyricsDisplay</code> 队列写、写完重排；本提案的判断是同步的，进候选池之前就写完。</li>
+        <li><strong>到达入口</strong>：<code>AppController.lyricsReceived</code>（<code>:1211</code>，MainActor，含「下一条候选」补搜）先按请求 id 和 <code>currentTrack</code> 过滤，再 <code>cacheQualityBeforeDisplay()</code>，然后才进候选池；面板的 <code>lyricsReceived</code>（<code>:455</code>）也在 MainActor。</li>
+        <li><strong>歌词源名字</strong>：provider 把 <code>static let service</code> 写进 <code>metadata.service</code>：<code>"QQMusic"</code>、<code>"NetEase"</code>、<code>"Kugou"</code>、<code>"Apple Music"</code> 等，与 <code>ServiceID.displayName</code> 逐字相同。</li>
+        <li><strong>当前播放器的 bundle ID</strong>：<code>PlaybackRouteLyricsOffsetController.playerBundleIdentifier(of:)</code>（<code>:131-145</code>）穿过 Agent 取 <code>Scriptable.playerBundleID</code> 或 <code>SystemMedia.playerBundleID</code>，在主队列上读。</li>
+        <li><strong>bundle ID</strong>（本机核对）：<code>com.tencent.QQMusicMac</code>、<code>com.netease.163music</code>；允许列表里还有 iPad 版 QQ 音乐 <code>com.tencent.QQMusic.D5Q73692VW</code>；「音乐」是 <code>com.apple.Music</code>。<em>推测，未核对</em>：酷狗本机没装，iOS 版是 <code>com.kugou.kugou1002</code>，Mac 版应同样以 <code>com.kugou.</code> 开头；网易云 iOS 版 <code>com.netease.cloudmusic</code>。</li>
+        <li><strong>不会加分的歌词</strong>：歌词库 <code>.lrcx</code>、内嵌歌词、旁边的 <code>.lrc</code> 都没有 <code>metadata.service</code>。</li>
+        <li><strong>翻译副本带标记</strong>：AI 翻译结果整份复制 metadata（<code>AILyricsTranslation.swift:409</code>）。</li>
+        <li><strong>三种排序模式</strong>：「只按匹配分数」严格大于才更优；「同分再看源」按 0.02 分桶，0.10 是五个桶；「按歌词源顺序优先」先比来源位置，同一来源的结果全都加或全都不加，加分改变不了顺序。</li>
+        <li><strong>0.10</strong>：截图里 0.99 + 0.10 = 1.09 &gt; 1.05；对方两项特性都有、自家一项没有时打平，留给先到的那条；歌手对不上的结果落后 0.3 以上，翻不了盘。封面加分 0.15，两项可以叠加。</li>
+      </ul>
+    </div>
+  </details>
+  <details>
+    <summary>非目标</summary>
+    <div class="details-body">
+      <ul>
+        <li>Spotify 不对应 Musixmatch：Spotify 的歌词由 Musixmatch 提供，但不是 LyricsX 搜到的那一份。</li>
+        <li>不给本地歌词加分：它们不知道来源。</li>
+        <li>切换开关不重排已有候选，下一次搜索或面板下一次重排时生效。</li>
+        <li>加分值不做成设置项。</li>
+        <li>不改 LyricsKit。</li>
+        <li>不改「按歌词源顺序优先」模式的语义，不自动调整来源列表。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="alternatives">
+  <h2>替代方案</h2>
+  <details>
+    <summary>8 条，全部否决</summary>
+    <div class="details-body">
+      <ul>
+        <li><strong>比较时现算</strong>：播放器中途变化会让候选池前后用两套比较规则，有序插入失效。</li>
+        <li><strong>放进 LyricsKit 的 <code>quality</code></strong>：LyricsKit 不知道播放器，要改请求、发版本；<code>quality</code> 还会被缓存，开关切换后清不掉。</li>
+        <li><strong>按播放器自动调整来源列表</strong>：改写用户自己排的顺序，默认模式下也无效。</li>
+        <li><strong>加分取 0.15</strong>：自家一项特性都没有也能稳赢翻译加逐字的版本；0.10 让这种情况打平。</li>
+        <li><strong>子串匹配 bundle ID</strong>：会误伤别家 App。</li>
+        <li><strong>放进实验室页</strong>：这是关于歌词源的偏好，放在歌词源页用户调来源时一眼能看到。</li>
+        <li><strong>不做开关</strong>：有的用户更看重翻译或逐字歌词；用户选了加开关。</li>
+        <li><strong>只在搜索面板加分</strong>：面板显示的分数就和实际排序不一致了；用户选了两处都加。</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="impact">
+  <h2>影响</h2>
+  <ul>
+    <li><strong>用户可见</strong>：在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，自动挑选更常选到它自家的歌词，面板里它们排得更靠前、评分列带 <code>(+0.10)</code>；歌词源页底部多一个默认勾选的复选框和一行说明，「按歌词源顺序优先」时变灰；其他播放器行为不变。</li>
+    <li><strong>可发现性</strong>：默认开启，用户不需要知道它存在就能受益；评分列的 <code>(+0.10)</code> 说明某一行为什么高。</li>
+    <li><strong>数据与配置</strong>：新键 <code>PlayerLyricsSourceBoostEnabled</code> 注册默认 <code>true</code>，不需要迁移；新的 metadata 键只在内存里，不写进歌词库；降级后不加分，升级回来设置仍在。</li>
+    <li><strong>平台</strong>：无变化，部署目标仍是 macOS 12。</li>
+    <li><strong>发布</strong>：不需要新权限、entitlement 或隐私清单条目，不影响公证与 Sparkle；下一版发布说明加一条。</li>
+  </ul>
+</section>
+
+<section id="steps">
+  <h2>落地步骤</h2>
+  <ol>
+    <li><strong>策略与测试</strong>（改动地图第 1、2 行）：<code>qqMusicForMacAndForIPadMapToQQMusic</code>、<code>neteaseCloudMusicMapsToNetEase</code>、<code>kugouAppsMapToKugou</code>、<code>musicMapsToAppleMusic</code>、<code>bundleIdentifiersMatchIgnoringCase</code>、<code>otherAppsFromTheSameCompaniesMapToNoSource</code>、<code>unknownPlayersMapToNoSource</code>、<code>lyricsFromThePlayersOwnServiceBelongToIt</code>、<code>lyricsFromAnotherServiceDoNotBelongToThePlayer</code>、<code>lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer</code>、<code>playerSourceOutranksAnotherSourceAheadByOneFeatureBonus</code>、<code>playerSourceDoesNotLiftAWrongArtistAboveTheRightSong</code>。</li>
+    <li><strong>加分进排序</strong>（第 3 至 9 行）：换播放器时歌词偏移照旧切换；在 QQ 音乐里播放时自动挑选选中 QQMusic 的歌词；面板里 QQMusic 排到前面、评分列带 <code>(+0.10)</code>，与封面加分同时生效时显示两项之和；关掉开关后下一次搜索不再加分。</li>
+    <li><strong>设置页开关</strong>（第 10、11、12 行）：默认勾选且重开设置窗口后保持；「按歌词源顺序优先」时不可用；简繁中文文案正确，页面高度按内容算。</li>
+    <li><strong>文档与收尾</strong>（第 13 至 16 行）：<code>swift test --filter LyricsXFoundationTests</code> 全绿，App 的 Debug 构建通过；判断配套文档与术语表。</li>
+  </ol>
+</section>
+
+<section id="log">
+  <h2>决策日志</h2>
+  <details>
+    <summary>3 条，最近一条：加开关，默认开启，放在歌词源页</summary>
+    <div class="details-body">
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>日期</th><th>变更</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="numeric">2026-11-26</td><td>Created as Draft</td><td>用户在搜索面板里看到 QQ 音乐播放的歌排第一的是 Kugou 的歌词，要求歌词来源与正在播放的 App 一致时加分</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>加分同时用于自动挑选与搜索面板</td><td>用户选择；面板显示的分数必须就是排序比较的分数</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>加开关，默认开启，放在歌词源页</td><td>用户选择加开关；位置由 agent 定，理由见替代方案</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+</main>
+</div>
+</body>
+</html>
