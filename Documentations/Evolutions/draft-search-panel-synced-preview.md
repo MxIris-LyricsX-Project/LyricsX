@@ -93,7 +93,7 @@
 
 1. storyboard 里把 `rkQ-Bz-mQO` 改成 `ScrollLyricsView`、`PEz-rD-ja1` 改成 `LyricsTextView`（不可编辑、不可选、
    不画背景、内容清空），outlet 改名 `lyricsPreviewView`。约束、最小高度和「收起 → 首次选中时展开」的行为都不变。
-2. `viewDidLoad` 里设外观：字体系统字体 13 pt，普通行 `secondaryLabelColor`，当前行 `controlAccentColor`，
+2. `viewDidLoad` 里设外观：字体系统字体 13 pt（经新加的 `ScrollLyricsView.fixedFont`），普通行 `secondaryLabelColor`，当前行 `controlAccentColor`，
    深浅外观都跟着系统走。
 3. 选中一条结果：`lyricsPreviewView.setupTextContents(lyrics:)` 装入它，恢复自动滚动，立即刷新一次进度（不带动画）。
    没有选中时清空预览、显示一行居中的占位文字「选中一条结果，在这里跟着播放预览」。
@@ -138,13 +138,14 @@
 | `LyricsXPackage/Tests/LyricsXFoundationTests/LyricsSearchPanelResultsTests.swift` | 修改 | 补七个用例（见步骤 1 的行为清单） | 钉住「何时重搜」「何时跟进度」 | 1 |
 | `LyricsX/Supporting Files/Base.lproj/Main.storyboard` · 场景 `hFt-BA-jFS` | 修改 | `rkQ-Bz-mQO` → `ScrollLyricsView`，`PEz-rD-ja1` → `LyricsTextView`（不可编辑、不可选、不画背景、清空内容）；outlet `lyricsPreviewTextView` → `lyricsPreviewView` | 复用浮动窗口的滚动歌词视图 | 2 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 预览装配与外观、占位文字、`refreshPreviewProgress(animated:)` 与定时器、遵循 `ScrollLyricsViewDelegate` | 底部预览跟着播放走 | 2 |
+| `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView` | 修改 | 加 `fixedFont: NSFont?`，设了就代替 `fontName` + `fontSize` | 系统字体没有能按名字取的名字（按名字取 `.AppleSystemUIFont` 得到 Times），预览要用系统字体 | 2 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 可见期间订阅切歌；`search(for:)`；`reloadKeyword()` 补曲目 id 判断 | 输入框跟着切歌 | 3 |
 | `LyricsX/Supporting Files/Localizable.xcstrings` | 修改 | 占位文字一条，补简繁中文 | 新文案 | 2 |
 | `Documentations/Internal/LyricsCandidatePool.md` · 第五节 | 修改 | 写明面板开着时跟着切歌、旧结果被换掉；「存给原来那首」只剩曲目变 nil 与切歌瞬间两种情形 | 实现说明与代码一致 | 4 |
 | `LyricsX/CLAUDE.md` · Build Commands | 修改 | `LyricsXFoundationTests` 的覆盖清单补上「搜索面板何时为新歌重搜、预览何时跟进度」 | 项目指令里列着每个策略测试 | 4 |
 | `Documentations/Evolutions/README.md`、`Documentations/README.md` | 修改 | 登记本提案；落地时取号 | 索引 | 4 |
 
-`ScrollLyricsView` 本身不改：外观属性都是公开的，「不跟随时清掉高亮」用重新 `setupTextContents` 做到。
+`ScrollLyricsView` 只加一个 `fixedFont`（见决策日志）：颜色属性都是公开的，「不跟随时清掉高亮」用重新 `setupTextContents` 做到。
 
 ## 架构图
 
@@ -362,7 +363,7 @@ override func viewDidDisappear() {
 
 ## 落地步骤
 
-1. **两条判断与测试** —— 改动地图第 1、2 行
+1. **两条判断与测试**（已完成）—— 改动地图第 1、2 行
    - 行为：`aNewTrackStartingNeedsANewSearch`
    - 行为：`theSameTrackPlayingOnNeedsNoNewSearch`（只换了封面的更新）
    - 行为：`nothingPlayingKeepsTheResults`
@@ -405,3 +406,6 @@ agent 不自行操作界面。
 |------|------|------|
 | 2026-11-26 | Created as Draft | 用户要求重构搜索歌词面板：底部改为可检查进度的选中歌词预览，输入框跟着正在播放的歌切换。预览样式（复用浮动窗口的逐行滚动视图，而非 Apple Music 引擎的逐字扫光）由 agent 按调研选定，写进替代方案供用户推翻 |
 | 2026-11-26 | Accepted | 用户批准，开始实现 |
+| 2026-11-26 | 第 1 步完成 | `LyricsSearchPanelResultsTests` 12 个用例在 Ultra 上通过。包测试要用 workspace 的 `Package.resolved`：`swift package update` 会把 UIFoundation 升到要求 macOS 14 的版本，`from: "0.42.0"` 不挡它 |
+| 2026-11-26 | 偏离：`ScrollLyricsView` 加 `fixedFont` | 提案原写「不改 `ScrollLyricsView`」。它的字体只能由 `fontName` + `fontSize` 按名字取，而系统字体没有可按名字取的名字（`.AppleSystemUIFont` 取到的是 Times），预览要系统字体，就加了一个可选的固定字体，浮动窗口不受影响 |
+| 2026-11-26 | 第 2、3 步合成一个提交 | 两步改的都是面板控制器里交织在一起的几处（`search(for:)` 同时服务两步），分开提交得把同一个文件拆成两半 |
