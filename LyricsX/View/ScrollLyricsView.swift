@@ -56,6 +56,18 @@ class ScrollLyricsView: NSScrollView {
         didSet { updateFont() }
     }
 
+    /// A font that replaces `fontName` and `fontSize`, for a view that does
+    /// not follow the lyrics window's font preferences. The system font is the
+    /// reason it exists: it has no name to put in `fontName` — asking for
+    /// `.AppleSystemUIFont` by name gets Times.
+    var fixedFont: NSFont? {
+        didSet { updateFont() }
+    }
+
+    private var resolvedFont: NSFont {
+        fixedFont ?? LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
+    }
+
     private var ranges: [(TimeInterval, NSRange)] = []
     private var highlightedRange: NSRange?
     private var displayedLyrics: Lyrics?
@@ -120,7 +132,7 @@ class ScrollLyricsView: NSScrollView {
         textView.string = lrcContent
         highlightedRange = nil
         let range = textView.string.fullRange
-        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
+        let font = resolvedFont
         let style = NSMutableParagraphStyle().with {
             $0.alignment = .center
         }
@@ -261,7 +273,6 @@ class ScrollLyricsView: NSScrollView {
 
     func updateFont() {
         let range = textView.string.fullRange
-        let font = LyricsHUDWindowConfiguration.textFont(named: fontName, size: fontSize)
-        textView.textStorage?.addAttribute(.font, value: font, range: range)
+        textView.textStorage?.addAttribute(.font, value: resolvedFont, range: range)
     }
 }

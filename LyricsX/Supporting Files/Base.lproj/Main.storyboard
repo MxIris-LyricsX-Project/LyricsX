@@ -886,13 +886,13 @@ IA
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="ree-tV-PZB">
                                 <rect key="frame" x="0.0" y="-3" width="600" height="5"/>
                             </box>
-                            <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO">
+                            <scrollView wantsLayer="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rkQ-Bz-mQO" customClass="ScrollLyricsView" customModule="LyricsX" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="-201" width="600" height="200"/>
                                 <clipView key="contentView" drawsBackground="NO" id="YmL-P6-FDf">
                                     <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="PEz-rD-ja1">
+                                        <textView editable="NO" selectable="NO" drawsBackground="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" smartInsertDelete="YES" id="PEz-rD-ja1" customClass="LyricsTextView" customModule="LyricsX" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="583" height="200"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
@@ -978,7 +978,7 @@ IA
                     <connections>
                         <outlet property="artworkView" destination="N4M-lF-IAL" id="4WI-Zu-ksO"/>
                         <outlet property="hideLrcPreviewConstraint" destination="E0H-1P-tjm" id="Sd4-Z1-xug"/>
-                        <outlet property="lyricsPreviewTextView" destination="PEz-rD-ja1" id="a3X-f7-EZD"/>
+                        <outlet property="lyricsPreviewView" destination="rkQ-Bz-mQO" id="a3X-f7-EZD"/>
                         <outlet property="normalConstraint" destination="hYs-Ms-8iP" id="ux4-lF-MeW"/>
                         <outlet property="progressIndicator" destination="eo9-Vx-b1i" id="BEI-Ud-sUb"/>
                         <outlet property="searchButton" destination="Np2-88-ohs" id="JBE-xM-6xb"/>
