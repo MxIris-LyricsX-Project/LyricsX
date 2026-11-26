@@ -1,6 +1,6 @@
-# Draft - 歌词来源和正在播放的 App 是同一家时加分
+# 0033 - 歌词来源和正在播放的 App 是同一家时加分
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **作者**: JH
 - **创建日期**: 2026-11-26
 - **最后更新**: 2026-11-26
@@ -126,7 +126,7 @@
 | `Documentations/Internal/LyricsSourceOrdering.md` | 修改 | 新增一节「播放器自家的歌词源」；「分数在搜索面板是看得见的」改为两项加分；「已知空白」里 NaN 那条改成两项 | 下次维护会踩的决策 | 4 |
 | `Documentations/Internal/PreferenceWindowSizing.md` | 修改 | Source 页按约束推算的新尺寸（600×496，未实测） | 页面变高了 | 4 |
 | `CLAUDE.md`（LyricsX） | 修改 | `LyricsXFoundationTests` 覆盖范围加一句「哪个歌词源是播放器自家的」 | 测试清单与代码同步 | 4 |
-| `Documentations/Evolutions/draft-player-lyrics-source-bonus.md`（及 `.html`）、两份索引 | 修改 | 落地时取号、状态改 Implemented | 提案收尾 | 4 |
+| `Documentations/Evolutions/0033-player-lyrics-source-bonus.md`（及 `.html`，原 `draft-` 前缀）、两份索引 | 修改 | 落地为 0033、状态改 Implemented | 提案收尾 | 4 |
 
 ## 架构图
 
@@ -442,3 +442,4 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 | 2026-11-26 | 说明标签不折行，按实测宽度定 | CoreText 量得英文 522.2 pt、中文 429.2 pt，可用 542 pt，页面宽度不变；构建日志里「View is clipping its content」的提示来自设计期宽度估小了，已改成实测值 |
 | 2026-11-26 | 文档判断 | 配套文档：在实现说明《歌词候选的排序》加「播放器自家的歌词源」一节，《设置窗口的尺寸》记下 Source 页按约束推算的新尺寸（未实测）；术语表：不加，「播放器自家的歌词源」只在那一节里用，字面即可懂 |
 | 2026-11-26 | 实现完成，待用户看过后收尾 | 包测试与 App 的 Debug 构建在 Ultra 上通过；带「实机」的行为与设置页的实际显示留给用户核对 |
+| 2026-11-26 | Implemented，落地为 0033 | 用户看过后要求收尾。验证沿用最终代码上的结果：`LyricsXFoundationTests` 274 个测试通过（1 个已知问题是系统翻译探针，与本次无关），App 的 Debug 构建通过；合进 develop 的 tree 与功能分支相同，没有重跑。实现与方案一致，没有偏离。文档：沿用实现时的判断——实现说明《歌词候选的排序》已加「播放器自家的歌词源」一节，不另写使用指南（开关旁的说明文字已讲清作用）；术语表不加。仍未核对的：酷狗 Mac 版的 bundle ID（按 `com.kugou.` 前缀匹配），以及 Source 页按约束推算的 600×496 是否与实际一致 |

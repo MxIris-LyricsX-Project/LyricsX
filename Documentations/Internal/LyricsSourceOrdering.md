@@ -127,7 +127,7 @@ return a > b
 
 ## 播放器自家的歌词源
 
-> 对应提案：[Draft 歌词来源和正在播放的 App 是同一家时加分](../Evolutions/draft-player-lyrics-source-bonus.md)
+> 对应提案：[0033 歌词来源和正在播放的 App 是同一家时加分](../Evolutions/0033-player-lyrics-source-bonus.md)
 
 歌在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，同一家歌词源（QQMusic、NetEase、Kugou、Apple Music）
 的结果在 `effectiveQuality` 里加 `PlayerLyricsSourcePolicy.matchBonus`（0.1）。理由是那个 App 的歌词按它正在放的

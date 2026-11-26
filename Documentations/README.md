@@ -91,12 +91,12 @@
   - [0032 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](Evolutions/0032-search-panel-synced-preview.md)
     —— 底部的 LRC 原文换成浮动窗口那种逐行滚动的预览，按应用后的偏移标出正在唱的行，带逐字时间的行照状态栏歌词
     平滑扫过已唱部分；面板开着时换了歌，输入框换成新歌的名字并重新搜索。
+  - [0033 歌词来源和正在播放的 App 是同一家时加分](Evolutions/0033-player-lyrics-source-bonus.md)
+    —— 在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，同一家歌词源的结果加 0.10，自动挑选与搜索面板同时生效；
+    歌词源页加一个默认开启的开关。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 歌词来源和正在播放的 App 是同一家时加分](Evolutions/draft-player-lyrics-source-bonus.md)
-    —— 在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，同一家歌词源的结果加 0.10，自动挑选与搜索面板同时生效；
-    歌词源页加一个默认开启的开关。
 
 ## 使用说明
 

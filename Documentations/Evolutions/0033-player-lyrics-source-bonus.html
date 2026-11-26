@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Draft - 歌词来源和正在播放的 App 是同一家时加分</title>
+<title>0033 - 歌词来源和正在播放的 App 是同一家时加分</title>
 <style>
 /* Evolution proposal page, shared style (style A, "Apple documentation").
    Copy this whole <style> block verbatim. Page-specific rules, if any, go only
@@ -160,20 +160,19 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <div class="page">
 
 <header class="doc-header">
-  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
-  <h1><span class="proposal-number">Draft</span> 歌词来源和正在播放的 App 是同一家时加分</h1>
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">0033</span></p>
+  <h1><span class="proposal-number">0033</span> 歌词来源和正在播放的 App 是同一家时加分</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
+    <div><dt>状态</dt><dd><span class="status status-implemented">Implemented</span></dd></div>
     <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
-    <div><dt>原文</dt><dd><code>draft-player-lyrics-source-bonus.md</code></dd></div>
+    <div><dt>原文</dt><dd><code>0033-player-lyrics-source-bonus.md</code></dd></div>
   </dl>
 </header>
 
 <nav class="toc" aria-label="目录">
   <ol>
     <li><a href="#summary">摘要</a></li>
-    <li><a href="#decide">要你定</a></li>
     <li><a href="#architecture">架构图</a></li>
     <li><a href="#map">改动地图</a></li>
     <li><a href="#design">详细设计</a></li>
@@ -191,18 +190,8 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <h2>摘要</h2>
   <p>歌曲在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」App 里播放时，来自同一家歌词源（QQMusic、NetEase、Kugou、Apple Music）的搜索结果在匹配分数上加 0.10。加分进入 <code>effectiveQuality</code>，所以自动挑选屏幕上的歌词和搜索面板的排序同时生效，搜索面板的「评分」列照封面加分的写法把加分摊开（<code>1.09 (+0.10)</code>）。</p>
   <p>判断「这条歌词是不是播放器自家的」在歌词到达时做一次，结果记进歌词的 metadata；从 bundle ID 认出歌词源的规则是 <code>LyricsXFoundation</code> 里的纯函数，带单元测试。「设置 → 歌词源」页加一个默认勾选的开关，「按歌词源顺序优先」模式下这个开关不起作用，显示为不可用。</p>
-</section>
-
-<section id="decide">
-  <h2>要你定</h2>
-  <div class="callout">
-    <p class="callout-title">待批准</p>
-    <ol>
-      <li>这份提案可以开工吗？</li>
-    </ol>
-  </div>
   <div class="callout callout-note">
-    <p class="callout-title">没问就定下的几点，可以推翻</p>
+    <p class="callout-title">没问就定下的</p>
     <ul>
       <li>加分取 0.10：截图里 QQMusic 0.99 → 1.09，超过 Kugou 1.05；对方翻译与逐字两项都有时打平；歌名或歌手对不上的结果翻不了盘。</li>
       <li>对应关系：QQ 音乐（含 iPad 版）→ QQMusic，网易云 → NetEase，<code>com.kugou.*</code> → Kugou，「音乐」→ Apple Music；Spotify 不对应 Musixmatch。</li>
@@ -299,7 +288,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <tr><td><code>Documentations/Internal/LyricsSourceOrdering.md</code></td><td><span class="tag tag-changed">修改</span></td><td>新增一节「播放器自家的歌词源」；评分列与 NaN 两处改为两项加分</td><td>下次维护会踩的决策</td><td class="numeric">4</td></tr>
       <tr><td><code>Documentations/Internal/PreferenceWindowSizing.md</code></td><td><span class="tag tag-changed">修改</span></td><td>Source 页按约束推算的新尺寸（600×496，未实测）</td><td>页面变高了</td><td class="numeric">4</td></tr>
       <tr><td><code>CLAUDE.md</code>（LyricsX）</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖范围加一句「哪个歌词源是播放器自家的」</td><td>测试清单与代码同步</td><td class="numeric">4</td></tr>
-      <tr><td>本提案（及网页版）、两份索引</td><td><span class="tag tag-changed">修改</span></td><td>落地时取号、状态改 Implemented</td><td>提案收尾</td><td class="numeric">4</td></tr>
+      <tr><td>本提案（及网页版）、两份索引</td><td><span class="tag tag-changed">修改</span></td><td>落地为 0033、状态改 Implemented</td><td>提案收尾</td><td class="numeric">4</td></tr>
     </tbody>
   </table>
   </div>
@@ -555,6 +544,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-26</td><td>说明标签不折行，按实测宽度定</td><td>CoreText 量得英文 522.2 pt、中文 429.2 pt，可用 542 pt，页面宽度不变</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>文档判断</td><td>实现说明《歌词候选的排序》加一节，《设置窗口的尺寸》记下推算的新尺寸；术语表不加</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>实现完成，待用户看过后收尾</td><td>包测试与 App 的 Debug 构建在 Ultra 上通过；带「实机」的行为与设置页的实际显示留给用户核对</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>Implemented，落地为 0033</td><td>用户看过后要求收尾；验证沿用最终代码上的结果（274 个包测试通过，App 的 Debug 构建通过），实现与方案一致；不另写使用指南，术语表不加；仍未核对酷狗 Mac 版的 bundle ID 和 Source 页的实际尺寸</td></tr>
         </tbody>
       </table>
       </div>
