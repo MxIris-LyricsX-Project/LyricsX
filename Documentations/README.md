@@ -88,12 +88,12 @@
   - [0031 歌词源可以单独关掉](Evolutions/0031-lyrics-source-switches.md)
     —— 歌词源表的「来源」一列改成复选框，默认全开；关掉的源不再参与自动搜索、搜索面板和「下一条候选」，
     设置存为 `DisabledLyricsSources`。
+  - [0032 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](Evolutions/0032-search-panel-synced-preview.md)
+    —— 底部的 LRC 原文换成浮动窗口那种逐行滚动的预览，按应用后的偏移标出正在唱的行，带逐字时间的行照状态栏歌词
+    平滑扫过已唱部分；面板开着时换了歌，输入框换成新歌的名字并重新搜索。
   - [Draft 拆分 LyricsXFoundation，包里的模块统一以 Lyrics 开头](Evolutions/draft-split-lyricsx-foundation.md)
     —— 拆出 `LyricsPolicies`、`LyricsTranslation`、`LyricsUI`，总入口改名 `LyricsFoundation`、只做转发；
     面板改名 `LyricsAppleMusicUI`、只依赖策略层，`LyricsXWidgetShared` 改名 `LyricsWidgetShared`。
-  - [Draft 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](Evolutions/draft-search-panel-synced-preview.md)
-    —— 底部的 LRC 原文换成浮动窗口那种逐行滚动的预览，按应用后的偏移标出正在唱的行；面板开着时换了歌，
-    输入框换成新歌的名字并重新搜索。
 
 ## 使用说明
 

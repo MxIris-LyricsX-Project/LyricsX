@@ -1,6 +1,6 @@
-# Draft - 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌
+# 0032 - 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌
 
-- **状态**: In Progress
+- **状态**: Implemented
 - **作者**: JH
 - **创建日期**: 2026-11-26
 - **最后更新**: 2026-11-26
@@ -8,7 +8,8 @@
 - **关联提案**: [Draft 拆分 LyricsXFoundation](draft-split-lyricsx-foundation.md)（若它先落地，本提案给
   `LyricsSearchPanelResults` 加的两个方法随该类型一起进 `LyricsPolicies`）
 - **实现分支 / PR**: `feature/search-panel-synced-preview`（LyricsX），功能树 `.worktrees/MxIris-LyricsX-Project-SearchPanelSyncedPreview`（父仓库）
-- **配套文档**: 待定 —— 落地时判断是否在 [候选池实现说明](../Internal/LyricsCandidatePool.md) 之外另写一份
+- **配套文档**: 无单独文档 —— 切歌的两处决定写在 [候选池实现说明](../Internal/LyricsCandidatePool.md) 第五节，
+  预览刷新与选区的原因写在代码注释里
 - **网页版**: 同目录同名的 `.html`
 
 ## 摘要
@@ -149,6 +150,7 @@
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 预览装配与外观、占位文字、`refreshPreviewProgress(animated:)` 与定时器、遵循 `ScrollLyricsViewDelegate` | 底部预览跟着播放走 | 2 |
 | `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView` | 修改 | 加 `fixedFont: NSFont?`，设了就代替 `fontName` + `fontSize` | 系统字体没有能按名字取的名字（按名字取 `.AppleSystemUIFont` 得到 Times），预览要用系统字体 | 2 |
 | `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView`、`KaraokeLineLayout`（文件内私有） | 修改 | 加 `karaokeUnsungTextColor`；`highlight(position:)` 标当前行、按 `KaraokeLineTiming` 算出已唱部分并返回是否换行；新增 `karaokeProgressMoves(at:)` 与 `nextHighlightChange(after:)`；行查找抽成 `indexOfLine(at:)`，涂色抽成 `paintHighlightedLine()`；右到左的行不显示进度 | 逐字进度 | 5、6 |
+| `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView` | 修改 | 新增 `moveSelection(toLineAt:)`：设歌词与换行时把文本视图的空选区放在正在唱的行首 | 排版改变文本视图大小时 AppKit 会把选区滚进视野，选区留在全文末尾时，拖边缘改窗口大小会让预览跳到歌词末尾；浮动窗口同样受益 | 6 |
 | `LyricsX/View/ScrollLyricsView.swift` · `LyricsTextView` | 修改 | 加 `sungPart`；`draw(_:)` 先画已唱区域之外的文字，再把这一行的字形在已唱区域里单独画一层、涂成强调色 | 分界要停在字的中间，颜色属性做不到；移动分界不重新排版 | 6 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 进度移动时开 display link（60 fps），否则用一次性定时器；订阅窗口遮挡变化 | 平滑扫过，不动时不耗电 | 6 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 可见期间订阅切歌；`search(for:)`；`reloadKeyword()` 补曲目 id 判断 | 输入框跟着切歌 | 3 |
@@ -157,7 +159,8 @@
 | `LyricsX/CLAUDE.md` · Build Commands | 修改 | `LyricsXFoundationTests` 的覆盖清单补上「搜索面板何时为新歌重搜、预览何时跟进度」，并写明 `KaraokeLineTiming` 也给搜索面板的预览用 | 项目指令里列着每个策略测试 | 4、6 |
 | `Documentations/Evolutions/README.md`、`Documentations/README.md` | 修改 | 登记本提案；落地时取号 | 索引 | 4 |
 
-`ScrollLyricsView` 加了 `fixedFont` 与逐字进度（见决策日志），两者默认关闭，浮动窗口不受影响；第 5 步曾新增的
+`ScrollLyricsView` 加了 `fixedFont` 与逐字进度（见决策日志），两者默认关闭，浮动窗口不受影响；选区跟着正在唱的行
+这一处对浮动窗口同样生效，它原来也会在改大小后跳到歌词末尾；第 5 步曾新增的
 `KaraokeCharacterOnsets` 与它的测试在第 6 步删掉了，没有发布过；「不跟随时清掉高亮」用重新
 `setupTextContents` 做到。
 
@@ -276,24 +279,38 @@ private var visibleWindowObservations: Set<AnyCancellable> = []
 private func refreshPreviewProgress(animated: Bool) {
     previewLineCheck?.cancel()
     previewLineCheck = nil
-    guard let lyrics = panelResults.selectedResult,
+    var previewMovesEveryFrame = false
+    defer { setPreviewDisplayLinkRunning(previewMovesEveryFrame) }
+    guard let lyrics = previewedLyrics,
           panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) else {
+        if isPreviewShowingProgress {
+            // Laying the lyrics out again is what unmarks the last line.
+            isPreviewShowingProgress = false
+            lyricsPreviewView.setupTextContents(lyrics: previewedLyrics)
+        }
         return
     }
     let playbackState = selectedPlayer.playbackState
     let playbackTime = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
     let position = playbackTime + lyrics.adjustedTimeDelay
     let marksAnotherLine = lyricsPreviewView.highlight(position: position)
+    isPreviewShowingProgress = true
     if isPreviewTracking, marksAnotherLine || !animated {
         scrollPreview(to: position, animated: animated)
     }
     guard playbackState.isPlaying else {
         return
     }
-    let delay = lyricsPreviewView.nextHighlightChange(after: position).map { max(0, $0 - position) } ?? 1
+    if lyricsPreviewView.karaokeProgressMoves(at: position) {
+        // Every frame, while the window is not covered.
+        previewMovesEveryFrame = view.window?.occlusionState.contains(.visible) == true
+        return
+    }
+    let delayUntilNextCheck = lyricsPreviewView.nextHighlightChange(after: position)
+        .map { max(0, $0 - position) } ?? 1
     let queue = DispatchQueue.main
     previewLineCheck = queue.schedule(
-        after: queue.now.advanced(by: .seconds(delay)),
+        after: queue.now.advanced(by: .seconds(delayUntilNextCheck)),
         interval: .seconds(42),
         tolerance: .milliseconds(20)
     ) { [weak self] in
@@ -303,8 +320,10 @@ private func refreshPreviewProgress(animated: Bool) {
 ```
 
 - 定时器写法照 `AppController.scheduleCurrentLineCheck`：用可取消的重复调度当一次性定时器，每次刷新先取消上一个。
-- 「跟随 → 不跟随」的转换点只有两个（曲目变成 nil、切到别的歌），后者会立即重搜、清空预览；前者在切歌回调里
-  重新 `setupTextContents` 清掉高亮。
+- 「跟随 → 不跟随」的转换点只有两个（曲目变成 nil、切到别的歌），后者会立即重搜、清空预览；前者由
+  `isPreviewShowingProgress` 记着，重新 `setupTextContents` 清掉高亮。
+- 拖边缘改窗口大小时，排版改变文本视图大小，AppKit 会把文本视图的选区滚进视野；`ScrollLyricsView` 把空选区
+  始终放在正在唱的行首（`moveSelection(toLineAt:)`），这次滚动就落在正在唱的行上，不会把预览带到歌词末尾。
 
 ### 逐字进度
 
@@ -427,7 +446,7 @@ override func viewDidDisappear() {
    - 行为：`thePreviewFollowsPlaybackWhileTheSearchedTrackPlays`
    - 行为：`thePreviewStopsFollowingOnceAnotherTrackPlays`（含曲目变成 nil）
    - 行为：`thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback`
-2. **底部换成跟着播放走的预览**（已实现，界面待手工检查）—— 改动地图第 3、4、5、10 行
+2. **底部换成跟着播放走的预览**（已完成）—— 改动地图第 3、4、5、10 行
    - 行为：选中一条结果，预览显示它的歌词，当前行高亮并居中
    - 行为：播放中到了下一行的时间，高亮与滚动跟着移到下一行
    - 行为：暂停时高亮停住；在播放器里拖动进度，高亮跳到对应行
@@ -436,7 +455,7 @@ override func viewDidDisappear() {
    - 行为：结果不属于正在播放的歌时只显示歌词、不高亮，双击无效
    - 行为：没选中结果时显示占位文字；深浅外观下文字都清楚
    - 行为：拖出结果行导出的仍是 LRC 原文
-3. **输入框跟着切歌**（已实现，界面待手工检查）—— 改动地图第 9 行
+3. **输入框跟着切歌**（已完成）—— 改动地图第 9 行
    - 行为：面板开着时换了歌，输入框换成新歌的名字并重新搜索
    - 行为：只换了封面的曲目更新不触发重搜
    - 行为：播放器退出时结果保留，「应用」存给原来那首歌
@@ -448,7 +467,7 @@ override func viewDidDisappear() {
 5. **关掉预览的滚动条，逐字进度先按字点亮**（用户看过第一版后提出；按字点亮已被第 6 步取代）—— 改动地图第 3、6 行
    - 行为（界面）：预览右侧不再出现被渐隐遮掉的半截滚动条；滚轮与触控板照样能滚
    - 行为（界面）：浮动歌词窗口不变
-6. **逐字进度改为平滑扫过**（用户看过按字点亮后提出；已实现，界面待手工检查）—— 改动地图第 6、7、8、12 行
+6. **逐字进度改为平滑扫过**（用户看过按字点亮后提出；已完成）—— 改动地图第 6、7、8、12 行
    - 行为：已唱多少沿用 `KaraokeLineTimingTests`（状态栏的卡拉OK进度用的同一组测试），不新增纯逻辑
    - 行为（界面）：带逐字时间的行，已唱部分是强调色，分界在字里平滑移动，不再一个字一个字地跳
    - 行为（界面）：没有逐字时间的行整行强调色；同一行里进度推进时不滚动，换行时才滚
@@ -483,4 +502,5 @@ agent 不自行操作界面。
 | 2026-11-26 | 第 5 步完成，待用户再看 | app 在 Ultra 上构建通过，`LyricsXFoundationTests` 272 个测试通过（新增 `KaraokeCharacterOnsetsTests` 十个，1 个已知问题同前）。界面上的逐字点亮与滚动条待用户实机检查 |
 | 2026-11-26 | 用户看过按字点亮：一个字一个字地跳显得卡，要照状态栏歌词做 | 改为平滑扫过（第 6 步）：已唱多少用 `KaraokeLineTiming` 的插值，`LyricsTextView` 把已唱区域单独画一层强调色，只在进度移动时开 60 fps 的 display link。替代方案里「插值会误导核对」的理由不再成立：一字一标签的中文每个字仍在自己的标签时刻被扫到。`KaraokeCharacterOnsets` 与它的十个测试只为按字点亮而加、没发布过，删掉 |
 | 2026-11-26 | 第 6 步完成，待用户再看 | app 在 Ultra 上构建通过，`LyricsXFoundationTests` 262 个测试通过（删掉的十个按字点亮测试之外与上一轮相同，1 个已知问题同前）。自查补了一处：分界改按光标插入点定位，连字 `fi` 不会让分界往回跳。平滑扫过的观感、折行、暂停与双语待用户实机检查 |
-| 2026-11-26 | 用户报告：拖边缘改窗口大小后预览跳走、看不到颜色，到下一句才回来 | 在本机用界面自动化与调试器复现。原因：设歌词文本后，文本视图的选区留在全文末尾；排版改变文本视图大小时（改窗口大小的每一步，以及滚到还没排版的地方），`NSLayoutManager` 的 `_resizeTextViewForTextContainer:` 会把选区滚进视野，这一步晚于居中时，预览就停在歌词末尾，直到下一句才滚回来。修法：`ScrollLyricsView` 把空选区始终放在正在唱的行首，AppKit 的这次滚动于是落在正在唱的行上。浮动窗口用同一个视图，原来也有这个问题，一并修好。验证：在调试器里让文本视图把选区滚进视野，改之前预览从 y=580 跳到 1700（歌词末尾），改之后不动。这个视图在 app target 里，没有测试 target，找不到能放回归测试的地方；拖窗口的实机检查由用户来做 |
+| 2026-11-26 | 用户报告：拖边缘改窗口大小后预览跳走、看不到颜色，到下一句才回来 | 在本机用界面自动化与调试器复现。原因：设歌词文本后，文本视图的选区留在全文末尾；排版改变文本视图大小时（改窗口大小的每一步，以及滚到还没排版的地方），`NSLayoutManager` 的 `_resizeTextViewForTextContainer:` 会把选区滚进视野，这一步晚于居中时，预览就停在歌词末尾，直到下一句才滚回来。修法：`ScrollLyricsView` 把空选区始终放在正在唱的行首，AppKit 的这次滚动于是落在正在唱的行上。浮动窗口用同一个视图，原来也有这个问题，一并修好。验证：在调试器里让文本视图把选区滚进视野，改之前预览从 y=580 跳到 1700（歌词末尾）；改之后的同一检查碰巧在最后一行上做，说明不了问题，以用户的实机检查为准。这个视图在 app target 里，没有测试 target，找不到能放回归测试的地方；拖窗口的实机检查由用户来做 |
+| 2026-11-26 | Implemented，落地为 0032 | 用户实机看过后要求收尾。验证沿用最终代码上的结果：app 构建通过；`LyricsXFoundationTests` 262 个测试通过，此后只改了 app target 里的 `ScrollLyricsView` 与文档，包里的代码没变。合进 develop 的 tree 与功能分支相同。文档：不另写使用指南或实现说明——切歌的两处决定已在候选池实现说明第五节，预览刷新、已唱部分的画法与选区的原因写在代码注释和本提案里；没有新术语，术语表不变 |

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Draft - 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</title>
+<title>0032 - 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</title>
 <style>
 /* Evolution proposal page, shared style (style A, "Apple documentation").
    Copy this whole <style> block verbatim. Page-specific rules, if any, go only
@@ -160,13 +160,13 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <div class="page">
 
 <header class="doc-header">
-  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
-  <h1><span class="proposal-number">Draft</span> 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</h1>
+  <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">0032</span></p>
+  <h1><span class="proposal-number">0032</span> 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
+    <div><dt>状态</dt><dd><span class="status status-implemented">Implemented</span></dd></div>
     <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
-    <div><dt>原文</dt><dd><code>draft-search-panel-synced-preview.md</code></dd></div>
+    <div><dt>原文</dt><dd><code>0032-search-panel-synced-preview.md</code></dd></div>
   </dl>
 </header>
 
@@ -294,6 +294,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>可见期间订阅切歌；<code>search(for:)</code>；<code>reloadKeyword()</code> 补曲目 id 判断</td><td>输入框跟着切歌</td><td class="numeric">3</td></tr>
       <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>fixedFont: NSFont?</code>，设了就代替 <code>fontName</code> + <code>fontSize</code></td><td>系统字体没有能按名字取的名字（按名字取 <code>.AppleSystemUIFont</code> 得到 Times）</td><td class="numeric">2</td></tr>
       <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code>、<code>KaraokeLineLayout</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>karaokeUnsungTextColor</code>；<code>highlight(position:)</code> 标当前行、按 <code>KaraokeLineTiming</code> 算出已唱部分并返回是否换行；新增 <code>karaokeProgressMoves(at:)</code> 与 <code>nextHighlightChange(after:)</code>；右到左的行不显示进度</td><td>逐字进度</td><td class="numeric">5、6</td></tr>
+      <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code></td><td><span class="tag tag-changed">修改</span></td><td>新增 <code>moveSelection(toLineAt:)</code>：设歌词与换行时把文本视图的空选区放在正在唱的行首</td><td>排版改变文本视图大小时 AppKit 会把选区滚进视野，选区留在全文末尾时，拖边缘改窗口大小会让预览跳到歌词末尾；浮动窗口同样受益</td><td class="numeric">6</td></tr>
       <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>LyricsTextView</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>sungPart</code>；<code>draw(_:)</code> 先画已唱区域之外的文字，再把这一行的字形在已唱区域里单独画一层、涂成强调色</td><td>分界要停在字的中间，颜色属性做不到；移动分界不重新排版</td><td class="numeric">6</td></tr>
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>进度移动时开 display link（60 fps），否则用一次性定时器；订阅窗口遮挡变化</td><td>平滑扫过，不动时不耗电</td><td class="numeric">6</td></tr>
       <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>占位文字一条，补简繁中文</td><td>新文案</td><td class="numeric">2</td></tr>
@@ -365,12 +366,19 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     previewLineCheck = <span class="token-keyword">nil</span>
     <span class="token-keyword">var</span> previewMovesEveryFrame = <span class="token-keyword">false</span>
     <span class="token-keyword">defer</span> { setPreviewDisplayLinkRunning(previewMovesEveryFrame) }
-    <span class="token-keyword">guard let</span> lyrics = panelResults.selectedResult,
-          panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
+    <span class="token-keyword">guard let</span> lyrics = previewedLyrics,
+          panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) <span class="token-keyword">else</span> {
+        <span class="token-keyword">if</span> isPreviewShowingProgress {   <span class="token-comment">// laying the lyrics out again unmarks the last line</span>
+            isPreviewShowingProgress = <span class="token-keyword">false</span>
+            lyricsPreviewView.setupTextContents(lyrics: previewedLyrics)
+        }
+        <span class="token-keyword">return</span>
+    }
     <span class="token-keyword">let</span> playbackState = selectedPlayer.playbackState
     <span class="token-keyword">let</span> playbackTime = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
     <span class="token-keyword">let</span> position = playbackTime + lyrics.adjustedTimeDelay
     <span class="token-keyword">let</span> marksAnotherLine = lyricsPreviewView.highlight(position: position)
+    isPreviewShowingProgress = <span class="token-keyword">true</span>
     <span class="token-keyword">if</span> isPreviewTracking, marksAnotherLine || !animated { scrollPreview(to: position, animated: animated) }
     <span class="token-keyword">guard</span> playbackState.isPlaying <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
     <span class="token-keyword">if</span> lyricsPreviewView.karaokeProgressMoves(at: position) {
@@ -386,6 +394,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     }
 }</code></pre>
       <p>定时器写法照 <code>AppController.scheduleCurrentLineCheck</code>：可取消的重复调度当一次性定时器用，每次刷新先取消上一个。display link 每帧调一次 <code>refreshPreviewProgress(animated: true)</code>，进度停下的那一帧就把自己停掉、改排定时器。</p>
+      <p>拖边缘改窗口大小时，排版改变文本视图大小，AppKit 会把文本视图的选区滚进视野；<code>ScrollLyricsView</code> 把空选区始终放在正在唱的行首（<code>moveSelection(toLineAt:)</code>），这次滚动就落在正在唱的行上，不会把预览带到歌词末尾。</p>
     </div>
   </details>
   <details open>
@@ -484,21 +493,21 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <h2>落地步骤</h2>
   <ol>
     <li><strong>两条判断与测试</strong>（已完成）：<code>aNewTrackStartingNeedsANewSearch</code>、<code>theSameTrackPlayingOnNeedsNoNewSearch</code>、<code>nothingPlayingKeepsTheResults</code>、<code>aTrackStartingAfterASearchTypedWithNothingPlayingNeedsANewSearch</code>、<code>thePreviewFollowsPlaybackWhileTheSearchedTrackPlays</code>、<code>thePreviewStopsFollowingOnceAnotherTrackPlays</code>、<code>thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback</code>。</li>
-    <li><strong>底部换成跟着播放走的预览</strong>（已实现，界面待手工检查）：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
-    <li><strong>输入框跟着切歌</strong>（已实现，界面待手工检查）：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
+    <li><strong>底部换成跟着播放走的预览</strong>（已完成）：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
+    <li><strong>输入框跟着切歌</strong>（已完成）：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
     <li><strong>文档与收尾</strong>（已完成）：候选池实现说明第五节、项目 <code>CLAUDE.md</code> 测试清单。</li>
     <li><strong>关掉预览的滚动条，逐字进度先按字点亮</strong>（用户看过第一版后提出；按字点亮已被第 6 步取代）：没有半截滚动条、滚轮照样能滚、浮动窗口不变。</li>
-    <li><strong>逐字进度改为平滑扫过</strong>（用户看过按字点亮后提出；已实现，界面待手工检查）：已唱多少沿用 <code>KaraokeLineTimingTests</code>；界面上分界在字里平滑移动、不再一个字一个字地跳；没有逐字时间的行整行强调色；同一行内不滚动；暂停停住、拖动跳到对应位置；折行后分界仍对在字上；翻译那半行不扫；浮动窗口不变。</li>
+    <li><strong>逐字进度改为平滑扫过</strong>（用户看过按字点亮后提出；已完成）：已唱多少沿用 <code>KaraokeLineTimingTests</code>；界面上分界在字里平滑移动、不再一个字一个字地跳；没有逐字时间的行整行强调色；同一行内不滚动；暂停停住、拖动跳到对应位置；折行后分界仍对在字上；拖边缘改窗口大小后正在唱的行仍在中间；翻译那半行不扫；浮动窗口不变。</li>
   </ol>
   <div class="callout callout-note">
-    <p>步骤 1 跑 <code>swift test --filter LyricsSearchPanelResultsTests</code>；步骤 2、3 构建整个 app，界面行为由用户手工检查，agent 不自行操作界面。预计不需要单独的实现说明，也没有新术语，落地时再确认。</p>
+    <p>步骤 1 跑 <code>swift test --filter LyricsSearchPanelResultsTests</code>；步骤 2、3 构建整个 app，界面行为由用户手工检查，agent 不自行操作界面。落地时确认：不需要单独的实现说明，也没有新术语。</p>
   </div>
 </section>
 
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>11 条，最近一条：平滑扫过已实现，待用户再看</summary>
+    <summary>13 条，最近一条：Implemented，落地为 0032</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -515,6 +524,8 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-26</td><td>第 5 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 272 个测试通过；界面待用户实机检查</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>用户看过按字点亮：一个字一个字地跳显得卡，要照状态栏歌词做</td><td>改为平滑扫过（第 6 步）：已唱多少用 <code>KaraokeLineTiming</code> 的插值，<code>LyricsTextView</code> 把已唱区域单独画一层强调色，只在进度移动时开 60 fps 的 display link。「插值会误导核对」的理由不再成立：一字一标签的中文每个字仍在自己的标签时刻被扫到。<code>KaraokeCharacterOnsets</code> 与它的十个测试没发布过，删掉</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>第 6 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 262 个测试通过；分界改按光标插入点定位，连字不会让分界往回跳。平滑扫过的观感、折行、暂停与双语待用户实机检查</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>用户报告：拖边缘改窗口大小后预览跳走、看不到颜色，到下一句才回来</td><td>原因：设歌词文本后，文本视图的选区留在全文末尾；排版改变文本视图大小时，<code>NSLayoutManager</code> 的 <code>_resizeTextViewForTextContainer:</code> 会把选区滚进视野，这一步晚于居中时，预览就停在歌词末尾。修法：<code>ScrollLyricsView</code> 把空选区始终放在正在唱的行首，浮动窗口一并修好。调试器里改之前预览从 y=580 跳到 1700；这个视图在 app target 里，没有放回归测试的地方，以用户实机检查为准</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>Implemented，落地为 0032</td><td>用户实机看过后要求收尾。app 构建通过；<code>LyricsXFoundationTests</code> 262 个测试通过，此后包里的代码没变。不另写使用指南或实现说明；没有新术语</td></tr>
         </tbody>
       </table>
       </div>

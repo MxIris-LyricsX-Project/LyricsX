@@ -137,7 +137,7 @@
 落到用户没预览过的那一条上，「使用」存下的正是它。现在每次插入或重新排序之后，都按对象
 把选中放回原来那条结果上。
 
-后来搜索面板开着时也跟着切歌了（[Draft 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](../Evolutions/draft-search-panel-synced-preview.md)）：
+后来搜索面板开着时也跟着切歌了（[0032 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌](../Evolutions/0032-search-panel-synced-preview.md)）：
 换了一首歌，输入框换成新歌的名字并重新搜索，上一首的结果随之换掉，判断是
 `LyricsSearchPanelResults.needsNewSearch(whilePlaying:)`。「存给原来那首」因此只剩两种情形会走到：
 
