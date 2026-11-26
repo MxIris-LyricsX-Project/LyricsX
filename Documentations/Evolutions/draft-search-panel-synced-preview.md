@@ -16,8 +16,8 @@
 「搜索歌词」面板底部不再显示选中结果的 LRC 原文，而是换成浮动歌词窗口用的那种滚动歌词视图（`ScrollLyricsView`）：
 选中一条结果，就按它的时间轴显示歌词，正在唱的那一行高亮并保持在中间，跟着播放器的进度往下走。时间按「播放器位置 +
 这条歌词应用之后会用的总偏移」计算，所以预览里看到的进度就是点「应用」之后屏幕上会看到的进度；双击某一行跳到那里播放，
-方便对一下时间轴。歌词带逐字时间（行内时间标签）时，正在唱的那一行里每个字在它的标签开始时由白变成强调色，
-可以逐字核对标签与演唱是否一致。结果不属于正在播放的歌时，预览只显示歌词、不标进度。面板开着的时候，播放器换了歌，标题和歌手两个
+方便对一下时间轴。歌词带逐字时间（行内时间标签）时，正在唱的那一行里已唱的部分是强调色、没唱的是白色，
+分界按标签的时间在字里平滑扫过——与状态栏歌词的卡拉OK进度同一套计算和画法——可以逐字核对标签与演唱是否一致。结果不属于正在播放的歌时，预览只显示歌词、不标进度。面板开着的时候，播放器换了歌，标题和歌手两个
 输入框就换成新歌的名字并重新搜索；面板关着时不做任何事，下次打开时照旧按正在播放的歌刷新。判断「要不要重搜」和
 「预览要不要跟进度」是 `LyricsSearchPanelResults` 上的两个纯方法，有单元测试。
 
@@ -96,22 +96,24 @@
    不画背景、内容清空），outlet 改名 `lyricsPreviewView`。约束、最小高度和「收起 → 首次选中时展开」的行为都不变。
 2. `viewDidLoad` 里设外观：字体系统字体 13 pt（经新加的 `ScrollLyricsView.fixedFont`），普通行 `secondaryLabelColor`，
    深浅外观都跟着系统走。竖向滚动条关掉（同浮动窗口）：视图的上下渐隐遮罩会把滚动条一起遮掉，只剩中间一截。
-3. **逐字进度**：当前行没有行内时间标签时整行 `controlAccentColor`；有标签时未唱的部分 `labelColor`，每个字在它的标签
-   开始时变成 `controlAccentColor`。「每个字什么时候开始」由新的纯类型 `KaraokeCharacterOnsets` 从标签算出：两个标签之间的
-   字都随前一个标签开始，不做插值——只打在词首的英文整词一起亮，看到的就是标签本身说的时间。颜色由
-   `ScrollLyricsView` 的新属性 `karaokeUnsungTextColor` 打开，浮动窗口不设它，行为不变。
+3. **逐字进度**：当前行没有行内时间标签时整行 `controlAccentColor`；有标签时整行先是 `labelColor`，已唱的部分画成
+   `controlAccentColor`，分界在字里平滑移动。已唱多少由 `KaraokeLineTiming`（状态栏的卡拉OK进度用的同一个类型）给出：
+   两个标签之间线性插值，得到带小数的已唱字数，再换算成分界所在的字和这个字唱过的比例。颜色由 `ScrollLyricsView` 的
+   新属性 `karaokeUnsungTextColor` 打开，浮动窗口不设它，行为不变。
 4. 选中一条结果：`lyricsPreviewView.setupTextContents(lyrics:)` 装入它，恢复自动滚动，立即刷新一次进度（不带动画）。
    没有选中时清空预览、显示一行居中的占位文字「选中一条结果，在这里跟着播放预览」。
 5. **刷新进度**（`refreshPreviewProgress(animated:)`）：
    - 只有 `panelResults.previewFollowsPlayback(whilePlaying: 正在播放的曲目 id)` 为真时才标进度——结果是为正在放的这首
      搜到的。否则只显示歌词、不高亮（从「跟随」变成「不跟随」时重新 `setupTextContents` 清掉残留的高亮）。
    - 位置 = `playbackState.lyricsDisplayTime(trackDuration:) + lyrics.adjustedTimeDelay`，调 `highlight(position:)`
-     （它返回当前行是否换了）；自动滚动开着时，换了行或非定时的刷新才调 `scroll(position:)`——同一行里逐字推进不滚动。
+     （它返回当前行是否换了）；自动滚动开着时，换了行或非定时的刷新才调 `scroll(position:)`——同一行里进度推进不滚动。
      带动画时用浮动窗口同样的 0.3 秒 `swiftOut`。
-   - 正在播放就在 `ScrollLyricsView.nextHighlightChange(after:)` 给出的时刻再刷新：下一行开始，或当前行下一个字开始，
-     取早的那个；过了最后一行仍在播放则每秒复查。暂停时不排定时器。
+   - 正在播放、当前行的已唱部分正在移动（`karaokeProgressMoves(at:)`）、窗口没被完全挡住时，用 display link
+     （MSDisplayLink，app 已依赖，兼容 macOS 12）每帧刷新，60 fps，与状态栏相同。否则停掉 display link，在
+     `ScrollLyricsView.nextHighlightChange(after:)` 给出的时刻再刷新：下一行开始，或当前行的进度开始移动，取早的那个；
+     过了最后一行仍在播放则每秒复查。暂停时两者都不排。
    - 触发：选中变化、`selectedPlayer.playbackStateWillChange`（暂停、继续、拖动进度）、全局偏移变化、设备偏移变化、
-     上面排的定时器。
+     窗口改大小、窗口遮挡状态变化、上面排的定时器与 display link。
 6. **交互**：手动滚动预览时停止自动滚动（同浮动窗口）；双击某一行，在跟随状态下把播放器跳到该行
    （`行时间 - adjustedTimeDelay`）并恢复自动滚动，不跟随时什么都不做；预览没有右键菜单。
 
@@ -130,7 +132,7 @@
 ### 非目标
 
 - 不在预览里调偏移。偏移照旧在状态栏菜单里调，调了预览会跟着动。
-- 不做字内平滑扫光，也不嵌 Apple Music 风格的歌词引擎（见替代方案）；逐字进度按字点亮。
+- 不嵌 Apple Music 风格的歌词引擎（见替代方案）；逐字进度照状态栏的样子画，不做抬起、发光这类效果。
 - 不自动选中第一条结果；选中仍由用户决定。
 - 面板关着时不跟着切歌，也不在后台搜索。
 - 恢复名在搜索开始后才出现时，不改输入框、不重搜（会把用户正在看的列表整个换掉）。
@@ -146,16 +148,17 @@
 | `LyricsX/Supporting Files/Base.lproj/Main.storyboard` · 场景 `hFt-BA-jFS` | 修改 | `rkQ-Bz-mQO` → `ScrollLyricsView`（关掉竖向滚动条），`PEz-rD-ja1` → `LyricsTextView`（不可编辑、不可选、不画背景、清空内容）；outlet `lyricsPreviewTextView` → `lyricsPreviewView` | 复用浮动窗口的滚动歌词视图 | 2、5 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 预览装配与外观、占位文字、`refreshPreviewProgress(animated:)` 与定时器、遵循 `ScrollLyricsViewDelegate` | 底部预览跟着播放走 | 2 |
 | `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView` | 修改 | 加 `fixedFont: NSFont?`，设了就代替 `fontName` + `fontSize` | 系统字体没有能按名字取的名字（按名字取 `.AppleSystemUIFont` 得到 Times），预览要用系统字体 | 2 |
-| `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView`、`KaraokeLineLayout`（文件内私有） | 修改 | 加 `karaokeUnsungTextColor`；`highlight(position:)` 按逐字时间涂当前行并返回是否换行；新增 `nextHighlightChange(after:)`；行查找抽成 `indexOfLine(at:)`，涂色抽成 `paintHighlightedLine()` | 逐字进度 | 5 |
-| `LyricsXPackage/Sources/LyricsXFoundation/KaraokeCharacterOnsets.swift` · `KaraokeCharacterOnsets` | 新增 | 每个字开始唱的时刻、某时刻已开始的字数、下一个字开始的时刻 | 逐字进度的纯逻辑，包测试能测 | 5 |
-| `LyricsXPackage/Tests/LyricsXFoundationTests/KaraokeCharacterOnsetsTests.swift` | 新增 | 十个用例（见步骤 5） | 钉住标签到字的换算 | 5 |
+| `LyricsX/View/ScrollLyricsView.swift` · `ScrollLyricsView`、`KaraokeLineLayout`（文件内私有） | 修改 | 加 `karaokeUnsungTextColor`；`highlight(position:)` 标当前行、按 `KaraokeLineTiming` 算出已唱部分并返回是否换行；新增 `karaokeProgressMoves(at:)` 与 `nextHighlightChange(after:)`；行查找抽成 `indexOfLine(at:)`，涂色抽成 `paintHighlightedLine()`；右到左的行不显示进度 | 逐字进度 | 5、6 |
+| `LyricsX/View/ScrollLyricsView.swift` · `LyricsTextView` | 修改 | 加 `sungPart`；`draw(_:)` 先画已唱区域之外的文字，再把这一行的字形在已唱区域里单独画一层、涂成强调色 | 分界要停在字的中间，颜色属性做不到；移动分界不重新排版 | 6 |
+| `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 进度移动时开 display link（60 fps），否则用一次性定时器；订阅窗口遮挡变化 | 平滑扫过，不动时不耗电 | 6 |
 | `LyricsX/Search/SearchLyricsViewController.swift` · `SearchLyricsViewController` | 修改 | 可见期间订阅切歌；`search(for:)`；`reloadKeyword()` 补曲目 id 判断 | 输入框跟着切歌 | 3 |
 | `LyricsX/Supporting Files/Localizable.xcstrings` | 修改 | 占位文字一条，补简繁中文 | 新文案 | 2 |
 | `Documentations/Internal/LyricsCandidatePool.md` · 第五节 | 修改 | 写明面板开着时跟着切歌、旧结果被换掉；「存给原来那首」只剩曲目变 nil 与切歌瞬间两种情形 | 实现说明与代码一致 | 4 |
-| `LyricsX/CLAUDE.md` · Build Commands | 修改 | `LyricsXFoundationTests` 的覆盖清单补上「搜索面板何时为新歌重搜、预览何时跟进度」与「预览里每个字何时点亮」 | 项目指令里列着每个策略测试 | 4、5 |
+| `LyricsX/CLAUDE.md` · Build Commands | 修改 | `LyricsXFoundationTests` 的覆盖清单补上「搜索面板何时为新歌重搜、预览何时跟进度」，并写明 `KaraokeLineTiming` 也给搜索面板的预览用 | 项目指令里列着每个策略测试 | 4、6 |
 | `Documentations/Evolutions/README.md`、`Documentations/README.md` | 修改 | 登记本提案；落地时取号 | 索引 | 4 |
 
-`ScrollLyricsView` 加了 `fixedFont` 与逐字进度（见决策日志），两者默认关闭，浮动窗口不受影响；「不跟随时清掉高亮」用重新
+`ScrollLyricsView` 加了 `fixedFont` 与逐字进度（见决策日志），两者默认关闭，浮动窗口不受影响；第 5 步曾新增的
+`KaraokeCharacterOnsets` 与它的测试在第 6 步删掉了，没有发布过；「不跟随时清掉高亮」用重新
 `setupTextContents` 做到。
 
 ## 架构图
@@ -178,12 +181,16 @@ LyricsSearchPanelResults (LyricsXFoundation)
 
 ScrollLyricsView (app target, shared with the lyrics HUD)
 ├── + fixedFont: NSFont?                        + the system font, which has no name for fontName
-├── + karaokeUnsungTextColor: NSColor?          + turns on per-character progress (off in the HUD)
-├── ~ highlight(position:) -> Bool              ~ colours the sung characters, reports a line change
-└── + nextHighlightChange(after:)               + next line start or next character onset
+├── + karaokeUnsungTextColor: NSColor?          + turns on karaoke progress (off in the HUD)
+├── ~ highlight(position:) -> Bool              ~ marks the line, puts its sung part, reports a line change
+├── + karaokeProgressMoves(at:) -> Bool         + the sung part moves now → refresh every frame
+├── + nextHighlightChange(after:)               + next line start, or when the sung part starts moving
+└── LyricsTextView
+    ├── + sungPart: SungPart?                   + glyph range, rects up to the sung edge, colour
+    └── + draw(_:)                              + text outside the rects, then the line's glyphs inside, recoloured
 
-KaraokeCharacterOnsets (LyricsXFoundation)      + when each character of a line starts, from its inline time tags
-└── built on KaraokeLineTiming                    (unchanged: ordered, never-shrinking keyframes)
+KaraokeLineTiming (LyricsXFoundation)             (unchanged; the menu bar's karaoke progress uses it too)
+└── sungCharacterCount(atLyricsTime:) -> Double   fractional: the edge sits inside a character
 ```
 
 数据流：
@@ -201,10 +208,14 @@ table selection ─────────────┐
 playbackStateWillChange ─────┤
 globalLyricsOffset ──────────┼──→ refreshPreviewProgress(animated:)
 currentRouteOffsetDidChange ─┤      guard panelResults.previewFollowsPlayback(whilePlaying: currentTrack?.id)
-line-boundary timer ─────────┘      position = playbackState.lyricsDisplayTime(trackDuration:) + lyrics.adjustedTimeDelay
+window resize / occlusion ───┤
+one-off timer ───────────────┤
+DisplayLink (60 fps) ────────┘      position = playbackState.lyricsDisplayTime(trackDuration:) + lyrics.adjustedTimeDelay
                                     lyricsPreviewView.highlight(position:)
                                     isPreviewTracking ? lyricsPreviewView.scroll(position:) : ()
-                                    isPlaying ? schedule at lines[next].position − position (1 s past the last line) : ()
+                                    isPlaying, karaokeProgressMoves(at:), window visible
+                                      ? keep the display link running
+                                      : stop it; one-off timer at nextHighlightChange(after:) (1 s past the last line)
 
 double-click line (following only) → selectedPlayer.playbackTime = linePosition − adjustedTimeDelay
 ```
@@ -297,26 +308,26 @@ private func refreshPreviewProgress(animated: Bool) {
 
 ### 逐字进度
 
-```swift
-/// When each character of a lyrics line starts being sung, by its inline time tags.
-public struct KaraokeCharacterOnsets: Hashable, Sendable {
-    public let lineStart: TimeInterval
-    /// Seconds since the line starts, one per Swift `Character` of the content, never decreasing.
-    public let onsetTimes: [TimeInterval]
-    public init?(line: LyricsLine)
-    public init?(lineStart: TimeInterval, characterCount: Int, timeTag: LyricsLine.Attachments.InlineTimeTag)
-    public func startedCharacterCount(atLyricsTime lyricsTime: TimeInterval) -> Int
-    public func nextOnset(afterLyricsTime lyricsTime: TimeInterval) -> TimeInterval?
-}
-```
+照状态栏歌词的卡拉OK进度（`MenuBarMarqueeLabel`）做：同一个时间计算，同样的「已唱部分整块换色、分界对齐设备像素」，
+同样按需开 display link。
 
-- 先经 `KaraokeLineTiming` 把标签排好序、夹进行内、只增不减，再按相邻两个关键帧切段：字数从 a 增到 b 的那一段里，
-  第 a 到 b−1 个字都在这一段开始的时刻开始。第一个标签之前没标的字随第一个标签开始；最后一个标签之后的字随最后一个
-  标签开始（有时长时由时长关键帧覆盖，结果相同）。同一个下标出现两次时，那个字在字数真正往前走的那一段开始，
-  与桌面歌词的填充一致。
-- 字的单位是 Swift `Character`，与 `KaraokeLineTiming` 和菜单栏一致；`ScrollLyricsView` 里的 `KaraokeLineLayout`
-  把「前 k 个字」换算成 UTF-16 长度去涂 `NSTextStorage`。双语时翻译那半行不参与逐字，保持未唱的颜色。
-- `ScrollLyricsView` 只在已开始的字数变化时改属性，定时器在下一个字开始时才醒，中文每秒几次，开销只在这几个字上。
+- **已唱多少**：`KaraokeLineTiming(line:)` 给出排好序、只增不减的关键帧；`sungCharacterCount(atLyricsTime:)` 在两个
+  关键帧之间线性插值，返回带小数的已唱字数。整数部分是分界所在的字，小数部分是这个字唱过的比例。字的单位是 Swift
+  `Character`，`KaraokeLineLayout` 记下每个字在文本里的 UTF-16 起点，用来查字形。
+- **分界在哪**：分界那个字的左右两端取自 `getLineFragmentInsertionPoints(forCharacterAt:…)` 的光标位置——它把连字
+  （`fi`）拆到各个字上，用字形矩形的话两个字都拿到整个连字，分界会往回跳；状态栏用 `CTLineGetOffsetForStringIndex`
+  也是同一个道理。取不到时退回字形矩形。`起点 + 宽度 × 比例` 就是分界；
+  逐个枚举这一行（只是原文，不含双语的翻译那半行）的行片段：分界之前的行片段整块算已唱，分界所在的行片段从左边到分界，
+  后面的不算。分界取整到设备像素，没跨过一个像素就不重画。
+- **怎么画**（`LyricsTextView.draw(_:)`）：`NSTextStorage` 里当前行整行是 `labelColor`；画的时候先用 even-odd 裁剪把
+  已唱区域挖掉、照常画文字，再只在已唱区域里开一个透明图层，`drawGlyphs(forGlyphRange:at:)` 把这一行的字形画进去，
+  用 `sourceIn` 混合铺一层强调色——字形的覆盖度不变、颜色换掉。每个像素只来自一种颜色，分界可以停在字的中间；
+  移动分界不改文本属性、不重新排版，只重画这一行的矩形。
+- **何时刷新**：`karaokeProgressMoves(at:)` 在当前行的第一个与最后一个关键帧之间为真，这段时间里 display link 每帧
+  调一次 `refreshPreviewProgress(animated: true)`；其余时间是一次性定时器，醒在下一行开始或进度开始移动时。
+  帧率 60：状态栏歌词的默认值，MarqueeLabel 在 60 Hz 屏幕上的动画也是这个频率。窗口被完全挡住时不开 display link，
+  遮挡状态一变就重新判断。
+- **右到左的行**（希伯来文、阿拉伯文）不显示进度、整行强调色，同状态栏：从左往右填会让这种行一开始就是满的。
 
 ### 切歌订阅
 
@@ -362,14 +373,17 @@ override func viewDidDisappear() {
 - **嵌入 Apple Music 风格的歌词引擎，显示逐字扫光**：`LyricsPanelViewController` 接受注入的歌词与当前行发布者，技术上能放进来，
   逐字时间对不对也能看出来。否：它为深色、带封面背景的大窗口设计，字号按窗口宽度分档，有 display link 和 Metal 背景，
   放进一个普通窗口的底部既不协调又贵；它的 `HostEnvironment` 是全局单例，时间偏移和播放器都按「屏幕上的那条歌词」接好了。
-  逐字时间改由在 `ScrollLyricsView` 里按字点亮来看（见决策日志）。
-- **字内平滑扫光，或按插值逐个字母点亮**：桌面歌词与菜单栏在两个标签之间线性插值，一个词随演唱逐渐填满。否：插值出来的
-  时刻不是标签给的，拿来核对标签反而会误导；`NSTextView` 也只能整字换色，平滑扫光要另画一层遮罩。按字点亮在中文
-  （一字一标签）上与插值结果相同，在只标词首的英文上整词一起亮，正是标签的原意。
+  逐字时间改在 `ScrollLyricsView` 里照状态栏的样子画（见决策日志）。
+- **按字点亮、不插值**（第 5 步先做的版本）：字在它的标签开始那一刻整字变色，看到的就是标签本身的时刻。否：用户看过，
+  一个字一个字地跳显得卡。平滑扫过在一字一标签的中文上，每个字仍在自己的标签时刻被扫到，核对照样可行；只标词首的英文
+  看到的是词内的插值，与状态栏、桌面歌词显示的一致。
+- **用文本属性逐帧换色**：`NSTextStorage` 只能整字换色，分界停不到字的中间，而且每次改属性都要让排版失效。否。
+- **在文本视图上叠一层 `CALayer` 遮罩、用 Core Animation 关键帧动画推进**（桌面歌词的做法）：不占主线程，但一行折成
+  几行时遮罩要按行片段拼，窗口改宽、暂停、跳播都得重建动画。预览一次只动一行，逐帧重画这一行的矩形足够便宜。否。
 - **只显示一行卡拉OK（桌面歌词那种）**：能看逐字进度，但只看得到一行，看不出前后是否整体偏了一段。否。
 - **保留原文，加一个「预览 / 原文」切换**：需求是不再显示原文；原文本来就能把结果行拖出去拿到。否。
-- **固定频率刷新（例如每 0.1 秒）**：写起来简单，但面板开着时一直唤醒主线程。按下一行（或下一个字）的开始时间排定时器是
-  `AppController` 的现成做法，开销只在有东西要变时发生。否。
+- **固定频率刷新（例如每 0.1 秒）**：写起来简单，但面板开着时一直唤醒主线程，扫过也不够平滑。只在进度移动时每帧刷新、
+  其余时间按下一行的开始时间排定时器（`AppController` 的现成做法），开销只在有东西要变时发生。否。
 - **面板关着也跟着切歌**：关着的窗口没人看，后台搜索只浪费请求。否。
 - **用户改过输入框就不跟着切歌**：需求是输入框跟着播放的歌走；为上一首改的搜索词对新歌也没有意义。否。
 - **恢复名晚到时更新输入框并重搜**：会把用户正在看、可能已经选中的列表整个换掉；面板自己的搜索也走恢复名插件，
@@ -381,7 +395,7 @@ override func viewDidDisappear() {
 
 - 搜索面板底部：原来的 LRC 原文换成按时间轴滚动的歌词，正在唱的那一行用系统强调色标出、跟着播放往下走；
   没选中结果时显示一行占位文字。
-- 带逐字时间的歌词，当前行里的字按各自的时间标签由白变成强调色。
+- 带逐字时间的歌词，当前行的已唱部分随演唱平滑扫成强调色，与状态栏歌词的卡拉OK进度一样。
 - 双击预览里的某一行，播放器跳到那一行（仅当结果属于正在播放的歌）。
 - 面板开着时换了歌，输入框自动换成新歌的名字，结果列表换成新歌的搜索结果。正在为上一首挑、还没应用的结果会被换掉，
   这是跟着切歌的代价；要给上一首挑歌词，等它下次播放时再挑。
@@ -397,7 +411,7 @@ override func viewDidDisappear() {
 
 ### 平台与最低版本
 
-不变（macOS 12+）。用到的 `ScrollLyricsView`、`controlAccentColor`（10.14+）、Combine 都已在用。
+不变（macOS 12+）。用到的 `ScrollLyricsView`、`controlAccentColor`（10.14+）、Combine、MSDisplayLink 都已在用。
 
 ### 发布
 
@@ -431,20 +445,16 @@ override func viewDidDisappear() {
    - 行为：打开面板时遇到同名的另一首歌也会重搜
 4. **文档与收尾**（已完成）—— 改动地图第 11、12、13 行
    - 行为：候选池实现说明第五节、项目 `CLAUDE.md` 的测试清单与代码一致
-5. **逐字进度，关掉预览的滚动条**（用户看过第一版后提出；已实现，界面待手工检查）—— 改动地图第 3、4、6、7、8、12 行
-   - 行为：`aLineWithoutInlineTimeTagsHasNoCharacterOnsets`
-   - 行为：`everyCharacterBetweenTwoTagsStartsWithTheEarlierTag`
-   - 行为：`theCharactersAfterTheLastTagStartWithItWithoutADuration`
-   - 行为：`aCharacterCountsAsStartedFromItsOnsetOn`
-   - 行为：`theNextOnsetIsTheNextCharacterToStartInLyricsTime`
-   - 行为：`oneTagPerCharacterStartsEachCharacterAtItsOwnTag`
-   - 行为：`tagsOutOfOrderAreReadInOrderOfTime`
-   - 行为：`aTagRepeatingAnIndexStartsThatCharacterWhenTheSungPartMovesOn`
-   - 行为：`untaggedCharactersBeforeTheFirstTagStartWithIt`
-   - 行为：`tagsThatNeverMovePastOnePlaceGiveNoOnsets`
-   - 行为（界面）：带逐字时间的歌词，当前行未唱部分为白色，每个字在它的标签开始时变成强调色；没有逐字时间的行整行强调色
-   - 行为（界面）：同一行里逐字推进时预览不滚动，换行时才滚
+5. **关掉预览的滚动条，逐字进度先按字点亮**（用户看过第一版后提出；按字点亮已被第 6 步取代）—— 改动地图第 3、6 行
    - 行为（界面）：预览右侧不再出现被渐隐遮掉的半截滚动条；滚轮与触控板照样能滚
+   - 行为（界面）：浮动歌词窗口不变
+6. **逐字进度改为平滑扫过**（用户看过按字点亮后提出；已实现，界面待手工检查）—— 改动地图第 6、7、8、12 行
+   - 行为：已唱多少沿用 `KaraokeLineTimingTests`（状态栏的卡拉OK进度用的同一组测试），不新增纯逻辑
+   - 行为（界面）：带逐字时间的行，已唱部分是强调色，分界在字里平滑移动，不再一个字一个字地跳
+   - 行为（界面）：没有逐字时间的行整行强调色；同一行里进度推进时不滚动，换行时才滚
+   - 行为（界面）：暂停时分界停住，继续后接着走；拖动进度后分界跳到对应位置
+   - 行为（界面）：改窗口宽度、一行折成两行时，分界仍对在字上，第一行唱完才进第二行
+   - 行为（界面）：双语歌词的翻译那半行不扫，保持白色
    - 行为（界面）：浮动歌词窗口不变
 
 验证：步骤 1 跑 `swift test --filter LyricsSearchPanelResultsTests`（`LyricsXPackage`，加 `LYRICSX_USE_LOCAL_DEPENDENCY=1`
@@ -470,3 +480,5 @@ agent 不自行操作界面。
 | 2026-11-26 | 实现完成，待用户看过后收尾 | app 在 Ultra 上用 workspace 构建通过（Debug，`CODE_SIGNING_ALLOWED=NO`），`LyricsXFoundationTests` 262 个测试通过（1 个已知问题是系统翻译探针，与本次无关）。界面行为（第 2、3 步的行为清单）待用户手工检查。文档：候选池实现说明第五节、项目 `CLAUDE.md` 的测试清单已同步；不另写实现说明——两处不显然的决定（切歌用播放器报的名字、用发布出来的曲目）写在代码注释和候选池实现说明里；没有新术语 |
 | 2026-11-26 | 用户看过第一版：滚动条有问题，要支持逐字歌词 | 预览右侧的竖向滚动条被 `ScrollLyricsView` 的上下渐隐遮罩遮得只剩一截，照浮动窗口关掉。用户用这个面板主要是逐字核对时间标签，原方案「逐行高亮就够」不成立，改为在 `ScrollLyricsView` 里按字点亮：字在标签开始时亮、不插值（理由见替代方案），新增纯类型 `KaraokeCharacterOnsets` 与测试；仍不嵌 Apple Music 引擎 |
 | 2026-11-26 | 第 5 步完成，待用户再看 | app 在 Ultra 上构建通过，`LyricsXFoundationTests` 272 个测试通过（新增 `KaraokeCharacterOnsetsTests` 十个，1 个已知问题同前）。界面上的逐字点亮与滚动条待用户实机检查 |
+| 2026-11-26 | 用户看过按字点亮：一个字一个字地跳显得卡，要照状态栏歌词做 | 改为平滑扫过（第 6 步）：已唱多少用 `KaraokeLineTiming` 的插值，`LyricsTextView` 把已唱区域单独画一层强调色，只在进度移动时开 60 fps 的 display link。替代方案里「插值会误导核对」的理由不再成立：一字一标签的中文每个字仍在自己的标签时刻被扫到。`KaraokeCharacterOnsets` 与它的十个测试只为按字点亮而加、没发布过，删掉 |
+| 2026-11-26 | 第 6 步完成，待用户再看 | app 在 Ultra 上构建通过，`LyricsXFoundationTests` 262 个测试通过（删掉的十个按字点亮测试之外与上一轮相同，1 个已知问题同前）。自查补了一处：分界改按光标插入点定位，连字 `fi` 不会让分界往回跳。平滑扫过的观感、折行、暂停与双语待用户实机检查 |

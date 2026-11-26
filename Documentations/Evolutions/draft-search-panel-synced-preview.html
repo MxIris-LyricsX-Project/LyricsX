@@ -189,12 +189,12 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 
 <section id="summary">
   <h2>摘要</h2>
-  <p>「搜索歌词」面板底部不再显示选中结果的 LRC 原文，而是换成浮动歌词窗口用的那种滚动歌词视图（<code>ScrollLyricsView</code>）：选中一条结果，就按它的时间轴显示歌词，正在唱的那一行高亮并保持在中间，跟着播放器的进度往下走。时间按「播放器位置 + 这条歌词应用之后会用的总偏移」计算，所以预览里看到的进度就是点「应用」之后屏幕上会看到的进度；双击某一行跳到那里播放，方便对一下时间轴。歌词带逐字时间（行内时间标签）时，正在唱的那一行里每个字在它的标签开始时由白变成强调色，可以逐字核对标签与演唱是否一致。结果不属于正在播放的歌时，预览只显示歌词、不标进度。</p>
+  <p>「搜索歌词」面板底部不再显示选中结果的 LRC 原文，而是换成浮动歌词窗口用的那种滚动歌词视图（<code>ScrollLyricsView</code>）：选中一条结果，就按它的时间轴显示歌词，正在唱的那一行高亮并保持在中间，跟着播放器的进度往下走。时间按「播放器位置 + 这条歌词应用之后会用的总偏移」计算，所以预览里看到的进度就是点「应用」之后屏幕上会看到的进度；双击某一行跳到那里播放，方便对一下时间轴。歌词带逐字时间（行内时间标签）时，正在唱的那一行里已唱的部分是强调色、没唱的是白色，分界按标签的时间在字里平滑扫过——与状态栏歌词的卡拉OK进度同一套计算和画法——可以逐字核对标签与演唱是否一致。结果不属于正在播放的歌时，预览只显示歌词、不标进度。</p>
   <p>面板开着的时候，播放器换了歌，标题和歌手两个输入框就换成新歌的名字并重新搜索；面板关着时不做任何事，下次打开时照旧按正在播放的歌刷新。判断「要不要重搜」和「预览要不要跟进度」是 <code>LyricsSearchPanelResults</code> 上的两个纯方法，有单元测试。</p>
   <div class="callout callout-note">
     <p class="callout-title">没问就定下的</p>
     <ul>
-      <li>预览复用浮动窗口的滚动视图，逐字进度按字点亮：字在它的标签开始时亮，不插值；不嵌 Apple Music 引擎（理由见替代方案）。</li>
+      <li>预览复用浮动窗口的滚动视图，逐字进度照状态栏歌词画：插值、平滑扫过，只在进度移动时每帧刷新（60 fps）；不嵌 Apple Music 引擎（理由见替代方案）。</li>
       <li>预览不显示竖向滚动条（同浮动窗口），滚轮与触控板照样能滚。</li>
       <li>切歌时直接换掉输入框与结果，用户改过的搜索词也换；播放器退出时保留结果。</li>
       <li>不自动选中结果；没选中时显示一行占位文字。</li>
@@ -211,15 +211,16 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <li><i class="swatch swatch-kept"></i>不变</li>
   </ul>
   <div class="figure">
-  <svg viewBox="0 0 1000 440" role="img" aria-label="What changes in the Search Lyrics panel">
-    <rect class="group" x="10" y="10" width="560" height="312" rx="10"/>
+  <svg viewBox="0 0 1000 480" role="img" aria-label="What changes in the Search Lyrics panel">
+    <rect class="group" x="10" y="10" width="560" height="364" rx="10"/>
     <text class="group-label" x="22" y="30">SearchLyricsViewController (app target)</text>
     <rect class="box-changed" x="25" y="42" width="300" height="44" rx="6"/><text x="35" y="60">Search Bar: title / artist</text><text class="caption" x="35" y="77">refilled when the playing track changes</text>
     <rect class="box-kept" x="25" y="94" width="300" height="34" rx="6"/><text x="35" y="116">results table + artwork</text>
     <rect class="box-removed" x="25" y="136" width="300" height="44" rx="6"/><text class="strike" x="35" y="154">NSScrollView + NSTextView</text><text class="caption" x="35" y="171">raw LRC text (Lyrics.description)</text>
     <rect class="box-added" x="25" y="188" width="300" height="44" rx="6"/><text x="35" y="206">ScrollLyricsView + LyricsTextView</text><text class="caption" x="35" y="223">current line follows playback</text>
     <rect class="box-added" x="25" y="240" width="300" height="34" rx="6"/><text x="35" y="262">placeholder label</text>
-    <rect class="box-kept" x="25" y="282" width="300" height="30" rx="6"/><text x="35" y="302">Apply bar</text>
+    <rect class="box-added" x="25" y="282" width="300" height="44" rx="6"/><text x="35" y="300">DisplayLink (MSDisplayLink)</text><text class="caption" x="35" y="317">60 fps, only while the sung part moves</text>
+    <rect class="box-kept" x="25" y="334" width="300" height="30" rx="6"/><text x="35" y="354">Apply bar</text>
 
     <rect class="group" x="600" y="10" width="390" height="195" rx="10"/>
     <text class="group-label" x="612" y="30">LyricsXFoundation</text>
@@ -228,21 +229,23 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <rect class="box-added" x="635" y="124" width="330" height="30" rx="6"/><text x="645" y="144">needsNewSearch(whilePlaying:)</text>
     <rect class="box-added" x="635" y="162" width="330" height="30" rx="6"/><text x="645" y="182">previewFollowsPlayback(whilePlaying:)</text>
 
-    <rect class="group" x="600" y="225" width="390" height="97" rx="10"/>
+    <rect class="group" x="600" y="225" width="390" height="140" rx="10"/>
     <text class="group-label" x="612" y="245">LyricsX/View (shared with the lyrics HUD)</text>
-    <rect class="box-changed" x="615" y="257" width="360" height="44" rx="6"/><text x="625" y="275">ScrollLyricsView</text><text class="caption" x="625" y="292">+ fixedFont, + karaokeUnsungTextColor, + nextHighlightChange</text>
+    <rect class="box-changed" x="615" y="257" width="360" height="44" rx="6"/><text x="625" y="275">ScrollLyricsView</text><text class="caption" x="625" y="292">+ fixedFont, + karaokeUnsungTextColor, + karaokeProgressMoves</text>
+    <rect class="box-changed" x="635" y="309" width="300" height="44" rx="6"/><text x="645" y="327">LyricsTextView</text><text class="caption" x="645" y="344">+ sungPart: glyphs redrawn in the accent colour</text>
 
-    <rect class="group" x="600" y="340" width="390" height="90" rx="10"/>
-    <text class="group-label" x="612" y="360">LyricsXFoundation</text>
-    <rect class="box-added" x="615" y="372" width="360" height="44" rx="6"/><text x="625" y="390">KaraokeCharacterOnsets</text><text class="caption" x="625" y="407">when each character starts, from inline time tags</text>
-    <path class="arrow" d="M 795 301 L 795 372"/>
+    <rect class="group" x="600" y="385" width="390" height="85" rx="10"/>
+    <text class="group-label" x="612" y="405">LyricsXFoundation</text>
+    <rect class="box-kept" x="615" y="415" width="360" height="44" rx="6"/><text x="625" y="433">KaraokeLineTiming</text><text class="caption" x="625" y="450">interpolated sung count; the menu bar uses it too</text>
+    <path class="arrow" d="M 955 301 L 955 415"/>
 
     <path class="arrow" d="M 325 64 L 635 139"/>
     <path class="arrow" d="M 325 206 L 635 177"/>
     <path class="arrow arrow-weak" d="M 325 220 L 615 279"/>
+    <path class="arrow arrow-weak" d="M 325 304 L 615 290"/>
   </svg>
   </div>
-  <p class="figure-caption">底部的原文视图换成复用的 <code>ScrollLyricsView</code>，它多了系统字体与逐字进度（都默认关闭，浮动窗口不变）；两条新判断和逐字时间都是纯类型，包测试能测到。</p>
+  <p class="figure-caption">底部的原文视图换成复用的 <code>ScrollLyricsView</code>，它多了系统字体与逐字进度（都默认关闭，浮动窗口不变）；已唱多少沿用状态栏的 <code>KaraokeLineTiming</code>，两条新判断是纯方法，包测试能测到。</p>
 
   <h3>数据流</h3>
   <div class="figure">
@@ -251,7 +254,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <rect class="box-kept" x="10" y="90" width="250" height="34" rx="6"/><text x="20" y="112">table selection</text>
     <rect class="box-kept" x="10" y="134" width="250" height="34" rx="6"/><text x="20" y="156">playbackStateWillChange</text>
     <rect class="box-kept" x="10" y="178" width="250" height="34" rx="6"/><text x="20" y="200">global / route offset</text>
-    <rect class="box-added" x="10" y="222" width="250" height="34" rx="6"/><text x="20" y="244">line / character timer</text>
+    <rect class="box-added" x="10" y="222" width="250" height="34" rx="6"/><text x="20" y="244">timer / DisplayLink (60 fps)</text>
 
     <rect class="box-added" x="340" y="14" width="300" height="46" rx="6"/><text x="350" y="33">playingTrackChanged(to:)</text><text class="caption" x="350" y="50">needsNewSearch(whilePlaying:)</text>
     <rect class="box-added" x="340" y="150" width="300" height="46" rx="6"/><text x="350" y="169">refreshPreviewProgress(animated:)</text><text class="caption" x="350" y="186">previewFollowsPlayback(whilePlaying:)</text>
@@ -261,7 +264,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <text class="group-label" x="722" y="114">lyricsPreviewView</text>
     <rect class="box-kept" x="720" y="124" width="270" height="34" rx="6"/><text x="730" y="146">highlight(position:)</text>
     <rect class="box-kept" x="720" y="166" width="270" height="34" rx="6"/><text x="730" y="188">scroll(position:)</text>
-    <rect class="box-added" x="720" y="222" width="270" height="34" rx="6"/><text x="730" y="244">schedule next check</text>
+    <rect class="box-added" x="720" y="222" width="270" height="34" rx="6"/><text x="730" y="244">display link, or next check</text>
 
     <path class="arrow" d="M 260 37 L 340 37"/>
     <path class="arrow" d="M 640 37 L 720 37"/>
@@ -275,7 +278,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <path class="arrow arrow-weak" d="M 855 256 L 855 285 L 135 285 L 135 256"/>
   </svg>
   </div>
-  <p class="figure-caption">切歌订阅只在窗口可见期间存在；进度刷新只在结果属于正在播放的歌时标行，正在播放才排下一次。</p>
+  <p class="figure-caption">切歌订阅只在窗口可见期间存在；进度刷新只在结果属于正在播放的歌时标行。正在播放时，当前行的已唱部分在动、窗口没被挡住就每帧刷新，否则排一次性定时器；窗口改大小与遮挡变化也会刷新。</p>
 </section>
 
 <section id="map">
@@ -290,17 +293,17 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>预览装配与外观、占位文字、<code>refreshPreviewProgress(animated:)</code> 与定时器、遵循 <code>ScrollLyricsViewDelegate</code></td><td>底部预览跟着播放走</td><td class="numeric">2</td></tr>
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>可见期间订阅切歌；<code>search(for:)</code>；<code>reloadKeyword()</code> 补曲目 id 判断</td><td>输入框跟着切歌</td><td class="numeric">3</td></tr>
       <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>fixedFont: NSFont?</code>，设了就代替 <code>fontName</code> + <code>fontSize</code></td><td>系统字体没有能按名字取的名字（按名字取 <code>.AppleSystemUIFont</code> 得到 Times）</td><td class="numeric">2</td></tr>
-      <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code>、<code>KaraokeLineLayout</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>karaokeUnsungTextColor</code>；<code>highlight(position:)</code> 按逐字时间涂色并返回是否换行；新增 <code>nextHighlightChange(after:)</code></td><td>逐字进度</td><td class="numeric">5</td></tr>
-      <tr><td><code>LyricsXPackage/Sources/LyricsXFoundation/KaraokeCharacterOnsets.swift</code></td><td><span class="tag tag-added">新增</span></td><td>每个字开始唱的时刻、已开始的字数、下一个字开始的时刻</td><td>逐字进度的纯逻辑</td><td class="numeric">5</td></tr>
-      <tr><td><code>LyricsXPackage/Tests/LyricsXFoundationTests/KaraokeCharacterOnsetsTests.swift</code></td><td><span class="tag tag-added">新增</span></td><td>十个用例</td><td>钉住标签到字的换算</td><td class="numeric">5</td></tr>
+      <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code>、<code>KaraokeLineLayout</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>karaokeUnsungTextColor</code>；<code>highlight(position:)</code> 标当前行、按 <code>KaraokeLineTiming</code> 算出已唱部分并返回是否换行；新增 <code>karaokeProgressMoves(at:)</code> 与 <code>nextHighlightChange(after:)</code>；右到左的行不显示进度</td><td>逐字进度</td><td class="numeric">5、6</td></tr>
+      <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>LyricsTextView</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>sungPart</code>；<code>draw(_:)</code> 先画已唱区域之外的文字，再把这一行的字形在已唱区域里单独画一层、涂成强调色</td><td>分界要停在字的中间，颜色属性做不到；移动分界不重新排版</td><td class="numeric">6</td></tr>
+      <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>进度移动时开 display link（60 fps），否则用一次性定时器；订阅窗口遮挡变化</td><td>平滑扫过，不动时不耗电</td><td class="numeric">6</td></tr>
       <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>占位文字一条，补简繁中文</td><td>新文案</td><td class="numeric">2</td></tr>
       <tr><td><code>Documentations/Internal/LyricsCandidatePool.md</code> · 第五节</td><td><span class="tag tag-changed">修改</span></td><td>面板开着时跟着切歌；「存给原来那首」只剩曲目变 nil 与切歌瞬间</td><td>实现说明与代码一致</td><td class="numeric">4</td></tr>
-      <tr><td><code>LyricsX/CLAUDE.md</code> · Build Commands</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖清单补上两条新判断</td><td>项目指令里列着每个策略测试</td><td class="numeric">4</td></tr>
+      <tr><td><code>LyricsX/CLAUDE.md</code> · Build Commands</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖清单补上两条新判断，写明 <code>KaraokeLineTiming</code> 也给预览用</td><td>项目指令里列着每个策略测试</td><td class="numeric">4、6</td></tr>
       <tr><td><code>Documentations/Evolutions/README.md</code>、<code>Documentations/README.md</code></td><td><span class="tag tag-changed">修改</span></td><td>登记本提案；落地时取号</td><td>索引</td><td class="numeric">4</td></tr>
     </tbody>
   </table>
   </div>
-  <p><code>ScrollLyricsView</code> 加的系统字体与逐字进度都默认关闭，浮动窗口不受影响；「不跟随时清掉高亮」用重新 <code>setupTextContents</code> 做到。</p>
+  <p><code>ScrollLyricsView</code> 加的系统字体与逐字进度都默认关闭，浮动窗口不受影响；第 5 步曾新增的 <code>KaraokeCharacterOnsets</code> 与它的测试在第 6 步删掉了，没有发布过；「不跟随时清掉高亮」用重新 <code>setupTextContents</code> 做到。</p>
 </section>
 
 <section id="proposal">
@@ -309,9 +312,9 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <ol>
     <li>storyboard 里把原文视图换成 <code>ScrollLyricsView</code> + <code>LyricsTextView</code>；约束、最小高度和「收起 → 首次选中时展开」不变。</li>
     <li>外观：系统字体 13 pt（经新加的 <code>ScrollLyricsView.fixedFont</code>），普通行 <code>secondaryLabelColor</code>；关掉竖向滚动条——渐隐遮罩会把它遮得只剩一截。</li>
-    <li>逐字进度：没有行内标签的当前行整行 <code>controlAccentColor</code>；有标签时未唱部分 <code>labelColor</code>，每个字在它的标签开始时变成 <code>controlAccentColor</code>。标签之间的字随前一个标签开始，不插值。</li>
+    <li>逐字进度：没有行内标签的当前行整行 <code>controlAccentColor</code>；有标签时整行先是 <code>labelColor</code>，已唱的部分画成 <code>controlAccentColor</code>，分界在字里平滑移动。已唱多少由状态栏同款的 <code>KaraokeLineTiming</code> 在标签之间插值给出。</li>
     <li>选中一条结果就装入它、恢复自动滚动、立即刷新一次进度；没选中时清空并显示占位文字。</li>
-    <li>刷新进度：只在结果属于正在播放的歌时标行；位置 = <code>lyricsDisplayTime(trackDuration:)</code> + <code>adjustedTimeDelay</code>；同一行里逐字推进不滚动，换行才滚；正在播放就在下一行或下一个字开始时再刷新，过了最后一行每秒复查。触发：选中变化、播放状态变化、全局偏移与设备偏移变化、定时器。</li>
+    <li>刷新进度：只在结果属于正在播放的歌时标行；位置 = <code>lyricsDisplayTime(trackDuration:)</code> + <code>adjustedTimeDelay</code>；同一行里进度推进不滚动，换行才滚；正在播放时，当前行的已唱部分在动、窗口没被挡住就用 display link 每帧刷新（60 fps，同状态栏），否则在下一行开始或进度开始移动时再刷新，过了最后一行每秒复查。触发：选中变化、播放状态变化、全局偏移与设备偏移变化、窗口改大小与遮挡变化、定时器与 display link。</li>
     <li>交互：手动滚动停止自动滚动；双击某行（跟随时）跳播并恢复自动滚动；没有右键菜单。</li>
   </ol>
   <h3>二、搜索框跟着正在播放的歌切换</h3>
@@ -323,7 +326,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   </ol>
   <h3>非目标</h3>
   <ul>
-    <li>不在预览里调偏移；不做字内平滑扫光，不嵌 Apple Music 引擎。</li>
+    <li>不在预览里调偏移；不嵌 Apple Music 引擎，逐字进度不做抬起、发光这类效果。</li>
     <li>不自动选中第一条结果；面板关着时不跟着切歌。</li>
     <li>恢复名晚到时不改输入框、不重搜；不改「应用」的语义。</li>
     <li>不再在面板里显示 LRC 原文；要原文的把结果行拖出去即可（已有功能）。</li>
@@ -360,6 +363,8 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <pre><code><span class="token-keyword">private func</span> refreshPreviewProgress(animated: <span class="token-type">Bool</span>) {
     previewLineCheck?.cancel()
     previewLineCheck = <span class="token-keyword">nil</span>
+    <span class="token-keyword">var</span> previewMovesEveryFrame = <span class="token-keyword">false</span>
+    <span class="token-keyword">defer</span> { setPreviewDisplayLinkRunning(previewMovesEveryFrame) }
     <span class="token-keyword">guard let</span> lyrics = panelResults.selectedResult,
           panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
     <span class="token-keyword">let</span> playbackState = selectedPlayer.playbackState
@@ -368,6 +373,11 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <span class="token-keyword">let</span> marksAnotherLine = lyricsPreviewView.highlight(position: position)
     <span class="token-keyword">if</span> isPreviewTracking, marksAnotherLine || !animated { scrollPreview(to: position, animated: animated) }
     <span class="token-keyword">guard</span> playbackState.isPlaying <span class="token-keyword">else</span> { <span class="token-keyword">return</span> }
+    <span class="token-keyword">if</span> lyricsPreviewView.karaokeProgressMoves(at: position) {
+        <span class="token-comment">// every frame, while the window is not covered</span>
+        previewMovesEveryFrame = view.window?.occlusionState.contains(.visible) == <span class="token-keyword">true</span>
+        <span class="token-keyword">return</span>
+    }
     <span class="token-keyword">let</span> delay = lyricsPreviewView.nextHighlightChange(after: position).map { max(<span class="token-number">0</span>, $0 - position) } ?? <span class="token-number">1</span>
     <span class="token-keyword">let</span> queue = <span class="token-type">DispatchQueue</span>.main
     previewLineCheck = queue.schedule(after: queue.now.advanced(by: .seconds(delay)),
@@ -375,24 +385,27 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
         <span class="token-keyword">self</span>?.refreshPreviewProgress(animated: <span class="token-keyword">true</span>)
     }
 }</code></pre>
-      <p>定时器写法照 <code>AppController.scheduleCurrentLineCheck</code>：可取消的重复调度当一次性定时器用，每次刷新先取消上一个。</p>
+      <p>定时器写法照 <code>AppController.scheduleCurrentLineCheck</code>：可取消的重复调度当一次性定时器用，每次刷新先取消上一个。display link 每帧调一次 <code>refreshPreviewProgress(animated: true)</code>，进度停下的那一帧就把自己停掉、改排定时器。</p>
     </div>
   </details>
   <details open>
-    <summary>逐字进度：KaraokeCharacterOnsets</summary>
+    <summary>逐字进度：照状态栏歌词画</summary>
     <div class="details-body">
-<pre><code><span class="token-keyword">public struct</span> <span class="token-type">KaraokeCharacterOnsets</span>: <span class="token-type">Hashable</span>, <span class="token-type">Sendable</span> {
-    <span class="token-keyword">public let</span> lineStart: <span class="token-type">TimeInterval</span>
-    <span class="token-comment">/// Seconds since the line starts, one per Character, never decreasing.</span>
-    <span class="token-keyword">public let</span> onsetTimes: [<span class="token-type">TimeInterval</span>]
-    <span class="token-keyword">public init</span>?(line: <span class="token-type">LyricsLine</span>)
-    <span class="token-keyword">public func</span> startedCharacterCount(atLyricsTime lyricsTime: <span class="token-type">TimeInterval</span>) -&gt; <span class="token-type">Int</span>
-    <span class="token-keyword">public func</span> nextOnset(afterLyricsTime lyricsTime: <span class="token-type">TimeInterval</span>) -&gt; <span class="token-type">TimeInterval</span>?
+<pre><code><span class="token-keyword">final class</span> <span class="token-type">LyricsTextView</span>: <span class="token-type">LyricsInteractionTextView</span> {
+    <span class="token-keyword">struct</span> <span class="token-type">SungPart</span>: <span class="token-type">Equatable</span> {
+        <span class="token-keyword">var</span> glyphRange: <span class="token-type">NSRange</span>
+        <span class="token-keyword">var</span> rects: [<span class="token-type">NSRect</span>]   <span class="token-comment">// line fragments sung through, and the one being sung up to the edge</span>
+        <span class="token-keyword">var</span> color: <span class="token-type">NSColor</span>
+    }
+    <span class="token-keyword">var</span> sungPart: <span class="token-type">SungPart</span>?   <span class="token-comment">// redraws only the rects that changed</span>
+    <span class="token-keyword">override func</span> draw(<span class="token-keyword">_</span> dirtyRect: <span class="token-type">NSRect</span>)
 }</code></pre>
       <ul>
-        <li>经 <code>KaraokeLineTiming</code> 把标签排序、夹进行内、只增不减，再按相邻关键帧切段：字数从 a 增到 b 的那一段里，第 a 到 b−1 个字都在这段开始时开始。</li>
-        <li>第一个标签前没标的字随第一个标签开始，最后一个标签后的字随最后一个标签开始；重复的下标在字数真正前进的那段开始，与桌面歌词一致。</li>
-        <li><code>ScrollLyricsView</code> 把「前 k 个字」换算成 UTF-16 长度去涂色，只在已开始的字数变化时改属性；双语时翻译那半行不参与逐字。</li>
+        <li><strong>已唱多少</strong>：<code>KaraokeLineTiming.sungCharacterCount(atLyricsTime:)</code> 在两个关键帧之间线性插值，返回带小数的已唱字数；整数部分是分界所在的字，小数部分是这个字唱过的比例。字的单位是 Swift <code>Character</code>。</li>
+        <li><strong>分界在哪</strong>：分界那个字的两端取自 <code>getLineFragmentInsertionPoints</code> 的光标位置（它把连字 <code>fi</code> 拆到各个字上，字形矩形会让分界往回跳），<code>起点 + 宽度 × 比例</code>；这一行（只是原文，不含双语的翻译）分界之前的行片段整块算已唱，分界所在的行片段从左边到分界。分界取整到设备像素，没跨过一个像素就不重画。</li>
+        <li><strong>怎么画</strong>：文本属性里当前行整行 <code>labelColor</code>；先用 even-odd 裁剪挖掉已唱区域照常画文字，再在已唱区域里开透明图层，<code>drawGlyphs(forGlyphRange:at:)</code> 画这一行的字形，用 <code>sourceIn</code> 铺一层强调色。每个像素只来自一种颜色；移动分界不改文本属性、不重新排版。</li>
+        <li><strong>何时刷新</strong>：<code>karaokeProgressMoves(at:)</code> 在当前行第一个与最后一个关键帧之间为真，这时 display link 每帧刷新；其余时间是一次性定时器。帧率 60，同状态栏；窗口被完全挡住时不开。</li>
+        <li><strong>右到左的行</strong>不显示进度、整行强调色，同状态栏。</li>
       </ul>
     </div>
   </details>
@@ -438,14 +451,16 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="alternatives">
   <h2>替代方案</h2>
   <details>
-    <summary>8 条，均已否决</summary>
+    <summary>10 条，均已否决</summary>
     <div class="details-body">
       <ul>
-        <li><strong>嵌 Apple Music 引擎看逐字扫光</strong>：为深色大窗口设计，有 display link 与 Metal 背景，<code>HostEnvironment</code> 是全局单例；逐字时间改在 <code>ScrollLyricsView</code> 里按字点亮来看。</li>
-        <li><strong>字内平滑扫光，或按插值逐个字母点亮</strong>：插值出来的时刻不是标签给的，拿来核对标签会误导；<code>NSTextView</code> 也只能整字换色。按字点亮在中文上与插值相同，在只标词首的英文上整词一起亮，正是标签的原意。</li>
+        <li><strong>嵌 Apple Music 引擎看逐字扫光</strong>：为深色大窗口设计，有 display link 与 Metal 背景，<code>HostEnvironment</code> 是全局单例；逐字时间改在 <code>ScrollLyricsView</code> 里照状态栏的样子画。</li>
+        <li><strong>按字点亮、不插值</strong>（第 5 步先做的版本）：用户看过，一个字一个字地跳显得卡。平滑扫过在一字一标签的中文上，每个字仍在自己的标签时刻被扫到，核对照样可行。</li>
+        <li><strong>用文本属性逐帧换色</strong>：只能整字换色，分界停不到字的中间，每次改属性还要让排版失效。</li>
+        <li><strong>叠一层 <code>CALayer</code> 遮罩、用关键帧动画推进</strong>（桌面歌词的做法）：一行折成几行时遮罩要按行片段拼，改宽、暂停、跳播都得重建动画；逐帧重画一行的矩形足够便宜。</li>
         <li><strong>只显示一行卡拉OK</strong>：看不出前后整体是否偏了一段。</li>
         <li><strong>保留原文并加切换</strong>：需求是不再显示原文；原文能靠拖出结果行拿到。</li>
-        <li><strong>固定频率刷新</strong>：面板开着时一直唤醒主线程；按行边界排定时器是现成做法。</li>
+        <li><strong>固定频率刷新</strong>：面板开着时一直唤醒主线程，扫过也不够平滑；只在进度移动时每帧刷新、其余时间按行边界排定时器。</li>
         <li><strong>面板关着也跟着切歌</strong>：没人看，后台搜索只浪费请求。</li>
         <li><strong>改过输入框就不跟</strong>：为上一首改的搜索词对新歌没有意义。</li>
         <li><strong>恢复名晚到时重搜</strong>：会把用户正在看的列表整个换掉；面板自己的搜索也走恢复名插件。</li>
@@ -457,10 +472,10 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="impact">
   <h2>影响</h2>
   <ul>
-    <li><strong>用户可见</strong>：底部原文换成跟着播放滚动的歌词，带逐字时间的当前行按字点亮；双击一行跳播；面板开着时换歌，输入框和结果跟着换（还没应用的上一首结果会被换掉）；原文仍可拖出结果行拿到。</li>
+    <li><strong>用户可见</strong>：底部原文换成跟着播放滚动的歌词，带逐字时间的当前行已唱部分平滑扫成强调色，同状态栏；双击一行跳播；面板开着时换歌，输入框和结果跟着换（还没应用的上一首结果会被换掉）；原文仍可拖出结果行拿到。</li>
     <li><strong>可发现性</strong>：无新设置；预览在首次选中结果时随窗口展开出现，占位文字说明用途。</li>
     <li><strong>数据与配置</strong>：不新增、不改动任何偏好、歌词文件或缓存。</li>
-    <li><strong>平台</strong>：不变（macOS 12+）。</li>
+    <li><strong>平台</strong>：不变（macOS 12+）；MSDisplayLink 早已在用。</li>
     <li><strong>发布</strong>：不涉及权限、公证或 Sparkle；下次发布说明写这两处变化。</li>
   </ul>
 </section>
@@ -472,7 +487,8 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <li><strong>底部换成跟着播放走的预览</strong>（已实现，界面待手工检查）：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
     <li><strong>输入框跟着切歌</strong>（已实现，界面待手工检查）：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
     <li><strong>文档与收尾</strong>（已完成）：候选池实现说明第五节、项目 <code>CLAUDE.md</code> 测试清单。</li>
-    <li><strong>逐字进度，关掉预览的滚动条</strong>（用户看过第一版后提出；已实现，界面待手工检查）：<code>KaraokeCharacterOnsets</code> 十个用例；界面上当前行按字点亮、同一行内不滚动、没有半截滚动条、浮动窗口不变。</li>
+    <li><strong>关掉预览的滚动条，逐字进度先按字点亮</strong>（用户看过第一版后提出；按字点亮已被第 6 步取代）：没有半截滚动条、滚轮照样能滚、浮动窗口不变。</li>
+    <li><strong>逐字进度改为平滑扫过</strong>（用户看过按字点亮后提出；已实现，界面待手工检查）：已唱多少沿用 <code>KaraokeLineTimingTests</code>；界面上分界在字里平滑移动、不再一个字一个字地跳；没有逐字时间的行整行强调色；同一行内不滚动；暂停停住、拖动跳到对应位置；折行后分界仍对在字上；翻译那半行不扫；浮动窗口不变。</li>
   </ol>
   <div class="callout callout-note">
     <p>步骤 1 跑 <code>swift test --filter LyricsSearchPanelResultsTests</code>；步骤 2、3 构建整个 app，界面行为由用户手工检查，agent 不自行操作界面。预计不需要单独的实现说明，也没有新术语，落地时再确认。</p>
@@ -482,7 +498,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>8 条，最近一条：用户看过第一版，要逐字进度</summary>
+    <summary>11 条，最近一条：平滑扫过已实现，待用户再看</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
@@ -496,6 +512,9 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
           <tr><td class="numeric">2026-11-26</td><td>预览在主线程读歌词，沿用既有做法</td><td>结果应用后它就是屏幕上的歌词；浮动窗口一直这样读，已裁决清单记为既有设计、不在局部改</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>实现完成，待用户看过后收尾</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 全部通过；界面行为待用户手工检查</td></tr>
           <tr><td class="numeric">2026-11-26</td><td>用户看过第一版：滚动条有问题，要支持逐字歌词</td><td>滚动条被渐隐遮罩遮得只剩一截，照浮动窗口关掉。用户用这个面板主要是逐字核对时间标签，改为按字点亮：字在标签开始时亮、不插值；新增 <code>KaraokeCharacterOnsets</code> 与测试；仍不嵌 Apple Music 引擎</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>第 5 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 272 个测试通过；界面待用户实机检查</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>用户看过按字点亮：一个字一个字地跳显得卡，要照状态栏歌词做</td><td>改为平滑扫过（第 6 步）：已唱多少用 <code>KaraokeLineTiming</code> 的插值，<code>LyricsTextView</code> 把已唱区域单独画一层强调色，只在进度移动时开 60 fps 的 display link。「插值会误导核对」的理由不再成立：一字一标签的中文每个字仍在自己的标签时刻被扫到。<code>KaraokeCharacterOnsets</code> 与它的十个测试没发布过，删掉</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>第 6 步完成，待用户再看</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 262 个测试通过；分界改按光标插入点定位，连字不会让分界往回跳。平滑扫过的观感、折行、暂停与双语待用户实机检查</td></tr>
         </tbody>
       </table>
       </div>
