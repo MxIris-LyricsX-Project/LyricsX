@@ -62,6 +62,28 @@ public struct LyricsSearchPanelResults<Result: AnyObject> {
     public func application(whilePlaying currentTrackIdentifier: String?) -> LyricsResultsApplication {
         LyricsResultsApplication(resultsFoundFor: trackIdentifier, whilePlaying: currentTrackIdentifier)
     }
+
+    /// Whether a new search should replace these results now that
+    /// `currentTrackIdentifier` plays: another track has started. With nothing
+    /// playing the results stay — they still belong to the track they were
+    /// found for, and applying one saves it for that track.
+    public func needsNewSearch(whilePlaying currentTrackIdentifier: String?) -> Bool {
+        guard let currentTrackIdentifier else {
+            return false
+        }
+        return currentTrackIdentifier != trackIdentifier
+    }
+
+    /// Whether the preview of the selected result marks the line at the
+    /// playback position: only while the track the results were found for
+    /// plays. A search typed in with nothing playing was not for any track, so
+    /// no playback position applies to it.
+    public func previewFollowsPlayback(whilePlaying currentTrackIdentifier: String?) -> Bool {
+        guard let trackIdentifier else {
+            return false
+        }
+        return trackIdentifier == currentTrackIdentifier
+    }
 }
 
 /// Where lyrics the user picks from a set of results belong.

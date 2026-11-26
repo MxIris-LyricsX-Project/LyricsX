@@ -68,3 +68,60 @@ func aSearchTypedInWithNothingPlayingAppliesToWhateverPlaysNow() {
 
     #expect(panelResults.application(whilePlaying: "track") == .currentTrack)
 }
+
+// MARK: - Following the playing track
+
+@Test
+func aNewTrackStartingNeedsANewSearch() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: "first track")
+
+    #expect(panelResults.needsNewSearch(whilePlaying: "second track"))
+}
+
+@Test
+func theSameTrackPlayingOnNeedsNoNewSearch() {
+    // A player republishes the track it plays when only its artwork changes.
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: "track")
+
+    #expect(!panelResults.needsNewSearch(whilePlaying: "track"))
+}
+
+@Test
+func nothingPlayingKeepsTheResults() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: "track")
+
+    #expect(!panelResults.needsNewSearch(whilePlaying: nil))
+}
+
+@Test
+func aTrackStartingAfterASearchTypedWithNothingPlayingNeedsANewSearch() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: nil)
+
+    #expect(panelResults.needsNewSearch(whilePlaying: "track"))
+    #expect(!panelResults.needsNewSearch(whilePlaying: nil))
+}
+
+// MARK: - Preview progress
+
+@Test
+func thePreviewFollowsPlaybackWhileTheSearchedTrackPlays() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: "track")
+
+    #expect(panelResults.previewFollowsPlayback(whilePlaying: "track"))
+}
+
+@Test
+func thePreviewStopsFollowingOnceAnotherTrackPlays() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: "first track")
+
+    #expect(!panelResults.previewFollowsPlayback(whilePlaying: "second track"))
+    #expect(!panelResults.previewFollowsPlayback(whilePlaying: nil))
+}
+
+@Test
+func thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback() {
+    let panelResults = LyricsSearchPanelResults<SearchResult>(trackIdentifier: nil)
+
+    #expect(!panelResults.previewFollowsPlayback(whilePlaying: nil))
+    #expect(!panelResults.previewFollowsPlayback(whilePlaying: "track"))
+}
