@@ -459,6 +459,10 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
+        // Against the app playing now, whatever the panel searched for: a
+        // search for another song gives one source's results the same bonus,
+        // which reorders that song's copies but lifts no song above another.
+        lyrics.markPlayerLyricsSource(playerBundleIdentifier: selectedPlayer.currentPlayerBundleIdentifier)
         panelResults.insert(lyrics, outranks: { lyricsHasHigherPriority($0, over: $1) })
         scheduleArtworkScoring(for: lyrics)
         reloadResultsKeepingSelection()
@@ -527,16 +531,19 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
     }
 
-    // The score the row was ranked by, plus — when the artwork-similarity boost
-    // actually moved it — the part of that score the boost contributed. Without
-    // the second half a boosted row just looks inexplicably good.
+    // The score the row was ranked by, plus — when a boost actually moved it —
+    // the part of that score the boosts contributed: the artwork-similarity
+    // one and the playing app's own source. Without the second half a boosted
+    // row just looks inexplicably good. One sum rather than one figure per
+    // boost: whether a row is the playing app's own source shows in its Source
+    // column.
     private func qualityDisplayText(for lyrics: Lyrics) -> String {
         let total = String(format: "%.2f", effectiveQuality(lyrics))
-        let artworkBonus = effectiveArtworkBonus(lyrics)
-        guard artworkBonus != 0 else {
+        let bonus = effectiveArtworkBonus(lyrics) + effectivePlayerLyricsSourceBonus(lyrics)
+        guard bonus != 0 else {
             return total
         }
-        return total + String(format: " (%+.2f)", artworkBonus)
+        return total + String(format: " (%+.2f)", bonus)
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {

@@ -395,7 +395,7 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 
 ## 落地步骤
 
-1. **策略与测试** —— 改动地图第 1、2 行
+1. **策略与测试**（已完成）—— 改动地图第 1、2 行
    - 行为：`qqMusicForMacAndForIPadMapToQQMusic`（`com.tencent.QQMusicMac`、`com.tencent.QQMusic`、`com.tencent.QQMusic.D5Q73692VW`）
    - 行为：`neteaseCloudMusicMapsToNetEase`（`com.netease.163music`、`com.netease.cloudmusic`）
    - 行为：`kugouAppsMapToKugou`
@@ -434,3 +434,4 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 | 2026-11-26 | 加开关，默认开启，放在歌词源页 | 用户选择加开关；位置由 agent 定，理由见替代方案 |
 | 2026-11-26 | Accepted | 用户批准，开始实现 |
 | 2026-11-26 | In Progress | 功能树建好，开始第 1 步 |
+| 2026-11-26 | 测试里的歌词源下标改用 `UserDefaults.plist` 注册的默认顺序 | 默认顺序里 Kugou 排第一、QQMusic 排第五，同分时 Kugou 在前；按真实顺序测，加分要在不靠来源顺序的情况下胜出 |

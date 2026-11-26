@@ -1226,6 +1226,9 @@ final class AppController: NSObject {
         lyrics.filtrate()
         lyrics.recognizeLanguage()
         lyrics.metadata.needsPersist = true
+        // Past the guards above, the player plays the track these lyrics were
+        // searched for, so its app is the one they are ranked against.
+        lyrics.markPlayerLyricsSource(playerBundleIdentifier: selectedPlayer.currentPlayerBundleIdentifier)
         // The first result goes into an empty pool and may go on screen
         // without being compared with anything; the next result's comparison
         // would then score it for the first time while it is on screen.

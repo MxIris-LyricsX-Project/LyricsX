@@ -33,7 +33,7 @@ final class PlaybackRouteLyricsOffsetController {
     private var cancelBag = Set<AnyCancellable>()
 
     private init() {
-        currentPlayerBundleIdentifier = Self.playerBundleIdentifier(of: selectedPlayer)
+        currentPlayerBundleIdentifier = selectedPlayer.currentPlayerBundleIdentifier
         currentOutputDevice = AudioOutputDevice.systemDefault()
         offsets = PlaybackRouteLyricsOffsets(storedData: defaults[.playbackRouteLyricsOffsets])
         lockedCurrentRouteOffset = offsets.offset(for: currentRoute)
@@ -55,7 +55,7 @@ final class PlaybackRouteLyricsOffsetController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
-                let playerBundleIdentifier = Self.playerBundleIdentifier(of: selectedPlayer)
+                let playerBundleIdentifier = selectedPlayer.currentPlayerBundleIdentifier
                 if playerBundleIdentifier != currentPlayerBundleIdentifier {
                     currentPlayerBundleIdentifier = playerBundleIdentifier
                 }
@@ -125,21 +125,6 @@ final class PlaybackRouteLyricsOffsetController {
         currentRouteOffsetLock.unlock()
         if didChange {
             currentRouteOffsetDidChange.send()
-        }
-    }
-
-    /// The bundle identifier of the app `player` plays its track in, looking
-    /// through the players that only pass another one's events on.
-    private static func playerBundleIdentifier(of player: MusicPlayerProtocol?) -> String? {
-        switch player {
-        case let agent as MusicPlayers.Agent:
-            return playerBundleIdentifier(of: agent.designatedPlayer)
-        case let scriptable as MusicPlayers.Scriptable:
-            return scriptable.playerBundleID
-        case let systemMedia as MusicPlayers.SystemMedia:
-            return systemMedia.playerBundleID
-        default:
-            return nil
         }
     }
 }

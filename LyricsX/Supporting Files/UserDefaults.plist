@@ -82,6 +82,8 @@
 		<string>QQMusic</string>
 		<string>Spotify</string>
 	</array>
+	<key>PlayerLyricsSourceBoostEnabled</key>
+	<true/>
 	<key>UseAppleMusicLyricsWindow</key>
 	<false/>
 	<key>HighResolutionPanelArtworkEnabled</key>

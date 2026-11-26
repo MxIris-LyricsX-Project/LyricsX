@@ -86,9 +86,10 @@ func lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer() {
 // The scores are the ones the search panel showed for 薛之谦's 一半 while it
 // played in QQ Music: Kugou's copy 1.05 ahead of QQ Music's own 0.99, the gap
 // being LyricsKit's feature bonuses rather than a worse match. The source
-// indices are the default order (NetEase, QQMusic, Kugou, …).
-private let qqMusicSourceIndex = 1
-private let kugouSourceIndex = 2
+// indices are the order UserDefaults.plist registers (Kugou, LRCLIB,
+// Musixmatch, NetEase, QQMusic), which puts Kugou first on a tie.
+private let qqMusicSourceIndex = 4
+private let kugouSourceIndex = 0
 
 @Test(arguments: [LyricsSourceOrderingMode.qualityOnly, .qualityFirstSourceTieBreak])
 func playerSourceOutranksAnotherSourceAheadByOneFeatureBonus(mode: LyricsSourceOrderingMode) {

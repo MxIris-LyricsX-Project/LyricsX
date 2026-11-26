@@ -62,4 +62,26 @@ extension MusicPlayers {
     }
 }
 
+extension MusicPlayers.Agent {
+    /// The bundle identifier of the app the designated player plays its track
+    /// in, looking through the agents that only pass another player's events
+    /// on; `nil` when no player can be told.
+    var currentPlayerBundleIdentifier: String? {
+        playerBundleIdentifier(of: designatedPlayer)
+    }
+}
+
+private func playerBundleIdentifier(of player: MusicPlayerProtocol?) -> String? {
+    switch player {
+    case let agent as MusicPlayers.Agent:
+        return playerBundleIdentifier(of: agent.designatedPlayer)
+    case let scriptable as MusicPlayers.Scriptable:
+        return scriptable.playerBundleID
+    case let systemMedia as MusicPlayers.SystemMedia:
+        return systemMedia.playerBundleID
+    default:
+        return nil
+    }
+}
+
 extension MusicPlayers.SystemMedia: Then {}
