@@ -431,7 +431,7 @@ override func viewDidDisappear() {
    - 行为：打开面板时遇到同名的另一首歌也会重搜
 4. **文档与收尾**（已完成）—— 改动地图第 11、12、13 行
    - 行为：候选池实现说明第五节、项目 `CLAUDE.md` 的测试清单与代码一致
-5. **逐字进度，关掉预览的滚动条**（用户看过第一版后提出）—— 改动地图第 3、4、6、7、8、12 行
+5. **逐字进度，关掉预览的滚动条**（用户看过第一版后提出；已实现，界面待手工检查）—— 改动地图第 3、4、6、7、8、12 行
    - 行为：`aLineWithoutInlineTimeTagsHasNoCharacterOnsets`
    - 行为：`everyCharacterBetweenTwoTagsStartsWithTheEarlierTag`
    - 行为：`theCharactersAfterTheLastTagStartWithItWithoutADuration`
@@ -469,3 +469,4 @@ agent 不自行操作界面。
 | 2026-11-26 | 预览在主线程读歌词，沿用既有做法 | 预览在主线程读选中结果的 `lines` 与偏移；结果应用之后它就是屏幕上的歌词，翻译和偏移会在别的线程写它。浮动窗口一直这样读屏幕上的歌词，`ReviewDecisions.md`「`currentLyrics` 与候选池在两个线程上都被改」已裁决为既有设计、不在局部改，这里不另起一套同步 |
 | 2026-11-26 | 实现完成，待用户看过后收尾 | app 在 Ultra 上用 workspace 构建通过（Debug，`CODE_SIGNING_ALLOWED=NO`），`LyricsXFoundationTests` 262 个测试通过（1 个已知问题是系统翻译探针，与本次无关）。界面行为（第 2、3 步的行为清单）待用户手工检查。文档：候选池实现说明第五节、项目 `CLAUDE.md` 的测试清单已同步；不另写实现说明——两处不显然的决定（切歌用播放器报的名字、用发布出来的曲目）写在代码注释和候选池实现说明里；没有新术语 |
 | 2026-11-26 | 用户看过第一版：滚动条有问题，要支持逐字歌词 | 预览右侧的竖向滚动条被 `ScrollLyricsView` 的上下渐隐遮罩遮得只剩一截，照浮动窗口关掉。用户用这个面板主要是逐字核对时间标签，原方案「逐行高亮就够」不成立，改为在 `ScrollLyricsView` 里按字点亮：字在标签开始时亮、不插值（理由见替代方案），新增纯类型 `KaraokeCharacterOnsets` 与测试；仍不嵌 Apple Music 引擎 |
+| 2026-11-26 | 第 5 步完成，待用户再看 | app 在 Ultra 上构建通过，`LyricsXFoundationTests` 272 个测试通过（新增 `KaraokeCharacterOnsetsTests` 十个，1 个已知问题同前）。界面上的逐字点亮与滚动条待用户实机检查 |
