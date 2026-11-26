@@ -212,6 +212,9 @@ class ScrollLyricsView: NSScrollView {
             .paragraphStyle: style,
             .font: font,
         ], range: range)
+        // Setting the string leaves the selection at its end, where AppKit
+        // would scroll it into view; see `moveSelection(toLineAt:)`.
+        moveSelection(toLineAt: 0)
         needsLayout = true
     }
 
@@ -310,6 +313,7 @@ class ScrollLyricsView: NSScrollView {
             }
             highlightedLineIndex = lineIndex
             paintHighlightedLine()
+            moveSelection(toLineAt: lineIndex)
         }
         highlightedPosition = position
         updateSungPart()
@@ -343,6 +347,26 @@ class ScrollLyricsView: NSScrollView {
             .compactMap { $0 }
             .filter { $0 > position }
             .min()
+    }
+
+    /// Puts the text view's selection — an empty one; the view cannot be
+    /// selected in — at the start of the line at `lineIndex`.
+    ///
+    /// The text view keeps its selection in view on its own: whenever its
+    /// layout resizes it — every step of a window resize, and while lines
+    /// are laid out for the first time as they scroll in — NSLayoutManager's
+    /// `_resizeTextViewForTextContainer:` scrolls the selection into view,
+    /// and that can land after `scroll(position:)` has centred the playing
+    /// line. With the selection where `setupTextContents` left it, at the end
+    /// of the lyrics, a resized window showed the last lines and no playing
+    /// line until the next line started. Kept on the playing line, that
+    /// scroll goes where the line already is.
+    private func moveSelection(toLineAt lineIndex: Int) {
+        guard ranges.indices.contains(lineIndex) else {
+            textView.setSelectedRange(NSRange(location: 0, length: 0))
+            return
+        }
+        textView.setSelectedRange(NSRange(location: ranges[lineIndex].1.location, length: 0))
     }
 
     /// The karaoke layout of the line playing at `position`, when it shows
