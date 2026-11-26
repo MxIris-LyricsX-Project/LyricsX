@@ -1,10 +1,11 @@
 import AppKit
+import Combine
 import LyricsXFoundation
 import MusicPlayer
 import UIFoundation
 
 @Loggable(subsystem: "com.JH.LyricsX.SearchLyrics", category: "SearchLyricsViewController")
-class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate, StoryboardViewController {
+class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTableViewDataSource, NSTextFieldDelegate, ScrollLyricsViewDelegate, StoryboardViewController {
     var imageCache = NSCache<NSURL, NSImage>()
 
     @objc dynamic var searchArtist = ""
@@ -29,21 +30,49 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     @IBOutlet var tableView: NSTableView!
     @IBOutlet var searchButton: NSButton!
     @IBOutlet var progressIndicator: NSProgressIndicator!
-    // NSTextView doesn't support weak references
-    @IBOutlet var lyricsPreviewTextView: NSTextView!
+    /// The selected result, laid out by its timing and following playback.
+    @IBOutlet var lyricsPreviewView: ScrollLyricsView!
 
     @IBOutlet var hideLrcPreviewConstraint: NSLayoutConstraint?
     @IBOutlet var normalConstraint: NSLayoutConstraint!
+
+    private let previewPlaceholderLabel = NSTextField(labelWithString: NSLocalizedString(
+        "Select a result to preview it with the song.",
+        comment: "Search Lyrics panel: shown where the selected result's lyrics play along, while no result is selected"
+    ))
+    /// The result the preview shows. Selection changes that land on the same
+    /// result — ranking moved it to another row — leave the preview alone.
+    private var previewedLyrics: Lyrics?
+    /// False once the user scrolls the preview by hand; selecting a result or
+    /// double-clicking a line turns it back on.
+    private var isPreviewTracking = true
+    /// Whether a line of the preview is marked as the one playing.
+    private var isPreviewShowingProgress = false
+    private var previewLineCheck: Cancellable?
+    /// Held while the window is on screen: a closed panel neither follows
+    /// the playing track nor wakes up for playback.
+    private var visibleWindowObservations: Set<AnyCancellable> = []
+    private var previewScrollObservation: AnyCancellable?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.setDraggingSourceOperationMask(.copy, forLocal: false)
         normalConstraint.isActive = false
+        configurePreview()
     }
 
     override func viewWillAppear() {
+        super.viewWillAppear()
         reloadKeyword()
+        observePlaybackWhileVisible()
+    }
+
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+        visibleWindowObservations.removeAll()
+        previewLineCheck?.cancel()
+        previewLineCheck = nil
     }
 
     func reloadKeyword() {
@@ -54,8 +83,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             searchArtist = ""
             searchTitle = ""
             artworkView.image = #imageLiteral(resourceName: "missing_artwork")
-            lyricsPreviewTextView.string = " "
             tableView.reloadData()
+            showSelectedResultInPreview()
             return
         }
         var artist = track.artist ?? ""
@@ -66,21 +95,28 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             title = recoveredTitle
             artist = recoveredArtist
         }
-        if (searchArtist, searchTitle) != (artist, title) {
+        // Another track under the same name — another version of the song —
+        // still needs its own search: the results belong to the track they
+        // were found for.
+        if (searchArtist, searchTitle) != (artist, title) || panelResults.needsNewSearch(whilePlaying: track.id) {
             (searchArtist, searchTitle) = (artist, title)
-            searchAction(nil)
+            search(for: track)
         }
     }
 
     @IBAction func searchAction(_ sender: Any?) {
+        search(for: selectedPlayer.currentTrack)
+    }
+
+    /// Runs the search in the title and artist fields for `track`, which the
+    /// results then belong to.
+    private func search(for track: MusicTrack?) {
         searchTask?.cancel()
         artworkScoringTasks.forEach { $0.cancel() }
         artworkScoringTasks.removeAll()
         progressObservation?.invalidate()
         artworkView.image = #imageLiteral(resourceName: "missing_artwork")
-        lyricsPreviewTextView.string = " "
 
-        let track = selectedPlayer.currentTrack
         searchedTrack = track
         panelResults = LyricsSearchPanelResults(trackIdentifier: track?.id)
         let duration = track?.duration ?? 0
@@ -88,6 +124,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         searchRequest = req
         progressIndicator.startAnimation(nil)
         tableView.reloadData()
+        showSelectedResultInPreview()
         searchTask = Task { @MainActor in
             do {
                 let completion = try await LyricsSearchCompletion.consume(lyricsManager.lyrics(for: req)) { lyrics in
@@ -186,6 +223,189 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
     }
 
+    // MARK: - Following the playing track
+
+    private func observePlaybackWhileVisible() {
+        visibleWindowObservations.removeAll()
+        // `currentTrackWillChange` publishes before the player's
+        // `currentTrack` changes, so the track comes from the publisher, and
+        // the hop to the main queue lets everything read afterwards see it.
+        selectedPlayer.currentTrackWillChange
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] track in
+                self?.playingTrackChanged(to: track)
+            }
+            .store(in: &visibleWindowObservations)
+        selectedPlayer.playbackStateWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshPreviewProgress(animated: false)
+            }
+            .store(in: &visibleWindowObservations)
+        // The preview shows the lyrics as applying them would, so it moves
+        // with every offset `adjustedTimeDelay` adds up.
+        defaults.publisher(for: [.globalLyricsOffset])
+            .signal()
+            .merge(with: PlaybackRouteLyricsOffsetController.shared.currentRouteOffsetDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.refreshPreviewProgress(animated: false)
+            }
+            .store(in: &visibleWindowObservations)
+        // A narrower window wraps lines anew, which moves the playing line.
+        NotificationCenter.default.publisher(for: NSWindow.didResizeNotification, object: view.window)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshPreviewProgress(animated: false)
+            }
+            .store(in: &visibleWindowObservations)
+    }
+
+    private func playingTrackChanged(to track: MusicTrack?) {
+        guard let track, panelResults.needsNewSearch(whilePlaying: track.id) else {
+            // The same track, or nothing playing: the results stay, and the
+            // preview follows playback only while their track plays.
+            refreshPreviewProgress(animated: false)
+            return
+        }
+        // Whatever is being typed was for the track that stopped; ending the
+        // edit first keeps the field editor from writing it back over the
+        // new track's name.
+        view.window?.endEditing(for: nil)
+        // The player's own names: the name a search plugin recovered comes
+        // from the lyrics on screen, which may still be the previous track's
+        // until the lyrics queue has caught up with the change.
+        (searchArtist, searchTitle) = (track.artist ?? "", track.title ?? "")
+        search(for: track)
+    }
+
+    // MARK: - Preview
+
+    private func configurePreview() {
+        lyricsPreviewView.lyricsViewDelegate = self
+        lyricsPreviewView.fixedFont = .systemFont(ofSize: NSFont.systemFontSize)
+        lyricsPreviewView.textColor = .secondaryLabelColor
+        lyricsPreviewView.highlightColor = .controlAccentColor
+        lyricsPreviewView.setupTextContents(lyrics: nil)
+        // The scroll wheel reports only scrolls with momentum; a slow drag on
+        // the trackpad starts a live scroll without one.
+        previewScrollObservation = NotificationCenter.default
+            .publisher(for: NSScrollView.willStartLiveScrollNotification, object: lyricsPreviewView)
+            .sink { [weak self] _ in
+                self?.isPreviewTracking = false
+            }
+
+        previewPlaceholderLabel.textColor = .tertiaryLabelColor
+        previewPlaceholderLabel.alignment = .center
+        previewPlaceholderLabel.lineBreakMode = .byWordWrapping
+        previewPlaceholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(previewPlaceholderLabel)
+        NSLayoutConstraint.activate([
+            previewPlaceholderLabel.centerXAnchor.constraint(equalTo: lyricsPreviewView.centerXAnchor),
+            previewPlaceholderLabel.centerYAnchor.constraint(equalTo: lyricsPreviewView.centerYAnchor),
+            previewPlaceholderLabel.leadingAnchor.constraint(greaterThanOrEqualTo: lyricsPreviewView.leadingAnchor, constant: 20),
+        ])
+    }
+
+    /// Puts the selected result in the preview, if it is not there already.
+    private func showSelectedResultInPreview() {
+        let selectedLyrics = panelResults.selectedResult
+        guard selectedLyrics !== previewedLyrics else {
+            return
+        }
+        previewedLyrics = selectedLyrics
+        isPreviewTracking = true
+        isPreviewShowingProgress = false
+        lyricsPreviewView.setupTextContents(lyrics: selectedLyrics)
+        previewPlaceholderLabel.isHidden = selectedLyrics != nil
+        refreshPreviewProgress(animated: false)
+    }
+
+    /// Marks the line playing now, scrolls it to the middle unless the user
+    /// scrolled away, and comes back when the next line starts.
+    private func refreshPreviewProgress(animated: Bool) {
+        previewLineCheck?.cancel()
+        previewLineCheck = nil
+        guard let lyrics = previewedLyrics,
+              panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) else {
+            if isPreviewShowingProgress {
+                // Laying the lyrics out again is what unmarks the last line.
+                isPreviewShowingProgress = false
+                lyricsPreviewView.setupTextContents(lyrics: previewedLyrics)
+            }
+            return
+        }
+        let playbackState = selectedPlayer.playbackState
+        let playbackTime = playbackState.lyricsDisplayTime(trackDuration: selectedPlayer.currentTrack?.duration)
+        // The same delay the lyrics would get once applied: their own offset,
+        // the global one, and the one for this player and output device.
+        let position = playbackTime + lyrics.adjustedTimeDelay
+        lyricsPreviewView.highlight(position: position)
+        isPreviewShowingProgress = true
+        if isPreviewTracking {
+            scrollPreview(to: position, animated: animated)
+        }
+        guard playbackState.isPlaying else {
+            return
+        }
+        // Past the last line, check every second, as `AppController` does,
+        // for a repeat that starts the track over without a state change.
+        let delayUntilNextCheck: TimeInterval
+        if let nextLineIndex = lyrics[position].nextLineIndex {
+            delayUntilNextCheck = max(0, lyrics.lines[nextLineIndex].position - position)
+        } else {
+            delayUntilNextCheck = 1
+        }
+        let queue = DispatchQueue.main
+        previewLineCheck = queue.schedule(
+            after: queue.now.advanced(by: .seconds(delayUntilNextCheck)),
+            interval: .seconds(42),
+            tolerance: .milliseconds(20)
+        ) { [weak self] in
+            self?.refreshPreviewProgress(animated: true)
+        }
+    }
+
+    private func scrollPreview(to position: TimeInterval, animated: Bool) {
+        guard animated else {
+            lyricsPreviewView.scroll(position: position)
+            return
+        }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.3
+            context.allowsImplicitAnimation = true
+            context.timingFunction = .swiftOut
+            lyricsPreviewView.scroll(position: position)
+        }
+    }
+
+    // MARK: - ScrollLyricsViewDelegate
+
+    func doubleClickLyricsLine(at position: TimeInterval) {
+        guard let lyrics = previewedLyrics,
+              panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) else {
+            return
+        }
+        selectedPlayer.playbackTime = position - lyrics.adjustedTimeDelay
+        isPreviewTracking = true
+        // Marked at once; the player's next state report confirms it and
+        // schedules the line after.
+        lyricsPreviewView.highlight(position: position)
+        scrollPreview(to: position, animated: true)
+    }
+
+    func lyricsViewContextMenu() -> NSMenu {
+        // An empty menu is no menu: the preview has nothing to offer there.
+        NSMenu()
+    }
+
+    func scrollWheelDidStartScroll() {
+        isPreviewTracking = false
+    }
+
+    func scrollWheelDidEndScroll() {}
+
     // MARK: - LyricsSourceDelegate
 
     @MainActor
@@ -217,7 +437,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         let task = Task.detached {
             let matched = await ArtworkSimilarityScorer.shared.matches(artworkURL: url)
             guard matched, !Task.isCancelled else { return }
-            await MainActor.run { [weak self] in 
+            await MainActor.run { [weak self] in
                 guard let self else { return }
                 self.applyArtworkBonus(to: lyrics)
             }
@@ -280,13 +500,13 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     func tableViewSelectionDidChange(_ notification: Notification) {
         let index = tableView.selectedRow
         panelResults.select(at: index >= 0 ? index : nil)
+        showSelectedResultInPreview()
         guard index >= 0 else {
             return
         }
         if hideLrcPreviewConstraint?.isActive == true {
             expandPreview()
         }
-        lyricsPreviewTextView.string = searchResult[index].description
         updateImage()
     }
 
@@ -343,6 +563,9 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
             view.layoutSubtreeIfNeeded()
         }, completionHandler: {
             self.normalConstraint.isActive = true
+            // The preview was laid out below the window until now; put the
+            // playing line in the middle of where it ended up.
+            self.refreshPreviewProgress(animated: false)
         })
     }
 

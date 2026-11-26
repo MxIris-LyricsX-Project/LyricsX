@@ -163,7 +163,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
   <h1><span class="proposal-number">Draft</span> 搜索歌词面板：底部改成跟着播放走的歌词预览，搜索框跟着切歌</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-accepted">Accepted</span></dd></div>
+    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
     <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
     <div><dt>原文</dt><dd><code>draft-search-panel-synced-preview.md</code></dd></div>
@@ -228,15 +228,15 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     <rect class="box-added" x="635" y="162" width="330" height="30" rx="6"/><text x="645" y="182">previewFollowsPlayback(whilePlaying:)</text>
 
     <rect class="group" x="600" y="225" width="390" height="97" rx="10"/>
-    <text class="group-label" x="612" y="245">LyricsX/View (reused, unchanged)</text>
-    <rect class="box-kept" x="615" y="257" width="360" height="44" rx="6"/><text x="625" y="275">ScrollLyricsView</text><text class="caption" x="625" y="292">also drives the lyrics HUD</text>
+    <text class="group-label" x="612" y="245">LyricsX/View (shared with the lyrics HUD)</text>
+    <rect class="box-changed" x="615" y="257" width="360" height="44" rx="6"/><text x="625" y="275">ScrollLyricsView</text><text class="caption" x="625" y="292">+ fixedFont: NSFont? (the system font)</text>
 
     <path class="arrow" d="M 325 64 L 635 139"/>
     <path class="arrow" d="M 325 206 L 635 177"/>
     <path class="arrow arrow-weak" d="M 325 220 L 615 279"/>
   </svg>
   </div>
-  <p class="figure-caption">底部的原文视图换成复用的 <code>ScrollLyricsView</code>；两条新判断放在已有的纯值类型上，包测试能测到。</p>
+  <p class="figure-caption">底部的原文视图换成复用的 <code>ScrollLyricsView</code>（只加了一个 <code>fixedFont</code>）；两条新判断放在已有的纯值类型上，包测试能测到。</p>
 
   <h3>数据流</h3>
   <div class="figure">
@@ -283,6 +283,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
       <tr><td><code>LyricsX/Supporting Files/Base.lproj/Main.storyboard</code> · 场景 <code>hFt-BA-jFS</code></td><td><span class="tag tag-changed">修改</span></td><td><code>rkQ-Bz-mQO</code> → <code>ScrollLyricsView</code>，<code>PEz-rD-ja1</code> → <code>LyricsTextView</code>（不可编辑、不可选、不画背景、清空内容）；outlet <code>lyricsPreviewTextView</code> → <code>lyricsPreviewView</code></td><td>复用浮动窗口的滚动歌词视图</td><td class="numeric">2</td></tr>
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>预览装配与外观、占位文字、<code>refreshPreviewProgress(animated:)</code> 与定时器、遵循 <code>ScrollLyricsViewDelegate</code></td><td>底部预览跟着播放走</td><td class="numeric">2</td></tr>
       <tr><td><code>LyricsX/Search/SearchLyricsViewController.swift</code></td><td><span class="tag tag-changed">修改</span></td><td>可见期间订阅切歌；<code>search(for:)</code>；<code>reloadKeyword()</code> 补曲目 id 判断</td><td>输入框跟着切歌</td><td class="numeric">3</td></tr>
+      <tr><td><code>LyricsX/View/ScrollLyricsView.swift</code> · <code>ScrollLyricsView</code></td><td><span class="tag tag-changed">修改</span></td><td>加 <code>fixedFont: NSFont?</code>，设了就代替 <code>fontName</code> + <code>fontSize</code></td><td>系统字体没有能按名字取的名字（按名字取 <code>.AppleSystemUIFont</code> 得到 Times）</td><td class="numeric">2</td></tr>
       <tr><td><code>LyricsX/Supporting Files/Localizable.xcstrings</code></td><td><span class="tag tag-changed">修改</span></td><td>占位文字一条，补简繁中文</td><td>新文案</td><td class="numeric">2</td></tr>
       <tr><td><code>Documentations/Internal/LyricsCandidatePool.md</code> · 第五节</td><td><span class="tag tag-changed">修改</span></td><td>面板开着时跟着切歌；「存给原来那首」只剩曲目变 nil 与切歌瞬间</td><td>实现说明与代码一致</td><td class="numeric">4</td></tr>
       <tr><td><code>LyricsX/CLAUDE.md</code> · Build Commands</td><td><span class="tag tag-changed">修改</span></td><td>测试覆盖清单补上两条新判断</td><td>项目指令里列着每个策略测试</td><td class="numeric">4</td></tr>
@@ -290,7 +291,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
     </tbody>
   </table>
   </div>
-  <p><code>ScrollLyricsView</code> 本身不改：外观属性都是公开的，「不跟随时清掉高亮」用重新 <code>setupTextContents</code> 做到。</p>
+  <p><code>ScrollLyricsView</code> 只加一个 <code>fixedFont</code>（见决策日志）：颜色属性都是公开的，「不跟随时清掉高亮」用重新 <code>setupTextContents</code> 做到。</p>
 </section>
 
 <section id="proposal">
@@ -298,7 +299,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <h3>一、底部换成跟着播放走的预览</h3>
   <ol>
     <li>storyboard 里把原文视图换成 <code>ScrollLyricsView</code> + <code>LyricsTextView</code>；约束、最小高度和「收起 → 首次选中时展开」不变。</li>
-    <li>外观：系统字体 13 pt，普通行 <code>secondaryLabelColor</code>，当前行 <code>controlAccentColor</code>。</li>
+    <li>外观：系统字体 13 pt（经新加的 <code>ScrollLyricsView.fixedFont</code>），普通行 <code>secondaryLabelColor</code>，当前行 <code>controlAccentColor</code>。</li>
     <li>选中一条结果就装入它、恢复自动滚动、立即刷新一次进度；没选中时清空并显示占位文字。</li>
     <li>刷新进度：只在结果属于正在播放的歌时标行；位置 = <code>lyricsDisplayTime(trackDuration:)</code> + <code>adjustedTimeDelay</code>；正在播放就在下一行开始时再刷新，过了最后一行每秒复查。触发：选中变化、播放状态变化、全局偏移与设备偏移变化、定时器。</li>
     <li>交互：手动滚动停止自动滚动；双击某行（跟随时）跳播并恢复自动滚动；没有右键菜单。</li>
@@ -443,10 +444,10 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="steps">
   <h2>落地步骤</h2>
   <ol>
-    <li><strong>两条判断与测试</strong>：<code>aNewTrackStartingNeedsANewSearch</code>、<code>theSameTrackPlayingOnNeedsNoNewSearch</code>、<code>nothingPlayingKeepsTheResults</code>、<code>aTrackStartingAfterASearchTypedWithNothingPlayingNeedsANewSearch</code>、<code>thePreviewFollowsPlaybackWhileTheSearchedTrackPlays</code>、<code>thePreviewStopsFollowingOnceAnotherTrackPlays</code>、<code>thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback</code>。</li>
-    <li><strong>底部换成跟着播放走的预览</strong>：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
-    <li><strong>输入框跟着切歌</strong>：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
-    <li><strong>文档与收尾</strong>：候选池实现说明第五节、项目 <code>CLAUDE.md</code> 测试清单。</li>
+    <li><strong>两条判断与测试</strong>（已完成）：<code>aNewTrackStartingNeedsANewSearch</code>、<code>theSameTrackPlayingOnNeedsNoNewSearch</code>、<code>nothingPlayingKeepsTheResults</code>、<code>aTrackStartingAfterASearchTypedWithNothingPlayingNeedsANewSearch</code>、<code>thePreviewFollowsPlaybackWhileTheSearchedTrackPlays</code>、<code>thePreviewStopsFollowingOnceAnotherTrackPlays</code>、<code>thePreviewOfASearchTypedWithNothingPlayingNeverFollowsPlayback</code>。</li>
+    <li><strong>底部换成跟着播放走的预览</strong>（已实现，界面待手工检查）：选中即显示并高亮当前行；到点换行；暂停停住、拖动跳行；偏移变化随之移动；手动滚动停止自动滚动、双击跳播恢复；不属于当前歌时只显示；占位文字；深浅外观；拖出仍是原文。</li>
+    <li><strong>输入框跟着切歌</strong>（已实现，界面待手工检查）：开着时换歌重填重搜；只换封面不重搜；播放器退出保留结果；正在输入时换歌显示新名字；关着不搜、再打开刷新；同名另一首也重搜。</li>
+    <li><strong>文档与收尾</strong>（已完成）：候选池实现说明第五节、项目 <code>CLAUDE.md</code> 测试清单。</li>
   </ol>
   <div class="callout callout-note">
     <p>步骤 1 跑 <code>swift test --filter LyricsSearchPanelResultsTests</code>；步骤 2、3 构建整个 app，界面行为由用户手工检查，agent 不自行操作界面。预计不需要单独的实现说明，也没有新术语，落地时再确认。</p>
@@ -456,13 +457,19 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="log">
   <h2>决策日志</h2>
   <details>
-    <summary>1 条，最近一条：Created as Draft</summary>
+    <summary>7 条，最近一条：实现完成，待用户看过后收尾</summary>
     <div class="details-body">
       <div class="table-wrap">
       <table>
         <thead><tr><th>日期</th><th>变更</th><th>说明</th></tr></thead>
         <tbody>
           <tr><td class="numeric">2026-11-26</td><td>Created as Draft</td><td>用户要求重构搜索歌词面板：底部改为可检查进度的选中歌词预览，输入框跟着正在播放的歌切换。预览样式（复用浮动窗口的逐行滚动视图，而非 Apple Music 引擎的逐字扫光）由 agent 按调研选定，写进替代方案供用户推翻</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>Accepted</td><td>用户批准，开始实现</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>第 1 步完成</td><td><code>LyricsSearchPanelResultsTests</code> 12 个用例在 Ultra 上通过。包测试要用 workspace 的 <code>Package.resolved</code>：<code>swift package update</code> 会把 UIFoundation 升到要求 macOS 14 的版本</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>偏离：<code>ScrollLyricsView</code> 加 <code>fixedFont</code></td><td>系统字体没有可按名字取的名字，预览要系统字体，就加了一个可选的固定字体，浮动窗口不受影响</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>第 2、3 步合成一个提交</td><td>两步改的是面板控制器里交织在一起的几处，分开提交得把同一个文件拆成两半</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>预览在主线程读歌词，沿用既有做法</td><td>结果应用后它就是屏幕上的歌词；浮动窗口一直这样读，已裁决清单记为既有设计、不在局部改</td></tr>
+          <tr><td class="numeric">2026-11-26</td><td>实现完成，待用户看过后收尾</td><td>app 在 Ultra 上构建通过，<code>LyricsXFoundationTests</code> 全部通过；界面行为待用户手工检查</td></tr>
         </tbody>
       </table>
       </div>

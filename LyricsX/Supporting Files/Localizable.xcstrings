@@ -4388,6 +4388,23 @@
         }
       }
     },
+    "Select a result to preview it with the song." : {
+      "comment" : "Search Lyrics panel: shown where the selected result's lyrics play along, while no result is selected",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选中一条结果，在这里跟着播放预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選取一條結果，在這裡跟著播放預覽。"
+          }
+        }
+      }
+    },
     "Skip to next track" : {
       "localizations" : {
         "ar" : {
