@@ -408,7 +408,7 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
    - 行为：`lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer`
    - 行为：`playerSourceOutranksAnotherSourceAheadByOneFeatureBonus`（截图场景，在「只按匹配分数」和「同分再看源」两种模式下）
    - 行为：`playerSourceDoesNotLiftAnotherSongAboveTheRightOne`（截图里同一歌手的另一首歌 0.59 + 0.10，仍在 Kugou 那份《一半》的 0.98 之后）
-2. **加分进排序** —— 第 3 至 9 行
+2. **加分进排序**（已完成）—— 第 3 至 9 行
    - 行为：`PlaybackRouteLyricsOffsetController` 的偏移在换播放器时照旧切换（行为不变，构建 + 现有 `PlaybackRouteLyricsOffsetsTests`）
    - 行为：在 QQ 音乐里播放时，自动挑选选中 QQMusic 的歌词（App 没有测试 target，用 Debug 构建实际播放核对）
    - 行为：搜索面板里 QQMusic 的结果排到前面，评分列带 `(+0.10)`；封面加分同时生效时显示两项之和
@@ -435,3 +435,4 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 | 2026-11-26 | Accepted | 用户批准，开始实现 |
 | 2026-11-26 | In Progress | 功能树建好，开始第 1 步 |
 | 2026-11-26 | 测试里的歌词源下标改用 `UserDefaults.plist` 注册的默认顺序 | 默认顺序里 Kugou 排第一、QQMusic 排第五，同分时 Kugou 在前；按真实顺序测，加分要在不靠来源顺序的情况下胜出 |
+| 2026-11-26 | storyboard 的设计期 frame 按约束手算 | `ibtool --update-frames` 在这一页上总把根视图钉成 500×308、算出的单选按钮互相重叠，不能用；改为按约束手算 600×408 的布局，只影响 Interface Builder 里的显示 |

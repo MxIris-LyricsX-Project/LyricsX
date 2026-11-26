@@ -2024,11 +2024,11 @@
             <objects>
                 <viewController title="Source" id="KTZ-mJ-lpY" customClass="PreferenceSourceViewController" customModule="LyricsX" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" misplaced="YES" id="Bkt-jy-GD5">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="332"/>
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="408"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-q01" userLabel="Rank by quality only">
-                                <rect key="frame" x="20" y="264" width="178" height="16"/>
+                                <rect key="frame" x="20" y="368" width="178" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score only" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="sop-Bc-q02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2038,7 +2038,7 @@
                                 </connections>
                             </button>
                             <button tag="1" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-s01" userLabel="Rank by source first">
-                                <rect key="frame" x="20" y="242" width="179" height="16"/>
+                                <rect key="frame" x="20" y="346" width="179" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by source order first" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-s02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2048,7 +2048,7 @@
                                 </connections>
                             </button>
                             <button tag="2" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sop-Bt-t01" userLabel="Rank by quality, source breaks ties">
-                                <rect key="frame" x="20" y="220" width="315" height="16"/>
+                                <rect key="frame" x="20" y="324" width="315" height="16"/>
                                 <buttonCell key="cell" type="radio" title="Rank by match score, break ties by source order" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="sop-Bc-t02">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2058,7 +2058,7 @@
                                 </connections>
                             </button>
                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="eMr-xF-JY5">
-                                <rect key="frame" x="18" y="200" width="413" height="12"/>
+                                <rect key="frame" x="18" y="304" width="413" height="12"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Drag rows to reorder source priority. Scores within 0.02 of each other count as tied." id="sop-Tc-d01">
                                     <font key="font" size="11" name="HelveticaNeue"/>
                                     <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
@@ -2066,13 +2066,13 @@
                                 </textFieldCell>
                             </textField>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TcY-l7-0hN">
-                                <rect key="frame" x="20" y="24" width="460" height="160"/>
+                                <rect key="frame" x="20" y="72" width="560" height="216"/>
                                 <clipView key="contentView" id="dVG-81-AoX">
-                                    <rect key="frame" x="1" y="1" width="458" height="158"/>
+                                    <rect key="frame" x="1" y="1" width="558" height="214"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="Kzd-3h-xxb" viewBased="YES" id="gXu-L7-amu">
-                                            <rect key="frame" x="0.0" y="0.0" width="458" height="130"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="558" height="186"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="17" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -2148,10 +2148,25 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="Kzd-3h-xxb">
-                                    <rect key="frame" x="0.0" y="0.0" width="458" height="28"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="558" height="28"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="plb-Bt-c01" userLabel="Prefer the playing app's own source">
+                                <rect key="frame" x="20" y="40" width="309" height="16"/>
+                                <buttonCell key="cell" type="check" title="Prefer lyrics from the playing app's own service" bezelStyle="regularSquare" imagePosition="left" inset="2" id="plb-Bc-c02">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
+                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="plb-Tf-n01">
+                                <rect key="frame" x="36" y="24" width="490" height="12"/>
+                                <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher." id="plb-Tc-n02">
+                                    <font key="font" size="11" name="HelveticaNeue"/>
+                                    <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
                             <constraint firstItem="TcY-l7-0hN" firstAttribute="leading" secondItem="Bkt-jy-GD5" secondAttribute="leading" constant="20" id="0Sk-4v-jVW"/>
@@ -2159,7 +2174,7 @@
                             <constraint firstAttribute="trailing" secondItem="TcY-l7-0hN" secondAttribute="trailing" constant="20" id="2mo-Nh-pkR"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="sop-Bt-q01" secondAttribute="trailing" constant="20" id="7B9-GI-7yz"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="eMr-xF-JY5" secondAttribute="trailing" constant="20" id="Nvu-Eg-xwe"/>
-                            <constraint firstAttribute="bottom" secondItem="TcY-l7-0hN" secondAttribute="bottom" constant="24" id="Q5D-XX-2sF"/>
+                            <constraint firstAttribute="bottom" secondItem="plb-Tf-n01" secondAttribute="bottom" constant="24" id="Q5D-XX-2sF"/>
                             <constraint firstItem="eMr-xF-JY5" firstAttribute="top" secondItem="sop-Bt-t01" secondAttribute="bottom" constant="8" id="hYH-P6-g1p"/>
                             <constraint firstItem="eMr-xF-JY5" firstAttribute="leading" secondItem="sop-Bt-q01" secondAttribute="leading" id="op1-11-sKa"/>
                             <constraint firstItem="TcY-l7-0hN" firstAttribute="top" secondItem="eMr-xF-JY5" secondAttribute="bottom" constant="16" id="qK9-My-pei"/>
@@ -2170,12 +2185,19 @@
                             <constraint firstItem="sop-Bt-t01" firstAttribute="top" secondItem="sop-Bt-s01" secondAttribute="bottom" constant="6" id="sop-Cn-t05"/>
                             <constraint firstItem="sop-Bt-t01" firstAttribute="leading" secondItem="sop-Bt-q01" secondAttribute="leading" id="sop-Cn-t06"/>
                             <constraint firstItem="sop-Bt-q01" firstAttribute="top" secondItem="Bkt-jy-GD5" secondAttribute="top" constant="24" id="ztn-mE-wra"/>
+                            <constraint firstItem="plb-Bt-c01" firstAttribute="top" secondItem="TcY-l7-0hN" secondAttribute="bottom" constant="16" id="plb-Cn-c03"/>
+                            <constraint firstItem="plb-Bt-c01" firstAttribute="leading" secondItem="sop-Bt-q01" secondAttribute="leading" id="plb-Cn-c04"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="plb-Bt-c01" secondAttribute="trailing" constant="20" id="plb-Cn-c05"/>
+                            <constraint firstItem="plb-Tf-n01" firstAttribute="top" secondItem="plb-Bt-c01" secondAttribute="bottom" constant="4" id="plb-Cn-n03"/>
+                            <constraint firstItem="plb-Tf-n01" firstAttribute="leading" secondItem="plb-Bt-c01" secondAttribute="leading" constant="18" id="plb-Cn-n04"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="plb-Tf-n01" secondAttribute="trailing" constant="20" id="plb-Cn-n05"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="orderByQualityFirstSourceTieBreakButton" destination="sop-Bt-t01" id="sop-Ol-t07"/>
                         <outlet property="orderByQualityOnlyButton" destination="sop-Bt-q01" id="sop-Ol-q07"/>
                         <outlet property="orderBySourceFirstButton" destination="sop-Bt-s01" id="sop-Ol-s07"/>
+                        <outlet property="playerLyricsSourceBoostButton" destination="plb-Bt-c01" id="plb-Ol-c06"/>
                         <outlet property="sourceTableView" destination="gXu-L7-amu" id="hq1-0v-D7c"/>
                     </connections>
                 </viewController>

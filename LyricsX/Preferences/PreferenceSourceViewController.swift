@@ -8,6 +8,9 @@ class PreferenceSourceViewController: PreferenceViewController {
     @IBOutlet var orderBySourceFirstButton: NSButton!
     @IBOutlet var orderByQualityFirstSourceTieBreakButton: NSButton!
     @IBOutlet var sourceTableView: NSTableView!
+    /// Bound to `PlayerLyricsSourceBoostEnabled`: lyrics from the lyrics
+    /// source of the app the track plays in score higher.
+    @IBOutlet var playerLyricsSourceBoostButton: NSButton!
 
     private var availableSources: [String] = []
     private var sourcePriorityOrder: [String] = []
@@ -49,6 +52,8 @@ class PreferenceSourceViewController: PreferenceViewController {
         sourceTableView.dataSource = self
         sourceTableView.registerForDraggedTypes([Self.sourceRowPasteboardType])
 
+        playerLyricsSourceBoostButton.bind(.value, withDefaultName: .playerLyricsSourceBoostEnabled)
+
         updateUI()
     }
 
@@ -73,6 +78,10 @@ class PreferenceSourceViewController: PreferenceViewController {
         // play in a mode that ignores it: the numbers are dimmed and rows
         // cannot be dragged.
         sourceTableView.reloadData()
+        // Ranking by source order first compares scores only between lyrics of
+        // one source, and those all get the playing app's bonus or none of
+        // them do, so in that mode the switch changes nothing.
+        playerLyricsSourceBoostButton.isEnabled = mode != .sourceFirst
     }
 
     private func savePriorityOrder() {
