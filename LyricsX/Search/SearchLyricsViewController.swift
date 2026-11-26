@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import LyricsXFoundation
+import MSDisplayLink
 import MusicPlayer
 import UIFoundation
 
@@ -49,6 +50,9 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
     /// Whether a line of the preview is marked as the one playing.
     private var isPreviewShowingProgress = false
     private var previewLineCheck: Cancellable?
+    /// Runs while the sung part of the playing line moves, and the window is
+    /// on screen to show it.
+    private var previewDisplayLink: DisplayLink?
     /// Held while the window is on screen: a closed panel neither follows
     /// the playing track nor wakes up for playback.
     private var visibleWindowObservations: Set<AnyCancellable> = []
@@ -73,6 +77,7 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         visibleWindowObservations.removeAll()
         previewLineCheck?.cancel()
         previewLineCheck = nil
+        setPreviewDisplayLinkRunning(false)
     }
 
     func reloadKeyword() {
@@ -253,8 +258,11 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
                 self?.refreshPreviewProgress(animated: false)
             }
             .store(in: &visibleWindowObservations)
-        // A narrower window wraps lines anew, which moves the playing line.
+        // A narrower window wraps lines anew, which moves the playing line;
+        // a covered window stops the sung part, and an uncovered one starts
+        // it again.
         NotificationCenter.default.publisher(for: NSWindow.didResizeNotification, object: view.window)
+            .merge(with: NotificationCenter.default.publisher(for: NSWindow.didChangeOcclusionStateNotification, object: view.window))
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshPreviewProgress(animated: false)
@@ -287,10 +295,10 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyricsPreviewView.fixedFont = .systemFont(ofSize: NSFont.systemFontSize)
         lyricsPreviewView.textColor = .secondaryLabelColor
         // The playing line stands out in the label colour, and on lyrics with
-        // inline time tags each character turns to the accent colour as its
-        // tag says it starts being sung: the tags can be checked against the
-        // song character by character. Lines without tags turn to the accent
-        // colour whole.
+        // inline time tags the part sung so far is in the accent colour, its
+        // edge sweeping through each word as the menu bar's karaoke progress
+        // does: the tags can be checked against the song word by word. Lines
+        // without tags turn to the accent colour whole.
         lyricsPreviewView.highlightColor = .controlAccentColor
         lyricsPreviewView.karaokeUnsungTextColor = .labelColor
         lyricsPreviewView.setupTextContents(lyrics: nil)
@@ -328,12 +336,15 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         refreshPreviewProgress(animated: false)
     }
 
-    /// Marks the line playing now and the characters of it sung so far,
-    /// scrolls it to the middle unless the user scrolled away, and comes back
-    /// when the next line or character starts.
+    /// Marks the line playing now and the part of it sung so far, scrolls it
+    /// to the middle unless the user scrolled away, and comes back on every
+    /// frame while the sung part moves, otherwise when the next line starts
+    /// or its sung part starts moving.
     private func refreshPreviewProgress(animated: Bool) {
         previewLineCheck?.cancel()
         previewLineCheck = nil
+        var previewMovesEveryFrame = false
+        defer { setPreviewDisplayLinkRunning(previewMovesEveryFrame) }
         guard let lyrics = previewedLyrics,
               panelResults.previewFollowsPlayback(whilePlaying: selectedPlayer.currentTrack?.id) else {
             if isPreviewShowingProgress {
@@ -358,6 +369,11 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         guard playbackState.isPlaying else {
             return
         }
+        if lyricsPreviewView.karaokeProgressMoves(at: position) {
+            // A covered window shows nothing; uncovering it refreshes again.
+            previewMovesEveryFrame = view.window?.occlusionState.contains(.visible) == true
+            return
+        }
         // Past the last line, check every second, as `AppController` does,
         // for a repeat that starts the track over without a state change.
         let delayUntilNextCheck = lyricsPreviewView.nextHighlightChange(after: position)
@@ -370,6 +386,27 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         ) { [weak self] in
             self?.refreshPreviewProgress(animated: true)
         }
+    }
+
+    /// At the menu bar's frame rate: what MarqueeLabel's animation reaches
+    /// on a 60 Hz display, where following a 120 Hz one doubles the cost for
+    /// motion few would tell apart.
+    private func setPreviewDisplayLinkRunning(_ isRunning: Bool) {
+        guard isRunning != (previewDisplayLink != nil) else {
+            return
+        }
+        guard isRunning else {
+            previewDisplayLink = nil
+            return
+        }
+        let framesPerSecond: Float = 60
+        let displayLink = DisplayLink(preferredFrameRateRange: DisplayLinkFrameRateRange(
+            minimum: framesPerSecond,
+            maximum: framesPerSecond,
+            preferred: framesPerSecond
+        ))
+        displayLink.delegatingObject(self)
+        previewDisplayLink = displayLink
     }
 
     private func scrollPreview(to position: TimeInterval, animated: Bool) {
@@ -615,5 +652,14 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
                 self.updateImage()
             }
         }.resume()
+    }
+}
+
+// MARK: - DisplayLinkDelegate
+
+extension SearchLyricsViewController: DisplayLinkDelegate {
+    /// On the main thread: MSDisplayLink delivers every frame there.
+    func synchronization(context: DisplayLinkCallbackContext) {
+        refreshPreviewProgress(animated: true)
     }
 }

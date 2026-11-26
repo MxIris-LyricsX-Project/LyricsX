@@ -49,9 +49,7 @@ still the text LyricsX wrote there), editing eligibility, HUD window configurati
 playback-position preservation, candidate-pool ordering, the manual-selection
 override table, which track picked results belong to, the search panel's
 selection, when it searches again for a newly playing track and when its
-preview marks the playing line (`LyricsSearchPanelResults`), when each
-character of the playing line lights up in that preview — at its inline time
-tag, nothing interpolated (`KaraokeCharacterOnsets`), which item the
+preview marks the playing line (`LyricsSearchPanelResults`), which item the
 status menu's Local Lyrics submenu checks — the
 track's embedded lyrics or a file, worked out from the lyrics on screen alone
 (`LocalLyricsSource`) — how a lyrics search ended, and the source-ordering modes (including
@@ -60,7 +58,7 @@ another place in the list, which lyrics sources the user switched off
 (`LyricsSourceSwitches`: every source on unless listed, a newer build's
 unknown identifiers kept), what the menu bar's lyric line shows when there is
 no line to show, how much of a line its inline time tags say is sung (the menu
-bar's karaoke progress), which parts of a desktop lyrics line get Japanese
+bar's karaoke progress, and the search panel preview's), which parts of a desktop lyrics line get Japanese
 annotations and how a word's reading spreads over its kanji
 (`JapaneseAnnotationScope`, `FuriganaAlignment`: a Chinese line that borrows
 の stays unannotated, ヶ月 keeps its furigana), which standard item the status menu's custom row lines its

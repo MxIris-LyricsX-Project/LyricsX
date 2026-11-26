@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import CoreText
 import LyricsXFoundation
 import OpenCC
 
@@ -10,7 +11,57 @@ protocol ScrollLyricsViewDelegate: AnyObject {
     func scrollWheelDidEndScroll()
 }
 
-final class LyricsTextView: LyricsInteractionTextView {}
+final class LyricsTextView: LyricsInteractionTextView {
+    /// The part of the playing line sung so far, drawn in `color` instead of
+    /// the colour its text has: the line's glyphs, within `rects` — the line
+    /// fragments sung through, and the one being sung up to the sung edge.
+    struct SungPart: Equatable {
+        var glyphRange: NSRange
+        /// In the view's coordinates; they never overlap.
+        var rects: [NSRect]
+        var color: NSColor
+    }
+
+    /// Drawn over the text, so the sung edge can stop inside a character —
+    /// which no colour attribute can — and moving it lays nothing out again.
+    var sungPart: SungPart? {
+        didSet {
+            guard sungPart != oldValue else { return }
+            let changedRects = (oldValue?.rects ?? []) + (sungPart?.rects ?? [])
+            if let changedArea = changedRects.dropFirst().reduce(changedRects.first, { $0?.union($1) }) {
+                setNeedsDisplay(changedArea)
+            }
+        }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let sungPart, !sungPart.rects.isEmpty,
+              let context = NSGraphicsContext.current?.cgContext,
+              let layoutManager else {
+            super.draw(dirtyRect)
+            return
+        }
+        // The text as it is, except where the sung part goes…
+        context.saveGState()
+        context.addRect(bounds)
+        context.addRects(sungPart.rects)
+        context.clip(using: .evenOdd)
+        super.draw(dirtyRect)
+        context.restoreGState()
+        // …and there the line's glyphs, drawn on a layer of their own and
+        // painted over in the sung colour wherever they left ink, so each
+        // pixel comes from one colour only.
+        context.saveGState()
+        context.clip(to: sungPart.rects)
+        context.beginTransparencyLayer(auxiliaryInfo: nil)
+        layoutManager.drawGlyphs(forGlyphRange: sungPart.glyphRange, at: textContainerOrigin)
+        context.setBlendMode(.sourceIn)
+        sungPart.color.setFill()
+        context.fill(sungPart.rects)
+        context.endTransparencyLayer()
+        context.restoreGState()
+    }
+}
 
 final class LyricsPlaceholderTextField: LyricsContextMenuTextField {}
 
@@ -41,17 +92,22 @@ class ScrollLyricsView: NSScrollView {
         didSet {
             DispatchQueue.main.async {
                 self.paintHighlightedLine()
+                self.updateSungPart()
             }
         }
     }
 
     /// The colour of the part of the playing line not sung yet. Setting it
-    /// turns on karaoke progress: on a line with inline time tags, each
-    /// character takes `highlightColor` once its tag says it starts being
-    /// sung, and the rest of the line this colour. Nil — the default — marks
-    /// the whole line in `highlightColor`.
+    /// turns on karaoke progress, the way the menu bar shows it: on a line
+    /// with inline time tags, the part sung so far in `highlightColor`, its
+    /// edge moving smoothly through each word as the tags time it, and the
+    /// rest of the line this colour. Nil — the default — marks the whole line
+    /// in `highlightColor`.
     var karaokeUnsungTextColor: NSColor? {
-        didSet { paintHighlightedLine() }
+        didSet {
+            paintHighlightedLine()
+            updateSungPart()
+        }
     }
 
     @objc dynamic var fontName = "Helvetica" {
@@ -77,10 +133,9 @@ class ScrollLyricsView: NSScrollView {
     private var ranges: [(TimeInterval, NSRange)] = []
     /// One per entry of `ranges`: the line's karaoke timing, when it has one.
     private var karaokeLines: [KaraokeLineLayout?] = []
-    private var highlightedRange: NSRange?
-    /// How much of `highlightedRange`, in UTF-16 units, is sung; nil when the
-    /// marked line shows no karaoke progress.
-    private var highlightedSungLength: Int?
+    private var highlightedLineIndex: Int?
+    /// The position `highlight(position:)` last marked.
+    private var highlightedPosition: TimeInterval?
     private var displayedLyrics: Lyrics?
     private var preferenceObservers: Set<AnyCancellable> = []
 
@@ -111,12 +166,13 @@ class ScrollLyricsView: NSScrollView {
 
     func setupTextContents(lyrics: Lyrics?) {
         displayedLyrics = lyrics
+        textView.sungPart = nil
+        highlightedLineIndex = nil
+        highlightedPosition = nil
         guard let lyrics = lyrics else {
             ranges = []
             karaokeLines = []
             textView.string = ""
-            highlightedRange = nil
-            highlightedSungLength = nil
             return
         }
 
@@ -146,8 +202,6 @@ class ScrollLyricsView: NSScrollView {
         ranges = newRanges
         karaokeLines = newKaraokeLines
         textView.string = lrcContent
-        highlightedRange = nil
-        highlightedSungLength = nil
         let range = textView.string.fullRange
         let font = resolvedFont
         let style = NSMutableParagraphStyle().with {
@@ -165,6 +219,8 @@ class ScrollLyricsView: NSScrollView {
         super.layout()
         updateFadeEdgeMask()
         updateEdgeInset()
+        // A new width wraps the lines anew, and the sung part with them.
+        updateSungPart()
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -239,50 +295,63 @@ class ScrollLyricsView: NSScrollView {
     }
 
     /// Marks the line playing at `position` and, with
-    /// `karaokeUnsungTextColor` set, how much of it has started being sung.
-    /// Returns whether the mark moved to another line.
+    /// `karaokeUnsungTextColor` set, how much of it is sung. Returns whether
+    /// the mark moved to another line.
     @discardableResult
     func highlight(position: TimeInterval) -> Bool {
         guard !ranges.isEmpty else {
             return false
         }
         let lineIndex = indexOfLine(at: position)
-        let range = ranges[lineIndex].1
-        let sungLength = karaokeUnsungTextColor == nil
-            ? nil
-            : karaokeLines[lineIndex]?.sungLength(atLyricsTime: position)
-        let marksAnotherLine = highlightedRange != range
-        guard marksAnotherLine || sungLength != highlightedSungLength else {
+        let marksAnotherLine = highlightedLineIndex != lineIndex
+        if marksAnotherLine {
+            if let highlightedLineIndex, ranges.indices.contains(highlightedLineIndex) {
+                textView.textStorage?.addAttribute(.foregroundColor, value: textColor, range: ranges[highlightedLineIndex].1)
+            }
+            highlightedLineIndex = lineIndex
+            paintHighlightedLine()
+        }
+        highlightedPosition = position
+        updateSungPart()
+        return marksAnotherLine
+    }
+
+    /// Whether the sung part of the line playing at `position` is moving
+    /// then — between the first and the last of its line's keyframes — so
+    /// that `highlight(position:)` draws something new on every frame.
+    func karaokeProgressMoves(at position: TimeInterval) -> Bool {
+        guard let movingLyricsTimes = karaokeLineShowingProgress(at: position)?.timing.movingLyricsTimes else {
             return false
         }
-        if marksAnotherLine, let highlightedRange {
-            textView.textStorage?.addAttribute(.foregroundColor, value: textColor, range: highlightedRange)
-        }
-        highlightedRange = range
-        highlightedSungLength = sungLength
-        paintHighlightedLine()
-        return marksAnotherLine
+        return movingLyricsTimes.lowerBound <= position && position < movingLyricsTimes.upperBound
     }
 
     /// The position after `position` at which `highlight(position:)` marks
     /// something new: the start of the next line or, with karaoke progress,
-    /// of the next character to be sung in this one, whichever comes first.
-    /// Nil once neither is left.
+    /// the moment the sung part of this one starts moving, whichever comes
+    /// first. Nil once neither is left.
     func nextHighlightChange(after position: TimeInterval) -> TimeInterval? {
         guard !ranges.isEmpty else {
             return nil
         }
         let lineIndex = indexOfLine(at: position)
         let nextLineStart = ranges.indices.contains(lineIndex + 1) ? ranges[lineIndex + 1].0 : nil
-        let nextCharacterOnset = karaokeUnsungTextColor == nil
-            ? nil
-            : karaokeLines[lineIndex]?.onsets.nextOnset(afterLyricsTime: position)
+        let karaokeProgressStart = karaokeLineShowingProgress(at: position)?.timing.movingLyricsTimes.lowerBound
         // Only what lies ahead: lines out of order must not ask for a check
         // that is already due, again and again.
-        return [nextLineStart, nextCharacterOnset]
+        return [nextLineStart, karaokeProgressStart]
             .compactMap { $0 }
             .filter { $0 > position }
             .min()
+    }
+
+    /// The karaoke layout of the line playing at `position`, when it shows
+    /// karaoke progress.
+    private func karaokeLineShowingProgress(at position: TimeInterval) -> KaraokeLineLayout? {
+        guard karaokeUnsungTextColor != nil, !ranges.isEmpty else {
+            return nil
+        }
+        return karaokeLines[indexOfLine(at: position)]
     }
 
     func scroll(position: TimeInterval) {
@@ -314,50 +383,122 @@ class ScrollLyricsView: NSScrollView {
     }
 
     /// Colours the marked line: all of it in `highlightColor` or, with karaoke
-    /// progress, its sung part in `highlightColor` and the rest in
-    /// `karaokeUnsungTextColor`.
+    /// progress, in `karaokeUnsungTextColor` — the sung part is drawn over it.
     private func paintHighlightedLine() {
-        guard let highlightedRange, let textStorage = textView.textStorage else {
+        guard let highlightedLineIndex, ranges.indices.contains(highlightedLineIndex),
+              let textStorage = textView.textStorage else {
             return
         }
-        if let highlightedSungLength, let karaokeUnsungTextColor {
-            textStorage.addAttribute(.foregroundColor, value: karaokeUnsungTextColor, range: highlightedRange)
-            let sungRange = NSRange(location: highlightedRange.location, length: highlightedSungLength)
-            textStorage.addAttribute(.foregroundColor, value: highlightColor, range: sungRange)
-        } else {
-            textStorage.addAttribute(.foregroundColor, value: highlightColor, range: highlightedRange)
+        let color = karaokeLines[highlightedLineIndex] != nil ? karaokeUnsungTextColor ?? highlightColor : highlightColor
+        textStorage.addAttribute(.foregroundColor, value: color, range: ranges[highlightedLineIndex].1)
+    }
+
+    /// Puts the sung part of the marked line where `highlightedPosition` has
+    /// it: every line fragment sung through, and the one being sung up to
+    /// the share of its character sung so far, in whole device pixels — the
+    /// menu bar's karaoke progress, drawn the same way.
+    private func updateSungPart() {
+        textView.sungPart = sungPartOfHighlightedLine()
+    }
+
+    private func sungPartOfHighlightedLine() -> LyricsTextView.SungPart? {
+        guard karaokeUnsungTextColor != nil,
+              let highlightedLineIndex, let highlightedPosition,
+              ranges.indices.contains(highlightedLineIndex),
+              let karaokeLine = karaokeLines[highlightedLineIndex],
+              let layoutManager = textView.layoutManager,
+              let textContainer = textView.textContainer else {
+            return nil
         }
+        let characterBoundaries = karaokeLine.characterBoundaries
+        let characterCount = characterBoundaries.count - 1
+        let sungCharacterCount = min(max(0, karaokeLine.timing.sungCharacterCount(atLyricsTime: highlightedPosition)), Double(characterCount))
+        guard sungCharacterCount > 0 else {
+            return nil
+        }
+        let lineLocation = ranges[highlightedLineIndex].1.location
+        let contentGlyphRange = layoutManager.glyphRange(
+            forCharacterRange: NSRange(location: lineLocation, length: characterBoundaries[characterCount]),
+            actualCharacterRange: nil
+        )
+        // Where the sung part ends: a share of the character being sung, or
+        // nowhere short of the line's end once every character is.
+        var sungEdge: (glyphIndex: Int, x: CGFloat)?
+        let edgeCharacterIndex = Int(sungCharacterCount.rounded(.down))
+        if edgeCharacterIndex < characterCount {
+            let characterShare = CGFloat(sungCharacterCount - Double(edgeCharacterIndex))
+            let characterGlyphRange = layoutManager.glyphRange(
+                forCharacterRange: NSRange(
+                    location: lineLocation + characterBoundaries[edgeCharacterIndex],
+                    length: characterBoundaries[edgeCharacterIndex + 1] - characterBoundaries[edgeCharacterIndex]
+                ),
+                actualCharacterRange: nil
+            )
+            let characterRect = layoutManager.boundingRect(forGlyphRange: characterGlyphRange, in: textContainer)
+            sungEdge = (characterGlyphRange.location, characterRect.minX + characterRect.width * characterShare)
+        }
+        var sungRects: [NSRect] = []
+        layoutManager.enumerateLineFragments(forGlyphRange: contentGlyphRange) { fragmentRect, _, _, fragmentGlyphRange, stop in
+            guard let sungEdge, sungEdge.glyphIndex < NSMaxRange(fragmentGlyphRange) else {
+                sungRects.append(fragmentRect)
+                return
+            }
+            sungRects.append(NSRect(
+                x: fragmentRect.minX,
+                y: fragmentRect.minY,
+                width: max(0, sungEdge.x - fragmentRect.minX),
+                height: fragmentRect.height
+            ))
+            stop.pointee = true
+        }
+        let containerOrigin = textView.textContainerOrigin
+        let scale = window?.backingScaleFactor ?? 2
+        let viewRects = sungRects.map { rect in
+            let rect = rect.offsetBy(dx: containerOrigin.x, dy: containerOrigin.y)
+            let snappedMaxX = (rect.maxX * scale).rounded() / scale
+            return NSRect(x: rect.minX, y: rect.minY, width: max(0, snappedMaxX - rect.minX), height: rect.height)
+        }
+        .filter { $0.width > 0 }
+        guard !viewRects.isEmpty else {
+            return nil
+        }
+        return LyricsTextView.SungPart(glyphRange: contentGlyphRange, rects: viewRects, color: highlightColor)
     }
 
     func updateFont() {
         let range = textView.string.fullRange
         textView.textStorage?.addAttribute(.font, value: resolvedFont, range: range)
+        updateSungPart()
     }
 }
 
-/// A line's karaoke timing, with where each of its characters ends in the
-/// text view's string, to colour the part sung so far.
+/// A line's karaoke timing, with where each of its characters starts in the
+/// text view's string, to draw the part sung so far.
 private struct KaraokeLineLayout {
-    let onsets: KaraokeCharacterOnsets
-    /// The UTF-16 length of the line's first one, two, three… characters.
-    let characterEndOffsets: [Int]
+    let timing: KaraokeLineTiming
+    /// The UTF-16 offset from the line's start of each of its characters —
+    /// Swift `Character`s, which the timing counts — and of its end.
+    let characterBoundaries: [Int]
 
+    /// Nil for a line without inline time tags, and for one with any
+    /// right-to-left run, as in the menu bar: the sung part fills from the
+    /// leading edge, so a Hebrew line would start out sung and empty as it
+    /// was sung.
     init?(line: LyricsLine) {
-        guard let onsets = KaraokeCharacterOnsets(line: line) else {
+        guard let timing = KaraokeLineTiming(line: line), Self.runsLeftToRight(line.content) else {
             return nil
         }
-        var endOffset = 0
-        self.onsets = onsets
-        self.characterEndOffsets = line.content.map { character in
-            endOffset += character.utf16.count
-            return endOffset
+        var boundary = 0
+        self.timing = timing
+        self.characterBoundaries = [0] + line.content.map { character in
+            boundary += character.utf16.count
+            return boundary
         }
     }
 
-    /// How much of the line, in UTF-16 units from its start, has started
-    /// being sung at `lyricsTime`.
-    func sungLength(atLyricsTime lyricsTime: TimeInterval) -> Int {
-        let startedCharacterCount = onsets.startedCharacterCount(atLyricsTime: lyricsTime)
-        return startedCharacterCount == 0 ? 0 : characterEndOffsets[startedCharacterCount - 1]
+    private static func runsLeftToRight(_ content: String) -> Bool {
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: content))
+        let glyphRuns = CTLineGetGlyphRuns(line) as? [CTRun] ?? []
+        return glyphRuns.allSatisfy { !CTRunGetStatus($0).contains(.rightToLeft) }
     }
 }
