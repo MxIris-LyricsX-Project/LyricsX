@@ -286,7 +286,13 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         lyricsPreviewView.lyricsViewDelegate = self
         lyricsPreviewView.fixedFont = .systemFont(ofSize: NSFont.systemFontSize)
         lyricsPreviewView.textColor = .secondaryLabelColor
+        // The playing line stands out in the label colour, and on lyrics with
+        // inline time tags each character turns to the accent colour as its
+        // tag says it starts being sung: the tags can be checked against the
+        // song character by character. Lines without tags turn to the accent
+        // colour whole.
         lyricsPreviewView.highlightColor = .controlAccentColor
+        lyricsPreviewView.karaokeUnsungTextColor = .labelColor
         lyricsPreviewView.setupTextContents(lyrics: nil)
         // The scroll wheel reports only scrolls with momentum; a slow drag on
         // the trackpad starts a live scroll without one.
@@ -322,8 +328,9 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         refreshPreviewProgress(animated: false)
     }
 
-    /// Marks the line playing now, scrolls it to the middle unless the user
-    /// scrolled away, and comes back when the next line starts.
+    /// Marks the line playing now and the characters of it sung so far,
+    /// scrolls it to the middle unless the user scrolled away, and comes back
+    /// when the next line or character starts.
     private func refreshPreviewProgress(animated: Bool) {
         previewLineCheck?.cancel()
         previewLineCheck = nil
@@ -341,9 +348,11 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         // The same delay the lyrics would get once applied: their own offset,
         // the global one, and the one for this player and output device.
         let position = playbackTime + lyrics.adjustedTimeDelay
-        lyricsPreviewView.highlight(position: position)
+        let marksAnotherLine = lyricsPreviewView.highlight(position: position)
         isPreviewShowingProgress = true
-        if isPreviewTracking {
+        // A timed refresh within the same line only moves the karaoke
+        // progress; every other refresh puts the line back in the middle.
+        if isPreviewTracking, marksAnotherLine || !animated {
             scrollPreview(to: position, animated: animated)
         }
         guard playbackState.isPlaying else {
@@ -351,12 +360,8 @@ class SearchLyricsViewController: NSViewController, NSTableViewDelegate, NSTable
         }
         // Past the last line, check every second, as `AppController` does,
         // for a repeat that starts the track over without a state change.
-        let delayUntilNextCheck: TimeInterval
-        if let nextLineIndex = lyrics[position].nextLineIndex {
-            delayUntilNextCheck = max(0, lyrics.lines[nextLineIndex].position - position)
-        } else {
-            delayUntilNextCheck = 1
-        }
+        let delayUntilNextCheck = lyricsPreviewView.nextHighlightChange(after: position)
+            .map { max(0, $0 - position) } ?? 1
         let queue = DispatchQueue.main
         previewLineCheck = queue.schedule(
             after: queue.now.advanced(by: .seconds(delayUntilNextCheck)),
