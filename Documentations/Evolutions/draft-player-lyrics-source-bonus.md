@@ -1,6 +1,6 @@
 # Draft - 歌词来源和正在播放的 App 是同一家时加分
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **作者**: JH
 - **创建日期**: 2026-11-26
 - **最后更新**: 2026-11-26
@@ -76,7 +76,7 @@
   - 「按歌词源顺序优先」：先比来源在列表里的位置，位置相同才比分数。同一个来源的结果要么全都加分、要么全都不加，
     所以加分改变不了任何顺序。
 - **0.10 这个值**：截图里 QQMusic 0.99 + 0.10 = 1.09，超过 Kugou 的 1.05；能抵消对方多出的一项特性加分再加一点时长差。
-  对方两项特性都有、自家一项都没有时正好打平，按「先到的留着」处理。歌手对不上的结果（截图里的 0.59、0.62）落后正确结果
+  对方两项特性都有、自家一项都没有时正好打平，按「先到的留着」处理。歌名或歌手对不上的结果（截图里同一歌手的另一首歌 0.59、0.62）落后正确结果
   0.3 以上，加分翻不了盘。封面加分是 0.15，两项可以叠加。
 
 ## 提议方案
@@ -225,7 +225,7 @@ public enum PlayerLyricsSourcePolicy {
     /// Enough to outweigh one of LyricsKit's 0.05 feature bonuses (translation,
     /// inline time tags) plus a small duration difference, so the playing app's
     /// copy of the right song comes first; far short of the 0.3 or more a wrong
-    /// artist costs, so it never lifts a wrong song above the right one.
+    /// artist costs, so it never lifts another song above the right one.
     public static let matchBonus = 0.1
 
     /// Whether lyrics that `service` found — a provider's name as
@@ -407,7 +407,7 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
    - 行为：`lyricsFromAnotherServiceDoNotBelongToThePlayer`
    - 行为：`lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer`
    - 行为：`playerSourceOutranksAnotherSourceAheadByOneFeatureBonus`（截图场景，在「只按匹配分数」和「同分再看源」两种模式下）
-   - 行为：`playerSourceDoesNotLiftAWrongArtistAboveTheRightSong`
+   - 行为：`playerSourceDoesNotLiftAnotherSongAboveTheRightOne`（截图里同一歌手的另一首歌 0.59 + 0.10，仍在 Kugou 那份《一半》的 0.98 之后）
 2. **加分进排序** —— 第 3 至 9 行
    - 行为：`PlaybackRouteLyricsOffsetController` 的偏移在换播放器时照旧切换（行为不变，构建 + 现有 `PlaybackRouteLyricsOffsetsTests`）
    - 行为：在 QQ 音乐里播放时，自动挑选选中 QQMusic 的歌词（App 没有测试 target，用 Debug 构建实际播放核对）
@@ -433,3 +433,4 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 | 2026-11-26 | 加分同时用于自动挑选与搜索面板 | 用户选择；面板显示的分数必须就是排序比较的分数 |
 | 2026-11-26 | 加开关，默认开启，放在歌词源页 | 用户选择加开关；位置由 agent 定，理由见替代方案 |
 | 2026-11-26 | Accepted | 用户批准，开始实现 |
+| 2026-11-26 | In Progress | 功能树建好，开始第 1 步 |

@@ -163,7 +163,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <p class="eyebrow"><span class="crumb">LyricsX</span><span class="crumb">Evolutions</span><span class="crumb">Draft</span></p>
   <h1><span class="proposal-number">Draft</span> 歌词来源和正在播放的 App 是同一家时加分</h1>
   <dl class="meta">
-    <div><dt>状态</dt><dd><span class="status status-accepted">Accepted</span></dd></div>
+    <div><dt>状态</dt><dd><span class="status status-in-progress">In Progress</span></dd></div>
     <div><dt>最后更新</dt><dd>2026-11-26</dd></div>
     <div><dt>项目类型</dt><dd>App</dd></div>
     <div><dt>原文</dt><dd><code>draft-player-lyrics-source-bonus.md</code></dd></div>
@@ -204,7 +204,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
   <div class="callout callout-note">
     <p class="callout-title">没问就定下的几点，可以推翻</p>
     <ul>
-      <li>加分取 0.10：截图里 QQMusic 0.99 → 1.09，超过 Kugou 1.05；对方翻译与逐字两项都有时打平；歌手不对的结果翻不了盘。</li>
+      <li>加分取 0.10：截图里 QQMusic 0.99 → 1.09，超过 Kugou 1.05；对方翻译与逐字两项都有时打平；歌名或歌手对不上的结果翻不了盘。</li>
       <li>对应关系：QQ 音乐（含 iPad 版）→ QQMusic，网易云 → NetEase，<code>com.kugou.*</code> → Kugou，「音乐」→ Apple Music；Spotify 不对应 Musixmatch。</li>
       <li>开关放在歌词源页、表格下方，不放实验室页。</li>
       <li>评分列把封面加分和这一项合成一个数显示。</li>
@@ -475,7 +475,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
         <li><strong>不会加分的歌词</strong>：歌词库 <code>.lrcx</code>、内嵌歌词、旁边的 <code>.lrc</code> 都没有 <code>metadata.service</code>。</li>
         <li><strong>翻译副本带标记</strong>：AI 翻译结果整份复制 metadata（<code>AILyricsTranslation.swift:409</code>）。</li>
         <li><strong>三种排序模式</strong>：「只按匹配分数」严格大于才更优；「同分再看源」按 0.02 分桶，0.10 是五个桶；「按歌词源顺序优先」先比来源位置，同一来源的结果全都加或全都不加，加分改变不了顺序。</li>
-        <li><strong>0.10</strong>：截图里 0.99 + 0.10 = 1.09 &gt; 1.05；对方两项特性都有、自家一项没有时打平，留给先到的那条；歌手对不上的结果落后 0.3 以上，翻不了盘。封面加分 0.15，两项可以叠加。</li>
+        <li><strong>0.10</strong>：截图里 0.99 + 0.10 = 1.09 &gt; 1.05；对方两项特性都有、自家一项没有时打平，留给先到的那条；歌名或歌手对不上的结果落后 0.3 以上，翻不了盘。封面加分 0.15，两项可以叠加。</li>
       </ul>
     </div>
   </details>
@@ -527,7 +527,7 @@ details[open] > summary { border-bottom: 1px solid var(--separator); }
 <section id="steps">
   <h2>落地步骤</h2>
   <ol>
-    <li><strong>策略与测试</strong>（改动地图第 1、2 行）：<code>qqMusicForMacAndForIPadMapToQQMusic</code>、<code>neteaseCloudMusicMapsToNetEase</code>、<code>kugouAppsMapToKugou</code>、<code>musicMapsToAppleMusic</code>、<code>bundleIdentifiersMatchIgnoringCase</code>、<code>otherAppsFromTheSameCompaniesMapToNoSource</code>、<code>unknownPlayersMapToNoSource</code>、<code>lyricsFromThePlayersOwnServiceBelongToIt</code>、<code>lyricsFromAnotherServiceDoNotBelongToThePlayer</code>、<code>lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer</code>、<code>playerSourceOutranksAnotherSourceAheadByOneFeatureBonus</code>、<code>playerSourceDoesNotLiftAWrongArtistAboveTheRightSong</code>。</li>
+    <li><strong>策略与测试</strong>（改动地图第 1、2 行）：<code>qqMusicForMacAndForIPadMapToQQMusic</code>、<code>neteaseCloudMusicMapsToNetEase</code>、<code>kugouAppsMapToKugou</code>、<code>musicMapsToAppleMusic</code>、<code>bundleIdentifiersMatchIgnoringCase</code>、<code>otherAppsFromTheSameCompaniesMapToNoSource</code>、<code>unknownPlayersMapToNoSource</code>、<code>lyricsFromThePlayersOwnServiceBelongToIt</code>、<code>lyricsFromAnotherServiceDoNotBelongToThePlayer</code>、<code>lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer</code>、<code>playerSourceOutranksAnotherSourceAheadByOneFeatureBonus</code>、<code>playerSourceDoesNotLiftAnotherSongAboveTheRightOne</code>。</li>
     <li><strong>加分进排序</strong>（第 3 至 9 行）：换播放器时歌词偏移照旧切换；在 QQ 音乐里播放时自动挑选选中 QQMusic 的歌词；面板里 QQMusic 排到前面、评分列带 <code>(+0.10)</code>，与封面加分同时生效时显示两项之和；关掉开关后下一次搜索不再加分。</li>
     <li><strong>设置页开关</strong>（第 10、11、12 行）：默认勾选且重开设置窗口后保持；「按歌词源顺序优先」时不可用；简繁中文文案正确，页面高度按内容算。</li>
     <li><strong>文档与收尾</strong>（第 13 至 16 行）：<code>swift test --filter LyricsXFoundationTests</code> 全绿，App 的 Debug 构建通过；判断配套文档与术语表。</li>
