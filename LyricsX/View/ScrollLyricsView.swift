@@ -453,8 +453,8 @@ class ScrollLyricsView: NSScrollView {
         }
         let containerOrigin = textView.textContainerOrigin
         let scale = window?.backingScaleFactor ?? 2
-        let viewRects = sungRects.map { rect in
-            let rect = rect.offsetBy(dx: containerOrigin.x, dy: containerOrigin.y)
+        let viewRects = sungRects.map { (containerRect: NSRect) -> NSRect in
+            let rect = containerRect.offsetBy(dx: containerOrigin.x, dy: containerOrigin.y)
             let snappedMaxX = (rect.maxX * scale).rounded() / scale
             return NSRect(x: rect.minX, y: rect.minY, width: max(0, snappedMaxX - rect.minX), height: rect.height)
         }
