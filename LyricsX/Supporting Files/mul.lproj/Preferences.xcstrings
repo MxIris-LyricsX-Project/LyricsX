@@ -11695,6 +11695,66 @@
         }
       }
     },
+    "plb-Bc-c02.title" : {
+      "comment" : "Class = \"NSButtonCell\"; title = \"Prefer lyrics from the playing app's own service\"; ObjectID = \"plb-Bc-c02\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prefer lyrics from the playing app's own service"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prefer lyrics from the playing app's own service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "优先使用正在播放的 App 自家的歌词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "優先使用正在播放的 App 自家的歌詞"
+          }
+        }
+      }
+    },
+    "plb-Tc-n02.title" : {
+      "comment" : "Class = \"NSTextFieldCell\"; title = \"While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher.\"; ObjectID = \"plb-Tc-n02\";",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "base" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own service score 0.1 higher."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，来自同一家的歌词加 0.1 分。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 QQ 音樂、網易雲音樂、酷狗音樂或「音樂」裡播放時，來自同一家的歌詞加 0.1 分。"
+          }
+        }
+      }
+    },
     "ppx-ob-WJc.title" : {
       "comment" : "Class = \"NSViewController\"; title = \"Shortcut\"; ObjectID = \"ppx-ob-WJc\";",
       "extractionState" : "stale",

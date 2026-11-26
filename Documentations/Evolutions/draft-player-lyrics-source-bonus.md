@@ -1,6 +1,6 @@
 # Draft - 歌词来源和正在播放的 App 是同一家时加分
 
-- **状态**: Accepted
+- **状态**: In Progress
 - **作者**: JH
 - **创建日期**: 2026-11-26
 - **最后更新**: 2026-11-26
@@ -10,7 +10,7 @@
   [0029 按播放器与输出设备设置歌词偏移](0029-playback-route-lyrics-offset.md)（「当前播放器的 bundle ID」那段逻辑从它那里抽出来共用）；
   [Draft 拆分 LyricsXFoundation](draft-split-lyricsx-foundation.md)（若它先落地，本提案的新文件改放进 `LyricsPolicies`）
 - **实现分支 / PR**: `feature/player-lyrics-source-bonus`（LyricsX），功能树 `.worktrees/MxIris-LyricsX-Project-PlayerLyricsSourceBonus`（父仓库）
-- **配套文档**: 待定 —— 预计在实现说明 [歌词候选的排序](../Internal/LyricsSourceOrdering.md) 补一节
+- **配套文档**: 实现说明 [歌词候选的排序](../Internal/LyricsSourceOrdering.md) 的「播放器自家的歌词源」一节
 - **网页版**: 同目录同名的 `.html`
 
 ## 摘要
@@ -76,7 +76,7 @@
   - 「按歌词源顺序优先」：先比来源在列表里的位置，位置相同才比分数。同一个来源的结果要么全都加分、要么全都不加，
     所以加分改变不了任何顺序。
 - **0.10 这个值**：截图里 QQMusic 0.99 + 0.10 = 1.09，超过 Kugou 的 1.05；能抵消对方多出的一项特性加分再加一点时长差。
-  对方两项特性都有、自家一项都没有时正好打平，按「先到的留着」处理。歌手对不上的结果（截图里的 0.59、0.62）落后正确结果
+  对方两项特性都有、自家一项都没有时正好打平，按「先到的留着」处理。歌名或歌手对不上的结果（截图里同一歌手的另一首歌 0.59、0.62）落后正确结果
   0.3 以上，加分翻不了盘。封面加分是 0.15，两项可以叠加。
 
 ## 提议方案
@@ -124,7 +124,7 @@
 | `LyricsX/Preferences/PreferenceSourceViewController.swift` | 修改 | 新 outlet；`viewDidLoad` 里 `bind(.value, withDefaultName: .playerLyricsSourceBoostEnabled)`；`updateUI()` 在 `.sourceFirst` 时 `isEnabled = false` | 开关接线 | 3 |
 | `LyricsX/Supporting Files/mul.lproj/Preferences.xcstrings` | 修改 | 两条新文案（复选框标题、说明），补简体 / 繁体中文 | 新界面文案 | 3 |
 | `Documentations/Internal/LyricsSourceOrdering.md` | 修改 | 新增一节「播放器自家的歌词源」；「分数在搜索面板是看得见的」改为两项加分；「已知空白」里 NaN 那条改成两项 | 下次维护会踩的决策 | 4 |
-| `Documentations/Internal/PreferenceWindowSizing.md` | 修改 | Source 页的实测尺寸 | 页面变高了 | 4 |
+| `Documentations/Internal/PreferenceWindowSizing.md` | 修改 | Source 页按约束推算的新尺寸（600×496，未实测） | 页面变高了 | 4 |
 | `CLAUDE.md`（LyricsX） | 修改 | `LyricsXFoundationTests` 覆盖范围加一句「哪个歌词源是播放器自家的」 | 测试清单与代码同步 | 4 |
 | `Documentations/Evolutions/draft-player-lyrics-source-bonus.md`（及 `.html`）、两份索引 | 修改 | 落地时取号、状态改 Implemented | 提案收尾 | 4 |
 
@@ -199,7 +199,7 @@ extension LyricsProviders.ServiceID {
     /// so the Mac and the iPad builds of one player map alike and another app
     /// from the same company does not.
     public init?(playerBundleIdentifier bundleIdentifier: String) {
-        let components = bundleIdentifier.lowercased().split(separator: ".")
+        let components = bundleIdentifier.lowercased().split(separator: ".", omittingEmptySubsequences: false)
         guard components.count >= 3, components[0] == "com" else { return nil }
         switch (components[1], components[2]) {
         case ("tencent", let product) where product.hasPrefix("qqmusic"):
@@ -225,7 +225,7 @@ public enum PlayerLyricsSourcePolicy {
     /// Enough to outweigh one of LyricsKit's 0.05 feature bonuses (translation,
     /// inline time tags) plus a small duration difference, so the playing app's
     /// copy of the right song comes first; far short of the 0.3 or more a wrong
-    /// artist costs, so it never lifts a wrong song above the right one.
+    /// artist costs, so it never lifts another song above the right one.
     public static let matchBonus = 0.1
 
     /// Whether lyrics that `service` found — a provider's name as
@@ -344,9 +344,12 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 - 说明（与表格上方那行提示同样的小号字）：`While QQ Music, NetEase Cloud Music, Kugou or Music plays, lyrics from its own
   service score 0.1 higher.`（简体「在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，来自同一家的歌词加 0.1 分。」，繁体
   「在 QQ 音樂、網易雲音樂、酷狗音樂或「音樂」裡播放時，來自同一家的歌詞加 0.1 分。」）
-- 位置：歌词源表下方。约束改为 表格底边 + 16 → 复选框，复选框底边 + 4 → 说明（前缘对齐复选框标题），说明底边 + 24 → 视图
-  底边；原来的 `Q5D-XX-2sF`（表格底边 = 视图底边 − 24）改接到说明上。frame 用 `ibtool --update-frames` 算到临时文件，只搬回
-  这一页的 rect。
+- 位置：歌词源表下方。约束改为 表格底边 + 16 → 复选框，复选框底边 + 4 → 说明（前缘 = 复选框前缘 + 18，对齐复选框标题），
+  说明底边 + 24 → 视图底边；原来的 `Q5D-XX-2sF`（表格底边 = 视图底边 − 24）改接到说明上。新元素的 id 以 `plb-` 开头。
+- 设计期 frame 按约束手算（根视图 600×408，表格 560×216）：`ibtool --update-frames` 在这一页上总把根视图钉成 500×308，
+  算出的单选按钮互相重叠，用不了。运行时尺寸只由约束决定。
+- 说明不折行，宽度按文字算。用 CoreText 量过（HelveticaNeue 11）：英文 522.2 pt，简繁中文都是 429.2 pt；可用宽度是
+  600 − 38 − 20 = 542 pt，所以页面宽度仍是 600。没有译文的语言显示英文，同样放得下。英文文案再加长就会把窗口撑宽。
 - `updateUI()`：`playerLyricsSourceBoostButton.isEnabled = mode != .sourceFirst`。
 - 改 storyboard 之前确认 Xcode 没打开 `Preferences.storyboard`，否则保存会被覆盖。
 
@@ -395,7 +398,7 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 
 ## 落地步骤
 
-1. **策略与测试** —— 改动地图第 1、2 行
+1. **策略与测试**（已完成）—— 改动地图第 1、2 行
    - 行为：`qqMusicForMacAndForIPadMapToQQMusic`（`com.tencent.QQMusicMac`、`com.tencent.QQMusic`、`com.tencent.QQMusic.D5Q73692VW`）
    - 行为：`neteaseCloudMusicMapsToNetEase`（`com.netease.163music`、`com.netease.cloudmusic`）
    - 行为：`kugouAppsMapToKugou`
@@ -407,17 +410,17 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
    - 行为：`lyricsFromAnotherServiceDoNotBelongToThePlayer`
    - 行为：`lyricsWithoutAServiceOrWithoutAPlayerBelongToNoPlayer`
    - 行为：`playerSourceOutranksAnotherSourceAheadByOneFeatureBonus`（截图场景，在「只按匹配分数」和「同分再看源」两种模式下）
-   - 行为：`playerSourceDoesNotLiftAWrongArtistAboveTheRightSong`
-2. **加分进排序** —— 第 3 至 9 行
+   - 行为：`playerSourceDoesNotLiftAnotherSongAboveTheRightOne`（截图里同一歌手的另一首歌 0.59 + 0.10，仍在 Kugou 那份《一半》的 0.98 之后）
+2. **加分进排序**（已完成；带「实机」的几条留给用户核对）—— 第 3 至 9 行
    - 行为：`PlaybackRouteLyricsOffsetController` 的偏移在换播放器时照旧切换（行为不变，构建 + 现有 `PlaybackRouteLyricsOffsetsTests`）
-   - 行为：在 QQ 音乐里播放时，自动挑选选中 QQMusic 的歌词（App 没有测试 target，用 Debug 构建实际播放核对）
-   - 行为：搜索面板里 QQMusic 的结果排到前面，评分列带 `(+0.10)`；封面加分同时生效时显示两项之和
-   - 行为：开关关掉后，下一次搜索不再加分
-3. **设置页开关** —— 第 10、11、12 行
-   - 行为：复选框默认勾选，重开设置窗口后保持
-   - 行为：「按歌词源顺序优先」模式下复选框不可用，切回另两种模式恢复
-   - 行为：简体、繁体中文下文案正确，页面高度按内容算（不继承上一页的尺寸）
-4. **文档与收尾** —— 第 13 至 16 行
+   - 行为（实机）：在 QQ 音乐里播放时，自动挑选选中 QQMusic 的歌词（App 没有测试 target，用 Debug 构建实际播放核对）
+   - 行为（实机）：搜索面板里 QQMusic 的结果排到前面，评分列带 `(+0.10)`；封面加分同时生效时显示两项之和
+   - 行为（实机）：开关关掉后，下一次搜索不再加分
+3. **设置页开关**（已完成；带「实机」的几条留给用户核对）—— 第 10、11、12 行
+   - 行为（实机）：复选框默认勾选，重开设置窗口后保持
+   - 行为（实机）：「按歌词源顺序优先」模式下复选框不可用，切回另两种模式恢复
+   - 行为（实机）：简体、繁体中文下文案正确，页面高度按内容算（不继承上一页的尺寸）
+4. **文档与收尾**（已完成）—— 第 13 至 16 行
    - 行为：`swift test --filter LyricsXFoundationTests` 全绿；App 的 Debug 构建通过
 
 **收尾时必须判断两件事**（判断结果写进决策日志，不允许沉默跳过）：
@@ -433,3 +436,9 @@ private func qualityDisplayText(for lyrics: Lyrics) -> String {
 | 2026-11-26 | 加分同时用于自动挑选与搜索面板 | 用户选择；面板显示的分数必须就是排序比较的分数 |
 | 2026-11-26 | 加开关，默认开启，放在歌词源页 | 用户选择加开关；位置由 agent 定，理由见替代方案 |
 | 2026-11-26 | Accepted | 用户批准，开始实现 |
+| 2026-11-26 | In Progress | 功能树建好，开始第 1 步 |
+| 2026-11-26 | 测试里的歌词源下标改用 `UserDefaults.plist` 注册的默认顺序 | 默认顺序里 Kugou 排第一、QQMusic 排第五，同分时 Kugou 在前；按真实顺序测，加分要在不靠来源顺序的情况下胜出 |
+| 2026-11-26 | storyboard 的设计期 frame 按约束手算 | `ibtool --update-frames` 在这一页上总把根视图钉成 500×308、算出的单选按钮互相重叠，不能用；改为按约束手算 600×408 的布局，只影响 Interface Builder 里的显示 |
+| 2026-11-26 | 说明标签不折行，按实测宽度定 | CoreText 量得英文 522.2 pt、中文 429.2 pt，可用 542 pt，页面宽度不变；构建日志里「View is clipping its content」的提示来自设计期宽度估小了，已改成实测值 |
+| 2026-11-26 | 文档判断 | 配套文档：在实现说明《歌词候选的排序》加「播放器自家的歌词源」一节，《设置窗口的尺寸》记下 Source 页按约束推算的新尺寸（未实测）；术语表：不加，「播放器自家的歌词源」只在那一节里用，字面即可懂 |
+| 2026-11-26 | 实现完成，待用户看过后收尾 | 包测试与 App 的 Debug 构建在 Ultra 上通过；带「实机」的行为与设置页的实际显示留给用户核对 |

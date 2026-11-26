@@ -90,11 +90,14 @@ return a > b
 
 搜索面板（`SearchLyricsViewController`）的表格有一列 `Score`，显示的就是
 `effectiveQuality` —— 排序真正比较的那个数，不是 LyricsKit 的原始 `quality`。
-封面相似度加分生效时，那一格会写成 `0.92 (+0.15)`，把加分单独摊开。
+封面相似度加分或播放器自家歌词源的加分生效时，那一格会写成 `0.92 (+0.15)`，把加分单独摊开；
+两项都生效时括号里是两项之和。合成一个数是有意的：这一行是不是播放器自家的来源，
+看同一行的「来源」列就知道，括号里只需要回答「这一行为什么高」。
 
 这一列存在的理由是排查：排序出问题时，最先要分清「分数算错了」还是「比较写错了」，
-而分数不可见的时候这两件事从症状上完全一样。也因此 `effectiveQuality` 与
-`effectiveArtworkBonus` 在 `Global.swift` 里是 internal 而非 private —— 面板要读它们，
+而分数不可见的时候这两件事从症状上完全一样。也因此 `effectiveQuality`、
+`effectiveArtworkBonus` 与 `effectivePlayerLyricsSourceBonus` 在 `Global.swift` 里是 internal
+而非 private —— 面板要读它们，
 且必须读**同一份**实现，另写一份显示用的算法就等于让显示的分数和排序用的分数各说各话。
 
 ## 关掉的歌词源
@@ -122,6 +125,37 @@ return a > b
 - **生效时机是下一次搜索。** 切换后立即重建 `lyricsManager`，但正在跑的搜索沿用旧的那组源，
   屏幕上的歌词和本首歌的候选也不动。
 
+## 播放器自家的歌词源
+
+> 对应提案：[Draft 歌词来源和正在播放的 App 是同一家时加分](../Evolutions/draft-player-lyrics-source-bonus.md)
+
+歌在 QQ 音乐、网易云音乐、酷狗音乐或「音乐」里播放时，同一家歌词源（QQMusic、NetEase、Kugou、Apple Music）
+的结果在 `effectiveQuality` 里加 `PlayerLyricsSourcePolicy.matchBonus`（0.1）。理由是那个 App 的歌词按它正在放的
+这一版录音对的时间轴，别家同名的歌词可能来自另一个版本。开关是歌词源页的 `PlayerLyricsSourceBoostEnabled`，
+默认开（`UserDefaults.plist`）。
+
+几处容易改错的地方：
+
+- **标记在歌词到达时打一次，不在比较时现算。** 两处 `lyricsReceived`（`AppController`、`SearchLyricsViewController`）
+  在歌词进候选池或面板列表之前调 `markPlayerLyricsSource(playerBundleIdentifier:)`，把结果存进
+  `metadata.data["LyricsX.IsFromPlayerLyricsSource"]`。系统级正在播放跟着最后发声的 App 走，比较时去读播放器的话，
+  同一个候选池会在两次插入之间换一套比较规则，有序插入就不可信了。也因为在进池之前写，这时还没有读者，
+  不需要像封面加分那样切到 `lyricsDisplay` 队列。新增一个歌词进来的入口时记得也打这个标记，
+  否则那条路进来的歌词永远不加分。
+- **存的是「是不是」，不是加分值。** 封面加分存的是 0.15 这个值；这里值由策略给出，调 0.1 不用管已经打过标记的歌词。
+- **bundle ID 按点分段匹配，不按子串。** `com.tencent.qqmusic*`、`com.netease.163music` / `cloudmusic`、`com.kugou.*`、
+  正好三段的 `com.apple.music`。子串会把名字里碰巧带这几个字母的别家 App 算进来；按段匹配也让 Mac 版和 iPad 版
+  （`com.tencent.QQMusicMac`、`com.tencent.QQMusic.D5Q73692VW`）一起命中，腾讯、网易的其他 App 不命中。
+  酷狗的 Mac 版本机没装、bundle ID 没核对过，靠 `com.kugou.` 前缀兜住。
+- **0.1 的分寸。** 够盖过一项 0.05 的特性加分（翻译、行内时间标签）加一点时长差；对方两项都有、自家一项都没有时
+  正好打平，留给先到的那条。歌名或歌手对不上的结果落后 0.3 以上，翻不了盘。测试里的分数取自真实的搜索面板。
+- **「按歌词源顺序优先」模式下它不起作用。** 那个模式先比来源位置，只在同一来源内比分数，而同一来源的结果要么
+  全都加、要么全都不加，所以设置页在这个模式下把复选框设为不可用。
+- **本地歌词永远不加分**：歌词库 `.lrcx`、内嵌歌词、旁边的 `.lrc` 都没有 `metadata.service`。
+- **取当前播放器 bundle ID 的逻辑在 `MusicPlayers.Agent.currentPlayerBundleIdentifier`**（`SelectedPlayer.swift`），
+  与按播放器设歌词偏移的 `PlaybackRouteLyricsOffsetController` 共用一份。
+- **切换开关不重排已有候选**，与封面加分、排序模式一样，下一次搜索或面板下一次重排时生效。
+
 ## 已知空白
 
 `lyricsHasHigherPriority` 这一层（读偏好、把 `Lyrics` 摊成分数与源下标）仍然没有自动化测试，
@@ -130,5 +164,5 @@ return a > b
 
 - 源下标只在 `mode.usesSourcePriorityOrder` 为真时才去算（省掉整张列表的 lowercase），
   否则两边都填 `unlistedSourceIndex`，让所有涉源的判断落空、退到比分数；
-- `effectiveQuality` 先把 NaN 归零**再**加封面加分。顺序反了的话
+- `effectiveQuality` 先把 NaN 归零**再**加封面加分和播放器自家歌词源的加分。顺序反了的话
   `NaN + bonus` 仍是 NaN，policy 的兜底会把加分一起吞掉。

@@ -273,6 +273,11 @@ extension UserDefaults.DefaultsKeys {
     // right version surfaces above same-title peers from other artists.
     static let artworkSimilarityBoostEnabled = Key<Bool>("ArtworkSimilarityBoostEnabled")
 
+    // Player-source reranking: when on, candidates from the lyrics source of
+    // the app the track plays in (QQ Music's lyrics while QQ Music plays) get
+    // `PlayerLyricsSourcePolicy.matchBonus`. On by default (UserDefaults.plist).
+    static let playerLyricsSourceBoostEnabled = Key<Bool>("PlayerLyricsSourceBoostEnabled")
+
     // The Apple Music-style panel stretches the cover to roughly 1400 pixels in
     // full screen, well past the thumbnail a player publishes. When on, a
     // higher-resolution copy of the same cover is looked up on the network and
@@ -304,6 +309,7 @@ extension UserDefaults.DefaultsKeys {
 // MARK: - Lyrics Priority
 
 private let artworkMatchBonusKey = Lyrics.Metadata.Key("LyricsX.ArtworkMatchBonus")
+private let isFromPlayerLyricsSourceKey = Lyrics.Metadata.Key("LyricsX.IsFromPlayerLyricsSource")
 private let arrivedAfterPriorityWindowKey = Lyrics.Metadata.Key("LyricsX.ArrivedAfterPriorityWindow")
 
 extension Lyrics {
@@ -323,6 +329,33 @@ extension Lyrics {
     var arrivedAfterPriorityWindow: Bool {
         get { (metadata.data[arrivedAfterPriorityWindowKey] as? Bool) ?? false }
         set { metadata.data[arrivedAfterPriorityWindowKey] = newValue }
+    }
+
+    /// Whether these lyrics came from the lyrics source of the app their track
+    /// was playing in when they arrived. Set once, on arrival, by
+    /// `markPlayerLyricsSource(playerBundleIdentifier:)`.
+    ///
+    /// What is kept is the fact rather than the bonus it earns, so the bonus
+    /// can change without touching lyrics already marked. Kept on the lyrics,
+    /// rather than worked out from the player whenever two candidates are
+    /// compared, because the system-wide now-playing player follows whichever
+    /// app plays last: a comparison that read the player could rank the same
+    /// pool two ways, and the pool's ordered insertion relies on one ranking.
+    var isFromPlayerLyricsSource: Bool {
+        (metadata.data[isFromPlayerLyricsSourceKey] as? Bool) ?? false
+    }
+
+    /// Records whether these lyrics come from the lyrics source of the app
+    /// with `playerBundleIdentifier`.
+    ///
+    /// Call where search results come in, before they go into the candidate
+    /// pool or the search panel's list: nothing reads them yet, so the write
+    /// needs no hop to `DispatchQueue.lyricsDisplay`.
+    func markPlayerLyricsSource(playerBundleIdentifier: String?) {
+        metadata.data[isFromPlayerLyricsSourceKey] = PlayerLyricsSourcePolicy.lyricsService(
+            metadata.service,
+            belongsToPlayerWithBundleIdentifier: playerBundleIdentifier
+        )
     }
 
     /// Works out `quality` now, before anything can show these lyrics.
@@ -379,15 +412,20 @@ private func sourcePriorityIndex(of lyrics: Lyrics, in normalizedOrder: [String]
 // its Score column, and it has to show the same one the ordering compares.
 func effectiveQuality(_ lyrics: Lyrics) -> Double {
     // Normalise here rather than leaning on the policy's own guard: NaN would
-    // poison the sum, and the policy would then discard the artwork bonus along
+    // poison the sum, and the policy would then discard the bonuses along
     // with it.
     let quality = lyrics.quality.isFinite ? lyrics.quality : 0
-    return quality + effectiveArtworkBonus(lyrics)
+    return quality + effectiveArtworkBonus(lyrics) + effectivePlayerLyricsSourceBonus(lyrics)
 }
 
 func effectiveArtworkBonus(_ lyrics: Lyrics) -> Double {
     guard defaults[.artworkSimilarityBoostEnabled] else { return 0 }
     return lyrics.artworkMatchBonus
+}
+
+func effectivePlayerLyricsSourceBonus(_ lyrics: Lyrics) -> Double {
+    guard defaults[.playerLyricsSourceBoostEnabled], lyrics.isFromPlayerLyricsSource else { return 0 }
+    return PlayerLyricsSourcePolicy.matchBonus
 }
 
 extension CGFloat: @retroactive DefaultConstructible {}
